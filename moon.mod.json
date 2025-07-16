@@ -1,0 +1,10 @@
+{
+  "name": "username/toml-parser",
+  "version": "0.1.0",
+  "readme": "README.md",
+  "repository": "",
+  "license": "Apache-2.0",
+  "keywords": ["toml", "parser", "config"],
+  "description": "A TOML parser implementation in MoonBit",
+  "source": "src"
+}
