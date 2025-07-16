@@ -6,13 +6,22 @@ pub(all) enum TomlValue {
   TomlBoolean(Bool)
   TomlArray(Array[TomlValue])
   TomlTable(Map[String, TomlValue])
+} derive(Eq, Show)
+
+///|
+pub impl ToJson for TomlValue with to_json(self) {
+  match self {
+    TomlString(s) => ["TomlString", s]
+    TomlInteger(i) => ["TomlInteger", i]
+    TomlFloat(f) => ["TomlFloat", f]
+    TomlBoolean(b) => ["TomlBoolean", b]
+    TomlArray(arr) => ["TomlArray", arr]
+    TomlTable(table) => ["TomlTable", table]
+  }
 }
 
-///| Result type for parsing operations
-pub(all) enum ParseResult[T] {
-  Ok(T)
-  Err(String)
-}
+///|
+pub typealias Result[T, String] as ParseResult[T]
 
 ///| Token types for the lexer
 pub(all) enum Token {

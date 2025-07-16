@@ -2,42 +2,22 @@
 test "complex TOML document" {
   // For now, let's test a simpler version since we haven't implemented [section] syntax yet
   let simple_toml = "title = \"TOML Example\"\nversion = 1.0\nenabled = true\nports = [8000, 8001, 8002]"
-  match @lib.parse(simple_toml) {
-    Ok(result) =>
-      match result {
-        @lib.TomlTable(table) => {
-          inspect(table.size(), content="4")
-
-          // Check title
-          match table.get("title") {
-            Some(@lib.TomlString(value)) =>
-              inspect(value, content="TOML Example")
-            _ => fail("Expected string value for 'title'")
-          }
-
-          // Check version (will be parsed as float)
-          match table.get("version") {
-            Some(@lib.TomlFloat(value)) => inspect(value, content="1")
-            Some(@lib.TomlInteger(value)) => inspect(value, content="1")
-            _ => fail("Expected numeric value for 'version'")
-          }
-
-          // Check enabled boolean
-          match table.get("enabled") {
-            Some(@lib.TomlBoolean(value)) => inspect(value, content="true")
-            _ => fail("Expected boolean value for 'enabled'")
-          }
-
-          // Check ports array
-          match table.get("ports") {
-            Some(@lib.TomlArray(arr)) => inspect(arr.length(), content="3")
-            _ => fail("Expected array value for 'ports'")
-          }
-        }
-        _ => fail("Expected table result")
-      }
-    Err(msg) => fail("Parse failed: " + msg)
-  }
+  @json.inspect(@lib.parse(simple_toml).unwrap(), content=[
+    "TomlTable",
+    {
+      "title": ["TomlString", "TOML Example"],
+      "version": ["TomlFloat", 1],
+      "enabled": ["TomlBoolean", true],
+      "ports": [
+        "TomlArray",
+        [
+          ["TomlInteger", "8000"],
+          ["TomlInteger", "8001"],
+          ["TomlInteger", "8002"],
+        ],
+      ],
+    },
+  ])
 }
 
 ///|
