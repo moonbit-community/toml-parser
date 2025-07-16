@@ -25,7 +25,7 @@ fn Lexer::peek(self : Lexer) -> Char {
   if self.position >= self.input.length() {
     '\u0000' // End of input
   } else {
-    self.input[self.position]
+    self.input.char_at(self.position)
   }
 }
 
@@ -34,7 +34,7 @@ fn Lexer::advance(self : Lexer) -> Char {
   if self.position >= self.input.length() {
     '\u0000'
   } else {
-    let ch = self.input[self.position]
+    let ch = self.input.char_at(self.position)
     self.position = self.position + 1
     if ch == '\n' {
       self.line = self.line + 1
@@ -111,16 +111,14 @@ fn parse_int(s : String) -> Int? {
   let mut result = 0
   let mut i = 0
   let mut negative = false
-  
-  if s[0] == '-' {
+  if s.charcode_at(0) == '-' {
     negative = true
     i = 1
   }
-  
   for j = i; j < len; j = j + 1 {
-    let ch = s[j]
+    let ch = s.charcode_at(j)
     if ch >= '0' && ch <= '9' {
-      let digit = Char::to_int(ch) - Char::to_int('0')
+      let digit = ch - '0'
       result = result * 10 + digit
     } else {
       return None
