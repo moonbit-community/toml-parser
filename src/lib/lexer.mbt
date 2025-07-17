@@ -72,8 +72,8 @@ fn Lexer::read_identifier(self : Lexer) -> String {
 }
 
 ///| Parse a quoted string
-fn Lexer::read_string(self : Lexer) -> ParseResult[String] {
-  let quote_char = self.advance() // consume opening quote
+fn Lexer::read_string(self : Lexer, quote_char : Char) -> ParseResult[String] {
+  ignore (self.advance()) // consume opening quote
   let mut result = ""
   while self.peek() != quote_char && self.peek() != '\u0000' {
     let ch = self.advance()
@@ -221,8 +221,8 @@ fn Lexer::next_token(self : Lexer) -> ParseResult[Token] {
       ignore(self.advance())
       Ok(Dot)
     }
-    '"' | '\'' =>
-      match self.read_string() {
+    '"' | '\'' as quote_char =>
+      match self.read_string(quote_char) {
         Ok(str_val) => Ok(StringToken(str_val))
         Err(msg) => Err(msg)
       }
