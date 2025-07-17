@@ -38,7 +38,7 @@ fn Parser::expect(self : Parser, expected : Token) -> ParseResult[Unit] {
 ///| Skip newline tokens
 fn Parser::skip_newlines(self : Parser) -> Unit {
   while self.peek() == Newline {
-    ignore(self.advance())
+    self.advance()
   }
 }
 
@@ -60,7 +60,7 @@ fn Parser::parse_array(self : Parser) -> ParseResult[TomlValue] {
   let values = Array::new()
   self.skip_newlines()
   if self.peek() == RightBracket {
-    ignore(self.advance()) // consume ]
+    self.advance() // consume ]
     return Ok(TomlArray(values))
   }
   while true {
@@ -71,11 +71,11 @@ fn Parser::parse_array(self : Parser) -> ParseResult[TomlValue] {
     self.skip_newlines()
     match self.peek() {
       Comma => {
-        ignore(self.advance())
+        self.advance()
         self.skip_newlines()
       }
       RightBracket => {
-        ignore(self.advance())
+        self.advance()
         break
       }
       _ => return Err("Expected ',' or ']' in array")
@@ -88,7 +88,7 @@ fn Parser::parse_array(self : Parser) -> ParseResult[TomlValue] {
 fn Parser::parse_inline_table(self : Parser) -> ParseResult[TomlValue] {
   let table = Map::new()
   if self.peek() == RightBrace {
-    ignore(self.advance()) // consume }
+    self.advance() // consume }
     return Ok(TomlTable(table))
   }
   while true {
@@ -111,9 +111,9 @@ fn Parser::parse_inline_table(self : Parser) -> ParseResult[TomlValue] {
       Err(msg) => return Err(msg)
     }
     match self.peek() {
-      Comma => ignore(self.advance())
+      Comma => self.advance()
       RightBrace => {
-        ignore(self.advance())
+        self.advance()
         break
       }
       _ => return Err("Expected ',' or '}' in inline table")

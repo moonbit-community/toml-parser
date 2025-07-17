@@ -21,19 +21,18 @@ fn is_alphanumeric(ch : Char) -> Bool {
 }
 
 ///| Get current character without advancing
-fn Lexer::peek(self : Lexer) -> Char {
+fn Lexer::peek(self : Lexer) -> Char? {
   if self.position >= self.input.length() {
-    '\u0000' // End of input
+    None // End of input
   } else {
-    self.input.char_at(self.position)
+    Some(self.input.char_at(self.position))
   }
 }
 
 ///| Get current character and advance position
-fn Lexer::advance(self : Lexer) -> Char {
-  if self.position >= self.input.length() {
-    '\u0000'
-  } else {
+/// TODO: handle surrogate pairs and multi-byte characters
+fn Lexer::advance(self : Lexer) -> Unit {
+  if self.position < self.input.length() {
     let ch = self.input.char_at(self.position)
     self.position = self.position + 1
     if ch == '\n' {
@@ -42,22 +41,21 @@ fn Lexer::advance(self : Lexer) -> Char {
     } else {
       self.column = self.column + 1
     }
-    ch
   }
 }
 
 ///| Skip whitespace characters
 fn Lexer::skip_whitespace(self : Lexer) -> Unit {
-  while is_whitespace(self.peek()) {
-    ignore(self.advance())
+  while self.peek() is Some(ch) && is_whitespace(ch) {
+    self.advance()
   }
 }
 
 ///| Skip comments (start with #)
 fn Lexer::skip_comment(self : Lexer) -> Unit {
-  if self.peek() == '#' {
-    while self.peek() != '\n' && self.peek() != '\u0000' {
-      ignore(self.advance())
+  if self.peek() is Some('#') {
+    while self.peek() is Some(ch) && ch != '\n' {
+      self.advance()
     }
   }
 }
@@ -65,37 +63,45 @@ fn Lexer::skip_comment(self : Lexer) -> Unit {
 ///| Parse an identifier or keyword
 fn Lexer::read_identifier(self : Lexer) -> String {
   let mut result = ""
-  while is_alphanumeric(self.peek()) || self.peek() == '-' {
-    result = result + Char::to_string(self.advance())
+  while self.peek() is Some(ch) && (is_alphanumeric(ch) || ch == '-') {
+    self.advance()
+    result = result + Char::to_string(ch)
   }
   result
 }
 
 ///| Parse a quoted string
 fn Lexer::read_string(self : Lexer, quote_char : Char) -> ParseResult[String] {
-  ignore (self.advance()) // consume opening quote
+  self.advance() // consume opening quote
   let mut result = ""
-  while self.peek() != quote_char && self.peek() != '\u0000' {
-    let ch = self.advance()
+  while self.peek() is Some(ch) && ch != quote_char {
+    self.advance() // consume character`  
     if ch == '\\' {
       // Handle escape sequences
-      let escaped = self.advance()
-      match escaped {
-        'n' => result = result + "\n"
-        't' => result = result + "\t"
-        'r' => result = result + "\r"
-        '\\' => result = result + "\\"
-        '"' => result = result + "\""
-        '\'' => result = result + "'"
-        _ =>
-          return Err("Invalid escape sequence: \\" + Char::to_string(escaped))
+      match self.peek() {
+        Some(escaped) => {
+          self.advance() // consume escape character  
+          match escaped {
+            'n' => result = result + "\n"
+            't' => result = result + "\t"
+            'r' => result = result + "\r"
+            '\\' => result = result + "\\"
+            '"' => result = result + "\""
+            '\'' => result = result + "'"
+            _ =>
+              return Err(
+                "Invalid escape sequence: \\" + Char::to_string(escaped),
+              )
+          }
+        }
+        None => return Err("Unexpected end of input after escape character")
       }
     } else {
       result = result + Char::to_string(ch)
     }
   }
-  if self.peek() == quote_char {
-    ignore(self.advance()) // consume closing quote
+  if self.peek() is Some(x) && x == quote_char {
+    self.advance() // consume closing quote
     Ok(result)
   } else {
     Err("Unterminated string")
@@ -155,16 +161,19 @@ fn Lexer::read_number(self : Lexer) -> ParseResult[Token] {
   let mut is_float = false
 
   // Read digits
-  while is_numeric(self.peek()) {
-    num_str = num_str + Char::to_string(self.advance())
+  while self.peek() is Some(ch) && is_numeric(ch) {
+    self.advance()
+    num_str = num_str + Char::to_string(ch)
   }
 
   // Check for decimal point
-  if self.peek() == '.' {
+  if self.peek() is Some('.') {
     is_float = true
-    num_str = num_str + Char::to_string(self.advance())
-    while is_numeric(self.peek()) {
-      num_str = num_str + Char::to_string(self.advance())
+    self.advance()
+    num_str = num_str + Char::to_string('.')
+    while self.peek() is Some(ch) && is_numeric(ch) {
+      self.advance()
+      num_str = num_str + Char::to_string(ch)
     }
   }
   if is_float {
@@ -184,49 +193,51 @@ fn Lexer::read_number(self : Lexer) -> ParseResult[Token] {
 fn Lexer::next_token(self : Lexer) -> ParseResult[Token] {
   self.skip_whitespace()
   self.skip_comment()
-  let ch = self.peek()
-  if ch == '\u0000' {
-    return Ok(EOF)
-  }
-  if ch == '\n' {
-    ignore(self.advance())
-    return Ok(Newline)
-  }
-  match ch {
-    '[' => {
-      ignore(self.advance())
-      Ok(LeftBracket)
+  match self.peek() {
+    None => return Ok(EOF)
+    Some('\n') => {
+      self.advance()
+      return Ok(Newline)
     }
-    ']' => {
-      ignore(self.advance())
-      Ok(RightBracket)
+    Some('[') => {
+      self.advance()
+      return Ok(LeftBracket)
     }
-    '{' => {
-      ignore(self.advance())
-      Ok(LeftBrace)
+    Some(']') => {
+      self.advance()
+      return Ok(RightBracket)
     }
-    '}' => {
-      ignore(self.advance())
-      Ok(RightBrace)
+    Some('{') => {
+      self.advance()
+      return Ok(LeftBrace)
     }
-    '=' => {
-      ignore(self.advance())
-      Ok(Equals)
+    Some('}') => {
+      self.advance()
+      return Ok(RightBrace)
     }
-    ',' => {
-      ignore(self.advance())
-      Ok(Comma)
+    Some('=') => {
+      self.advance()
+      return Ok(Equals)
     }
-    '.' => {
-      ignore(self.advance())
-      Ok(Dot)
+    Some(',') => {
+      self.advance()
+      return Ok(Comma)
     }
-    '"' | '\'' as quote_char =>
-      match self.read_string(quote_char) {
+    Some('.') => {
+      self.advance()
+      return Ok(Dot)
+    }
+    Some('"') =>
+      match self.read_string('"') {
         Ok(str_val) => Ok(StringToken(str_val))
         Err(msg) => Err(msg)
       }
-    _ =>
+    Some('\'') =>
+      match self.read_string('\'') {
+        Ok(str_val) => Ok(StringToken(str_val))
+        Err(msg) => Err(msg)
+      }
+    Some(ch) =>
       if is_numeric(ch) {
         self.read_number()
       } else if is_alpha(ch) {
