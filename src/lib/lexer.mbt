@@ -25,7 +25,7 @@ fn Lexer::peek(self : Lexer) -> Char? {
   if self.position >= self.input.length() {
     None // End of input
   } else {
-    Some(self.input.char_at(self.position))
+    Some(self.input.get_char(self.position).unwrap())
   }
 }
 
@@ -33,7 +33,7 @@ fn Lexer::peek(self : Lexer) -> Char? {
 /// TODO: handle surrogate pairs and multi-byte characters
 fn Lexer::advance(self : Lexer) -> Unit {
   if self.position < self.input.length() {
-    let ch = self.input.char_at(self.position)
+    let ch = self.input.get_char(self.position).unwrap()
     self.position = self.position + 1
     if ch == '\n' {
       self.line = self.line + 1
@@ -117,12 +117,12 @@ fn parse_int(s : String) -> Int? {
   let mut result = 0
   let mut i = 0
   let mut negative = false
-  if s.charcode_at(0) == '-' {
+  if s[0] == '-' {
     negative = true
     i = 1
   }
   for j = i; j < len; j = j + 1 {
-    let ch = s.charcode_at(j)
+    let ch = s[j]
     if ch >= '0' && ch <= '9' {
       let digit = ch - '0'
       result = result * 10 + digit
