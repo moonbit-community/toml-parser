@@ -285,10 +285,9 @@ fn Lexer::next_token(self : Lexer) -> ParseResult[Token] {
         let saved_pos = self.position
         self.advance() // consume the '-'
         match self.peek() {
-          Some(next_ch) if is_numeric(next_ch) => {
+          Some(next_ch) if is_numeric(next_ch) =>
             // This is a negative number, read it
             self.read_negative_number()
-          }
           _ => {
             // Not a negative number, restore position and error
             self.position = saved_pos
