@@ -36,7 +36,54 @@ test "nested arrays and mixed types" {
     #|booleans = [true, false, true]
     #|floats = [1.1, 2.2, 3.3]
     #|
-  @json.inspect(@lib.parse(complex_toml).unwrap(), content=(["TomlTable",{"mixed_array":["TomlArray",[["TomlInteger","1"],["TomlString","hello"],["TomlBoolean",true],["TomlFloat",3.14]]],"nested_array":["TomlArray",[["TomlArray",[["TomlInteger","1"],["TomlInteger","2"]]],["TomlArray",[["TomlString","a"],["TomlString","b"]]],["TomlArray",[["TomlBoolean",true],["TomlBoolean",false]]]]],"numbers":["TomlArray",[["TomlInteger","1"],["TomlInteger","2"],["TomlInteger","3"],["TomlInteger","4"],["TomlInteger","5"]]],"strings":["TomlArray",[["TomlString","red"],["TomlString","yellow"],["TomlString","green"]]],"booleans":["TomlArray",[["TomlBoolean",true],["TomlBoolean",false],["TomlBoolean",true]]],"floats":["TomlArray",[["TomlFloat",1.1],["TomlFloat",2.2],["TomlFloat",3.3]]]}]))
+  @json.inspect(@lib.parse(complex_toml).unwrap(), content=[
+    "TomlTable",
+    {
+      "mixed_array": [
+        "TomlArray",
+        [
+          ["TomlInteger", "1"],
+          ["TomlString", "hello"],
+          ["TomlBoolean", true],
+          ["TomlFloat", 3.14],
+        ],
+      ],
+      "nested_array": [
+        "TomlArray",
+        [
+          ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"]]],
+          ["TomlArray", [["TomlString", "a"], ["TomlString", "b"]]],
+          ["TomlArray", [["TomlBoolean", true], ["TomlBoolean", false]]],
+        ],
+      ],
+      "numbers": [
+        "TomlArray",
+        [
+          ["TomlInteger", "1"],
+          ["TomlInteger", "2"],
+          ["TomlInteger", "3"],
+          ["TomlInteger", "4"],
+          ["TomlInteger", "5"],
+        ],
+      ],
+      "strings": [
+        "TomlArray",
+        [
+          ["TomlString", "red"],
+          ["TomlString", "yellow"],
+          ["TomlString", "green"],
+        ],
+      ],
+      "booleans": [
+        "TomlArray",
+        [["TomlBoolean", true], ["TomlBoolean", false], ["TomlBoolean", true]],
+      ],
+      "floats": [
+        "TomlArray",
+        [["TomlFloat", 1.1], ["TomlFloat", 2.2], ["TomlFloat", 3.3]],
+      ],
+    },
+  ])
 }
 
 ///| Test inline tables and nesting
@@ -46,7 +93,41 @@ test "inline tables and nesting" {
     #|database = {name = "mydb", user = "admin", settings = {timeout = 30, pool_size = 10}}
     #|endpoints = ["/api/v1", "/api/v2", "/health"]
     #|
-  @json.inspect(@lib.parse(inline_toml).unwrap(), content=(["TomlTable",{"server":["TomlTable",{"host":["TomlString","localhost"],"port":["TomlInteger","8080"],"enabled":["TomlBoolean",true]}],"database":["TomlTable",{"name":["TomlString","mydb"],"user":["TomlString","admin"],"settings":["TomlTable",{"timeout":["TomlInteger","30"],"pool_size":["TomlInteger","10"]}]}],"endpoints":["TomlArray",[["TomlString","/api/v1"],["TomlString","/api/v2"],["TomlString","/health"]]]}]))
+  @json.inspect(@lib.parse(inline_toml).unwrap(), content=[
+    "TomlTable",
+    {
+      "server": [
+        "TomlTable",
+        {
+          "host": ["TomlString", "localhost"],
+          "port": ["TomlInteger", "8080"],
+          "enabled": ["TomlBoolean", true],
+        },
+      ],
+      "database": [
+        "TomlTable",
+        {
+          "name": ["TomlString", "mydb"],
+          "user": ["TomlString", "admin"],
+          "settings": [
+            "TomlTable",
+            {
+              "timeout": ["TomlInteger", "30"],
+              "pool_size": ["TomlInteger", "10"],
+            },
+          ],
+        },
+      ],
+      "endpoints": [
+        "TomlArray",
+        [
+          ["TomlString", "/api/v1"],
+          ["TomlString", "/api/v2"],
+          ["TomlString", "/health"],
+        ],
+      ],
+    },
+  ])
 }
 
 ///| Test realistic application configuration
@@ -60,7 +141,35 @@ test "application configuration" {
     #|allowed_hosts = ["127.0.0.1", "localhost", "example.com"]
     #|features = {logging = true, metrics = false, caching = {enabled = true, ttl = 300}}
     #|
-  @json.inspect(@lib.parse(app_config).unwrap(), content=(["TomlTable",{"app_name":["TomlString","WebServer"],"version":["TomlString","1.2.3"],"debug":["TomlBoolean",false],"max_connections":["TomlInteger","1000"],"timeout":["TomlFloat",30.5],"allowed_hosts":["TomlArray",[["TomlString","127.0.0.1"],["TomlString","localhost"],["TomlString","example.com"]]],"features":["TomlTable",{"logging":["TomlBoolean",true],"metrics":["TomlBoolean",false],"caching":["TomlTable",{"enabled":["TomlBoolean",true],"ttl":["TomlInteger","300"]}]}]}]))
+  @json.inspect(@lib.parse(app_config).unwrap(), content=[
+    "TomlTable",
+    {
+      "app_name": ["TomlString", "WebServer"],
+      "version": ["TomlString", "1.2.3"],
+      "debug": ["TomlBoolean", false],
+      "max_connections": ["TomlInteger", "1000"],
+      "timeout": ["TomlFloat", 30.5],
+      "allowed_hosts": [
+        "TomlArray",
+        [
+          ["TomlString", "127.0.0.1"],
+          ["TomlString", "localhost"],
+          ["TomlString", "example.com"],
+        ],
+      ],
+      "features": [
+        "TomlTable",
+        {
+          "logging": ["TomlBoolean", true],
+          "metrics": ["TomlBoolean", false],
+          "caching": [
+            "TomlTable",
+            { "enabled": ["TomlBoolean", true], "ttl": ["TomlInteger", "300"] },
+          ],
+        },
+      ],
+    },
+  ])
 }
 
 ///| Test string escaping and special characters
@@ -75,7 +184,26 @@ test "advanced string handling" {
     #|single_quotes = 'Single quoted string'
     #|mixed = ["double", 'single', "escaped\"quote"]
     #|
-  @json.inspect(@lib.parse(string_tests).unwrap(), content=(["TomlTable",{"basic":["TomlString","simple string"],"with_quotes":["TomlString","I said \"Hello World\""],"with_escapes":["TomlString","Line 1\nLine 2\tTabbed"],"with_backslash":["TomlString","C:\\Users\\Name"],"unicode_like":["TomlString","café"],"empty":["TomlString",""],"single_quotes":["TomlString","Single quoted string"],"mixed":["TomlArray",[["TomlString","double"],["TomlString","single"],["TomlString","escaped\"quote"]]]}]))
+  @json.inspect(@lib.parse(string_tests).unwrap(), content=[
+    "TomlTable",
+    {
+      "basic": ["TomlString", "simple string"],
+      "with_quotes": ["TomlString", "I said \"Hello World\""],
+      "with_escapes": ["TomlString", "Line 1\nLine 2\tTabbed"],
+      "with_backslash": ["TomlString", "C:\\Users\\Name"],
+      "unicode_like": ["TomlString", "café"],
+      "empty": ["TomlString", ""],
+      "single_quotes": ["TomlString", "Single quoted string"],
+      "mixed": [
+        "TomlArray",
+        [
+          ["TomlString", "double"],
+          ["TomlString", "single"],
+          ["TomlString", "escaped\"quote"],
+        ],
+      ],
+    },
+  ])
 }
 
 ///| Test numerical edge cases
@@ -88,7 +216,26 @@ test "numerical edge cases" {
     #|large_float = 1000000.999999
     #|mixed_numbers = [0, 1, 42, 3.14, 2.5, 0.0]
     #|
-  @json.inspect(@lib.parse(number_tests).unwrap(), content=(["TomlTable",{"zero":["TomlInteger","0"],"positive":["TomlInteger","42"],"small_float":["TomlFloat",0.1],"large_float":["TomlFloat",1000000.999999],"mixed_numbers":["TomlArray",[["TomlInteger","0"],["TomlInteger","1"],["TomlInteger","42"],["TomlFloat",3.14],["TomlFloat",2.5],["TomlFloat",0]]]}]))
+  @json.inspect(@lib.parse(number_tests).unwrap(), content=[
+    "TomlTable",
+    {
+      "zero": ["TomlInteger", "0"],
+      "positive": ["TomlInteger", "42"],
+      "small_float": ["TomlFloat", 0.1],
+      "large_float": ["TomlFloat", 1000000.999999],
+      "mixed_numbers": [
+        "TomlArray",
+        [
+          ["TomlInteger", "0"],
+          ["TomlInteger", "1"],
+          ["TomlInteger", "42"],
+          ["TomlFloat", 3.14],
+          ["TomlFloat", 2.5],
+          ["TomlFloat", 0],
+        ],
+      ],
+    },
+  ])
 }
 
 ///| Test negative numbers (now supported!)
@@ -199,65 +346,120 @@ test "microservice configuration" {
     #|health_check = {endpoint = "/health", interval = 10, timeout = 5.0}
     #|rate_limiting = {enabled = true, requests_per_minute = 1000, burst = 50}
     #|
-  @json.inspect(@lib.parse(microservice_config).unwrap(), content=(["TomlTable",{"service_name":["TomlString","user-service"],"version":["TomlString","2.1.0"],"environment":["TomlString","production"],"http":["TomlTable",{"port":["TomlInteger","8080"],"host":["TomlString","0.0.0.0"],"timeout":["TomlFloat",30]}],"database":["TomlTable",{"url":["TomlString","postgresql://localhost:5432/users"],"max_connections":["TomlInteger","20"],"retry_attempts":["TomlInteger","3"]}],"redis":["TomlTable",{"enabled":["TomlBoolean",true],"host":["TomlString","redis-cluster"],"port":["TomlInteger","6379"],"db":["TomlInteger","0"]}],"logging":["TomlTable",{"level":["TomlString","INFO"],"format":["TomlString","json"],"outputs":["TomlArray",[["TomlString","stdout"],["TomlString","file"]]]}],"metrics":["TomlTable",{"enabled":["TomlBoolean",true],"port":["TomlInteger","9090"],"path":["TomlString","/metrics"]}],"health_check":["TomlTable",{"endpoint":["TomlString","/health"],"interval":["TomlInteger","10"],"timeout":["TomlFloat",5]}],"rate_limiting":["TomlTable",{"enabled":["TomlBoolean",true],"requests_per_minute":["TomlInteger","1000"],"burst":["TomlInteger","50"]}]}]))
+  @json.inspect(@lib.parse(microservice_config).unwrap(), content=[
+    "TomlTable",
+    {
+      "service_name": ["TomlString", "user-service"],
+      "version": ["TomlString", "2.1.0"],
+      "environment": ["TomlString", "production"],
+      "http": [
+        "TomlTable",
+        {
+          "port": ["TomlInteger", "8080"],
+          "host": ["TomlString", "0.0.0.0"],
+          "timeout": ["TomlFloat", 30],
+        },
+      ],
+      "database": [
+        "TomlTable",
+        {
+          "url": ["TomlString", "postgresql://localhost:5432/users"],
+          "max_connections": ["TomlInteger", "20"],
+          "retry_attempts": ["TomlInteger", "3"],
+        },
+      ],
+      "redis": [
+        "TomlTable",
+        {
+          "enabled": ["TomlBoolean", true],
+          "host": ["TomlString", "redis-cluster"],
+          "port": ["TomlInteger", "6379"],
+          "db": ["TomlInteger", "0"],
+        },
+      ],
+      "logging": [
+        "TomlTable",
+        {
+          "level": ["TomlString", "INFO"],
+          "format": ["TomlString", "json"],
+          "outputs": [
+            "TomlArray",
+            [["TomlString", "stdout"], ["TomlString", "file"]],
+          ],
+        },
+      ],
+      "metrics": [
+        "TomlTable",
+        {
+          "enabled": ["TomlBoolean", true],
+          "port": ["TomlInteger", "9090"],
+          "path": ["TomlString", "/metrics"],
+        },
+      ],
+      "health_check": [
+        "TomlTable",
+        {
+          "endpoint": ["TomlString", "/health"],
+          "interval": ["TomlInteger", "10"],
+          "timeout": ["TomlFloat", 5],
+        },
+      ],
+      "rate_limiting": [
+        "TomlTable",
+        {
+          "enabled": ["TomlBoolean", true],
+          "requests_per_minute": ["TomlInteger", "1000"],
+          "burst": ["TomlInteger", "50"],
+        },
+      ],
+    },
+  ])
 }
 
-///|
+///| Test error handling with expect tests
 test "error handling" {
-  // Test various error conditions
-
+  // Test various error conditions by inspecting Result types directly
+  
   // Missing value
-  match @lib.parse("key =") {
-    Ok(_) => fail("Should fail on missing value")
-    Err(msg) =>
-      // Should get an error message
-      inspect(msg.length() > 0, content="true")
-  }
-
+  @json.inspect(@lib.parse("key ="), content=({"Err":"Expected value"}))
+  
   // Missing key
-  match @lib.parse("= \"value\"") {
-    Ok(_) => fail("Should fail on missing key")
-    Err(msg) =>
-      // Should get an error message  
-      inspect(msg.length() > 0, content="true")
-  }
-
+  @json.inspect(@lib.parse("= \"value\""), content=({"Err":"Expected key"}))
+  
   // Unterminated string
-  match @lib.parse("key = \"unterminated") {
-    Ok(_) => fail("Should fail on unterminated string")
-    Err(msg) =>
-      // Should get an error message
-      inspect(msg.length() > 0, content="true")
-  }
+  @json.inspect(@lib.parse("key = \"unterminated"), content=({"Err":"Tokenization error: Unterminated string"}))
+  
+  // Invalid syntax - incomplete array
+  @json.inspect(@lib.parse("key = [1, 2"), content=({"Err":"Expected ',' or ']' in array"}))
+  
+  // Empty key
+  @json.inspect(@lib.parse(" = \"value\""), content=({"Err":"Expected key"}))
 }
 
-///|
+///| Test edge cases with expect tests
 test "edge cases" {
-  // Empty input  
-  match @lib.parse("") {
-    Ok(@lib.TomlTable(table)) => inspect(table.size(), content="0")
-    _ => fail("Empty input should result in empty table")
-  }
+  // Empty input should result in empty table
+  @json.inspect(@lib.parse("").unwrap(), content=(["TomlTable",{}]))
 
-  // Only comments and whitespace
-  match @lib.parse("# Just a comment\n  \n# Another comment") {
-    Ok(@lib.TomlTable(table)) => inspect(table.size(), content="0")
-    _ => fail("Comments and whitespace should result in empty table")
-  }
+  // Only comments and whitespace should result in empty table
+  @json.inspect(@lib.parse("# Just a comment\n  \n# Another comment").unwrap(), content=(["TomlTable",{}]))
 
-  // Mixed quotes
-  match @lib.parse("single = 'value'\ndouble = \"value\"") {
-    Ok(@lib.TomlTable(table)) => {
-      inspect(table.size(), content="2")
-      match table.get("single") {
-        Some(@lib.TomlString(value)) => inspect(value, content="value")
-        _ => fail("Expected string value for 'single'")
-      }
-      match table.get("double") {
-        Some(@lib.TomlString(value)) => inspect(value, content="value")
-        _ => fail("Expected string value for 'double'")
-      }
-    }
-    _ => fail("Mixed quotes should parse correctly")
-  }
+  // Mixed single and double quotes should parse correctly
+  @json.inspect(@lib.parse("single = 'value'\ndouble = \"value\"").unwrap(), content=(["TomlTable",{"single":["TomlString","value"],"double":["TomlString","value"]}]))
+
+  // Whitespace around equals sign
+  @json.inspect(@lib.parse("spaced   =   \"value\"  ").unwrap(), content=(["TomlTable",{"spaced":["TomlString","value"]}]))
+
+  // Multiple newlines and comments
+  let complex_whitespace =
+    #|# Top comment
+    #|
+    #|key1 = "value1"
+    #|
+    #|# Middle comment
+    #|
+    #|key2 = "value2"
+    #|# End comment
+    #|
+  @json.inspect(@lib.parse(complex_whitespace).unwrap(), content=(["TomlTable",{"key1":["TomlString","value1"],"key2":["TomlString","value2"]}]))
 }
