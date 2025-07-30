@@ -183,9 +183,8 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> ParseResult[Token] {
     }
   }
   if is_float {
-    match parse_double(num_str) {
-      Some(val) => Ok(FloatToken(val))
-      None => Err("Invalid float: " + num_str)
+    Ok(FloatToken(@strconv.parse_double(num_str))) catch {
+      _ => Err("Invalid float: " + num_str)
     }
   } else {
     match parse_int(num_str) {

@@ -266,7 +266,7 @@ test "negative numbers" {
         ],
       ],
       "extreme_negative": ["TomlInteger", "1"],
-      "small_negative": ["TomlFloat", 0.001],
+      "small_negative": ["TomlFloat", -0.001],
     },
   ])
 }
@@ -327,7 +327,7 @@ test "negative numbers in context" {
     {
       "min_temp": ["TomlInteger", "-40"],
       "max_debt": ["TomlFloat", -1000.5],
-      "adjustment": ["TomlFloat", 0.1],
+      "adjustment": ["TomlFloat", -0.1],
     },
   ])
 }
