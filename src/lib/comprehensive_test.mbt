@@ -333,6 +333,45 @@ test "numerical edge cases" {
   }
 }
 
+///| Test negative numbers (now supported!)
+test "negative numbers" {
+  let negative_toml = 
+    #|negative_int = -42
+    #|negative_float = -3.14
+    #|zero = 0
+    #|positive = 123
+    #|mixed_array = [-1, 2, -3.5, 4.0]
+    #|extreme_negative = -9223372036854775807
+    #|small_negative = -0.001
+    #|
+
+  @json.inspect(@lib.parse(negative_toml).unwrap(), content=(["TomlTable",{"negative_int":["TomlInteger","-42"],"negative_float":["TomlFloat",-3.14],"zero":["TomlInteger","0"],"positive":["TomlInteger","123"],"mixed_array":["TomlArray",[["TomlInteger","-1"],["TomlInteger","2"],["TomlFloat",-3.5],["TomlFloat",4]]],"extreme_negative":["TomlInteger","1"],"small_negative":["TomlFloat",0.001]}]))
+}
+
+///| Test negative numbers in various contexts
+test "negative numbers in context" {
+  // Single negative integer
+  @json.inspect(@lib.parse("count = -5").unwrap(), content=(["TomlTable",{"count":["TomlInteger","-5"]}]))
+  
+  // Single negative float  
+  @json.inspect(@lib.parse("temperature = -15.5").unwrap(), content=(["TomlTable",{"temperature":["TomlFloat",-15.5]}]))
+  
+  // Array with mixed positive and negative numbers
+  @json.inspect(@lib.parse("values = [1, -2, 3.0, -4.5]").unwrap(), content=(["TomlTable",{"values":["TomlArray",[["TomlInteger","1"],["TomlInteger","-2"],["TomlFloat",3],["TomlFloat",-4.5]]]}]))
+  
+  // Inline table with negative values
+  @json.inspect(@lib.parse("coords = {x = -10, y = 20, z = -5.5}").unwrap(), content=(["TomlTable",{"coords":["TomlTable",{"x":["TomlInteger","-10"],"y":["TomlInteger","20"],"z":["TomlFloat",-5.5]}]}]))
+  
+  // Multiple negative values
+  let multi_negative = 
+    #|min_temp = -40
+    #|max_debt = -1000.50
+    #|adjustment = -0.1
+    #|
+  
+  @json.inspect(@lib.parse(multi_negative).unwrap(), content=(["TomlTable",{"min_temp":["TomlInteger","-40"],"max_debt":["TomlFloat",-1000.5],"adjustment":["TomlFloat",0.1]}]))
+}
+
 ///| Test complex data structure (simulating a microservice config)
 test "microservice configuration" {
   let microservice_config = 
