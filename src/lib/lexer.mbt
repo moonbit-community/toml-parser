@@ -161,43 +161,9 @@ fn parse_double(s : String) -> Double? {
   }
 }
 
-///| Parse a number (integer or float)
-fn Lexer::read_number(self : Lexer) -> ParseResult[Token] {
-  let mut num_str = ""
-  let mut is_float = false
-
-  // Read digits
-  while self.peek() is Some(ch) && is_numeric(ch) {
-    self.advance()
-    num_str = num_str + Char::to_string(ch)
-  }
-
-  // Check for decimal point
-  if self.peek() is Some('.') {
-    is_float = true
-    self.advance()
-    num_str = num_str + Char::to_string('.')
-    while self.peek() is Some(ch) && is_numeric(ch) {
-      self.advance()
-      num_str = num_str + Char::to_string(ch)
-    }
-  }
-  if is_float {
-    match parse_double(num_str) {
-      Some(val) => Ok(FloatToken(val))
-      None => Err("Invalid float: " + num_str)
-    }
-  } else {
-    match parse_int(num_str) {
-      Some(val) => Ok(IntegerToken(val.to_int64()))
-      None => Err("Invalid integer: " + num_str)
-    }
-  }
-}
-
-///| Parse a negative number (integer or float)
-fn Lexer::read_negative_number(self : Lexer) -> ParseResult[Token] {
-  let mut num_str = "-" // Start with the negative sign
+///| Parse a number (integer or float), with optional negative sign
+fn Lexer::read_number(self : Lexer, is_negative : Bool) -> ParseResult[Token] {
+  let mut num_str = if is_negative { "-" } else { "" }
   let mut is_float = false
 
   // Read digits
@@ -279,7 +245,7 @@ fn Lexer::next_token(self : Lexer) -> ParseResult[Token] {
       }
     Some(ch) =>
       if is_numeric(ch) {
-        self.read_number()
+        self.read_number(false)
       } else if ch == '-' {
         // Check if this is a negative number
         let saved_pos = self.position
@@ -287,7 +253,7 @@ fn Lexer::next_token(self : Lexer) -> ParseResult[Token] {
         match self.peek() {
           Some(next_ch) if is_numeric(next_ch) =>
             // This is a negative number, read it
-            self.read_negative_number()
+            self.read_number(true)
           _ => {
             // Not a negative number, restore position and error
             self.position = saved_pos

@@ -419,36 +419,49 @@ test "microservice configuration" {
 ///| Test error handling with expect tests
 test "error handling" {
   // Test various error conditions by inspecting Result types directly
-  
+
   // Missing value
-  @json.inspect(@lib.parse("key ="), content=({"Err":"Expected value"}))
-  
+  @json.inspect(@lib.parse("key ="), content={ "Err": "Expected value" })
+
   // Missing key
-  @json.inspect(@lib.parse("= \"value\""), content=({"Err":"Expected key"}))
-  
+  @json.inspect(@lib.parse("= \"value\""), content={ "Err": "Expected key" })
+
   // Unterminated string
-  @json.inspect(@lib.parse("key = \"unterminated"), content=({"Err":"Tokenization error: Unterminated string"}))
-  
+  @json.inspect(@lib.parse("key = \"unterminated"), content={
+    "Err": "Tokenization error: Unterminated string",
+  })
+
   // Invalid syntax - incomplete array
-  @json.inspect(@lib.parse("key = [1, 2"), content=({"Err":"Expected ',' or ']' in array"}))
-  
+  @json.inspect(@lib.parse("key = [1, 2"), content={
+    "Err": "Expected ',' or ']' in array",
+  })
+
   // Empty key
-  @json.inspect(@lib.parse(" = \"value\""), content=({"Err":"Expected key"}))
+  @json.inspect(@lib.parse(" = \"value\""), content={ "Err": "Expected key" })
 }
 
 ///| Test edge cases with expect tests
 test "edge cases" {
   // Empty input should result in empty table
-  @json.inspect(@lib.parse("").unwrap(), content=(["TomlTable",{}]))
+  @json.inspect(@lib.parse("").unwrap(), content=["TomlTable", {}])
 
   // Only comments and whitespace should result in empty table
-  @json.inspect(@lib.parse("# Just a comment\n  \n# Another comment").unwrap(), content=(["TomlTable",{}]))
+  @json.inspect(
+    @lib.parse("# Just a comment\n  \n# Another comment").unwrap(),
+    content=["TomlTable", {}],
+  )
 
   // Mixed single and double quotes should parse correctly
-  @json.inspect(@lib.parse("single = 'value'\ndouble = \"value\"").unwrap(), content=(["TomlTable",{"single":["TomlString","value"],"double":["TomlString","value"]}]))
+  @json.inspect(@lib.parse("single = 'value'\ndouble = \"value\"").unwrap(), content=[
+    "TomlTable",
+    { "single": ["TomlString", "value"], "double": ["TomlString", "value"] },
+  ])
 
   // Whitespace around equals sign
-  @json.inspect(@lib.parse("spaced   =   \"value\"  ").unwrap(), content=(["TomlTable",{"spaced":["TomlString","value"]}]))
+  @json.inspect(@lib.parse("spaced   =   \"value\"  ").unwrap(), content=[
+    "TomlTable",
+    { "spaced": ["TomlString", "value"] },
+  ])
 
   // Multiple newlines and comments
   let complex_whitespace =
@@ -461,5 +474,8 @@ test "edge cases" {
     #|key2 = "value2"
     #|# End comment
     #|
-  @json.inspect(@lib.parse(complex_whitespace).unwrap(), content=(["TomlTable",{"key1":["TomlString","value1"],"key2":["TomlString","value2"]}]))
+  @json.inspect(@lib.parse(complex_whitespace).unwrap(), content=[
+    "TomlTable",
+    { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
+  ])
 }
