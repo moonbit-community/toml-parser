@@ -133,34 +133,6 @@ fn parse_int(s : String) -> Int? {
   Some(if negative { -result } else { result })
 }
 
-///| Simple double parsing function (very basic)
-fn parse_double(s : String) -> Double? {
-  // This is a simplified implementation
-  // In a real implementation, you'd want more robust parsing
-  let parts_arr = Array::new()
-  s.split(".").each(fn(part) { parts_arr.push(part.to_string()) })
-  if parts_arr.length() != 2 {
-    return None
-  }
-  match (parse_int(parts_arr[0]), parse_int(parts_arr[1])) {
-    (Some(int_part), Some(frac_part)) => {
-      let frac_len = parts_arr[1].length()
-      let mut divisor = 1.0
-      for i = 0; i < frac_len; i = i + 1 {
-        divisor = divisor * 10.0
-      }
-      let frac_value = frac_part.to_double() / divisor
-      // For negative numbers, subtract the fractional part
-      if int_part < 0 {
-        Some(int_part.to_double() - frac_value)
-      } else {
-        Some(int_part.to_double() + frac_value)
-      }
-    }
-    _ => None
-  }
-}
-
 ///| Parse a number (integer or float), with optional negative sign
 fn Lexer::read_number(self : Lexer, is_negative : Bool) -> ParseResult[Token] {
   let mut num_str = if is_negative { "-" } else { "" }
