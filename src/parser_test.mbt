@@ -1,12 +1,12 @@
 ///| Tests for the TOML parser
 test "parse simple key-value string" {
-  match @lib.parse("name = \"John\"") {
+  match @toml.parse("name = \"John\"") {
     Ok(result) =>
       match result {
-        @lib.TomlTable(table) => {
+        @toml.TomlTable(table) => {
           inspect(table.size(), content="1")
           match table.get("name") {
-            Some(@lib.TomlString(value)) => inspect(value, content="John")
+            Some(@toml.TomlString(value)) => inspect(value, content="John")
             _ => fail("Expected string value for 'name'")
           }
         }
@@ -18,13 +18,13 @@ test "parse simple key-value string" {
 
 ///|
 test "parse simple key-value integer" {
-  match @lib.parse("age = 25") {
+  match @toml.parse("age = 25") {
     Ok(result) =>
       match result {
-        @lib.TomlTable(table) => {
+        @toml.TomlTable(table) => {
           inspect(table.size(), content="1")
           match table.get("age") {
-            Some(@lib.TomlInteger(value)) => inspect(value, content="25")
+            Some(@toml.TomlInteger(value)) => inspect(value, content="25")
             _ => fail("Expected integer value for 'age'")
           }
         }
@@ -36,13 +36,13 @@ test "parse simple key-value integer" {
 
 ///|
 test "parse simple key-value boolean" {
-  match @lib.parse("enabled = true") {
+  match @toml.parse("enabled = true") {
     Ok(result) =>
       match result {
-        @lib.TomlTable(table) => {
+        @toml.TomlTable(table) => {
           inspect(table.size(), content="1")
           match table.get("enabled") {
-            Some(@lib.TomlBoolean(value)) => inspect(value, content="true")
+            Some(@toml.TomlBoolean(value)) => inspect(value, content="true")
             _ => fail("Expected boolean value for 'enabled'")
           }
         }
@@ -54,13 +54,13 @@ test "parse simple key-value boolean" {
 
 ///|
 test "parse simple key-value float" {
-  match @lib.parse("pi = 3.14") {
+  match @toml.parse("pi = 3.14") {
     Ok(result) =>
       match result {
-        @lib.TomlTable(table) => {
+        @toml.TomlTable(table) => {
           inspect(table.size(), content="1")
           match table.get("pi") {
-            Some(@lib.TomlFloat(value)) => inspect(value, content="3.14")
+            Some(@toml.TomlFloat(value)) => inspect(value, content="3.14")
             _ => fail("Expected float value for 'pi'")
           }
         }
@@ -72,21 +72,21 @@ test "parse simple key-value float" {
 
 ///|
 test "parse multiple key-value pairs" {
-  match @lib.parse("name = \"Alice\"\nage = 30\nenabled = false") {
+  match @toml.parse("name = \"Alice\"\nage = 30\nenabled = false") {
     Ok(result) =>
       match result {
-        @lib.TomlTable(table) => {
+        @toml.TomlTable(table) => {
           inspect(table.size(), content="3")
           match table.get("name") {
-            Some(@lib.TomlString(value)) => inspect(value, content="Alice")
+            Some(@toml.TomlString(value)) => inspect(value, content="Alice")
             _ => fail("Expected string value for 'name'")
           }
           match table.get("age") {
-            Some(@lib.TomlInteger(value)) => inspect(value, content="30")
+            Some(@toml.TomlInteger(value)) => inspect(value, content="30")
             _ => fail("Expected integer value for 'age'")
           }
           match table.get("enabled") {
-            Some(@lib.TomlBoolean(value)) => inspect(value, content="false")
+            Some(@toml.TomlBoolean(value)) => inspect(value, content="false")
             _ => fail("Expected boolean value for 'enabled'")
           }
         }
@@ -98,24 +98,24 @@ test "parse multiple key-value pairs" {
 
 ///|
 test "parse array" {
-  match @lib.parse("numbers = [1, 2, 3]") {
+  match @toml.parse("numbers = [1, 2, 3]") {
     Ok(result) =>
       match result {
-        @lib.TomlTable(table) => {
+        @toml.TomlTable(table) => {
           inspect(table.size(), content="1")
           match table.get("numbers") {
-            Some(@lib.TomlArray(arr)) => {
+            Some(@toml.TomlArray(arr)) => {
               inspect(arr.length(), content="3")
               match arr[0] {
-                @lib.TomlInteger(val) => inspect(val, content="1")
+                @toml.TomlInteger(val) => inspect(val, content="1")
                 _ => fail("Expected integer at index 0")
               }
               match arr[1] {
-                @lib.TomlInteger(val) => inspect(val, content="2")
+                @toml.TomlInteger(val) => inspect(val, content="2")
                 _ => fail("Expected integer at index 1")
               }
               match arr[2] {
-                @lib.TomlInteger(val) => inspect(val, content="3")
+                @toml.TomlInteger(val) => inspect(val, content="3")
                 _ => fail("Expected integer at index 2")
               }
             }
@@ -130,20 +130,20 @@ test "parse array" {
 
 ///|
 test "parse inline table" {
-  match @lib.parse("person = {name = \"Bob\", age = 25}") {
+  match @toml.parse("person = {name = \"Bob\", age = 25}") {
     Ok(result) =>
       match result {
-        @lib.TomlTable(table) => {
+        @toml.TomlTable(table) => {
           inspect(table.size(), content="1")
           match table.get("person") {
-            Some(@lib.TomlTable(inner_table)) => {
+            Some(@toml.TomlTable(inner_table)) => {
               inspect(inner_table.size(), content="2")
               match inner_table.get("name") {
-                Some(@lib.TomlString(value)) => inspect(value, content="Bob")
+                Some(@toml.TomlString(value)) => inspect(value, content="Bob")
                 _ => fail("Expected string value for inner 'name'")
               }
               match inner_table.get("age") {
-                Some(@lib.TomlInteger(value)) => inspect(value, content="25")
+                Some(@toml.TomlInteger(value)) => inspect(value, content="25")
                 _ => fail("Expected integer value for inner 'age'")
               }
             }

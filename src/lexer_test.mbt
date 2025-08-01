@@ -1,6 +1,6 @@
 ///| Tests for the TOML lexer
 test "tokenize simple key-value" {
-  match @lib.tokenize("key = \"value\"") {
+  match @toml.tokenize("key = \"value\"") {
     Ok(tokens) => {
       inspect(tokens.length(), content="4") // key, =, "value", EOF
       inspect(tokens[0], content="Identifier(\"key\")")
@@ -14,7 +14,7 @@ test "tokenize simple key-value" {
 
 ///|
 test "tokenize integer" {
-  match @lib.tokenize("number = 42") {
+  match @toml.tokenize("number = 42") {
     Ok(tokens) => {
       inspect(tokens.length(), content="4")
       inspect(tokens[0], content="Identifier(\"number\")")
@@ -28,7 +28,7 @@ test "tokenize integer" {
 
 ///|
 test "tokenize float" {
-  match @lib.tokenize("pi = 3.14") {
+  match @toml.tokenize("pi = 3.14") {
     Ok(tokens) => {
       inspect(tokens.length(), content="4")
       inspect(tokens[0], content="Identifier(\"pi\")")
@@ -42,7 +42,7 @@ test "tokenize float" {
 
 ///|
 test "tokenize boolean" {
-  match @lib.tokenize("enabled = true") {
+  match @toml.tokenize("enabled = true") {
     Ok(tokens) => {
       inspect(tokens.length(), content="4")
       inspect(tokens[0], content="Identifier(\"enabled\")")
@@ -56,7 +56,7 @@ test "tokenize boolean" {
 
 ///|
 test "tokenize array syntax" {
-  match @lib.tokenize("[1, 2, 3]") {
+  match @toml.tokenize("[1, 2, 3]") {
     Ok(tokens) => {
       inspect(tokens.length(), content="8") // [, 1, ,, 2, ,, 3, ], EOF
       inspect(tokens[0], content="LeftBracket")
@@ -74,7 +74,7 @@ test "tokenize array syntax" {
 
 ///|
 test "tokenize with comments" {
-  match @lib.tokenize("key = \"value\" # this is a comment") {
+  match @toml.tokenize("key = \"value\" # this is a comment") {
     Ok(tokens) => {
       inspect(tokens.length(), content="4") // key, =, "value", EOF (comment ignored)
       inspect(tokens[0], content="Identifier(\"key\")")
@@ -88,7 +88,7 @@ test "tokenize with comments" {
 
 ///|
 test "tokenize multiline" {
-  match @lib.tokenize("key1 = \"value1\"\nkey2 = 42") {
+  match @toml.tokenize("key1 = \"value1\"\nkey2 = 42") {
     Ok(tokens) => {
       inspect(tokens.length(), content="8") // Includes newline token
       inspect(tokens[0], content="Identifier(\"key1\")")

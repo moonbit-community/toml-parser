@@ -1,6 +1,6 @@
 {
   "is-main": true,
   "import": [
-    "username/toml-parser/lib"
+    "bobzhang/toml"
   ]
 }

@@ -8,7 +8,7 @@ test "complex TOML document" {
     #|enabled = true
     #|ports = [8000, 8001, 8002]
     #|
-  @json.inspect(@lib.parse(simple_toml).unwrap(), content=[
+  @json.inspect(@toml.parse(simple_toml).unwrap(), content=[
     "TomlTable",
     {
       "title": ["TomlString", "TOML Example"],
@@ -36,7 +36,7 @@ test "nested arrays and mixed types" {
     #|booleans = [true, false, true]
     #|floats = [1.1, 2.2, 3.3]
     #|
-  @json.inspect(@lib.parse(complex_toml).unwrap(), content=[
+  @json.inspect(@toml.parse(complex_toml).unwrap(), content=[
     "TomlTable",
     {
       "mixed_array": [
@@ -93,7 +93,7 @@ test "inline tables and nesting" {
     #|database = {name = "mydb", user = "admin", settings = {timeout = 30, pool_size = 10}}
     #|endpoints = ["/api/v1", "/api/v2", "/health"]
     #|
-  @json.inspect(@lib.parse(inline_toml).unwrap(), content=[
+  @json.inspect(@toml.parse(inline_toml).unwrap(), content=[
     "TomlTable",
     {
       "server": [
@@ -141,7 +141,7 @@ test "application configuration" {
     #|allowed_hosts = ["127.0.0.1", "localhost", "example.com"]
     #|features = {logging = true, metrics = false, caching = {enabled = true, ttl = 300}}
     #|
-  @json.inspect(@lib.parse(app_config).unwrap(), content=[
+  @json.inspect(@toml.parse(app_config).unwrap(), content=[
     "TomlTable",
     {
       "app_name": ["TomlString", "WebServer"],
@@ -184,7 +184,7 @@ test "advanced string handling" {
     #|single_quotes = 'Single quoted string'
     #|mixed = ["double", 'single', "escaped\"quote"]
     #|
-  @json.inspect(@lib.parse(string_tests).unwrap(), content=[
+  @json.inspect(@toml.parse(string_tests).unwrap(), content=[
     "TomlTable",
     {
       "basic": ["TomlString", "simple string"],
@@ -216,7 +216,7 @@ test "numerical edge cases" {
     #|large_float = 1000000.999999
     #|mixed_numbers = [0, 1, 42, 3.14, 2.5, 0.0]
     #|
-  @json.inspect(@lib.parse(number_tests).unwrap(), content=[
+  @json.inspect(@toml.parse(number_tests).unwrap(), content=[
     "TomlTable",
     {
       "zero": ["TomlInteger", "0"],
@@ -249,7 +249,7 @@ test "negative numbers" {
     #|extreme_negative = -9223372036854775807
     #|small_negative = -0.001
     #|
-  @json.inspect(@lib.parse(negative_toml).unwrap(), content=[
+  @json.inspect(@toml.parse(negative_toml).unwrap(), content=[
     "TomlTable",
     {
       "negative_int": ["TomlInteger", "-42"],
@@ -274,19 +274,19 @@ test "negative numbers" {
 ///| Test negative numbers in various contexts
 test "negative numbers in context" {
   // Single negative integer
-  @json.inspect(@lib.parse("count = -5").unwrap(), content=[
+  @json.inspect(@toml.parse("count = -5").unwrap(), content=[
     "TomlTable",
     { "count": ["TomlInteger", "-5"] },
   ])
 
   // Single negative float  
-  @json.inspect(@lib.parse("temperature = -15.5").unwrap(), content=[
+  @json.inspect(@toml.parse("temperature = -15.5").unwrap(), content=[
     "TomlTable",
     { "temperature": ["TomlFloat", -15.5] },
   ])
 
   // Array with mixed positive and negative numbers
-  @json.inspect(@lib.parse("values = [1, -2, 3.0, -4.5]").unwrap(), content=[
+  @json.inspect(@toml.parse("values = [1, -2, 3.0, -4.5]").unwrap(), content=[
     "TomlTable",
     {
       "values": [
@@ -302,7 +302,7 @@ test "negative numbers in context" {
   ])
 
   // Inline table with negative values
-  @json.inspect(@lib.parse("coords = {x = -10, y = 20, z = -5.5}").unwrap(), content=[
+  @json.inspect(@toml.parse("coords = {x = -10, y = 20, z = -5.5}").unwrap(), content=[
     "TomlTable",
     {
       "coords": [
@@ -322,7 +322,7 @@ test "negative numbers in context" {
     #|max_debt = -1000.50
     #|adjustment = -0.1
     #|
-  @json.inspect(@lib.parse(multi_negative).unwrap(), content=[
+  @json.inspect(@toml.parse(multi_negative).unwrap(), content=[
     "TomlTable",
     {
       "min_temp": ["TomlInteger", "-40"],
@@ -346,7 +346,7 @@ test "microservice configuration" {
     #|health_check = {endpoint = "/health", interval = 10, timeout = 5.0}
     #|rate_limiting = {enabled = true, requests_per_minute = 1000, burst = 50}
     #|
-  @json.inspect(@lib.parse(microservice_config).unwrap(), content=[
+  @json.inspect(@toml.parse(microservice_config).unwrap(), content=[
     "TomlTable",
     {
       "service_name": ["TomlString", "user-service"],
@@ -421,44 +421,44 @@ test "error handling" {
   // Test various error conditions by inspecting Result types directly
 
   // Missing value
-  @json.inspect(@lib.parse("key ="), content={ "Err": "Expected value" })
+  @json.inspect(@toml.parse("key ="), content={ "Err": "Expected value" })
 
   // Missing key
-  @json.inspect(@lib.parse("= \"value\""), content={ "Err": "Expected key" })
+  @json.inspect(@toml.parse("= \"value\""), content={ "Err": "Expected key" })
 
   // Unterminated string
-  @json.inspect(@lib.parse("key = \"unterminated"), content={
+  @json.inspect(@toml.parse("key = \"unterminated"), content={
     "Err": "Tokenization error: Unterminated string",
   })
 
   // Invalid syntax - incomplete array
-  @json.inspect(@lib.parse("key = [1, 2"), content={
+  @json.inspect(@toml.parse("key = [1, 2"), content={
     "Err": "Expected ',' or ']' in array",
   })
 
   // Empty key
-  @json.inspect(@lib.parse(" = \"value\""), content={ "Err": "Expected key" })
+  @json.inspect(@toml.parse(" = \"value\""), content={ "Err": "Expected key" })
 }
 
 ///| Test edge cases with expect tests
 test "edge cases" {
   // Empty input should result in empty table
-  @json.inspect(@lib.parse("").unwrap(), content=["TomlTable", {}])
+  @json.inspect(@toml.parse("").unwrap(), content=["TomlTable", {}])
 
   // Only comments and whitespace should result in empty table
   @json.inspect(
-    @lib.parse("# Just a comment\n  \n# Another comment").unwrap(),
+    @toml.parse("# Just a comment\n  \n# Another comment").unwrap(),
     content=["TomlTable", {}],
   )
 
   // Mixed single and double quotes should parse correctly
-  @json.inspect(@lib.parse("single = 'value'\ndouble = \"value\"").unwrap(), content=[
+  @json.inspect(@toml.parse("single = 'value'\ndouble = \"value\"").unwrap(), content=[
     "TomlTable",
     { "single": ["TomlString", "value"], "double": ["TomlString", "value"] },
   ])
 
   // Whitespace around equals sign
-  @json.inspect(@lib.parse("spaced   =   \"value\"  ").unwrap(), content=[
+  @json.inspect(@toml.parse("spaced   =   \"value\"  ").unwrap(), content=[
     "TomlTable",
     { "spaced": ["TomlString", "value"] },
   ])
@@ -474,7 +474,7 @@ test "edge cases" {
     #|key2 = "value2"
     #|# End comment
     #|
-  @json.inspect(@lib.parse(complex_whitespace).unwrap(), content=[
+  @json.inspect(@toml.parse(complex_whitespace).unwrap(), content=[
     "TomlTable",
     { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
   ])
