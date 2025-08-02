@@ -1,3 +1,21 @@
+///| DateTime type for TOML datetime values
+pub(all) enum TomlDateTime {
+  OffsetDateTime(String) // e.g., "1979-05-27T07:32:00Z" or "1979-05-27T07:32:00+01:00"
+  LocalDateTime(String) // e.g., "1979-05-27T07:32:00"
+  LocalDate(String) // e.g., "1979-05-27"
+  LocalTime(String) // e.g., "07:32:00"
+} derive(Eq, Show)
+
+///|
+pub impl ToJson for TomlDateTime with to_json(self) {
+  match self {
+    OffsetDateTime(s) => ["OffsetDateTime", s]
+    LocalDateTime(s) => ["LocalDateTime", s]
+    LocalDate(s) => ["LocalDate", s]
+    LocalTime(s) => ["LocalTime", s]
+  }
+}
+
 ///| TOML Value types that represent different TOML data types
 pub(all) enum TomlValue {
   TomlString(String)
@@ -6,6 +24,7 @@ pub(all) enum TomlValue {
   TomlBoolean(Bool)
   TomlArray(Array[TomlValue])
   TomlTable(Map[String, TomlValue])
+  TomlDateTime(TomlDateTime)
 } derive(Eq, Show)
 
 ///|
@@ -17,6 +36,7 @@ pub impl ToJson for TomlValue with to_json(self) {
     TomlBoolean(b) => ["TomlBoolean", b]
     TomlArray(arr) => ["TomlArray", arr]
     TomlTable(table) => ["TomlTable", table]
+    TomlDateTime(dt) => ["TomlDateTime", dt]
   }
 }
 
@@ -30,6 +50,7 @@ pub(all) enum Token {
   IntegerToken(Int64)
   FloatToken(Double)
   BooleanToken(Bool)
+  DateTimeToken(TomlDateTime)
 
   // Symbols
   LeftBracket // [
@@ -95,6 +116,13 @@ pub fn TomlValue::to_string(self : TomlValue) -> String {
       }
       result + "}"
     }
+    TomlDateTime(dt) =>
+      match dt {
+        OffsetDateTime(s) => s
+        LocalDateTime(s) => s
+        LocalDate(s) => s
+        LocalTime(s) => s
+      }
   }
 }
 
@@ -106,4 +134,61 @@ pub fn Lexer::new(input : String) -> Lexer {
 ///| Create a new parser
 pub fn Parser::new(tokens : Array[Token]) -> Parser {
   { tokens, position: 0 }
+}
+
+///| Check if an array contains homogeneous types (TOML spec requirement)
+pub fn TomlValue::is_homogeneous_array(arr : Array[TomlValue]) -> Bool {
+  if arr.length() == 0 {
+    return true // Empty arrays are considered homogeneous
+  }
+  let first_type = match arr[0] {
+    TomlString(_) => "string"
+    TomlInteger(_) => "integer"
+    TomlFloat(_) => "float"
+    TomlBoolean(_) => "boolean"
+    TomlArray(_) => "array"
+    TomlTable(_) => "table"
+    TomlDateTime(_) => "datetime"
+  }
+  for i = 1; i < arr.length(); i = i + 1 {
+    let current_type = match arr[i] {
+      TomlString(_) => "string"
+      TomlInteger(_) => "integer"
+      TomlFloat(_) => "float"
+      TomlBoolean(_) => "boolean"
+      TomlArray(_) => "array"
+      TomlTable(_) => "table"
+      TomlDateTime(_) => "datetime"
+    }
+    if current_type != first_type {
+      return false
+    }
+  }
+  true
+}
+
+///| Validate that a TomlValue follows TOML specification rules
+pub fn TomlValue::validate(self : TomlValue) -> Bool {
+  match self {
+    TomlArray(arr) => {
+      // Check homogeneity
+      if not(TomlValue::is_homogeneous_array(arr)) {
+        return false
+      }
+      // Recursively validate nested values
+      for i = 0; i < arr.length(); i = i + 1 {
+        if not(arr[i].validate()) {
+          return false
+        }
+      }
+      true
+    }
+    TomlTable(table) => {
+      // Recursively validate all values in the table
+      let mut valid = true
+      table.each(fn(_key, value) { if not(value.validate()) { valid = false } })
+      valid
+    }
+    _ => true // All other types are always valid by themselves
+  }
 }

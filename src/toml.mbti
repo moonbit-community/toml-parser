@@ -1,0 +1,76 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bob/toml"
+
+// Values
+fn parse(String) -> Result[TomlValue, String]
+
+fn tokenize(String) -> Result[Array[Token], String]
+
+// Errors
+
+// Types and methods
+pub struct Lexer {
+  input : String
+  mut position : Int
+  mut line : Int
+  mut column : Int
+}
+fn Lexer::new(String) -> Self
+
+pub struct Parser {
+  tokens : Array[Token]
+  mut position : Int
+}
+fn Parser::new(Array[Token]) -> Self
+
+pub(all) enum Token {
+  StringToken(String)
+  IntegerToken(Int64)
+  FloatToken(Double)
+  BooleanToken(Bool)
+  DateTimeToken(TomlDateTime)
+  LeftBracket
+  RightBracket
+  LeftBrace
+  RightBrace
+  Equals
+  Comma
+  Dot
+  Identifier(String)
+  Newline
+  EOF
+}
+impl Eq for Token
+impl Show for Token
+
+pub(all) enum TomlDateTime {
+  OffsetDateTime(String)
+  LocalDateTime(String)
+  LocalDate(String)
+  LocalTime(String)
+}
+impl Eq for TomlDateTime
+impl Show for TomlDateTime
+impl ToJson for TomlDateTime
+
+pub(all) enum TomlValue {
+  TomlString(String)
+  TomlInteger(Int64)
+  TomlFloat(Double)
+  TomlBoolean(Bool)
+  TomlArray(Array[TomlValue])
+  TomlTable(Map[String, TomlValue])
+  TomlDateTime(TomlDateTime)
+}
+fn TomlValue::is_homogeneous_array(Array[Self]) -> Bool
+fn TomlValue::to_string(Self) -> String
+fn TomlValue::validate(Self) -> Bool
+impl Eq for TomlValue
+impl Show for TomlValue
+impl ToJson for TomlValue
+
+// Type aliases
+pub typealias Result[T, String] as ParseResult[T]
+
+// Traits
+
