@@ -108,31 +108,6 @@ fn Lexer::read_string(self : Lexer, quote_char : Char) -> ParseResult[String] {
   }
 }
 
-///| Simple integer parsing function
-fn parse_int(s : String) -> Int? {
-  let len = s.length()
-  if len == 0 {
-    return None
-  }
-  let mut result = 0
-  let mut i = 0
-  let mut negative = false
-  if s[0] == '-' {
-    negative = true
-    i = 1
-  }
-  for j = i; j < len; j = j + 1 {
-    let ch = s[j]
-    if ch >= '0' && ch <= '9' {
-      let digit = ch - '0'
-      result = result * 10 + digit
-    } else {
-      return None
-    }
-  }
-  Some(if negative { -result } else { result })
-}
-
 ///| Parse a number (integer or float), with optional negative sign
 fn Lexer::read_number(self : Lexer, is_negative : Bool) -> ParseResult[Token] {
   let mut num_str = if is_negative { "-" } else { "" }
@@ -159,9 +134,8 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> ParseResult[Token] {
       _ => Err("Invalid float: " + num_str)
     }
   } else {
-    match parse_int(num_str) {
-      Some(val) => Ok(IntegerToken(val.to_int64()))
-      None => Err("Invalid integer: " + num_str)
+    Ok(IntegerToken(@strconv.parse_int64(num_str))) catch {
+      _ => Err("Invalid integer: " + num_str)
     }
   }
 }

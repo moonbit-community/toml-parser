@@ -265,7 +265,7 @@ test "negative numbers" {
           ["TomlFloat", 4],
         ],
       ],
-      "extreme_negative": ["TomlInteger", "1"],
+      "extreme_negative": ["TomlInteger", "-9223372036854775807"],
       "small_negative": ["TomlFloat", -0.001],
     },
   ])
