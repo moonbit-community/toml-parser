@@ -71,7 +71,7 @@ fn Lexer::read_identifier(self : Lexer) -> String {
 }
 
 ///| Parse a quoted string
-fn Lexer::read_string(self : Lexer, quote_char : Char) -> ParseResult[String] {
+fn Lexer::read_string(self : Lexer, quote_char : Char) -> String raise {
   self.advance() // consume opening quote
   let mut result = ""
   while self.peek() is Some(ch) && ch != quote_char {
@@ -88,13 +88,10 @@ fn Lexer::read_string(self : Lexer, quote_char : Char) -> ParseResult[String] {
             '\\' => result = result + "\\"
             '"' => result = result + "\""
             '\'' => result = result + "'"
-            _ =>
-              return Err(
-                "Invalid escape sequence: \\" + Char::to_string(escaped),
-              )
+            _ => fail("Invalid escape sequence: \\" + Char::to_string(escaped))
           }
         }
-        None => return Err("Unexpected end of input after escape character")
+        None => fail("Unexpected end of input after escape character")
       }
     } else {
       result = result + Char::to_string(ch)
@@ -102,14 +99,14 @@ fn Lexer::read_string(self : Lexer, quote_char : Char) -> ParseResult[String] {
   }
   if self.peek() is Some(x) && x == quote_char {
     self.advance() // consume closing quote
-    Ok(result)
+    result
   } else {
-    Err("Unterminated string")
+    fail("Unterminated string")
   }
 }
 
 ///| Parse a number (integer or float), with optional negative sign
-fn Lexer::read_number(self : Lexer, is_negative : Bool) -> ParseResult[Token] {
+fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
   let mut num_str = if is_negative { "-" } else { "" }
   let mut is_float = false
 
@@ -130,64 +127,56 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> ParseResult[Token] {
     }
   }
   if is_float {
-    Ok(FloatToken(@strconv.parse_double(num_str))) catch {
-      _ => Err("Invalid float: " + num_str)
+    FloatToken(@strconv.parse_double(num_str)) catch {
+      _ => fail("Invalid float: " + num_str)
     }
   } else {
-    Ok(IntegerToken(@strconv.parse_int64(num_str))) catch {
-      _ => Err("Invalid integer: " + num_str)
+    IntegerToken(@strconv.parse_int64(num_str)) catch {
+      _ => fail("Invalid integer: " + num_str)
     }
   }
 }
 
 ///| Get the next token
-fn Lexer::next_token(self : Lexer) -> ParseResult[Token] {
+fn Lexer::next_token(self : Lexer) -> Token raise {
   self.skip_whitespace()
   self.skip_comment()
   match self.peek() {
-    None => return Ok(EOF)
+    None => return EOF
     Some('\n') => {
       self.advance()
-      return Ok(Newline)
+      return Newline
     }
     Some('[') => {
       self.advance()
-      return Ok(LeftBracket)
+      return LeftBracket
     }
     Some(']') => {
       self.advance()
-      return Ok(RightBracket)
+      return RightBracket
     }
     Some('{') => {
       self.advance()
-      return Ok(LeftBrace)
+      return LeftBrace
     }
     Some('}') => {
       self.advance()
-      return Ok(RightBrace)
+      return RightBrace
     }
     Some('=') => {
       self.advance()
-      return Ok(Equals)
+      return Equals
     }
     Some(',') => {
       self.advance()
-      return Ok(Comma)
+      return Comma
     }
     Some('.') => {
       self.advance()
-      return Ok(Dot)
+      return Dot
     }
-    Some('"') =>
-      match self.read_string('"') {
-        Ok(str_val) => Ok(StringToken(str_val))
-        Err(msg) => Err(msg)
-      }
-    Some('\'') =>
-      match self.read_string('\'') {
-        Ok(str_val) => Ok(StringToken(str_val))
-        Err(msg) => Err(msg)
-      }
+    Some('"') => StringToken(self.read_string('"'))
+    Some('\'') => StringToken(self.read_string('\''))
     Some(ch) =>
       if is_numeric(ch) {
         self.read_number(false)
@@ -202,39 +191,35 @@ fn Lexer::next_token(self : Lexer) -> ParseResult[Token] {
           _ => {
             // Not a negative number, restore position and error
             self.position = saved_pos
-            Err("Unexpected character: " + Char::to_string(ch))
+            fail("Unexpected character: " + Char::to_string(ch))
           }
         }
       } else if is_alpha(ch) {
         let identifier = self.read_identifier()
         // Check for boolean keywords
         match identifier {
-          "true" => Ok(BooleanToken(true))
-          "false" => Ok(BooleanToken(false))
-          _ => Ok(Identifier(identifier))
+          "true" => BooleanToken(true)
+          "false" => BooleanToken(false)
+          _ => Identifier(identifier)
         }
       } else {
-        Err("Unexpected character: " + Char::to_string(ch))
+        fail("Unexpected character: " + Char::to_string(ch))
       }
   }
 }
 
 ///| Tokenize entire input
-pub fn tokenize(input : String) -> ParseResult[Array[Token]] {
+pub fn tokenize(input : String) -> Array[Token] raise {
   let lexer = Lexer::new(input)
   let tokens = Array::new()
   while true {
-    match lexer.next_token() {
-      Ok(token) => {
-        tokens.push(token)
-        if token == EOF {
-          return Ok(tokens)
-        }
-      }
-      Err(msg) => return Err(msg)
+    let token = lexer.next_token()
+    tokens.push(token)
+    if token == EOF {
+      break tokens
     }
   } else {
     // This should never be reached, but needed for type checking
-    Ok(tokens)
+    tokens
   }
 }

@@ -25,12 +25,12 @@ fn main {
   let toml_input = "name = \"John Doe\"\nage = 30\nenabled = true"
   println("Input TOML:")
   println(toml_input)
-  match @toml.parse(toml_input) {
-    Ok(result) => {
-      println("\nParsed result:")
-      println(result.to_string())
-    }
-    Err(msg) => println("Parse error: " + msg)
+  try {
+    let result = @toml.parse(toml_input)
+    println("\nParsed result:")
+    println(result.to_string())
+  } catch {
+    msg => println("Parse error: " + msg.to_string())
   }
 
   // Demo 4: Parse with array
@@ -38,12 +38,12 @@ fn main {
   let toml_array = "numbers = [1, 2, 3, 4, 5]"
   println("Input TOML:")
   println(toml_array)
-  match @toml.parse(toml_array) {
-    Ok(result) => {
-      println("\nParsed result:")
-      println(result.to_string())
-    }
-    Err(msg) => println("Parse error: " + msg)
+  try {
+    let result = @toml.parse(toml_array)
+    println("\nParsed result:")
+    println(result.to_string())
+  } catch {
+    msg => println("Parse error: " + msg.to_string())
   }
 
   // Demo 5: Parse with inline table
@@ -51,11 +51,11 @@ fn main {
   let toml_table = "person = {name = \"Alice\", age = 25}"
   println("Input TOML:")
   println(toml_table)
-  match @toml.parse(toml_table) {
-    Ok(result) => {
-      println("\nParsed result:")
-      println(result.to_string())
-    }
-    Err(msg) => println("Parse error: " + msg)
+  try {
+    let result = @toml.parse(toml_table)
+    println("\nParsed result:")
+    println(result.to_string())
+  } catch {
+    msg => println("Parse error: " + msg.to_string())
   }
 }

@@ -40,8 +40,7 @@ pub impl ToJson for TomlValue with to_json(self) {
   }
 }
 
-///|
-pub typealias Result[T, String] as ParseResult[T]
+///| Removed ParseResult typealias - now using checked exceptions
 
 ///| Token types for the lexer
 pub(all) enum Token {

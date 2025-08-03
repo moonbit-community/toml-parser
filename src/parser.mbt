@@ -26,12 +26,12 @@ fn Parser::advance(self : Parser) -> Token {
 }
 
 ///| Expect a specific token and advance
-fn Parser::expect(self : Parser, expected : Token) -> ParseResult[Unit] {
+fn Parser::expect(self : Parser, expected : Token) -> Unit raise {
   let current = self.advance()
   if current == expected {
-    Ok(())
+    ()
   } else {
-    Err("Expected \{expected}, but found \{current}")
+    fail("Expected \{expected}, but found \{current}")
   }
 }
 
@@ -43,31 +43,29 @@ fn Parser::skip_newlines(self : Parser) -> Unit {
 }
 
 ///| Parse a primary value (string, number, boolean)
-fn Parser::parse_value(self : Parser) -> ParseResult[TomlValue] {
+fn Parser::parse_value(self : Parser) -> TomlValue raise {
   match self.advance() {
-    StringToken(s) => Ok(TomlString(s))
-    IntegerToken(i) => Ok(TomlInteger(i))
-    FloatToken(f) => Ok(TomlFloat(f))
-    BooleanToken(b) => Ok(TomlBoolean(b))
+    StringToken(s) => TomlString(s)
+    IntegerToken(i) => TomlInteger(i)
+    FloatToken(f) => TomlFloat(f)
+    BooleanToken(b) => TomlBoolean(b)
     LeftBracket => self.parse_array()
     LeftBrace => self.parse_inline_table()
-    _ => Err("Expected value")
+    _ => fail("Expected value")
   }
 }
 
 ///| Parse an array [1, 2, 3]
-fn Parser::parse_array(self : Parser) -> ParseResult[TomlValue] {
+fn Parser::parse_array(self : Parser) -> TomlValue raise {
   let values = Array::new()
   self.skip_newlines()
   if self.peek() == RightBracket {
     ignore(self.advance()) // consume ]
-    return Ok(TomlArray(values))
+    return TomlArray(values)
   }
   while true {
-    match self.parse_value() {
-      Ok(value) => values.push(value)
-      Err(msg) => return Err(msg)
-    }
+    let value = self.parse_value()
+    values.push(value)
     self.skip_newlines()
     match self.peek() {
       Comma => {
@@ -78,91 +76,75 @@ fn Parser::parse_array(self : Parser) -> ParseResult[TomlValue] {
         ignore(self.advance())
         break
       }
-      _ => return Err("Expected ',' or ']' in array")
+      _ => fail("Expected ',' or ']' in array")
     }
   }
-  Ok(TomlArray(values))
+  TomlArray(values)
 }
 
 ///| Parse an inline table {key = value, key2 = value2}
-fn Parser::parse_inline_table(self : Parser) -> ParseResult[TomlValue] {
+fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
   let table = Map::new()
   if self.peek() is RightBrace {
     ignore(self.advance()) // consume }
-    return Ok(TomlTable(table))
+    return TomlTable(table)
   }
   while true {
     // Parse key
     let key = match self.advance() {
       Identifier(k) => k
       StringToken(k) => k
-      _ => return Err("Expected key in inline table")
+      _ => fail("Expected key in inline table")
     }
 
     // Expect =
-    match self.expect(Equals) {
-      Ok(_) => ()
-      Err(msg) => return Err(msg)
-    }
+    self.expect(Equals)
 
     // Parse value
-    match self.parse_value() {
-      Ok(value) => table[key] = value
-      Err(msg) => return Err(msg)
-    }
+    let value = self.parse_value()
+    table[key] = value
     match self.peek() {
       Comma => ignore(self.advance())
       RightBrace => {
         ignore(self.advance())
         break
       }
-      _ => return Err("Expected ',' or '}' in inline table")
+      _ => fail("Expected ',' or '}' in inline table")
     }
   }
-  Ok(TomlTable(table))
+  TomlTable(table)
 }
 
 ///| Parse a key-value pair: key = value
-fn Parser::parse_key_value(self : Parser) -> ParseResult[(String, TomlValue)] {
+fn Parser::parse_key_value(self : Parser) -> (String, TomlValue) raise {
   // Parse key
   let key = match self.advance() {
     Identifier(k) => k
     StringToken(k) => k
-    _ => return Err("Expected key")
+    _ => fail("Expected key")
   }
 
   // Expect =
-  match self.expect(Equals) {
-    Ok(_) => ()
-    Err(msg) => return Err(msg)
-  }
+  self.expect(Equals)
 
   // Parse value
-  match self.parse_value() {
-    Ok(value) => Ok((key, value))
-    Err(msg) => Err(msg)
-  }
+  let value = self.parse_value()
+  (key, value)
 }
 
 ///| Parse a TOML document (simple key-value pairs for now)
-pub fn parse(input : String) -> ParseResult[TomlValue] {
-  match tokenize(input) {
-    Ok(tokens) => {
-      let parser = Parser::new(tokens)
-      let table = Map::new()
-      while parser.peek() != EOF {
-        parser.skip_newlines()
-        if parser.peek() == EOF {
-          break
-        }
-        match parser.parse_key_value() {
-          Ok((key, value)) => table[key] = value
-          Err(msg) => return Err(msg)
-        }
-        parser.skip_newlines()
-      }
-      Ok(TomlTable(table))
+pub fn parse(input : String) -> TomlValue raise {
+  let tokens = tokenize(input)
+  let parser = Parser::new(tokens)
+  let table = Map::new()
+  while parser.peek() != EOF {
+    parser.skip_newlines()
+    if parser.peek() == EOF {
+      break
     }
-    Err(msg) => Err("Tokenization error: " + msg)
+    let (key, value) = parser.parse_key_value()
+    table[key] = value
+    parser.skip_newlines()
   }
+  TomlTable(table)
 }

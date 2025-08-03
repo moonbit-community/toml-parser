@@ -2,9 +2,9 @@
 package "bob/toml"
 
 // Values
-fn parse(String) -> Result[TomlValue, String]
+fn parse(String) -> TomlValue raise
 
-fn tokenize(String) -> Result[Array[Token], String]
+fn tokenize(String) -> Array[Token] raise
 
 // Errors
 
@@ -71,7 +71,6 @@ impl Show for TomlValue
 impl ToJson for TomlValue
 
 // Type aliases
-pub typealias Result[T, String] as ParseResult[T]
 
 // Traits
 
