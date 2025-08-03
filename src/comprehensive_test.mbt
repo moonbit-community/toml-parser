@@ -418,26 +418,50 @@ test "microservice configuration" {
 
 ///| Test error handling with expect tests
 test "error handling" {
-  // Test various error conditions by inspecting Result types directly
+  // Test various error conditions using try? for snapshot testing
+  fn strip_location(err : String) -> String {
+    // FIXME: allow StringView  
+    [..err.split(" ")[2:]].map(x => x.to_string()).join(" ")
+  }
 
+  fn parse_fail(s : String) -> Json {
+    @toml.parse(s).to_json() catch {
+      // /Users/hongbozhang/git/toml-parser/src/parser.mbt:54:10-54:32 Expected value
+      // Strip the location info
+      // err => Json::string(err.to_string())
+      Failure(err) => Json::string(strip_location(err.to_string()))
+      err => Json::string(err.to_string())
+    }
+  }
   // Missing value
-  @json.inspect(@toml.parse("key ="), content={ "Err": "Expected value" })
+  @json.inspect(
+    parse_fail("key ="),
+    content=("Expected value"),
+  )
 
   // Missing key
-  @json.inspect(@toml.parse("= \"value\""), content={ "Err": "Expected key" })
+  @json.inspect(
+    parse_fail("= \"value\""),
+    content=("Expected key"),
+  )
 
   // Unterminated string
-  @json.inspect(@toml.parse("key = \"unterminated"), content={
-    "Err": "Tokenization error: Unterminated string",
-  })
+  @json.inspect(
+    parse_fail("key = \"unterminated"),
+    content=("Unterminated string"),
+  )
 
   // Invalid syntax - incomplete array
-  @json.inspect(@toml.parse("key = [1, 2"), content={
-    "Err": "Expected ',' or ']' in array",
-  })
+  @json.inspect(
+    parse_fail("key = [1, 2"),
+    content=("Expected ',' or ']' in array"),
+  )
 
   // Empty key
-  @json.inspect(@toml.parse(" = \"value\""), content={ "Err": "Expected key" })
+  @json.inspect(
+    parse_fail(" = \"value\""),
+    content=("Expected key"),
+  )
 }
 
 ///| Test edge cases with expect tests
