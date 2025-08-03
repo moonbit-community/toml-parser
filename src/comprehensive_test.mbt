@@ -238,6 +238,12 @@ test "numerical edge cases" {
   ])
 }
 
+test "empty array" {
+  @json.inspect(@toml.parse("empty_array = []"), content=[
+    "TomlTable",
+    { "empty_array": ["TomlArray", []] },
+  ])
+}
 ///| Test negative numbers (now supported!)
 test "negative numbers" {
   let negative_toml =
@@ -438,7 +444,6 @@ test "error handling" {
     parse_fail("key ="),
     content=("Expected value"),
   )
-
   // Missing key
   @json.inspect(
     parse_fail("= \"value\""),
