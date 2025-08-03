@@ -8,7 +8,7 @@ test "complex TOML document" {
     #|enabled = true
     #|ports = [8000, 8001, 8002]
     #|
-  @json.inspect(@toml.parse(simple_toml).unwrap(), content=[
+  @json.inspect(@toml.parse(simple_toml), content=[
     "TomlTable",
     {
       "title": ["TomlString", "TOML Example"],
@@ -443,22 +443,22 @@ test "error handling" {
 ///| Test edge cases with expect tests
 test "edge cases" {
   // Empty input should result in empty table
-  @json.inspect(@toml.parse("").unwrap(), content=["TomlTable", {}])
+  @json.inspect(@toml.parse(""), content=["TomlTable", {}])
 
   // Only comments and whitespace should result in empty table
-  @json.inspect(
-    @toml.parse("# Just a comment\n  \n# Another comment").unwrap(),
-    content=["TomlTable", {}],
-  )
+  @json.inspect(@toml.parse("# Just a comment\n  \n# Another comment"), content=[
+    "TomlTable",
+    {},
+  ])
 
   // Mixed single and double quotes should parse correctly
-  @json.inspect(@toml.parse("single = 'value'\ndouble = \"value\"").unwrap(), content=[
+  @json.inspect(@toml.parse("single = 'value'\ndouble = \"value\""), content=[
     "TomlTable",
     { "single": ["TomlString", "value"], "double": ["TomlString", "value"] },
   ])
 
   // Whitespace around equals sign
-  @json.inspect(@toml.parse("spaced   =   \"value\"  ").unwrap(), content=[
+  @json.inspect(@toml.parse("spaced   =   \"value\"  "), content=[
     "TomlTable",
     { "spaced": ["TomlString", "value"] },
   ])
@@ -474,7 +474,7 @@ test "edge cases" {
     #|key2 = "value2"
     #|# End comment
     #|
-  @json.inspect(@toml.parse(complex_whitespace).unwrap(), content=[
+  @json.inspect(@toml.parse(complex_whitespace), content=[
     "TomlTable",
     { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
   ])
