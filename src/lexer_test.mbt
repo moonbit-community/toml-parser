@@ -1,105 +1,84 @@
 ///| Tests for the TOML lexer
 test "tokenize simple key-value" {
-  match @toml.tokenize("key = \"value\"") {
-    Ok(tokens) => {
-      inspect(tokens.length(), content="4") // key, =, "value", EOF
-      inspect(tokens[0], content="Identifier(\"key\")")
-      inspect(tokens[1], content="Equals")
-      inspect(tokens[2], content="StringToken(\"value\")")
-      inspect(tokens[3], content="EOF")
-    }
-    Err(msg) => fail("Tokenization failed: " + msg)
-  }
+  let tokens = @toml.tokenize("key = \"value\"").unwrap()
+  @json.inspect(tokens, content=[
+    ["Identifier", "key"],
+    "Equals",
+    ["StringToken", "value"],
+    ["EOF"],
+  ])
 }
 
 ///|
 test "tokenize integer" {
-  match @toml.tokenize("number = 42") {
-    Ok(tokens) => {
-      inspect(tokens.length(), content="4")
-      inspect(tokens[0], content="Identifier(\"number\")")
-      inspect(tokens[1], content="Equals")
-      inspect(tokens[2], content="IntegerToken(42)")
-      inspect(tokens[3], content="EOF")
-    }
-    Err(msg) => fail("Tokenization failed: " + msg)
-  }
+  let tokens = @toml.tokenize("number = 42").unwrap()
+  @json.inspect(tokens, content=[
+    ["Identifier", "number"],
+    "Equals",
+    ["IntegerToken", "42"],
+    ["EOF"],
+  ])
 }
 
 ///|
 test "tokenize float" {
-  match @toml.tokenize("pi = 3.14") {
-    Ok(tokens) => {
-      inspect(tokens.length(), content="4")
-      inspect(tokens[0], content="Identifier(\"pi\")")
-      inspect(tokens[1], content="Equals")
-      inspect(tokens[2], content="FloatToken(3.14)")
-      inspect(tokens[3], content="EOF")
-    }
-    Err(msg) => fail("Tokenization failed: " + msg)
-  }
+  let tokens = @toml.tokenize("pi = 3.14").unwrap()
+  @json.inspect(tokens, content=[
+    ["Identifier", "pi"],
+    "Equals",
+    ["FloatToken", 3.14],
+    ["EOF"],
+  ])
 }
 
 ///|
 test "tokenize boolean" {
-  match @toml.tokenize("enabled = true") {
-    Ok(tokens) => {
-      inspect(tokens.length(), content="4")
-      inspect(tokens[0], content="Identifier(\"enabled\")")
-      inspect(tokens[1], content="Equals")
-      inspect(tokens[2], content="BooleanToken(true)")
-      inspect(tokens[3], content="EOF")
-    }
-    Err(msg) => fail("Tokenization failed: " + msg)
-  }
+  let tokens = @toml.tokenize("enabled = true").unwrap()
+  @json.inspect(tokens, content=[
+    ["Identifier", "enabled"],
+    "Equals",
+    ["BooleanToken", true],
+    ["EOF"],
+  ])
 }
 
 ///|
 test "tokenize array syntax" {
-  match @toml.tokenize("[1, 2, 3]") {
-    Ok(tokens) => {
-      inspect(tokens.length(), content="8") // [, 1, ,, 2, ,, 3, ], EOF
-      inspect(tokens[0], content="LeftBracket")
-      inspect(tokens[1], content="IntegerToken(1)")
-      inspect(tokens[2], content="Comma")
-      inspect(tokens[3], content="IntegerToken(2)")
-      inspect(tokens[4], content="Comma")
-      inspect(tokens[5], content="IntegerToken(3)")
-      inspect(tokens[6], content="RightBracket")
-      inspect(tokens[7], content="EOF")
-    }
-    Err(msg) => fail("Tokenization failed: " + msg)
-  }
+  let tokens = @toml.tokenize("[1, 2, 3]").unwrap()
+  @json.inspect(tokens, content=[
+    "LeftBracket",
+    ["IntegerToken", "1"],
+    "Comma",
+    ["IntegerToken", "2"],
+    "Comma",
+    ["IntegerToken", "3"],
+    "RightBracket",
+    ["EOF"],
+  ])
 }
 
 ///|
 test "tokenize with comments" {
-  match @toml.tokenize("key = \"value\" # this is a comment") {
-    Ok(tokens) => {
-      inspect(tokens.length(), content="4") // key, =, "value", EOF (comment ignored)
-      inspect(tokens[0], content="Identifier(\"key\")")
-      inspect(tokens[1], content="Equals")
-      inspect(tokens[2], content="StringToken(\"value\")")
-      inspect(tokens[3], content="EOF")
-    }
-    Err(msg) => fail("Tokenization failed: " + msg)
-  }
+  let tokens = @toml.tokenize("key = \"value\" # this is a comment").unwrap()
+  @json.inspect(tokens, content=[
+    ["Identifier", "key"],
+    "Equals",
+    ["StringToken", "value"],
+    ["EOF"],
+  ]) // comment ignored
 }
 
 ///|
 test "tokenize multiline" {
-  match @toml.tokenize("key1 = \"value1\"\nkey2 = 42") {
-    Ok(tokens) => {
-      inspect(tokens.length(), content="8") // Includes newline token
-      inspect(tokens[0], content="Identifier(\"key1\")")
-      inspect(tokens[1], content="Equals")
-      inspect(tokens[2], content="StringToken(\"value1\")")
-      inspect(tokens[3], content="Newline")
-      inspect(tokens[4], content="Identifier(\"key2\")")
-      inspect(tokens[5], content="Equals")
-      inspect(tokens[6], content="IntegerToken(42)")
-      inspect(tokens[7], content="EOF")
-    }
-    Err(msg) => fail("Tokenization failed: " + msg)
-  }
+  let tokens = @toml.tokenize("key1 = \"value1\"\nkey2 = 42").unwrap()
+  @json.inspect(tokens, content=[
+    ["Identifier", "key1"],
+    "Equals",
+    ["StringToken", "value1"],
+    "Newline",
+    ["Identifier", "key2"],
+    "Equals",
+    ["IntegerToken", "42"],
+    ["EOF"],
+  ])
 }
