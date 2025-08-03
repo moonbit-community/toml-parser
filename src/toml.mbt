@@ -69,6 +69,27 @@ pub(all) enum Token {
   EOF
 } derive(Eq, Show)
 
+///|
+pub impl ToJson for Token with to_json(self) {
+  match self {
+    StringToken(s) => ["StringToken", s]
+    IntegerToken(i) => ["IntegerToken", i]
+    FloatToken(f) => ["FloatToken", f]
+    BooleanToken(b) => ["BooleanToken", b]
+    DateTimeToken(dt) => ["DateTimeToken", dt]
+    LeftBracket => "LeftBracket"
+    RightBracket => "RightBracket"
+    LeftBrace => "LeftBrace"
+    RightBrace => "RightBrace"
+    Equals => "Equals"
+    Comma => "Comma"
+    Dot => "Dot"
+    Identifier(s) => ["Identifier", s]
+    Newline => "Newline"
+    EOF => ["EOF"]
+  }
+}
+
 ///| Lexer state (will implement methods later)
 pub struct Lexer {
   input : String
