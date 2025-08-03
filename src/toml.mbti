@@ -42,6 +42,7 @@ pub(all) enum Token {
 }
 impl Eq for Token
 impl Show for Token
+impl ToJson for Token
 
 pub(all) enum TomlDateTime {
   OffsetDateTime(String)
