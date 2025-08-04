@@ -82,3 +82,23 @@ test "tokenize multiline" {
     ["EOF"],
   ])
 }
+
+///|
+test "unicode or emoji" {
+  let str =
+    #|key1 = "💩"
+    #|key2 = "💩"
+  let tokens = @toml.tokenize(str)
+  @json.inspect(tokens, content=[
+    ["Identifier", "key1"],
+    "Equals",
+    ["StringToken", "💩"],
+    "Newline",
+    ["Identifier", "key2"],
+    "Equals",
+    ["StringToken", "💩"],
+    ["EOF"],
+  ])
+  // more tests
+
+}

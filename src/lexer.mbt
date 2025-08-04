@@ -22,24 +22,25 @@ fn is_alphanumeric(ch : Char) -> Bool {
 
 ///| Get current character without advancing
 fn Lexer::peek(self : Lexer) -> Char? {
-  if self.position >= self.input.length() {
-    None // End of input
-  } else {
-    Some(self.input.get_char(self.position).unwrap())
-  }
+  self.input.get_char(self.position)
 }
 
 ///| Get current character and advance position
-/// TODO: handle surrogate pairs and multi-byte characters
+/// handle surrogate pairs and multi-byte characters
 fn Lexer::advance(self : Lexer) -> Unit {
   if self.position < self.input.length() {
-    let ch = self.input.get_char(self.position).unwrap()
-    self.position = self.position + 1
-    if ch == '\n' {
-      self.line = self.line + 1
-      self.column = 1
+    let ch = self.input.unsafe_charcode_at(self.position)
+    if !ch.is_surrogate() {
+      self.position += 1
+      if ch is '\n' {
+        self.line += 1
+        self.column = 1
+      } else {
+        self.column += 1
+      }
     } else {
-      self.column = self.column + 1
+      self.position += 2
+      self.column += 1
     }
   }
 }
@@ -62,12 +63,13 @@ fn Lexer::skip_comment(self : Lexer) -> Unit {
 
 ///| Parse an identifier or keyword
 fn Lexer::read_identifier(self : Lexer) -> String {
-  let mut result = ""
+  // let mut result = ""
+  let sb = StringBuilder::new()
   while self.peek() is Some(ch) && (is_alphanumeric(ch) || ch == '-') {
     self.advance()
-    result = result + Char::to_string(ch)
+    sb.write_char(ch)
   }
-  result
+  sb.to_string()
 }
 
 ///| Parse a basic string (double quotes) with escape sequences
