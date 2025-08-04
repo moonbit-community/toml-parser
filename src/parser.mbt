@@ -120,6 +120,23 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
   TomlTable(table)
 }
 
+///| Parse a table header: [section]
+fn Parser::parse_table_header(self : Parser) -> String raise {
+  // Expect [
+  self.expect(LeftBracket)
+
+  // Parse table name
+  let table_name = match self.advance() {
+    Identifier(name) => name
+    StringToken(name) => name
+    _ => fail("Expected table name")
+  }
+
+  // Expect ]
+  self.expect(RightBracket)
+  table_name
+}
+
 ///| Parse a key-value pair: key = value
 fn Parser::parse_key_value(self : Parser) -> (String, TomlValue) raise {
   // Parse key
@@ -137,19 +154,42 @@ fn Parser::parse_key_value(self : Parser) -> (String, TomlValue) raise {
   (key, value)
 }
 
-///| Parse a TOML document (simple key-value pairs for now)
+///| Parse a TOML document with support for tables
 pub fn parse(input : String) -> TomlValue raise {
   let tokens = tokenize(input)
   let parser = Parser::new(tokens)
-  let table = Map::new()
+  let main_table = Map::new()
+  let mut current_table = main_table
   while parser.peek() != EOF {
     parser.skip_newlines()
     if parser.peek() == EOF {
       break
     }
-    let (key, value) = parser.parse_key_value()
-    table[key] = value
+    match parser.peek() {
+      LeftBracket => {
+        // Parse table header
+        let table_name = parser.parse_table_header()
+
+        // Create new table if it doesn't exist
+        if main_table.contains(table_name) {
+          match main_table.get(table_name) {
+            Some(TomlTable(existing_table)) => current_table = existing_table
+            Some(_) => fail("Table name conflicts with existing value")
+            None => fail("Unexpected error: table should exist")
+          }
+        } else {
+          let new_table = Map::new()
+          main_table[table_name] = TomlTable(new_table)
+          current_table = new_table
+        }
+      }
+      _ => {
+        // Parse key-value pair
+        let (key, value) = parser.parse_key_value()
+        current_table[key] = value
+      }
+    }
     parser.skip_newlines()
   }
-  TomlTable(table)
+  TomlTable(main_table)
 }
