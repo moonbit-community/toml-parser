@@ -88,14 +88,14 @@ fn Lexer::read_identifier(self : Lexer) -> String {
 ///| Parse a table header name (can be quoted or unquoted, can contain dots)
 fn Lexer::read_table_header_name(self : Lexer) -> String raise {
   match self.peek() {
-    Some('"') => {
+    Some('"') =>
       // Quoted table name
       self.read_string('"')
-    }
     Some(ch) if is_alpha(ch) => {
       // Unquoted table name (can contain dots for nesting)
       let mut result = ""
-      while self.peek() is Some(ch) && (is_alphanumeric(ch) || ch == '-' || ch == '.' || ch == '_') {
+      while self.peek() is Some(ch) &&
+            (is_alphanumeric(ch) || ch == '-' || ch == '.' || ch == '_') {
         self.advance()
         result = result + Char::to_string(ch)
       }
@@ -157,17 +157,19 @@ fn Lexer::read_literal_string(self : Lexer, quote_char : Char) -> String raise {
 }
 
 ///| Parse a multiline string (triple quotes)
-fn Lexer::read_multiline_string(self : Lexer, quote_char : Char) -> String raise {
+fn Lexer::read_multiline_string(
+  self : Lexer,
+  quote_char : Char,
+) -> String raise {
   let mut result = ""
   let mut quote_count = 0
   let mut first_newline_consumed = false
-  
+
   // Skip the first newline if present (TOML spec)
   if self.peek() is Some('\n') {
     self.advance()
     first_newline_consumed = true
   }
-  
   while self.peek() is Some(ch) {
     if ch == quote_char {
       quote_count = quote_count + 1
@@ -182,7 +184,6 @@ fn Lexer::read_multiline_string(self : Lexer, quote_char : Char) -> String raise
         result = result + Char::to_string(quote_char)
       }
       quote_count = 0
-      
       self.advance()
       if ch == '\\' && quote_char == '"' {
         // Handle escape sequences only in basic multiline strings (double quotes)
@@ -205,7 +206,11 @@ fn Lexer::read_multiline_string(self : Lexer, quote_char : Char) -> String raise
                   self.advance()
                 }
               }
-              _ => fail("Invalid escape sequence in multiline string: \\" + Char::to_string(escaped))
+              _ =>
+                fail(
+                  "Invalid escape sequence in multiline string: \\" +
+                  Char::to_string(escaped),
+                )
             }
           }
           None => fail("Unexpected end of input after escape character")
@@ -216,11 +221,9 @@ fn Lexer::read_multiline_string(self : Lexer, quote_char : Char) -> String raise
       }
     }
   }
-  
   if quote_count < 3 {
     fail("Unterminated multiline string")
   }
-  
   result
 }
 
@@ -297,14 +300,13 @@ fn Lexer::read_binary_number(self : Lexer) -> Token raise {
   let mut num_str = "0b"
   self.advance() // consume '0'
   self.advance() // consume 'b'
-  
   while self.peek() is Some(ch) && (is_binary(ch) || ch == '_') {
     if ch != '_' { // Skip underscores
       num_str = num_str + Char::to_string(ch)
     }
     self.advance()
   }
-  
+
   // Convert binary to decimal
   let binary_part = num_str.substring(2) // Remove "0b" prefix
   let mut result = 0L
@@ -327,7 +329,9 @@ fn Lexer::read_binary_number(self : Lexer) -> Token raise {
 
 ///| Check if a character at position exists and matches
 fn char_at_matches(input : String, pos : Int, expected : Char) -> Bool {
-  if pos >= input.length() { return false }
+  if pos >= input.length() {
+    return false
+  }
   match input.get_char(pos) {
     Ok(ch) => ch == expected
     Err(_) => false
@@ -341,23 +345,30 @@ fn is_datetime_pattern(input : String) -> Bool {
   // YYYY-MM-DDTHH:MM:SS[.fraction][+/-HH:MM|Z]
   // HH:MM:SS[.fraction]
   let len = input.length()
-  if len < 8 { return false }
-  
+  if len < 8 {
+    return false
+  }
+
   // Check for date pattern: YYYY-MM-DD
-  if len >= 10 && char_at_matches(input, 4, '-') && char_at_matches(input, 7, '-') {
+  if len >= 10 &&
+    char_at_matches(input, 4, '-') &&
+    char_at_matches(input, 7, '-') {
     return true
   }
-  
+
   // Check for time pattern: HH:MM:SS
-  if len >= 8 && char_at_matches(input, 2, ':') && char_at_matches(input, 5, ':') {
+  if len >= 8 &&
+    char_at_matches(input, 2, ':') &&
+    char_at_matches(input, 5, ':') {
     return true
   }
-  
+
   // Check for date-time pattern: contains both date and T
-  if string_contains_char(input, 'T') && string_contains_char(input, '-') && string_contains_char(input, ':') {
+  if string_contains_char(input, 'T') &&
+    string_contains_char(input, '-') &&
+    string_contains_char(input, ':') {
     return true
   }
-  
   false
 }
 
@@ -373,7 +384,11 @@ fn string_contains_char(input : String, target : Char) -> Bool {
 }
 
 ///| Check if string contains character after a certain position
-fn string_contains_char_after(input : String, target : Char, start_pos : Int) -> Bool {
+fn string_contains_char_after(
+  input : String,
+  target : Char,
+  start_pos : Int,
+) -> Bool {
   for i = start_pos; i < input.length(); i = i + 1 {
     match input.get_char(i) {
       Ok(ch) if ch == target => return true
@@ -386,7 +401,9 @@ fn string_contains_char_after(input : String, target : Char, start_pos : Int) ->
 ///| Parse a datetime string and determine its type
 fn parse_datetime_type(input : String) -> TomlDateTime {
   if string_contains_char(input, 'T') {
-    if string_contains_char(input, 'Z') || string_contains_char(input, '+') || string_contains_char_after(input, '-', 10) {
+    if string_contains_char(input, 'Z') ||
+      string_contains_char(input, '+') ||
+      string_contains_char_after(input, '-', 10) {
       // Offset datetime like "1979-05-27T07:32:00Z" or "1979-05-27T00:32:00-07:00"
       OffsetDateTime(input)
     } else {
@@ -403,6 +420,7 @@ fn parse_datetime_type(input : String) -> TomlDateTime {
 }
 
 ///| Parse a number (integer or float), with optional negative sign
+
 ///| Now also handles datetime recognition
 fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
   let mut num_str = if is_negative { "-" } else { "" }
@@ -425,19 +443,27 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
       num_str = num_str + Char::to_string(ch)
     }
   }
-  
+
   // Check for datetime patterns (only if not negative and starts with 4 digits)
   if not(is_negative) && num_str.length() >= 4 {
     // Look ahead to see if this might be a datetime
     let mut lookahead = num_str
     let saved_pos = self.position
-    
+
     // Try to read more characters that could be part of a datetime
-    while self.peek() is Some(ch) && (ch == '-' || ch == ':' || ch == 'T' || ch == 'Z' || ch == '+' || ch == '.' || is_numeric(ch)) {
+    while self.peek() is Some(ch) &&
+          (
+            ch == '-' ||
+            ch == ':' ||
+            ch == 'T' ||
+            ch == 'Z' ||
+            ch == '+' ||
+            ch == '.' ||
+            is_numeric(ch)
+          ) {
       self.advance()
       lookahead = lookahead + Char::to_string(ch)
     }
-    
     if is_datetime_pattern(lookahead) {
       return DateTimeToken(parse_datetime_type(lookahead))
     } else {
@@ -445,7 +471,6 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
       self.position = saved_pos
     }
   }
-  
   if is_float {
     FloatToken(@strconv.parse_double(num_str)) catch {
       _ => fail("Invalid float: " + num_str)
@@ -557,16 +582,16 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
         if self.peek() is Some('\'') {
           self.advance() // consume third quote
           return StringToken(self.read_multiline_string('\''))
-                 } else {
-           // Not a multiline string, restore and read literal string
-           self.position = saved_pos
-           return StringToken(self.read_literal_string('\''))
-         }
-       } else {
-         // Not a multiline string, restore and read literal string
-         self.position = saved_pos
-         return StringToken(self.read_literal_string('\''))
-       }
+        } else {
+          // Not a multiline string, restore and read literal string
+          self.position = saved_pos
+          return StringToken(self.read_literal_string('\''))
+        }
+      } else {
+        // Not a multiline string, restore and read literal string
+        self.position = saved_pos
+        return StringToken(self.read_literal_string('\''))
+      }
     }
     Some(ch) =>
       if ch == '0' {
@@ -616,7 +641,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
         // Check for positive special float values
         let saved_pos = self.position
         self.advance() // consume '+'
-                 if self.peek() is Some(next_ch) && is_alpha(next_ch) {
+        if self.peek() is Some(next_ch) && is_alpha(next_ch) {
           let identifier = self.read_identifier()
           match identifier {
             "inf" => FloatToken(Double::pos_inf)

@@ -157,17 +157,18 @@ fn Parser::parse_table_path(self : Parser, path : String) -> Array[String] {
 }
 
 ///| Ensure a table path exists in the root table and return the target table
-fn Parser::ensure_table_path_exists(self : Parser, root : Map[String, TomlValue], path : Array[String]) -> Map[String, TomlValue] raise {
+fn Parser::ensure_table_path_exists(
+  self : Parser,
+  root : Map[String, TomlValue],
+  path : Array[String],
+) -> Map[String, TomlValue] raise {
   let mut current = root
   for segment in path {
     match current.get(segment) {
-      Some(TomlTable(existing_table)) => {
+      Some(TomlTable(existing_table)) =>
         // Table already exists, navigate to it
         current = existing_table
-      }
-      Some(_) => {
-        fail("Key '\{segment}' already exists and is not a table")
-      }
+      Some(_) => fail("Key '\{segment}' already exists and is not a table")
       None => {
         // Create new table
         let new_table = Map::new()
@@ -180,22 +181,22 @@ fn Parser::ensure_table_path_exists(self : Parser, root : Map[String, TomlValue]
 }
 
 ///| Ensure an array table exists and return a new table to add to the array
-fn Parser::ensure_array_table_exists(self : Parser, root : Map[String, TomlValue], path : Array[String]) -> Map[String, TomlValue] raise {
+fn Parser::ensure_array_table_exists(
+  self : Parser,
+  root : Map[String, TomlValue],
+  path : Array[String],
+) -> Map[String, TomlValue] raise {
   if path.length() == 0 {
     fail("Array table path cannot be empty")
   }
-  
+
   // Navigate to the parent table (all but last segment)
   let mut current = root
   for i = 0; i < path.length() - 1; i = i + 1 {
     let segment = path[i]
     match current.get(segment) {
-      Some(TomlTable(existing_table)) => {
-        current = existing_table
-      }
-      Some(_) => {
-        fail("Key '\{segment}' already exists and is not a table")
-      }
+      Some(TomlTable(existing_table)) => current = existing_table
+      Some(_) => fail("Key '\{segment}' already exists and is not a table")
       None => {
         let new_table = Map::new()
         current[segment] = TomlTable(new_table)
@@ -203,7 +204,7 @@ fn Parser::ensure_array_table_exists(self : Parser, root : Map[String, TomlValue
       }
     }
   }
-  
+
   // Handle the final segment as an array of tables
   let final_segment = path[path.length() - 1]
   match current.get(final_segment) {
@@ -213,9 +214,7 @@ fn Parser::ensure_array_table_exists(self : Parser, root : Map[String, TomlValue
       existing_array.push(TomlTable(new_table))
       new_table
     }
-    Some(_) => {
-      fail("Key '\{final_segment}' already exists and is not an array")
-    }
+    Some(_) => fail("Key '\{final_segment}' already exists and is not an array")
     None => {
       // Create new array with the first table
       let new_table = Map::new()
@@ -233,23 +232,25 @@ pub fn parse(input : String) -> TomlValue raise {
   let root_table = Map::new()
   let mut current_table = root_table
   let mut current_path : Array[String] = []
-  
   while parser.peek() != EOF {
     parser.skip_newlines()
     if parser.peek() == EOF {
       break
     }
-    
     match parser.peek() {
       TableHeader(section_name) => {
         ignore(parser.advance()) // consume the header token
         current_path = parser.parse_table_path(section_name)
-        current_table = parser.ensure_table_path_exists(root_table, current_path)
+        current_table = parser.ensure_table_path_exists(
+          root_table, current_path,
+        )
       }
       ArrayTableHeader(section_name) => {
         ignore(parser.advance()) // consume the header token
         current_path = parser.parse_table_path(section_name)
-        current_table = parser.ensure_array_table_exists(root_table, current_path)
+        current_table = parser.ensure_array_table_exists(
+          root_table, current_path,
+        )
       }
       _ => {
         let (key, value) = parser.parse_key_value()

@@ -218,6 +218,8 @@ test "complex values combination" {
 // multiline strings, literal strings, comments, special integer formats, and special float values
 
 // Basic table syntax [section] is now supported
+
+///|
 test "basic table" {
   let table_toml =
     #|[owner]
@@ -231,14 +233,16 @@ test "basic table" {
         "TomlTable",
         {
           "name": ["TomlString", "Tom Preston-Werner"],
-          "organization": ["TomlString", "GitHub"]
-        }
-      ]
-    }
+          "organization": ["TomlString", "GitHub"],
+        },
+      ],
+    },
   ])
 }
 
 // Nested tables [a.b.c] are now supported  
+
+///|
 test "nested tables" {
   let nested_table_toml =
     #|[servers.alpha]
@@ -257,25 +261,21 @@ test "nested tables" {
         {
           "alpha": [
             "TomlTable",
-            {
-              "ip": ["TomlString", "10.0.0.1"],
-              "dc": ["TomlString", "eqdc10"]
-            }
+            { "ip": ["TomlString", "10.0.0.1"], "dc": ["TomlString", "eqdc10"] },
           ],
           "beta": [
-            "TomlTable", 
-            {
-              "ip": ["TomlString", "10.0.0.2"],
-              "dc": ["TomlString", "eqdc10"]
-            }
-          ]
-        }
-      ]
-    }
+            "TomlTable",
+            { "ip": ["TomlString", "10.0.0.2"], "dc": ["TomlString", "eqdc10"] },
+          ],
+        },
+      ],
+    },
   ])
 }
 
 // Array of tables [[array]] is now supported
+
+///|
 test "array of tables" {
   let array_of_tables_toml =
     #|[[products]]
@@ -296,23 +296,25 @@ test "array of tables" {
             "TomlTable",
             {
               "name": ["TomlString", "Hammer"],
-              "sku": ["TomlInteger", "738594937"]
-            }
+              "sku": ["TomlInteger", "738594937"],
+            },
           ],
           [
             "TomlTable",
             {
               "name": ["TomlString", "Nail"],
-              "sku": ["TomlInteger", "284758393"]
-            }
-          ]
-        ]
-      ]
-    }
+              "sku": ["TomlInteger", "284758393"],
+            },
+          ],
+        ],
+      ],
+    },
   ])
 }
 
 // Datetime parsing is now implemented
+
+///|
 test "datetime values" {
   let datetime_toml =
     #|date1 = 1979-05-27T07:32:00Z
@@ -328,12 +330,17 @@ test "datetime values" {
       "date2": ["TomlDateTime", ["OffsetDateTime", "1979-05-27T00:32:00-07:00"]],
       "local_date": ["TomlDateTime", ["LocalDate", "1979-05-27"]],
       "local_time": ["TomlDateTime", ["LocalTime", "07:32:00"]],
-      "local_datetime": ["TomlDateTime", ["LocalDateTime", "1979-05-27T07:32:00"]]
-    }
+      "local_datetime": [
+        "TomlDateTime",
+        ["LocalDateTime", "1979-05-27T07:32:00"],
+      ],
+    },
   ])
 }
 
 // Multiline strings are now supported
+
+///|
 test "multiline basic strings" {
   let multiline_basic_toml =
     #|str1 = """
@@ -342,11 +349,13 @@ test "multiline basic strings" {
     #|
   @json.inspect(@toml.parse(multiline_basic_toml), content=[
     "TomlTable",
-    { "str1": ["TomlString", "Roses are red\nViolets are blue"] }
+    { "str1": ["TomlString", "Roses are red\nViolets are blue"] },
   ])
 }
 
 // Literal strings (single quotes) are now supported
+
+///|
 test "literal strings" {
   let literal_string_toml =
     #|winpath = 'C:\Users\nodejs\templates'
@@ -358,12 +367,14 @@ test "literal strings" {
     {
       "winpath": ["TomlString", "C:\\Users\\nodejs\\templates"],
       "quoted": ["TomlString", "Tom \"Dubs\" Preston-Werner"],
-      "regex": ["TomlString", "<\\i\\c*\\s*>"]
-    }
+      "regex": ["TomlString", "<\\i\\c*\\s*>"],
+    },
   ])
 }
 
 // Multiline literal strings are now supported
+
+///|
 test "multiline literal strings" {
   let multiline_literal_toml =
     #|regex2 = '''I [dw]on't need \d{2} apples'''
@@ -378,12 +389,16 @@ test "multiline literal strings" {
     "TomlTable",
     {
       "regex2": ["TomlString", "I [dw]on't need \\d{2} apples"],
-      "lines": ["TomlString", "The first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved.\n"]
-    }
+      "lines": [
+        "TomlString", "The first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved.\n",
+      ],
+    },
   ])
 }
 
 // Comments are properly handled
+
+///|
 test "comments" {
   let comments_toml =
     #|# This is a full-line comment
@@ -394,12 +409,14 @@ test "comments" {
     "TomlTable",
     {
       "key": ["TomlString", "value"],
-      "another": ["TomlString", "# This is not a comment"]
-    }
+      "another": ["TomlString", "# This is not a comment"],
+    },
   ])
 }
 
 // Integer formats (hex, octal, binary) are now supported
+
+///|
 test "integer formats" {
   let integer_formats_toml =
     #|hex1 = 0xDEADBEEF
@@ -417,12 +434,14 @@ test "integer formats" {
       "hex3": ["TomlInteger", "3735928559"],
       "oct1": ["TomlInteger", "342391"],
       "oct2": ["TomlInteger", "493"],
-      "bin1": ["TomlInteger", "214"]
-    }
+      "bin1": ["TomlInteger", "214"],
+    },
   ])
 }
 
 // Float special values are now supported
+
+///|
 test "float special values" {
   let float_special_toml =
     #|infinity1 = inf
@@ -440,8 +459,8 @@ test "float special values" {
       "infinity3": ["TomlFloat", Double::neg_inf],
       "not_a_number1": ["TomlFloat", Double::nan],
       "not_a_number2": ["TomlFloat", Double::nan],
-      "not_a_number3": ["TomlFloat", Double::nan]
-    }
+      "not_a_number3": ["TomlFloat", Double::nan],
+    },
   ])
 }
 
