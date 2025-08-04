@@ -17,10 +17,39 @@ test "lexer creation" {
   inspect(lexer.column, content="1")
 }
 
-///| Check if character is whitespace
-fn is_whitespace(ch : Char) -> Bool {
-  ch == ' ' || ch == '\t' || ch == '\r'
+
+///| Skip whitespace characters not including newlines
+/// # Example:
+/// ```
+/// let lexer = Lexer::new("  \t\rHello, world!")
+/// lexer.skip_whitespace()
+/// inspect(lexer.peek(), content="Some('H')")
+/// ```
+pub fn Lexer::skip_whitespace(self : Lexer) -> Unit {
+  for pos = self.position {
+    if pos >= self.input.length() {
+      break
+    }
+    let ch = self.input.unsafe_charcode_at(pos)
+    if ch is (' ' | '\t' | '\r') {
+      self.position += 1
+      self.column += 1
+      continue pos + 1
+    } else {
+      break
+    }  
+  }
 }
+
+///| Skip comments (start with #)
+fn Lexer::skip_comment(self : Lexer) -> Unit {
+  if self.peek() is Some('#') {
+    while self.peek() is Some(ch) && ch != '\n' {
+      self.advance()
+    }
+  }
+}
+
 
 ///| Check if character is alpha (letter)
 fn is_alpha(ch : Char) -> Bool {
@@ -78,21 +107,8 @@ pub fn Lexer::advance(self : Lexer) -> Unit {
   }
 }
 
-///| Skip whitespace characters
-fn Lexer::skip_whitespace(self : Lexer) -> Unit {
-  while self.peek() is Some(ch) && is_whitespace(ch) {
-    self.advance()
-  }
-}
 
-///| Skip comments (start with #)
-fn Lexer::skip_comment(self : Lexer) -> Unit {
-  if self.peek() is Some('#') {
-    while self.peek() is Some(ch) && ch != '\n' {
-      self.advance()
-    }
-  }
-}
+
 
 ///| Parse an identifier or keyword
 fn Lexer::read_identifier(self : Lexer) -> String {
