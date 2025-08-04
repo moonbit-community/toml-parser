@@ -1,3 +1,6 @@
 {
-  "warn-list": "-15"
+  "warn-list": "-15",
+  "import": [
+    "bob/toml/lexer"
+  ]
 }

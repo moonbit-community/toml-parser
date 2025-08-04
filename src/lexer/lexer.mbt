@@ -1,5 +1,13 @@
 /// Lexer implementation for TOML
 
+///| Lexer state (will implement methods later)
+pub struct Lexer {
+  input : String
+  mut position : Int
+  mut line : Int
+  mut column : Int
+}
+
 ///| Check if character is whitespace
 fn is_whitespace(ch : Char) -> Bool {
   ch == ' ' || ch == '\t' || ch == '\r'
@@ -320,6 +328,11 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
         fail("Unexpected character: " + Char::to_string(ch))
       }
   }
+}
+
+///| Create a new lexer
+pub fn Lexer::new(input : String) -> Lexer {
+  { input, position: 0, line: 1, column: 1 }
 }
 
 ///| Tokenize entire input
