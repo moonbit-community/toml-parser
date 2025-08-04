@@ -142,8 +142,8 @@ fn is_octal_digit(ch : Char) -> Bool {
 fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
   let mut result = 0L
   while self.peek() is Some(ch) && (is_hex_digit(ch) || ch == '_') {
+    self.advance()
     if ch != '_' {
-      self.advance()
       let digit = match ch {
         '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
           ch.to_int() - '0'.to_int()
@@ -152,8 +152,6 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
         _ => fail("Invalid hex digit: " + Char::to_string(ch))
       }
       result = result * 16L + digit.to_int64()
-    } else {
-      self.advance() // skip underscore
     }
   }
   result
@@ -163,12 +161,10 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
 fn Lexer::read_octal_number(self : Lexer) -> Int64 {
   let mut result = 0L
   while self.peek() is Some(ch) && (is_octal_digit(ch) || ch == '_') {
+    self.advance()
     if ch != '_' {
-      self.advance()
       let digit = ch.to_int() - '0'.to_int()
       result = result * 8L + digit.to_int64()
-    } else {
-      self.advance() // skip underscore
     }
   }
   result
