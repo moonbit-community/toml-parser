@@ -213,236 +213,237 @@ test "complex values combination" {
   ])
 }
 
-// TODO: The following tests are commented out because they require features not yet implemented in the parser
-// Once these features are implemented, these tests should be uncommented and verified
+// All TOML features have been implemented and the tests below are now enabled
+// This includes: tables, nested tables, array of tables, datetime parsing,
+// multiline strings, literal strings, comments, special integer formats, and special float values
 
-// TODO: Tables syntax [section] not yet supported
-// test "basic table" {
-//   let table_toml =
-//     #|[owner]
-//     #|name = "Tom Preston-Werner"
-//     #|organization = "GitHub"
-//     #|
-//   @json.inspect(@toml.parse(table_toml), content=[
-//     "TomlTable",
-//     {
-//       "owner": [
-//         "TomlTable",
-//         {
-//           "name": ["TomlString", "Tom Preston-Werner"],
-//           "organization": ["TomlString", "GitHub"]
-//         }
-//       ]
-//     }
-//   ])
-// }
+// Basic table syntax [section] is now supported
+test "basic table" {
+  let table_toml =
+    #|[owner]
+    #|name = "Tom Preston-Werner"
+    #|organization = "GitHub"
+    #|
+  @json.inspect(@toml.parse(table_toml), content=[
+    "TomlTable",
+    {
+      "owner": [
+        "TomlTable",
+        {
+          "name": ["TomlString", "Tom Preston-Werner"],
+          "organization": ["TomlString", "GitHub"]
+        }
+      ]
+    }
+  ])
+}
 
-// TODO: Nested tables [a.b.c] not yet supported  
-// test "nested tables" {
-//   let nested_table_toml =
-//     #|[servers.alpha]
-//     #|ip = "10.0.0.1"
-//     #|dc = "eqdc10"
-//     #|
-//     #|[servers.beta]
-//     #|ip = "10.0.0.2"
-//     #|dc = "eqdc10"
-//     #|
-//   @json.inspect(@toml.parse(nested_table_toml), content=[
-//     "TomlTable",
-//     {
-//       "servers": [
-//         "TomlTable",
-//         {
-//           "alpha": [
-//             "TomlTable",
-//             {
-//               "ip": ["TomlString", "10.0.0.1"],
-//               "dc": ["TomlString", "eqdc10"]
-//             }
-//           ],
-//           "beta": [
-//             "TomlTable", 
-//             {
-//               "ip": ["TomlString", "10.0.0.2"],
-//               "dc": ["TomlString", "eqdc10"]
-//             }
-//           ]
-//         }
-//       ]
-//     }
-//   ])
-// }
+// Nested tables [a.b.c] are now supported  
+test "nested tables" {
+  let nested_table_toml =
+    #|[servers.alpha]
+    #|ip = "10.0.0.1"
+    #|dc = "eqdc10"
+    #|
+    #|[servers.beta]
+    #|ip = "10.0.0.2"
+    #|dc = "eqdc10"
+    #|
+  @json.inspect(@toml.parse(nested_table_toml), content=[
+    "TomlTable",
+    {
+      "servers": [
+        "TomlTable",
+        {
+          "alpha": [
+            "TomlTable",
+            {
+              "ip": ["TomlString", "10.0.0.1"],
+              "dc": ["TomlString", "eqdc10"]
+            }
+          ],
+          "beta": [
+            "TomlTable", 
+            {
+              "ip": ["TomlString", "10.0.0.2"],
+              "dc": ["TomlString", "eqdc10"]
+            }
+          ]
+        }
+      ]
+    }
+  ])
+}
 
-// TODO: Array of tables [[array]] not yet supported
-// test "array of tables" {
-//   let array_of_tables_toml =
-//     #|[[products]]
-//     #|name = "Hammer"
-//     #|sku = 738594937
-//     #|
-//     #|[[products]]
-//     #|name = "Nail"
-//     #|sku = 284758393
-//     #|
-//   @json.inspect(@toml.parse(array_of_tables_toml), content=[
-//     "TomlTable",
-//     {
-//       "products": [
-//         "TomlArray",
-//         [
-//           [
-//             "TomlTable",
-//             {
-//               "name": ["TomlString", "Hammer"],
-//               "sku": ["TomlInteger", "738594937"]
-//             }
-//           ],
-//           [
-//             "TomlTable",
-//             {
-//               "name": ["TomlString", "Nail"],
-//               "sku": ["TomlInteger", "284758393"]
-//             }
-//           ]
-//         ]
-//       ]
-//     }
-//   ])
-// }
+// Array of tables [[array]] is now supported
+test "array of tables" {
+  let array_of_tables_toml =
+    #|[[products]]
+    #|name = "Hammer"
+    #|sku = 738594937
+    #|
+    #|[[products]]
+    #|name = "Nail"
+    #|sku = 284758393
+    #|
+  @json.inspect(@toml.parse(array_of_tables_toml), content=[
+    "TomlTable",
+    {
+      "products": [
+        "TomlArray",
+        [
+          [
+            "TomlTable",
+            {
+              "name": ["TomlString", "Hammer"],
+              "sku": ["TomlInteger", "738594937"]
+            }
+          ],
+          [
+            "TomlTable",
+            {
+              "name": ["TomlString", "Nail"],
+              "sku": ["TomlInteger", "284758393"]
+            }
+          ]
+        ]
+      ]
+    }
+  ])
+}
 
-// TODO: Datetime parsing not yet implemented (though data structures exist)
-// test "datetime values" {
-//   let datetime_toml =
-//     #|date1 = 1979-05-27T07:32:00Z
-//     #|date2 = 1979-05-27T00:32:00-07:00
-//     #|local_date = 1979-05-27
-//     #|local_time = 07:32:00
-//     #|local_datetime = 1979-05-27T07:32:00
-//     #|
-//   @json.inspect(@toml.parse(datetime_toml), content=[
-//     "TomlTable",
-//     {
-//       "date1": ["TomlDateTime", ["OffsetDateTime", "1979-05-27T07:32:00Z"]],
-//       "date2": ["TomlDateTime", ["OffsetDateTime", "1979-05-27T00:32:00-07:00"]],
-//       "local_date": ["TomlDateTime", ["LocalDate", "1979-05-27"]],
-//       "local_time": ["TomlDateTime", ["LocalTime", "07:32:00"]],
-//       "local_datetime": ["TomlDateTime", ["LocalDateTime", "1979-05-27T07:32:00"]]
-//     }
-//   ])
-// }
+// Datetime parsing is now implemented
+test "datetime values" {
+  let datetime_toml =
+    #|date1 = 1979-05-27T07:32:00Z
+    #|date2 = 1979-05-27T00:32:00-07:00
+    #|local_date = 1979-05-27
+    #|local_time = 07:32:00
+    #|local_datetime = 1979-05-27T07:32:00
+    #|
+  @json.inspect(@toml.parse(datetime_toml), content=[
+    "TomlTable",
+    {
+      "date1": ["TomlDateTime", ["OffsetDateTime", "1979-05-27T07:32:00Z"]],
+      "date2": ["TomlDateTime", ["OffsetDateTime", "1979-05-27T00:32:00-07:00"]],
+      "local_date": ["TomlDateTime", ["LocalDate", "1979-05-27"]],
+      "local_time": ["TomlDateTime", ["LocalTime", "07:32:00"]],
+      "local_datetime": ["TomlDateTime", ["LocalDateTime", "1979-05-27T07:32:00"]]
+    }
+  ])
+}
 
-// TODO: Multiline strings not yet supported
-// test "multiline basic strings" {
-//   let multiline_basic_toml =
-//     #|str1 = """
-//     #|Roses are red
-//     #|Violets are blue"""
-//     #|
-//   @json.inspect(@toml.parse(multiline_basic_toml), content=[
-//     "TomlTable",
-//     { "str1": ["TomlString", "Roses are red\nViolets are blue"] }
-//   ])
-// }
+// Multiline strings are now supported
+test "multiline basic strings" {
+  let multiline_basic_toml =
+    #|str1 = """
+    #|Roses are red
+    #|Violets are blue"""
+    #|
+  @json.inspect(@toml.parse(multiline_basic_toml), content=[
+    "TomlTable",
+    { "str1": ["TomlString", "Roses are red\nViolets are blue"] }
+  ])
+}
 
-// TODO: Literal strings (single quotes) not yet supported
-// test "literal strings" {
-//   let literal_string_toml =
-//     #|winpath = 'C:\Users\nodejs\templates'
-//     #|quoted = 'Tom "Dubs" Preston-Werner'
-//     #|regex = '<\i\c*\s*>'
-//     #|
-//   @json.inspect(@toml.parse(literal_string_toml), content=[
-//     "TomlTable",
-//     {
-//       "winpath": ["TomlString", "C:\\Users\\nodejs\\templates"],
-//       "quoted": ["TomlString", "Tom \"Dubs\" Preston-Werner"],
-//       "regex": ["TomlString", "<\\i\\c*\\s*>"]
-//     }
-//   ])
-// }
+// Literal strings (single quotes) are now supported
+test "literal strings" {
+  let literal_string_toml =
+    #|winpath = 'C:\Users\nodejs\templates'
+    #|quoted = 'Tom "Dubs" Preston-Werner'
+    #|regex = '<\i\c*\s*>'
+    #|
+  @json.inspect(@toml.parse(literal_string_toml), content=[
+    "TomlTable",
+    {
+      "winpath": ["TomlString", "C:\\Users\\nodejs\\templates"],
+      "quoted": ["TomlString", "Tom \"Dubs\" Preston-Werner"],
+      "regex": ["TomlString", "<\\i\\c*\\s*>"]
+    }
+  ])
+}
 
-// TODO: Multiline literal strings not yet supported
-// test "multiline literal strings" {
-//   let multiline_literal_toml =
-//     #|regex2 = '''I [dw]on't need \d{2} apples'''
-//     #|lines = '''
-//     #|The first newline is
-//     #|trimmed in raw strings.
-//     #|   All other whitespace
-//     #|   is preserved.
-//     #|'''
-//     #|
-//   @json.inspect(@toml.parse(multiline_literal_toml), content=[
-//     "TomlTable",
-//     {
-//       "regex2": ["TomlString", "I [dw]on't need \\d{2} apples"],
-//       "lines": ["TomlString", "The first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved.\n"]
-//     }
-//   ])
-// }
+// Multiline literal strings are now supported
+test "multiline literal strings" {
+  let multiline_literal_toml =
+    #|regex2 = '''I [dw]on't need \d{2} apples'''
+    #|lines = '''
+    #|The first newline is
+    #|trimmed in raw strings.
+    #|   All other whitespace
+    #|   is preserved.
+    #|'''
+    #|
+  @json.inspect(@toml.parse(multiline_literal_toml), content=[
+    "TomlTable",
+    {
+      "regex2": ["TomlString", "I [dw]on't need \\d{2} apples"],
+      "lines": ["TomlString", "The first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved.\n"]
+    }
+  ])
+}
 
-// TODO: Comments in middle of values not fully tested
-// test "comments" {
-//   let comments_toml =
-//     #|# This is a full-line comment
-//     #|key = "value"  # This is a comment at the end of a line
-//     #|another = "# This is not a comment"
-//     #|
-//   @json.inspect(@toml.parse(comments_toml), content=[
-//     "TomlTable",
-//     {
-//       "key": ["TomlString", "value"],
-//       "another": ["TomlString", "# This is not a comment"]
-//     }
-//   ])
-// }
+// Comments are properly handled
+test "comments" {
+  let comments_toml =
+    #|# This is a full-line comment
+    #|key = "value"  # This is a comment at the end of a line
+    #|another = "# This is not a comment"
+    #|
+  @json.inspect(@toml.parse(comments_toml), content=[
+    "TomlTable",
+    {
+      "key": ["TomlString", "value"],
+      "another": ["TomlString", "# This is not a comment"]
+    }
+  ])
+}
 
-// TODO: Integer formats (hex, octal, binary) not yet supported
-// test "integer formats" {
-//   let integer_formats_toml =
-//     #|hex1 = 0xDEADBEEF
-//     #|hex2 = 0xdeadbeef
-//     #|hex3 = 0xdead_beef
-//     #|oct1 = 0o01234567
-//     #|oct2 = 0o755
-//     #|bin1 = 0b11010110
-//     #|
-//   @json.inspect(@toml.parse(integer_formats_toml), content=[
-//     "TomlTable",
-//     {
-//       "hex1": ["TomlInteger", "3735928559"],
-//       "hex2": ["TomlInteger", "3735928559"],
-//       "hex3": ["TomlInteger", "3735928559"],
-//       "oct1": ["TomlInteger", "342391"],
-//       "oct2": ["TomlInteger", "493"],
-//       "bin1": ["TomlInteger", "214"]
-//     }
-//   ])
-// }
+// Integer formats (hex, octal, binary) are now supported
+test "integer formats" {
+  let integer_formats_toml =
+    #|hex1 = 0xDEADBEEF
+    #|hex2 = 0xdeadbeef
+    #|hex3 = 0xdead_beef
+    #|oct1 = 0o01234567
+    #|oct2 = 0o755
+    #|bin1 = 0b11010110
+    #|
+  @json.inspect(@toml.parse(integer_formats_toml), content=[
+    "TomlTable",
+    {
+      "hex1": ["TomlInteger", "3735928559"],
+      "hex2": ["TomlInteger", "3735928559"],
+      "hex3": ["TomlInteger", "3735928559"],
+      "oct1": ["TomlInteger", "342391"],
+      "oct2": ["TomlInteger", "493"],
+      "bin1": ["TomlInteger", "214"]
+    }
+  ])
+}
 
-// TODO: Float special values not yet supported
-// test "float special values" {
-//   let float_special_toml =
-//     #|infinity1 = inf
-//     #|infinity2 = +inf
-//     #|infinity3 = -inf
-//     #|not_a_number1 = nan
-//     #|not_a_number2 = +nan
-//     #|not_a_number3 = -nan
-//     #|
-//   @json.inspect(@toml.parse(float_special_toml), content=[
-//     "TomlTable",
-//     {
-//       "infinity1": ["TomlFloat", Double::pos_inf],
-//       "infinity2": ["TomlFloat", Double::pos_inf],
-//       "infinity3": ["TomlFloat", Double::neg_inf],
-//       "not_a_number1": ["TomlFloat", Double::nan],
-//       "not_a_number2": ["TomlFloat", Double::nan],
-//       "not_a_number3": ["TomlFloat", Double::nan]
-//     }
-//   ])
-// }
+// Float special values are now supported
+test "float special values" {
+  let float_special_toml =
+    #|infinity1 = inf
+    #|infinity2 = +inf
+    #|infinity3 = -inf
+    #|not_a_number1 = nan
+    #|not_a_number2 = +nan
+    #|not_a_number3 = -nan
+    #|
+  @json.inspect(@toml.parse(float_special_toml), content=[
+    "TomlTable",
+    {
+      "infinity1": ["TomlFloat", Double::pos_inf],
+      "infinity2": ["TomlFloat", Double::pos_inf],
+      "infinity3": ["TomlFloat", Double::neg_inf],
+      "not_a_number1": ["TomlFloat", Double::nan],
+      "not_a_number2": ["TomlFloat", Double::nan],
+      "not_a_number3": ["TomlFloat", Double::nan]
+    }
+  ])
+}
 
 ///| Test for heterogeneous arrays (should be invalid according to TOML spec)
 test "heterogeneous arrays should be invalid" {
