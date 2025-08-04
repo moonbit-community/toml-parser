@@ -42,7 +42,7 @@ jobs:
             -o codecov_report.json \
             --service-name github \
             --service-job-id "$GITHUB_RUN_NUMBER" \
-            ${{ github.event_name == 'pull_request' && format('--service-pull-request {0}', github.event.number) || '' }} \
+            --service-pull-request "${{ github.event.number }}" \
             --send-to coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
