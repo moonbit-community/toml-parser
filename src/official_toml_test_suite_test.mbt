@@ -216,26 +216,26 @@ test "complex values combination" {
 // TODO: The following tests are commented out because they require features not yet implemented in the parser
 // Once these features are implemented, these tests should be uncommented and verified
 
-// TODO: Tables syntax [section] not yet supported
-// test "basic table" {
-//   let table_toml =
-//     #|[owner]
-//     #|name = "Tom Preston-Werner"
-//     #|organization = "GitHub"
-//     #|
-//   @json.inspect(@toml.parse(table_toml), content=[
-//     "TomlTable",
-//     {
-//       "owner": [
-//         "TomlTable",
-//         {
-//           "name": ["TomlString", "Tom Preston-Werner"],
-//           "organization": ["TomlString", "GitHub"]
-//         }
-//       ]
-//     }
-//   ])
-// }
+///| Test basic table syntax
+test "basic table" {
+  let table_toml =
+    #|[owner]
+    #|name = "Tom Preston-Werner"
+    #|organization = "GitHub"
+    #|
+  @json.inspect(@toml.parse(table_toml), content=[
+    "TomlTable",
+    {
+      "owner": [
+        "TomlTable",
+        {
+          "name": ["TomlString", "Tom Preston-Werner"],
+          "organization": ["TomlString", "GitHub"]
+        }
+      ]
+    }
+  ])
+}
 
 // TODO: Nested tables [a.b.c] not yet supported  
 // test "nested tables" {
@@ -345,22 +345,22 @@ test "complex values combination" {
 //   ])
 // }
 
-// TODO: Literal strings (single quotes) not yet supported
-// test "literal strings" {
-//   let literal_string_toml =
-//     #|winpath = 'C:\Users\nodejs\templates'
-//     #|quoted = 'Tom "Dubs" Preston-Werner'
-//     #|regex = '<\i\c*\s*>'
-//     #|
-//   @json.inspect(@toml.parse(literal_string_toml), content=[
-//     "TomlTable",
-//     {
-//       "winpath": ["TomlString", "C:\\Users\\nodejs\\templates"],
-//       "quoted": ["TomlString", "Tom \"Dubs\" Preston-Werner"],
-//       "regex": ["TomlString", "<\\i\\c*\\s*>"]
-//     }
-//   ])
-// }
+///| Test literal strings (single quotes)
+test "literal strings" {
+  let literal_string_toml =
+    #|winpath = 'C:\Users\nodejs\templates'
+    #|quoted = 'Tom "Dubs" Preston-Werner'
+    #|regex = '<\i\c*\s*>'
+    #|
+  @json.inspect(@toml.parse(literal_string_toml), content=[
+    "TomlTable",
+    {
+      "winpath": ["TomlString", "C:\\Users\\nodejs\\templates"],
+      "quoted": ["TomlString", "Tom \"Dubs\" Preston-Werner"],
+      "regex": ["TomlString", "<\\i\\c*\\s*>"]
+    }
+  ])
+}
 
 // TODO: Multiline literal strings not yet supported
 // test "multiline literal strings" {
@@ -382,46 +382,46 @@ test "complex values combination" {
 //   ])
 // }
 
-// TODO: Comments in middle of values not fully tested
-// test "comments" {
-//   let comments_toml =
-//     #|# This is a full-line comment
-//     #|key = "value"  # This is a comment at the end of a line
-//     #|another = "# This is not a comment"
-//     #|
-//   @json.inspect(@toml.parse(comments_toml), content=[
-//     "TomlTable",
-//     {
-//       "key": ["TomlString", "value"],
-//       "another": ["TomlString", "# This is not a comment"]
-//     }
-//   ])
-// }
+///| Test comments functionality
+test "comments" {
+  let comments_toml =
+    #|# This is a full-line comment
+    #|key = "value"  # This is a comment at the end of a line
+    #|another = "# This is not a comment"
+    #|
+  @json.inspect(@toml.parse(comments_toml), content=[
+    "TomlTable",
+    {
+      "key": ["TomlString", "value"],
+      "another": ["TomlString", "# This is not a comment"]
+    }
+  ])
+}
 
-// TODO: Integer formats (hex, octal, binary) not yet supported
-// test "integer formats" {
-//   let integer_formats_toml =
-//     #|hex1 = 0xDEADBEEF
-//     #|hex2 = 0xdeadbeef
-//     #|hex3 = 0xdead_beef
-//     #|oct1 = 0o01234567
-//     #|oct2 = 0o755
-//     #|bin1 = 0b11010110
-//     #|
-//   @json.inspect(@toml.parse(integer_formats_toml), content=[
-//     "TomlTable",
-//     {
-//       "hex1": ["TomlInteger", "3735928559"],
-//       "hex2": ["TomlInteger", "3735928559"],
-//       "hex3": ["TomlInteger", "3735928559"],
-//       "oct1": ["TomlInteger", "342391"],
-//       "oct2": ["TomlInteger", "493"],
-//       "bin1": ["TomlInteger", "214"]
-//     }
-//   ])
-// }
+///| Test integer formats (hex, octal, binary)
+test "integer formats" {
+  let integer_formats_toml =
+    #|hex1 = 0xDEADBEEF
+    #|hex2 = 0xdeadbeef
+    #|hex3 = 0xdead_beef
+    #|oct1 = 0o01234567
+    #|oct2 = 0o755
+    #|bin1 = 0b11010110
+    #|
+  @json.inspect(@toml.parse(integer_formats_toml), content=[
+    "TomlTable",
+    {
+      "hex1": ["TomlInteger", "3735928559"],
+      "hex2": ["TomlInteger", "3735928559"],
+      "hex3": ["TomlInteger", "3735928559"],
+      "oct1": ["TomlInteger", "342391"],
+      "oct2": ["TomlInteger", "493"],
+      "bin1": ["TomlInteger", "214"]
+    }
+  ])
+}
 
-// TODO: Float special values not yet supported
+// TODO: Float special values not yet supported - Need to find correct MoonBit API
 // test "float special values" {
 //   let float_special_toml =
 //     #|infinity1 = inf
@@ -434,12 +434,12 @@ test "complex values combination" {
 //   @json.inspect(@toml.parse(float_special_toml), content=[
 //     "TomlTable",
 //     {
-//       "infinity1": ["TomlFloat", Double::pos_inf],
-//       "infinity2": ["TomlFloat", Double::pos_inf],
-//       "infinity3": ["TomlFloat", Double::neg_inf],
-//       "not_a_number1": ["TomlFloat", Double::nan],
-//       "not_a_number2": ["TomlFloat", Double::nan],
-//       "not_a_number3": ["TomlFloat", Double::nan]
+//       "infinity1": ["TomlFloat", @double.positive_infinity],
+//       "infinity2": ["TomlFloat", @double.positive_infinity],
+//       "infinity3": ["TomlFloat", @double.negative_infinity],
+//       "not_a_number1": ["TomlFloat", @double.not_a_number()],
+//       "not_a_number2": ["TomlFloat", @double.not_a_number()],
+//       "not_a_number3": ["TomlFloat", @double.not_a_number()]
 //     }
 //   ])
 // }
