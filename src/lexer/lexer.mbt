@@ -1,11 +1,20 @@
 /// Lexer implementation for TOML
 
 ///| Lexer state (will implement methods later)
-pub struct Lexer {
+struct Lexer {
   input : String
   mut position : Int
   mut line : Int
   mut column : Int
+}
+
+///| Tests for lexer creation
+test "lexer creation" {
+  let lexer = Lexer::new("key = value")
+  inspect(lexer.input, content="key = value")
+  inspect(lexer.position, content="0")
+  inspect(lexer.line, content="1")
+  inspect(lexer.column, content="1")
 }
 
 ///| Check if character is whitespace
@@ -29,13 +38,20 @@ fn is_alphanumeric(ch : Char) -> Bool {
 }
 
 ///| Get current character without advancing
-fn Lexer::peek(self : Lexer) -> Char? {
+/// # Example:
+/// ```
+/// let lexer = Lexer::new("Hello, world!")
+/// inspect(lexer.peek(), content="Some('H')")
+/// lexer.advance()
+/// inspect(lexer.peek(), content="Some('e')")
+/// ```
+pub fn Lexer::peek(self : Lexer) -> Char? {
   self.input.get_char(self.position)
 }
 
 ///| Get current character and advance position
 /// handle surrogate pairs and multi-byte characters
-fn Lexer::advance(self : Lexer) -> Unit {
+pub fn Lexer::advance(self : Lexer) -> Unit {
   if self.position < self.input.length() {
     let ch = self.input.unsafe_charcode_at(self.position)
     if !ch.is_surrogate() {

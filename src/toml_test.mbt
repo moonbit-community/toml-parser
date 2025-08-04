@@ -195,15 +195,6 @@ test "toml datetime edge cases" {
   inspect(dt_with_tz_no_colon.to_string(), content="2023-01-01T00:00:00+0530")
 }
 
-///| Tests for lexer creation
-test "lexer creation" {
-  let lexer = @lexer.Lexer::new("key = value")
-  inspect(lexer.input, content="key = value")
-  inspect(lexer.position, content="0")
-  inspect(lexer.line, content="1")
-  inspect(lexer.column, content="1")
-}
-
 ///| Tests for parser creation  
 test "parser creation" {
   let tokens = Array::new()
