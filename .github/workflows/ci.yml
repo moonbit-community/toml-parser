@@ -27,7 +27,12 @@ jobs:
 
       - name: lint
         run: moon check --deny-warn
-
+      
+      - name: moon info
+        run: |
+          moon info --target wasm,wasm-gc,js,native
+          git diff --exit-code
+          
       - name: moon test
         run: moon test --enable-coverage
 
