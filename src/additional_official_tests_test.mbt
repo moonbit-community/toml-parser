@@ -1,4 +1,5 @@
 ///| Additional TOML Test Cases - More comprehensive tests based on official examples
+
 ///| These provide additional coverage of edge cases and complex scenarios
 
 ///| Test key names with various characters
@@ -19,8 +20,8 @@ test "key name variations" {
       "bare_key2": ["TomlString", "value"],
       "127.0.0.1": ["TomlString", "value"],
       "character encoding": ["TomlString", "value"],
-      "ʎǝʞ": ["TomlString", "value"]
-    }
+      "ʎǝʞ": ["TomlString", "value"],
+    },
   ])
 }
 
@@ -52,13 +53,15 @@ test "complex escape sequences" {
   @json.inspect(@toml.parse(escape_sequences_toml), content=[
     "TomlTable",
     {
-      "basic": ["TomlString", "I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."],
+      "basic": [
+        "TomlString", "I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF.",
+      ],
       "newline": ["TomlString", "First line\nSecond line"],
       "tab": ["TomlString", "Column1\tColumn2"],
       "carriage_return": ["TomlString", "Line1\rLine2"],
       "backslash": ["TomlString", "This is a backslash: \\"],
-      "quote": ["TomlString", "This has a quote: \""]
-    }
+      "quote": ["TomlString", "This has a quote: \""],
+    },
   ])
 }
 
@@ -86,8 +89,8 @@ test "number formats" {
       "pi": ["TomlFloat", 3.14159],
       "large_float": ["TomlFloat", 50000000000000000000000.0],
       "small_float": ["TomlFloat", 0.00001],
-      "large_number": ["TomlInteger", "9223372036854775807"]
-    }
+      "large_number": ["TomlInteger", "9223372036854775807"],
+    },
   ])
 }
 
@@ -106,34 +109,43 @@ test "complex nested arrays" {
         "TomlArray",
         [
           ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"]]],
-          ["TomlArray", [["TomlInteger", "3"], ["TomlInteger", "4"], ["TomlInteger", "5"]]]
-        ]
+          [
+            "TomlArray",
+            [["TomlInteger", "3"], ["TomlInteger", "4"], ["TomlInteger", "5"]],
+          ],
+        ],
       ],
       "nested_mixed_array": [
         "TomlArray",
         [
           ["TomlArray", [["TomlString", "str1"], ["TomlString", "str2"]]],
-          ["TomlArray", [["TomlString", "str3"], ["TomlString", "str4"]]]
-        ]
+          ["TomlArray", [["TomlString", "str3"], ["TomlString", "str4"]]],
+        ],
       ],
       "deep_nested": [
         "TomlArray",
         [
-          ["TomlArray", [["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"]]]]],
-          ["TomlArray", [
-            ["TomlArray", [["TomlInteger", "3"], ["TomlInteger", "4"]]],
-            ["TomlArray", [["TomlInteger", "5"], ["TomlInteger", "6"]]]
-          ]]
-        ]
+          [
+            "TomlArray",
+            [["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"]]]],
+          ],
+          [
+            "TomlArray",
+            [
+              ["TomlArray", [["TomlInteger", "3"], ["TomlInteger", "4"]]],
+              ["TomlArray", [["TomlInteger", "5"], ["TomlInteger", "6"]]],
+            ],
+          ],
+        ],
       ],
       "array_with_spaces": [
         "TomlArray",
         [
           ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"]]],
-          ["TomlArray", [["TomlInteger", "3"], ["TomlInteger", "4"]]]
-        ]
-      ]
-    }
+          ["TomlArray", [["TomlInteger", "3"], ["TomlInteger", "4"]]],
+        ],
+      ],
+    },
   ])
 }
 
@@ -150,33 +162,36 @@ test "inline table variations" {
   @json.inspect(@toml.parse(inline_tables_toml), content=[
     "TomlTable",
     {
-      "simple": ["TomlTable", {"name": ["TomlString", "value"]}],
+      "simple": ["TomlTable", { "name": ["TomlString", "value"] }],
       "empty_table": ["TomlTable", {}],
-      "nested_inline": ["TomlTable", {"a": ["TomlTable", {"b": ["TomlString", "c"]}]}],
+      "nested_inline": [
+        "TomlTable",
+        { "a": ["TomlTable", { "b": ["TomlString", "c"] }] },
+      ],
       "mixed_types": [
         "TomlTable",
         {
           "string": ["TomlString", "value"],
           "integer": ["TomlInteger", "42"],
           "boolean": ["TomlBoolean", true],
-          "float": ["TomlFloat", 3.14]
-        }
+          "float": ["TomlFloat", 3.14],
+        },
       ],
       "with_arrays": [
         "TomlTable",
         {
-          "numbers": ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]]],
-          "strings": ["TomlArray", [["TomlString", "a"], ["TomlString", "b"]]]
-        }
+          "numbers": [
+            "TomlArray",
+            [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
+          ],
+          "strings": ["TomlArray", [["TomlString", "a"], ["TomlString", "b"]]],
+        },
       ],
       "spaces": [
         "TomlTable",
-        {
-          "key1": ["TomlString", "value1"],
-          "key2": ["TomlString", "value2"]
-        }
-      ]
-    }
+        { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
+      ],
+    },
   ])
 }
 
@@ -222,26 +237,26 @@ test "config file example" {
         "TomlArray",
         [
           ["TomlString", "https://example.com"],
-          ["TomlString", "https://api.example.com"]
-        ]
+          ["TomlString", "https://api.example.com"],
+        ],
       ],
       "cache": [
         "TomlTable",
         {
           "enabled": ["TomlBoolean", true],
           "ttl": ["TomlInteger", "3600"],
-          "max_size": ["TomlInteger", "1000"]
-        }
+          "max_size": ["TomlInteger", "1000"],
+        },
       ],
       "features": [
         "TomlTable",
         {
           "new_ui": ["TomlBoolean", true],
           "beta_api": ["TomlBoolean", false],
-          "experimental": ["TomlBoolean", true]
-        }
-      ]
-    }
+          "experimental": ["TomlBoolean", true],
+        },
+      ],
+    },
   ])
 }
 
@@ -272,14 +287,35 @@ test "whitespace edge cases" {
       "key2": ["TomlInteger", "43"],
       "key3": ["TomlInteger", "44"],
       "key4": ["TomlInteger", "45"],
-      "array1": ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]]],
-      "array2": ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]]],
-      "array3": ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]]],
-      "array4": ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]]],
-      "table1": ["TomlTable", {"a": ["TomlInteger", "1"], "b": ["TomlInteger", "2"]}],
-      "table2": ["TomlTable", {"a": ["TomlInteger", "1"], "b": ["TomlInteger", "2"]}],
-      "table3": ["TomlTable", {"a": ["TomlInteger", "1"], "b": ["TomlInteger", "2"]}]
-    }
+      "array1": [
+        "TomlArray",
+        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
+      ],
+      "array2": [
+        "TomlArray",
+        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
+      ],
+      "array3": [
+        "TomlArray",
+        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
+      ],
+      "array4": [
+        "TomlArray",
+        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
+      ],
+      "table1": [
+        "TomlTable",
+        { "a": ["TomlInteger", "1"], "b": ["TomlInteger", "2"] },
+      ],
+      "table2": [
+        "TomlTable",
+        { "a": ["TomlInteger", "1"], "b": ["TomlInteger", "2"] },
+      ],
+      "table3": [
+        "TomlTable",
+        { "a": ["TomlInteger", "1"], "b": ["TomlInteger", "2"] },
+      ],
+    },
   ])
 }
 
@@ -311,42 +347,36 @@ test "boundary values" {
       "empty_array": ["TomlArray", []],
       "single_element_array": ["TomlArray", [["TomlInteger", "42"]]],
       "empty_table": ["TomlTable", {}],
-      "single_key_table": ["TomlTable", {"key": ["TomlString", "value"]}]
-    }
+      "single_key_table": ["TomlTable", { "key": ["TomlString", "value"] }],
+    },
   ])
 }
 
 ///| Test validation that heterogeneous arrays are properly detected
 test "validation comprehensive" {
   // Test that our validation correctly identifies invalid structures
-  
+
   // Valid nested structure
   let valid_nested_array = [
-    @toml.TomlArray([
-      @toml.TomlInteger(1L),
-      @toml.TomlInteger(2L)
-    ]),
-    @toml.TomlArray([
-      @toml.TomlInteger(3L),
-      @toml.TomlInteger(4L)
-    ])
+    @toml.TomlArray([@toml.TomlInteger(1L), @toml.TomlInteger(2L)]),
+    @toml.TomlArray([@toml.TomlInteger(3L), @toml.TomlInteger(4L)]),
   ]
-  inspect(@toml.TomlValue::is_homogeneous_array(valid_nested_array), content="true")
-  
+  inspect(
+    @toml.TomlValue::is_homogeneous_array(valid_nested_array),
+    content="true",
+  )
+
   // Invalid nested structure - outer array contains arrays but inner arrays have different types
   let invalid_nested_array = [
-    @toml.TomlArray([
-      @toml.TomlInteger(1L),
-      @toml.TomlInteger(2L)
-    ]),
-    @toml.TomlArray([
-      @toml.TomlString("hello"),
-      @toml.TomlString("world")
-    ])
+    @toml.TomlArray([@toml.TomlInteger(1L), @toml.TomlInteger(2L)]),
+    @toml.TomlArray([@toml.TomlString("hello"), @toml.TomlString("world")]),
   ]
-  inspect(@toml.TomlValue::is_homogeneous_array(invalid_nested_array), content="true") // Outer level is homogeneous (all arrays)
-  
+  inspect(
+    @toml.TomlValue::is_homogeneous_array(invalid_nested_array),
+    content="true",
+  ) // Outer level is homogeneous (all arrays)
+
   // But the validation should still pass since each inner array is homogeneous
   let valid_mixed_nested = @toml.TomlArray(invalid_nested_array)
   inspect(valid_mixed_nested.validate(), content="true")
-} 
+}

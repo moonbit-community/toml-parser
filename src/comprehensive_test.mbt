@@ -238,12 +238,14 @@ test "numerical edge cases" {
   ])
 }
 
+///|
 test "empty array" {
   @json.inspect(@toml.parse("empty_array = []"), content=[
     "TomlTable",
     { "empty_array": ["TomlArray", []] },
   ])
 }
+
 ///| Test negative numbers (now supported!)
 test "negative numbers" {
   let negative_toml =
@@ -440,33 +442,24 @@ test "error handling" {
     }
   }
   // Missing value
-  @json.inspect(
-    parse_fail("key ="),
-    content=("Expected value"),
-  )
+  @json.inspect(parse_fail("key ="), content="Expected value")
   // Missing key
-  @json.inspect(
-    parse_fail("= \"value\""),
-    content=("Expected key"),
-  )
+  @json.inspect(parse_fail("= \"value\""), content="Expected key")
 
   // Unterminated string
   @json.inspect(
     parse_fail("key = \"unterminated"),
-    content=("Unterminated string"),
+    content="Unterminated string",
   )
 
   // Invalid syntax - incomplete array
   @json.inspect(
     parse_fail("key = [1, 2"),
-    content=("Expected ',' or ']' in array"),
+    content="Expected ',' or ']' in array",
   )
 
   // Empty key
-  @json.inspect(
-    parse_fail(" = \"value\""),
-    content=("Expected key"),
-  )
+  @json.inspect(parse_fail(" = \"value\""), content="Expected key")
 }
 
 ///| Test edge cases with expect tests
