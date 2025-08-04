@@ -1,0 +1,3 @@
+- [ ] add Lexer::expect_char
+- [ ] add Lexer::peek_is_char
+- [ ] add Char::is_bmp // basic multilingual plane
