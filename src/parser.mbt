@@ -139,15 +139,14 @@ fn Parser::parse_key_value(self : Parser) -> (String, TomlValue) raise {
 }
 
 ///| Parse a table path (like "a.b.c" into ["a", "b", "c"])
-fn Parser::parse_table_path(self : Parser, path : String) -> Array[String] {
+fn Parser::parse_table_path(_self : Parser, path : String) -> Array[String] {
   if path.contains(".") {
     // Split on dots for nested tables
     let parts = path.split(".")
     let result = Array::new()
     for part in parts {
-      let trimmed = part.trim()
-      if trimmed.length() > 0 {
-        result.push(trimmed)
+      if part.length() > 0 {
+        result.push(part.to_string())
       }
     }
     result
@@ -158,7 +157,7 @@ fn Parser::parse_table_path(self : Parser, path : String) -> Array[String] {
 
 ///| Ensure a table path exists in the root table and return the target table
 fn Parser::ensure_table_path_exists(
-  self : Parser,
+  _self : Parser,
   root : Map[String, TomlValue],
   path : Array[String],
 ) -> Map[String, TomlValue] raise {
@@ -182,7 +181,7 @@ fn Parser::ensure_table_path_exists(
 
 ///| Ensure an array table exists and return a new table to add to the array
 fn Parser::ensure_array_table_exists(
-  self : Parser,
+  _self : Parser,
   root : Map[String, TomlValue],
   path : Array[String],
 ) -> Map[String, TomlValue] raise {

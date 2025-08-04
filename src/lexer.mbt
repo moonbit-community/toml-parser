@@ -163,12 +163,11 @@ fn Lexer::read_multiline_string(
 ) -> String raise {
   let mut result = ""
   let mut quote_count = 0
-  let mut first_newline_consumed = false
+
 
   // Skip the first newline if present (TOML spec)
   if self.peek() is Some('\n') {
     self.advance()
-    first_newline_consumed = true
   }
   while self.peek() is Some(ch) {
     if ch == quote_char {
@@ -241,23 +240,31 @@ fn Lexer::read_hex_number(self : Lexer) -> Token raise {
   }
   
   // Convert hex to decimal
-  let hex_part = num_str.substring(2) // Remove "0x" prefix
+  let hex_part = num_str.substring(start=2) // Remove "0x" prefix
   let mut result = 0L
   for i = 0; i < hex_part.length(); i = i + 1 {
     result = result * 16L
-    match hex_part.get_char(i) {
-      Ok(ch) => {
-        let digit = match ch {
-          '0' => 0L | '1' => 1L | '2' => 2L | '3' => 3L | '4' => 4L
-          '5' => 5L | '6' => 6L | '7' => 7L | '8' => 8L | '9' => 9L
-          'a' | 'A' => 10L | 'b' | 'B' => 11L | 'c' | 'C' => 12L
-          'd' | 'D' => 13L | 'e' | 'E' => 14L | 'f' | 'F' => 15L
-          _ => fail("Invalid hex digit: " + Char::to_string(ch))
-        }
-        result = result + digit
-      }
-      Err(_) => fail("Invalid hex number")
+    let ch = hex_part.get_char(i).unwrap()
+    let digit = match ch {
+      '0' => 0L
+      '1' => 1L
+      '2' => 2L
+      '3' => 3L
+      '4' => 4L
+      '5' => 5L
+      '6' => 6L
+      '7' => 7L
+      '8' => 8L
+      '9' => 9L
+      'a' | 'A' => 10L
+      'b' | 'B' => 11L
+      'c' | 'C' => 12L
+      'd' | 'D' => 13L
+      'e' | 'E' => 14L
+      'f' | 'F' => 15L
+      _ => fail("Invalid hex digit: " + Char::to_string(ch))
     }
+    result = result + digit
   }
   IntegerToken(result)
 }
@@ -276,21 +283,23 @@ fn Lexer::read_octal_number(self : Lexer) -> Token raise {
   }
   
   // Convert octal to decimal
-  let octal_part = num_str.substring(2) // Remove "0o" prefix
+  let octal_part = num_str.substring(start=2) // Remove "0o" prefix
   let mut result = 0L
   for i = 0; i < octal_part.length(); i = i + 1 {
     result = result * 8L
-    match octal_part.get_char(i) {
-      Ok(ch) => {
-        let digit = match ch {
-          '0' => 0L | '1' => 1L | '2' => 2L | '3' => 3L
-          '4' => 4L | '5' => 5L | '6' => 6L | '7' => 7L
-          _ => fail("Invalid octal digit: " + Char::to_string(ch))
-        }
-        result = result + digit
-      }
-      Err(_) => fail("Invalid octal number")
+    let ch = octal_part.get_char(i).unwrap()
+    let digit = match ch {
+      '0' => 0L
+      '1' => 1L
+      '2' => 2L
+      '3' => 3L
+      '4' => 4L
+      '5' => 5L
+      '6' => 6L
+      '7' => 7L
+      _ => fail("Invalid octal digit: " + Char::to_string(ch))
     }
+    result = result + digit
   }
   IntegerToken(result)
 }
@@ -308,21 +317,17 @@ fn Lexer::read_binary_number(self : Lexer) -> Token raise {
   }
 
   // Convert binary to decimal
-  let binary_part = num_str.substring(2) // Remove "0b" prefix
+  let binary_part = num_str.substring(start=2) // Remove "0b" prefix
   let mut result = 0L
   for i = 0; i < binary_part.length(); i = i + 1 {
     result = result * 2L
-    match binary_part.get_char(i) {
-      Ok(ch) => {
-        let digit = match ch {
-          '0' => 0L
-          '1' => 1L
-          _ => fail("Invalid binary digit: " + Char::to_string(ch))
-        }
-        result = result + digit
-      }
-      Err(_) => fail("Invalid binary number")
+    let ch = binary_part.get_char(i).unwrap()
+    let digit = match ch {
+      '0' => 0L
+      '1' => 1L
+      _ => fail("Invalid binary digit: " + Char::to_string(ch))
     }
+    result = result + digit
   }
   IntegerToken(result)
 }
@@ -332,10 +337,7 @@ fn char_at_matches(input : String, pos : Int, expected : Char) -> Bool {
   if pos >= input.length() {
     return false
   }
-  match input.get_char(pos) {
-    Ok(ch) => ch == expected
-    Err(_) => false
-  }
+  input.get_char(pos).unwrap() == expected
 }
 
 ///| Check if a string matches date-time patterns
@@ -375,9 +377,8 @@ fn is_datetime_pattern(input : String) -> Bool {
 ///| Check if string contains character
 fn string_contains_char(input : String, target : Char) -> Bool {
   for i = 0; i < input.length(); i = i + 1 {
-    match input.get_char(i) {
-      Ok(ch) if ch == target => return true
-      _ => continue
+    if input.get_char(i).unwrap() == target {
+      return true
     }
   }
   false
@@ -390,9 +391,8 @@ fn string_contains_char_after(
   start_pos : Int,
 ) -> Bool {
   for i = start_pos; i < input.length(); i = i + 1 {
-    match input.get_char(i) {
-      Ok(ch) if ch == target => return true
-      _ => continue
+    if input.get_char(i).unwrap() == target {
+      return true
     }
   }
   false
@@ -425,7 +425,7 @@ fn parse_datetime_type(input : String) -> TomlDateTime {
 fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
   let mut num_str = if is_negative { "-" } else { "" }
   let mut is_float = false
-  let start_pos = self.position - 1 // Account for already consumed character
+
 
   // Read digits
   while self.peek() is Some(ch) && is_numeric(ch) {
@@ -622,8 +622,8 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
             // Check for negative special float values
             let identifier = self.read_identifier()
             match identifier {
-              "inf" => FloatToken(Double::neg_inf)
-              "nan" => FloatToken(Double::nan)
+              "inf" => FloatToken(-@double.infinity)
+              "nan" => FloatToken(@double.not_a_number)
               _ => {
                 // Not a special float value, error
                 self.position = saved_pos
@@ -644,8 +644,8 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
         if self.peek() is Some(next_ch) && is_alpha(next_ch) {
           let identifier = self.read_identifier()
           match identifier {
-            "inf" => FloatToken(Double::pos_inf)
-            "nan" => FloatToken(Double::nan)
+                      "inf" => FloatToken(@double.infinity)
+          "nan" => FloatToken(@double.not_a_number)
             _ => {
               // Not a special float value, error
               self.position = saved_pos
@@ -663,12 +663,12 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
         match identifier {
           "true" => BooleanToken(true)
           "false" => BooleanToken(false)
-          "inf" => FloatToken(Double::pos_inf)
-          "+inf" => FloatToken(Double::pos_inf)
-          "-inf" => FloatToken(Double::neg_inf)
-          "nan" => FloatToken(Double::nan)
-          "+nan" => FloatToken(Double::nan)
-          "-nan" => FloatToken(Double::nan)
+          "inf" => FloatToken(@double.infinity)
+          "+inf" => FloatToken(@double.infinity)
+          "-inf" => FloatToken(-@double.infinity)
+          "nan" => FloatToken(@double.not_a_number)
+          "+nan" => FloatToken(@double.not_a_number)
+          "-nan" => FloatToken(@double.not_a_number)
           _ => Identifier(identifier)
         }
       } else {

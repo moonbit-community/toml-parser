@@ -454,12 +454,12 @@ test "float special values" {
   @json.inspect(@toml.parse(float_special_toml), content=[
     "TomlTable",
     {
-      "infinity1": ["TomlFloat", Double::pos_inf],
-      "infinity2": ["TomlFloat", Double::pos_inf],
-      "infinity3": ["TomlFloat", Double::neg_inf],
-      "not_a_number1": ["TomlFloat", Double::nan],
-      "not_a_number2": ["TomlFloat", Double::nan],
-      "not_a_number3": ["TomlFloat", Double::nan],
+      "infinity1": ["TomlFloat", @double.infinity],
+      "infinity2": ["TomlFloat", @double.infinity],
+      "infinity3": ["TomlFloat", -@double.infinity],
+      "not_a_number1": ["TomlFloat", @double.not_a_number],
+      "not_a_number2": ["TomlFloat", @double.not_a_number],
+      "not_a_number3": ["TomlFloat", @double.not_a_number],
     },
   ])
 }
