@@ -71,6 +71,11 @@ fn Parser::parse_array(self : Parser) -> TomlValue raise {
       Comma => {
         ignore(self.advance())
         self.skip_newlines()
+        // Check for trailing comma (comma followed by closing bracket)
+        if self.peek() == RightBracket {
+          ignore(self.advance())
+          break
+        }
       }
       RightBracket => {
         ignore(self.advance())
