@@ -181,25 +181,54 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       if is_numeric(ch) {
         self.read_number(false)
       } else if ch == '-' {
-        // Check if this is a negative number
+        // Check if this is a negative number or special float
         let saved_pos = self.position
         self.advance() // consume the '-'
         match self.peek() {
           Some(next_ch) if is_numeric(next_ch) =>
             // This is a negative number, read it
             self.read_number(true)
+          Some(next_ch) if is_alpha(next_ch) => {
+            let identifier = self.read_identifier()
+            match identifier {
+              "inf" => FloatToken(@strconv.parse_double("-inf"))
+              "nan" => FloatToken(@strconv.parse_double("-nan"))
+              _ => fail("Unexpected identifier after '-': " + identifier)
+            }
+          }
           _ => {
-            // Not a negative number, restore position and error
+            // Not a negative number or special float, restore position and error
             self.position = saved_pos
             fail("Unexpected character: " + Char::to_string(ch))
           }
         }
+      } else if ch == '+' {
+        // Handle optional plus sign for numbers and special floats
+        let saved_pos = self.position
+        self.advance() // consume '+'
+        match self.peek() {
+          Some(next_ch) if is_numeric(next_ch) => self.read_number(false)
+          Some(next_ch) if is_alpha(next_ch) => {
+            let identifier = self.read_identifier()
+            match identifier {
+              "inf" => FloatToken(@strconv.parse_double("+inf"))
+              "nan" => FloatToken(@strconv.parse_double("+nan"))
+              _ => fail("Unexpected identifier after '+': " + identifier)
+            }
+          }
+          _ => {
+            self.position = saved_pos
+            fail("Unexpected character: +")
+          }
+        }
       } else if is_alpha(ch) {
         let identifier = self.read_identifier()
-        // Check for boolean keywords
+        // Check for boolean keywords or special float values
         match identifier {
           "true" => BooleanToken(true)
           "false" => BooleanToken(false)
+          "inf" => FloatToken(@strconv.parse_double("inf"))
+          "nan" => FloatToken(@strconv.parse_double("nan"))
           _ => Identifier(identifier)
         }
       } else {

@@ -382,21 +382,21 @@ test "complex values combination" {
 //   ])
 // }
 
-// TODO: Comments in middle of values not fully tested
-// test "comments" {
-//   let comments_toml =
-//     #|# This is a full-line comment
-//     #|key = "value"  # This is a comment at the end of a line
-//     #|another = "# This is not a comment"
-//     #|
-//   @json.inspect(@toml.parse(comments_toml), content=[
-//     "TomlTable",
-//     {
-//       "key": ["TomlString", "value"],
-//       "another": ["TomlString", "# This is not a comment"]
-//     }
-//   ])
-// }
+///| Test comment handling
+test "comments" {
+  let comments_toml =
+    #|# This is a full-line comment
+    #|key = "value"  # This is a comment at the end of a line
+    #|another = "# This is not a comment"
+    #|
+  @json.inspect(@toml.parse(comments_toml), content=[
+    "TomlTable",
+    {
+      "key": ["TomlString", "value"],
+      "another": ["TomlString", "# This is not a comment"],
+    },
+  ])
+}
 
 // TODO: Integer formats (hex, octal, binary) not yet supported
 // test "integer formats" {
@@ -421,28 +421,28 @@ test "complex values combination" {
 //   ])
 // }
 
-// TODO: Float special values not yet supported
-// test "float special values" {
-//   let float_special_toml =
-//     #|infinity1 = inf
-//     #|infinity2 = +inf
-//     #|infinity3 = -inf
-//     #|not_a_number1 = nan
-//     #|not_a_number2 = +nan
-//     #|not_a_number3 = -nan
-//     #|
-//   @json.inspect(@toml.parse(float_special_toml), content=[
-//     "TomlTable",
-//     {
-//       "infinity1": ["TomlFloat", Double::pos_inf],
-//       "infinity2": ["TomlFloat", Double::pos_inf],
-//       "infinity3": ["TomlFloat", Double::neg_inf],
-//       "not_a_number1": ["TomlFloat", Double::nan],
-//       "not_a_number2": ["TomlFloat", Double::nan],
-//       "not_a_number3": ["TomlFloat", Double::nan]
-//     }
-//   ])
-// }
+///| Test special float values
+test "float special values" {
+  let float_special_toml =
+    #|infinity1 = inf
+    #|infinity2 = +inf
+    #|infinity3 = -inf
+    #|not_a_number1 = nan
+    #|not_a_number2 = +nan
+    #|not_a_number3 = -nan
+    #|
+  @json.inspect(@toml.parse(float_special_toml), content=[
+    "TomlTable",
+    {
+      "infinity1": ["TomlFloat", @strconv.parse_double("inf")],
+      "infinity2": ["TomlFloat", @strconv.parse_double("+inf")],
+      "infinity3": ["TomlFloat", @strconv.parse_double("-inf")],
+      "not_a_number1": ["TomlFloat", @strconv.parse_double("nan")],
+      "not_a_number2": ["TomlFloat", @strconv.parse_double("+nan")],
+      "not_a_number3": ["TomlFloat", @strconv.parse_double("-nan")],
+    },
+  ])
+}
 
 ///| Test for heterogeneous arrays (should be invalid according to TOML spec)
 test "heterogeneous arrays should be invalid" {
