@@ -216,8 +216,16 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 {
 }
 
 ///| Parse a number (integer or float), with optional negative sign
-fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
-  let mut num_str = if is_negative { "-" } else { "" }
+/// # Example:
+/// ```
+/// let lexer = Lexer::new("123")
+/// inspect(lexer.read_number(false), content="IntegerToken(123)")
+/// ```
+pub fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
+  let sb = StringBuilder::new()
+  if is_negative {
+    sb.write_char('-')
+  }
   let mut is_float = false
 
   // Check if this might be a special format number (0x, 0o, 0b)
@@ -248,11 +256,9 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
 
   // Read digits
   while self.peek() is Some(ch) && (is_numeric(ch) || ch == '_') {
+    self.advance()
     if ch != '_' {
-      self.advance()
-      num_str = num_str + Char::to_string(ch)
-    } else {
-      self.advance() // skip underscore
+      sb.write_char(ch)
     }
   }
 
@@ -260,23 +266,22 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
   if self.peek() is Some('.') {
     is_float = true
     self.advance()
-    num_str = num_str + Char::to_string('.')
+    sb.write_char('.')
     while self.peek() is Some(ch) && (is_numeric(ch) || ch == '_') {
+      self.advance()
       if ch != '_' {
-        self.advance()
-        num_str = num_str + Char::to_string(ch)
-      } else {
-        self.advance() // skip underscore
+        sb.write_char(ch)
       }
     }
   }
+  let s = sb.to_string()
   if is_float {
-    FloatToken(@strconv.parse_double(num_str)) catch {
-      _ => fail("Invalid float: " + num_str)
+    FloatToken(@strconv.parse_double(s)) catch {
+      _ => fail("Invalid float: " + s)
     }
   } else {
-    IntegerToken(@strconv.parse_int64(num_str)) catch {
-      _ => fail("Invalid integer: " + num_str)
+    IntegerToken(@strconv.parse_int64(s)) catch {
+      _ => fail("Invalid integer: " + s)
     }
   }
 }
