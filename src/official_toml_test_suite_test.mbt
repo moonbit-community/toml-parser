@@ -213,9 +213,6 @@ test "complex values combination" {
   ])
 }
 
-// TODO: The following tests are commented out because they require features not yet implemented in the parser
-// Once these features are implemented, these tests should be uncommented and verified
-
 ///| Test basic table syntax
 test "basic table" {
   let table_toml =
@@ -332,18 +329,17 @@ test "basic table" {
 //   ])
 // }
 
-// TODO: Multiline strings not yet supported
-// test "multiline basic strings" {
-//   let multiline_basic_toml =
-//     #|str1 = """
-//     #|Roses are red
-//     #|Violets are blue"""
-//     #|
-//   @json.inspect(@toml.parse(multiline_basic_toml), content=[
-//     "TomlTable",
-//     { "str1": ["TomlString", "Roses are red\nViolets are blue"] }
-//   ])
-// }
+test "multiline basic strings" {
+  let multiline_basic_toml =
+    #|str1 = """
+    #|Roses are red
+    #|Violets are blue"""
+    #|
+  @json.inspect(@toml.parse(multiline_basic_toml), content=[
+    "TomlTable",
+    { "str1": ["TomlString", "Roses are red\nViolets are blue"] }
+  ])
+}
 
 ///| Test literal strings (single quotes)
 test "literal strings" {
@@ -362,25 +358,24 @@ test "literal strings" {
   ])
 }
 
-// TODO: Multiline literal strings not yet supported
-// test "multiline literal strings" {
-//   let multiline_literal_toml =
-//     #|regex2 = '''I [dw]on't need \d{2} apples'''
-//     #|lines = '''
-//     #|The first newline is
-//     #|trimmed in raw strings.
-//     #|   All other whitespace
-//     #|   is preserved.
-//     #|'''
-//     #|
-//   @json.inspect(@toml.parse(multiline_literal_toml), content=[
-//     "TomlTable",
-//     {
-//       "regex2": ["TomlString", "I [dw]on't need \\d{2} apples"],
-//       "lines": ["TomlString", "The first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved.\n"]
-//     }
-//   ])
-// }
+test "multiline literal strings" {
+  let multiline_literal_toml =
+    #|regex2 = '''I [dw]on't need \d{2} apples'''
+    #|lines = '''
+    #|The first newline is
+    #|trimmed in raw strings.
+    #|   All other whitespace
+    #|   is preserved.
+    #|'''
+    #|
+  @json.inspect(@toml.parse(multiline_literal_toml), content=[
+    "TomlTable",
+    {
+      "regex2": ["TomlString", "I [dw]on't need \\d{2} apples"],
+      "lines": ["TomlString", "The first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved.\n"]
+    }
+  ])
+}
 
 ///| Test comments functionality
 test "comments" {
@@ -421,28 +416,27 @@ test "integer formats" {
   ])
 }
 
-// TODO: Float special values not yet supported - Need to find correct MoonBit API
-// test "float special values" {
-//   let float_special_toml =
-//     #|infinity1 = inf
-//     #|infinity2 = +inf
-//     #|infinity3 = -inf
-//     #|not_a_number1 = nan
-//     #|not_a_number2 = +nan
-//     #|not_a_number3 = -nan
-//     #|
-//   @json.inspect(@toml.parse(float_special_toml), content=[
-//     "TomlTable",
-//     {
-//       "infinity1": ["TomlFloat", @double.positive_infinity],
-//       "infinity2": ["TomlFloat", @double.positive_infinity],
-//       "infinity3": ["TomlFloat", @double.negative_infinity],
-//       "not_a_number1": ["TomlFloat", @double.not_a_number()],
-//       "not_a_number2": ["TomlFloat", @double.not_a_number()],
-//       "not_a_number3": ["TomlFloat", @double.not_a_number()]
-//     }
-//   ])
-// }
+test "float special values" {
+  let float_special_toml =
+    #|infinity1 = inf
+    #|infinity2 = +inf
+    #|infinity3 = -inf
+    #|not_a_number1 = nan
+    #|not_a_number2 = +nan
+    #|not_a_number3 = -nan
+    #|
+  @json.inspect(@toml.parse(float_special_toml), content=[
+    "TomlTable",
+    {
+      "infinity1": ["TomlFloat", 1.0 / 0.0],
+      "infinity2": ["TomlFloat", 1.0 / 0.0],
+      "infinity3": ["TomlFloat", -1.0 / 0.0],
+      "not_a_number1": ["TomlFloat", 0.0 / 0.0],
+      "not_a_number2": ["TomlFloat", 0.0 / 0.0],
+      "not_a_number3": ["TomlFloat", 0.0 / 0.0]
+    }
+  ])
+}
 
 ///| Test for heterogeneous arrays (should be invalid according to TOML spec)
 test "heterogeneous arrays should be invalid" {

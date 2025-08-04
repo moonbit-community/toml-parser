@@ -121,6 +121,126 @@ fn Lexer::read_literal_string(self : Lexer) -> String raise {
   }
 }
 
+///| Parse a multiline basic string (triple quotes) with escape sequences
+fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
+  // Consume the opening """
+  self.advance() // consume first "
+  self.advance() // consume second "
+  self.advance() // consume third "
+  
+  let mut result = ""
+  
+  // Check for and skip the first newline if present (TOML spec requirement)
+  if self.peek() is Some('\n') {
+    self.advance()
+  }
+  
+  while true {
+    match self.peek() {
+      None => fail("Unterminated multiline string")
+      Some('"') => {
+        // Check if this is the closing """
+        let saved_pos = self.position
+        self.advance() // consume first "
+        if self.peek() is Some('"') {
+          self.advance() // consume second "
+          if self.peek() is Some('"') {
+            self.advance() // consume third "
+            return result // Found closing """
+          } else {
+            // Only two quotes, add them to result and continue
+            // Restore position to just after the first quote
+            self.position = saved_pos + 1
+            result = result + "\""
+          }
+        } else {
+          // Only one quote, add it to result and continue
+          // Restore position to just after the first quote  
+          self.position = saved_pos + 1
+          result = result + "\""
+        }
+      }
+      Some(ch) => {
+        self.advance() // consume character
+        if ch == '\\' {
+          // Handle escape sequences
+          match self.peek() {
+            Some(escaped) => {
+              self.advance() // consume escape character  
+              match escaped {
+                'n' => result = result + "\n"
+                't' => result = result + "\t"
+                'r' => result = result + "\r"
+                '\\' => result = result + "\\"
+                '"' => result = result + "\""
+                '\'' => result = result + "'"
+                _ => fail("Invalid escape sequence: \\" + Char::to_string(escaped))
+              }
+            }
+            None => fail("Unexpected end of input after escape character")
+          }
+        } else {
+          result = result + Char::to_string(ch)
+        }
+      }
+    }
+  } else {
+    // This should never be reached, but needed for type checking
+    result
+  }
+}
+
+///| Parse a multiline literal string (triple single quotes) without escape sequences  
+fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
+  // Consume the opening '''
+  self.advance() // consume first '
+  self.advance() // consume second '
+  self.advance() // consume third '
+  
+  let mut result = ""
+  
+  // Check for and skip the first newline if present (TOML spec requirement)
+  if self.peek() is Some('\n') {
+    self.advance()
+  }
+  
+  while true {
+    match self.peek() {
+      None => fail("Unterminated multiline literal string")
+      Some('\'') => {
+        // Check if this is the closing '''
+        let saved_pos = self.position
+        self.advance() // consume first '
+        if self.peek() is Some('\'') {
+          self.advance() // consume second '
+          if self.peek() is Some('\'') {
+            self.advance() // consume third '
+            return result // Found closing '''
+          } else {
+            // Only two quotes, add them to result and continue
+            // Restore position to just after the first quote
+            self.position = saved_pos + 1
+            result = result + "'"
+          }
+        } else {
+          // Only one quote, add it to result and continue
+          // Restore position to just after the first quote
+          self.position = saved_pos + 1
+          result = result + "'"
+        }
+      }
+      Some(ch) => {
+        self.advance() // consume character
+        // No escape sequences in literal strings - just add the character as-is
+        result = result + Char::to_string(ch)
+      }
+    }
+  } else {
+    // This should never be reached, but needed for type checking
+    result
+  }
+}
+
 ///| Check if character is hexadecimal digit
 fn is_hex_digit(ch : Char) -> Bool {
   is_numeric(ch) || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F')
@@ -291,8 +411,75 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       self.advance()
       return Dot
     }
-    Some('"') => StringToken(self.read_basic_string())
-    Some('\'') => StringToken(self.read_literal_string())
+    Some('+') => {
+      // Check if this is a positive special float
+      let saved_pos = self.position
+      self.advance() // consume the '+'
+      match self.peek() {
+        Some(next_ch) if is_alpha(next_ch) => {
+          // Check for special float identifiers after positive sign
+          let identifier = self.read_identifier()
+          match identifier {
+            "inf" => FloatToken(1.0 / 0.0)   // positive infinity
+            "nan" => FloatToken(0.0 / 0.0)   // NaN 
+            _ => {
+              // Not a special float, restore position and error
+              self.position = saved_pos
+              fail("Unexpected character: +")
+            }
+          }
+        }
+        _ => {
+          // Not a special float, restore position and error
+          self.position = saved_pos
+          fail("Unexpected character: +")
+        }
+      }
+    }
+    Some('"') => {
+      // Check if this is a multiline string (""")
+      let saved_pos = self.position
+      self.advance() // consume first "
+      if self.peek() is Some('"') {
+        self.advance() // consume second "
+        if self.peek() is Some('"') {
+          // This is a multiline string, restore position for proper parsing
+          self.position = saved_pos
+          StringToken(self.read_multiline_basic_string())
+        } else {
+          // Only two quotes, this is an empty string followed by something else
+          // Restore position and parse as basic string
+          self.position = saved_pos
+          StringToken(self.read_basic_string())
+        }
+      } else {
+        // Single quote, parse as basic string
+        self.position = saved_pos
+        StringToken(self.read_basic_string())
+      }
+    }
+    Some('\'') => {
+      // Check if this is a multiline literal string (''')
+      let saved_pos = self.position
+      self.advance() // consume first '
+      if self.peek() is Some('\'') {
+        self.advance() // consume second '
+        if self.peek() is Some('\'') {
+          // This is a multiline literal string, restore position for proper parsing
+          self.position = saved_pos
+          StringToken(self.read_multiline_literal_string())
+        } else {
+          // Only two quotes, this is an empty string followed by something else
+          // Restore position and parse as literal string
+          self.position = saved_pos
+          StringToken(self.read_literal_string())
+        }
+      } else {
+        // Single quote, parse as literal string
+        self.position = saved_pos
+        StringToken(self.read_literal_string())
+      }
+    }
     Some(ch) =>
       if is_numeric(ch) {
         self.read_number(false)
@@ -304,6 +491,19 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
           Some(next_ch) if is_numeric(next_ch) =>
             // This is a negative number, read it
             self.read_number(true)
+          Some(next_ch) if is_alpha(next_ch) => {
+            // Check for special float identifiers after negative sign
+            let identifier = self.read_identifier()
+            match identifier {
+              "inf" => FloatToken(-1.0 / 0.0)  // negative infinity
+              "nan" => FloatToken(0.0 / 0.0)   // NaN (sign doesn't matter)
+              _ => {
+                // Not a special float, restore position and error
+                self.position = saved_pos
+                fail("Unexpected character: " + Char::to_string(ch))
+              }
+            }
+          }
           _ => {
             // Not a negative number or special float, restore position and error
             self.position = saved_pos
@@ -312,10 +512,12 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
         }
       } else if is_alpha(ch) {
         let identifier = self.read_identifier()
-        // Check for boolean keywords
+        // Check for boolean keywords and float special values
         match identifier {
           "true" => BooleanToken(true)
           "false" => BooleanToken(false)
+          "inf" => FloatToken(1.0 / 0.0)  // positive infinity
+          "nan" => FloatToken(0.0 / 0.0)  // NaN
           _ => Identifier(identifier)
         }
       } else {
