@@ -7,13 +7,11 @@ fn tokenize(String) -> Array[Token] raise
 // Errors
 
 // Types and methods
-pub struct Lexer {
-  input : String
-  mut position : Int
-  mut line : Int
-  mut column : Int
-}
+type Lexer
+fn Lexer::advance(Self) -> Unit
+fn Lexer::expect_char(Self, Char, msg? : String) -> Unit raise
 fn Lexer::new(String) -> Self
+fn Lexer::peek(Self) -> Char?
 
 pub(all) enum Token {
   StringToken(String)

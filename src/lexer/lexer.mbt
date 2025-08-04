@@ -49,6 +49,15 @@ pub fn Lexer::peek(self : Lexer) -> Char? {
   self.input.get_char(self.position)
 }
 
+///|
+pub fn Lexer::expect_char(self : Self, ch : Char, msg? : String) -> Unit raise {
+  if self.peek() is Some(c) && c == ch {
+    self.advance()
+  } else {
+    fail(msg.unwrap_or("Expected character: " + Char::to_string(ch)))
+  }
+}
+
 ///| Get current character and advance position
 /// handle surrogate pairs and multi-byte characters
 pub fn Lexer::advance(self : Lexer) -> Unit {
@@ -97,7 +106,12 @@ fn Lexer::read_identifier(self : Lexer) -> String {
 }
 
 ///| Parse a basic string (double quotes) with escape sequences
-fn Lexer::read_basic_string(self : Lexer) -> String raise {
+/// # Example:
+/// ```
+/// let lexer = Lexer::new("\"Hello, \\\"world\\\"!\"")
+/// inspect(lexer.read_basic_string(), content="Hello, \"world\"!")
+/// ```
+pub fn Lexer::read_basic_string(self : Lexer) -> String raise {
   self.advance() // consume opening quote
   let mut result = ""
   while self.peek() is Some(ch) && ch != '"' {
@@ -123,12 +137,8 @@ fn Lexer::read_basic_string(self : Lexer) -> String raise {
       result = result + Char::to_string(ch)
     }
   }
-  if self.peek() is Some('"') {
-    self.advance() // consume closing quote
-    result
-  } else {
-    fail("Unterminated string")
-  }
+  self.expect_char('"', msg="Unterminated string")
+  result
 }
 
 ///| Parse a literal string (single quotes) without escape sequences
@@ -139,12 +149,8 @@ fn Lexer::read_literal_string(self : Lexer) -> String raise {
     self.advance() // consume character
     result = result + Char::to_string(ch)
   }
-  if self.peek() is Some('\'') {
-    self.advance() // consume closing quote
-    result
-  } else {
-    fail("Unterminated string")
-  }
+  self.expect_char('\'', msg="Unterminated string")
+  result
 }
 
 ///| Check if character is hexadecimal digit
