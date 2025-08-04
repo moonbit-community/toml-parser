@@ -1,5 +1,7 @@
 ///| Official TOML Test Suite - Tests based on https://github.com/toml-lang/toml-test/tree/main/tests/valid
+
 ///| These tests cover features from the official TOML specification
+
 ///| Tests are implemented using MoonBit's multiline string syntax (#|...|#)
 
 ///| Test basic string values
@@ -8,8 +10,8 @@ test "basic string" {
     #|basic = "value"
     #|
   @json.inspect(@toml.parse(basic_string_toml), content=[
-    "TomlTable", 
-    { "basic": ["TomlString", "value"] }
+    "TomlTable",
+    { "basic": ["TomlString", "value"] },
   ])
 }
 
@@ -19,8 +21,12 @@ test "string escape sequences" {
     #|escaped = "I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."
     #|
   @json.inspect(@toml.parse(escaped_string_toml), content=[
-    "TomlTable", 
-    { "escaped": ["TomlString", "I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."] }
+    "TomlTable",
+    {
+      "escaped": [
+        "TomlString", "I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF.",
+      ],
+    },
   ])
 }
 
@@ -36,8 +42,8 @@ test "basic integer" {
     {
       "answer": ["TomlInteger", "42"],
       "negative": ["TomlInteger", "-17"],
-      "zero": ["TomlInteger", "0"]
-    }
+      "zero": ["TomlInteger", "0"],
+    },
   ])
 }
 
@@ -53,8 +59,8 @@ test "basic float" {
     {
       "pi": ["TomlFloat", 3.14],
       "negative": ["TomlFloat", -0.01],
-      "positive": ["TomlFloat", 5.0]
-    }
+      "positive": ["TomlFloat", 5.0],
+    },
   ])
 }
 
@@ -66,10 +72,7 @@ test "basic boolean" {
     #|
   @json.inspect(@toml.parse(boolean_toml), content=[
     "TomlTable",
-    {
-      "enabled": ["TomlBoolean", true],
-      "disabled": ["TomlBoolean", false]
-    }
+    { "enabled": ["TomlBoolean", true], "disabled": ["TomlBoolean", false] },
   ])
 }
 
@@ -91,34 +94,26 @@ test "homogeneous arrays" {
           ["TomlInteger", "2"],
           ["TomlInteger", "3"],
           ["TomlInteger", "4"],
-          ["TomlInteger", "5"]
-        ]
+          ["TomlInteger", "5"],
+        ],
       ],
       "strings": [
         "TomlArray",
         [
           ["TomlString", "red"],
           ["TomlString", "yellow"],
-          ["TomlString", "green"]
-        ]
+          ["TomlString", "green"],
+        ],
       ],
       "booleans": [
         "TomlArray",
-        [
-          ["TomlBoolean", true],
-          ["TomlBoolean", false],
-          ["TomlBoolean", true]
-        ]
+        [["TomlBoolean", true], ["TomlBoolean", false], ["TomlBoolean", true]],
       ],
       "floats": [
         "TomlArray",
-        [
-          ["TomlFloat", 1.1],
-          ["TomlFloat", 2.2],
-          ["TomlFloat", 3.3]
-        ]
-      ]
-    }
+        [["TomlFloat", 1.1], ["TomlFloat", 2.2], ["TomlFloat", 3.3]],
+      ],
+    },
   ])
 }
 
@@ -133,24 +128,14 @@ test "nested arrays" {
       "nested": [
         "TomlArray",
         [
-          [
-            "TomlArray", 
-            [
-              ["TomlInteger", "1"],
-              ["TomlInteger", "2"]
-            ]
-          ],
+          ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"]]],
           [
             "TomlArray",
-            [
-              ["TomlInteger", "3"],
-              ["TomlInteger", "4"],
-              ["TomlInteger", "5"]
-            ]
-          ]
-        ]
-      ]
-    }
+            [["TomlInteger", "3"], ["TomlInteger", "4"], ["TomlInteger", "5"]],
+          ],
+        ],
+      ],
+    },
   ])
 }
 
@@ -161,9 +146,7 @@ test "empty arrays" {
     #|
   @json.inspect(@toml.parse(empty_array_toml), content=[
     "TomlTable",
-    {
-      "empty": ["TomlArray", []]
-    }
+    { "empty": ["TomlArray", []] },
   ])
 }
 
@@ -179,20 +162,14 @@ test "inline tables" {
     {
       "person": [
         "TomlTable",
-        {
-          "name": ["TomlString", "John"],
-          "age": ["TomlInteger", "30"]
-        }
+        { "name": ["TomlString", "John"], "age": ["TomlInteger", "30"] },
       ],
       "point": [
-        "TomlTable", 
-        {
-          "x": ["TomlInteger", "1"],
-          "y": ["TomlInteger", "2"]
-        }
+        "TomlTable",
+        { "x": ["TomlInteger", "1"], "y": ["TomlInteger", "2"] },
       ],
-      "empty": ["TomlTable", {}]
-    }
+      "empty": ["TomlTable", {}],
+    },
   ])
 }
 
@@ -217,25 +194,22 @@ test "complex values combination" {
         [
           ["TomlInteger", "8000"],
           ["TomlInteger", "8001"],
-          ["TomlInteger", "8002"]
-        ]
+          ["TomlInteger", "8002"],
+        ],
       ],
       "database": [
         "TomlTable",
         {
           "server": ["TomlString", "192.168.1.1"],
           "port": ["TomlInteger", "5432"],
-          "enabled": ["TomlBoolean", true]
-        }
+          "enabled": ["TomlBoolean", true],
+        },
       ],
       "tags": [
         "TomlArray",
-        [
-          ["TomlString", "production"],
-          ["TomlString", "web"]
-        ]
-      ]
-    }
+        [["TomlString", "production"], ["TomlString", "web"]],
+      ],
+    },
   ])
 }
 
@@ -477,10 +451,9 @@ test "heterogeneous arrays should be invalid" {
   let mixed_array = [
     @toml.TomlInteger(1L),
     @toml.TomlString("hello"),
-    @toml.TomlBoolean(true)
+    @toml.TomlBoolean(true),
   ]
   inspect(@toml.TomlValue::is_homogeneous_array(mixed_array), content="false")
-  
   let mixed_toml_array = @toml.TomlArray(mixed_array)
   inspect(mixed_toml_array.validate(), content="false")
 }
@@ -499,8 +472,8 @@ test "whitespace handling" {
       "key1": ["TomlString", "value1"],
       "key2": ["TomlString", "value2"],
       "key3": ["TomlString", "value3"],
-      "key4": ["TomlString", "value4"]
-    }
+      "key4": ["TomlString", "value4"],
+    },
   ])
 }
 
@@ -519,20 +492,12 @@ test "array formatting" {
     {
       "array1": [
         "TomlArray",
-        [
-          ["TomlInteger", "1"],
-          ["TomlInteger", "2"],
-          ["TomlInteger", "3"]
-        ]
+        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
       ],
       "array2": [
         "TomlArray",
-        [
-          ["TomlInteger", "1"],
-          ["TomlInteger", "2"],
-          ["TomlInteger", "3"]
-        ]
-      ]
-    }
+        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
+      ],
+    },
   ])
-} 
+}
