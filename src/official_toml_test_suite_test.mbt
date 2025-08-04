@@ -230,10 +230,10 @@ test "basic table" {
         "TomlTable",
         {
           "name": ["TomlString", "Tom Preston-Werner"],
-          "organization": ["TomlString", "GitHub"]
-        }
-      ]
-    }
+          "organization": ["TomlString", "GitHub"],
+        },
+      ],
+    },
   ])
 }
 
@@ -357,8 +357,8 @@ test "literal strings" {
     {
       "winpath": ["TomlString", "C:\\Users\\nodejs\\templates"],
       "quoted": ["TomlString", "Tom \"Dubs\" Preston-Werner"],
-      "regex": ["TomlString", "<\\i\\c*\\s*>"]
-    }
+      "regex": ["TomlString", "<\\i\\c*\\s*>"],
+    },
   ])
 }
 
@@ -393,8 +393,8 @@ test "comments" {
     "TomlTable",
     {
       "key": ["TomlString", "value"],
-      "another": ["TomlString", "# This is not a comment"]
-    }
+      "another": ["TomlString", "# This is not a comment"],
+    },
   ])
 }
 
@@ -416,8 +416,8 @@ test "integer formats" {
       "hex3": ["TomlInteger", "3735928559"],
       "oct1": ["TomlInteger", "342391"],
       "oct2": ["TomlInteger", "493"],
-      "bin1": ["TomlInteger", "214"]
-    }
+      "bin1": ["TomlInteger", "214"],
+    },
   ])
 }
 

@@ -124,17 +124,16 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
 fn Parser::parse_table_header(self : Parser) -> String raise {
   // Expect [
   self.expect(LeftBracket)
-  
+
   // Parse table name
   let table_name = match self.advance() {
     Identifier(name) => name
     StringToken(name) => name
     _ => fail("Expected table name")
   }
-  
+
   // Expect ]
   self.expect(RightBracket)
-  
   table_name
 }
 
@@ -161,18 +160,16 @@ pub fn parse(input : String) -> TomlValue raise {
   let parser = Parser::new(tokens)
   let main_table = Map::new()
   let mut current_table = main_table
-  
   while parser.peek() != EOF {
     parser.skip_newlines()
     if parser.peek() == EOF {
       break
     }
-    
     match parser.peek() {
       LeftBracket => {
         // Parse table header
         let table_name = parser.parse_table_header()
-        
+
         // Create new table if it doesn't exist
         if main_table.contains(table_name) {
           match main_table.get(table_name) {

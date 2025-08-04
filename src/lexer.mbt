@@ -143,7 +143,8 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
     if ch != '_' {
       self.advance()
       let digit = match ch {
-        '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => ch.to_int() - '0'.to_int()
+        '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
+          ch.to_int() - '0'.to_int()
         'a' | 'b' | 'c' | 'd' | 'e' | 'f' => ch.to_int() - 'a'.to_int() + 10
         'A' | 'B' | 'C' | 'D' | 'E' | 'F' => ch.to_int() - 'A'.to_int() + 10
         _ => fail("Invalid hex digit: " + Char::to_string(ch))
@@ -211,10 +212,9 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
         let value = self.read_binary_number()
         return IntegerToken(if is_negative { -value } else { value })
       }
-      _ => {
+      _ =>
         // Not a special format, restore position and continue as normal
         self.position = saved_pos
-      }
     }
   }
 
@@ -242,7 +242,6 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
       }
     }
   }
-  
   if is_float {
     FloatToken(@strconv.parse_double(num_str)) catch {
       _ => fail("Invalid float: " + num_str)
@@ -305,14 +304,12 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
           Some(next_ch) if is_numeric(next_ch) =>
             // This is a negative number, read it
             self.read_number(true)
-
           _ => {
             // Not a negative number or special float, restore position and error
             self.position = saved_pos
             fail("Unexpected character: " + Char::to_string(ch))
           }
         }
-
       } else if is_alpha(ch) {
         let identifier = self.read_identifier()
         // Check for boolean keywords
