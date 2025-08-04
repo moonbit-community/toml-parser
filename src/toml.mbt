@@ -60,6 +60,10 @@ pub(all) enum Token {
   Comma // ,
   Dot // .
 
+  // Table headers
+  TableHeader(String) // [section]
+  ArrayTableHeader(String) // [[section]]
+
   // Identifiers and keywords
   Identifier(String)
 
@@ -83,6 +87,8 @@ pub impl ToJson for Token with to_json(self) {
     Equals => "Equals"
     Comma => "Comma"
     Dot => "Dot"
+    TableHeader(s) => ["TableHeader", s]
+    ArrayTableHeader(s) => ["ArrayTableHeader", s]
     Identifier(s) => ["Identifier", s]
     Newline => "Newline"
     EOF => ["EOF"]
