@@ -1,4 +1,8 @@
-/// Parser implementation for TOML
+///| Parser implementation for TOML
+typealias @tokenize.(Token, TomlDateTime)
+
+///|
+fnalias @tokenize.tokenize
 
 ///| Check if we're at the end of tokens
 fn Parser::is_at_end(self : Parser) -> Bool {

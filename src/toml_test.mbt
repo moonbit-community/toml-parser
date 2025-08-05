@@ -48,30 +48,28 @@ test "toml table value" {
 
 ///| Tests for datetime values - Offset DateTime
 test "toml offset datetime value" {
-  let offset_dt = @toml.TomlDateTime(
-    @toml.OffsetDateTime("1979-05-27T07:32:00Z"),
-  )
+  let offset_dt = @toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z"))
   inspect(offset_dt.to_string(), content="1979-05-27T07:32:00Z")
   let offset_dt_with_tz = @toml.TomlDateTime(
-    @toml.OffsetDateTime("1979-05-27T07:32:00+01:00"),
+    OffsetDateTime("1979-05-27T07:32:00+01:00"),
   )
   inspect(offset_dt_with_tz.to_string(), content="1979-05-27T07:32:00+01:00")
   let offset_dt_negative = @toml.TomlDateTime(
-    @toml.OffsetDateTime("1979-05-27T07:32:00-05:00"),
+    OffsetDateTime("1979-05-27T07:32:00-05:00"),
   )
   inspect(offset_dt_negative.to_string(), content="1979-05-27T07:32:00-05:00")
 }
 
 ///| Tests for datetime values - Local DateTime
 test "toml local datetime value" {
-  let local_dt = @toml.TomlDateTime(@toml.LocalDateTime("1979-05-27T07:32:00"))
+  let local_dt = @toml.TomlDateTime(LocalDateTime("1979-05-27T07:32:00"))
   inspect(local_dt.to_string(), content="1979-05-27T07:32:00")
   let local_dt_with_seconds = @toml.TomlDateTime(
-    @toml.LocalDateTime("2023-12-25T15:30:45"),
+    LocalDateTime("2023-12-25T15:30:45"),
   )
   inspect(local_dt_with_seconds.to_string(), content="2023-12-25T15:30:45")
   let local_dt_with_fractional = @toml.TomlDateTime(
-    @toml.LocalDateTime("2023-12-25T15:30:45.123"),
+    LocalDateTime("2023-12-25T15:30:45.123"),
   )
   inspect(
     local_dt_with_fractional.to_string(),
@@ -81,48 +79,44 @@ test "toml local datetime value" {
 
 ///| Tests for datetime values - Local Date
 test "toml local date value" {
-  let local_date = @toml.TomlDateTime(@toml.LocalDate("1979-05-27"))
+  let local_date = @toml.TomlDateTime(LocalDate("1979-05-27"))
   inspect(local_date.to_string(), content="1979-05-27")
-  let local_date_future = @toml.TomlDateTime(@toml.LocalDate("2025-12-31"))
+  let local_date_future = @toml.TomlDateTime(LocalDate("2025-12-31"))
   inspect(local_date_future.to_string(), content="2025-12-31")
-  let local_date_past = @toml.TomlDateTime(@toml.LocalDate("1900-01-01"))
+  let local_date_past = @toml.TomlDateTime(LocalDate("1900-01-01"))
   inspect(local_date_past.to_string(), content="1900-01-01")
 }
 
 ///| Tests for datetime values - Local Time
 test "toml local time value" {
-  let local_time = @toml.TomlDateTime(@toml.LocalTime("07:32:00"))
+  let local_time = @toml.TomlDateTime(LocalTime("07:32:00"))
   inspect(local_time.to_string(), content="07:32:00")
-  let local_time_with_fractional = @toml.TomlDateTime(
-    @toml.LocalTime("15:30:45.999"),
-  )
+  let local_time_with_fractional = @toml.TomlDateTime(LocalTime("15:30:45.999"))
   inspect(local_time_with_fractional.to_string(), content="15:30:45.999")
-  let local_time_midnight = @toml.TomlDateTime(@toml.LocalTime("00:00:00"))
+  let local_time_midnight = @toml.TomlDateTime(LocalTime("00:00:00"))
   inspect(local_time_midnight.to_string(), content="00:00:00")
-  let local_time_noon = @toml.TomlDateTime(@toml.LocalTime("12:00:00"))
+  let local_time_noon = @toml.TomlDateTime(LocalTime("12:00:00"))
   inspect(local_time_noon.to_string(), content="12:00:00")
 }
 
 ///| Tests for datetime JSON representation
 test "toml datetime to_json" {
-  let offset_dt = @toml.TomlDateTime(
-    @toml.OffsetDateTime("1979-05-27T07:32:00Z"),
-  )
+  let offset_dt = @toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z"))
   @json.inspect(offset_dt.to_json(), content=[
     "TomlDateTime",
     ["OffsetDateTime", "1979-05-27T07:32:00Z"],
   ])
-  let local_dt = @toml.TomlDateTime(@toml.LocalDateTime("1979-05-27T07:32:00"))
+  let local_dt = @toml.TomlDateTime(LocalDateTime("1979-05-27T07:32:00"))
   @json.inspect(local_dt.to_json(), content=[
     "TomlDateTime",
     ["LocalDateTime", "1979-05-27T07:32:00"],
   ])
-  let local_date = @toml.TomlDateTime(@toml.LocalDate("1979-05-27"))
+  let local_date = @toml.TomlDateTime(LocalDate("1979-05-27"))
   @json.inspect(local_date.to_json(), content=[
     "TomlDateTime",
     ["LocalDate", "1979-05-27"],
   ])
-  let local_time = @toml.TomlDateTime(@toml.LocalTime("07:32:00"))
+  let local_time = @toml.TomlDateTime(LocalTime("07:32:00"))
   @json.inspect(local_time.to_json(), content=[
     "TomlDateTime",
     ["LocalTime", "07:32:00"],
@@ -131,23 +125,23 @@ test "toml datetime to_json" {
 
 ///| Tests for datetime equality
 test "toml datetime equality" {
-  let dt1 = @toml.TomlDateTime(@toml.OffsetDateTime("1979-05-27T07:32:00Z"))
-  let dt2 = @toml.TomlDateTime(@toml.OffsetDateTime("1979-05-27T07:32:00Z"))
-  let dt3 = @toml.TomlDateTime(@toml.OffsetDateTime("1979-05-27T07:32:01Z"))
+  let dt1 = @toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z"))
+  let dt2 = @toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z"))
+  let dt3 = @toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:01Z"))
   inspect(dt1 == dt2, content="true")
   inspect(dt1 == dt3, content="false")
-  let local_dt1 = @toml.TomlDateTime(@toml.LocalDateTime("2023-01-01T00:00:00"))
-  let local_dt2 = @toml.TomlDateTime(@toml.LocalDateTime("2023-01-01T00:00:00"))
+  let local_dt1 = @toml.TomlDateTime(LocalDateTime("2023-01-01T00:00:00"))
+  let local_dt2 = @toml.TomlDateTime(LocalDateTime("2023-01-01T00:00:00"))
   inspect(local_dt1 == local_dt2, content="true")
 }
 
 ///| Tests for mixed datetime array
 test "toml mixed datetime array" {
   let arr = Array::new()
-  arr.push(@toml.TomlDateTime(@toml.OffsetDateTime("1979-05-27T07:32:00Z")))
-  arr.push(@toml.TomlDateTime(@toml.LocalDateTime("1979-05-27T07:32:00")))
-  arr.push(@toml.TomlDateTime(@toml.LocalDate("1979-05-27")))
-  arr.push(@toml.TomlDateTime(@toml.LocalTime("07:32:00")))
+  arr.push(@toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z")))
+  arr.push(@toml.TomlDateTime(LocalDateTime("1979-05-27T07:32:00")))
+  arr.push(@toml.TomlDateTime(LocalDate("1979-05-27")))
+  arr.push(@toml.TomlDateTime(LocalTime("07:32:00")))
   let value = @toml.TomlArray(arr)
   let str_repr = value.to_string()
 
@@ -162,13 +156,11 @@ test "toml mixed datetime array" {
 test "toml datetime in table" {
   let table : Map[String, @toml.TomlValue] = Map::new()
   table["created_at"] = @toml.TomlDateTime(
-    @toml.OffsetDateTime("2023-01-01T00:00:00Z"),
+    OffsetDateTime("2023-01-01T00:00:00Z"),
   )
-  table["updated_at"] = @toml.TomlDateTime(
-    @toml.LocalDateTime("2023-01-02T12:30:45"),
-  )
-  table["birth_date"] = @toml.TomlDateTime(@toml.LocalDate("1990-05-15"))
-  table["meeting_time"] = @toml.TomlDateTime(@toml.LocalTime("14:30:00"))
+  table["updated_at"] = @toml.TomlDateTime(LocalDateTime("2023-01-02T12:30:45"))
+  table["birth_date"] = @toml.TomlDateTime(LocalDate("1990-05-15"))
+  table["meeting_time"] = @toml.TomlDateTime(LocalTime("14:30:00"))
   let value = @toml.TomlTable(table)
   let str_repr = value.to_string()
 
@@ -184,40 +176,31 @@ test "toml datetime in table" {
 test "toml datetime edge cases" {
   // Test with fractional seconds
   let dt_with_millis = @toml.TomlDateTime(
-    @toml.OffsetDateTime("2023-01-01T00:00:00.123Z"),
+    OffsetDateTime("2023-01-01T00:00:00.123Z"),
   )
   inspect(dt_with_millis.to_string(), content="2023-01-01T00:00:00.123Z")
   let dt_with_micros = @toml.TomlDateTime(
-    @toml.LocalDateTime("2023-01-01T00:00:00.123456"),
+    LocalDateTime("2023-01-01T00:00:00.123456"),
   )
   inspect(dt_with_micros.to_string(), content="2023-01-01T00:00:00.123456")
 
   // Test with different timezone formats
   let dt_with_tz_colon = @toml.TomlDateTime(
-    @toml.OffsetDateTime("2023-01-01T00:00:00+05:30"),
+    OffsetDateTime("2023-01-01T00:00:00+05:30"),
   )
   inspect(dt_with_tz_colon.to_string(), content="2023-01-01T00:00:00+05:30")
   let dt_with_tz_no_colon = @toml.TomlDateTime(
-    @toml.OffsetDateTime("2023-01-01T00:00:00+0530"),
+    OffsetDateTime("2023-01-01T00:00:00+0530"),
   )
   inspect(dt_with_tz_no_colon.to_string(), content="2023-01-01T00:00:00+0530")
-}
-
-///| Tests for lexer creation
-test "lexer creation" {
-  let lexer = @toml.Lexer::new("key = value")
-  inspect(lexer.input, content="key = value")
-  inspect(lexer.position, content="0")
-  inspect(lexer.line, content="1")
-  inspect(lexer.column, content="1")
 }
 
 ///| Tests for parser creation  
 test "parser creation" {
   let tokens = Array::new()
-  tokens.push(@toml.Identifier("key"))
-  tokens.push(@toml.Equals)
-  tokens.push(@toml.StringToken("value"))
+  tokens.push(@tokenize.Identifier("key"))
+  tokens.push(@tokenize.Equals)
+  tokens.push(@tokenize.StringToken("value"))
   let parser = @toml.Parser::new(tokens)
   inspect(parser.position, content="0")
   inspect(parser.tokens.length(), content="3")
@@ -225,32 +208,38 @@ test "parser creation" {
 
 ///| Tests for datetime token creation
 test "datetime token creation" {
-  let offset_dt_token = @toml.DateTimeToken(
-    @toml.OffsetDateTime("1979-05-27T07:32:00Z"),
+  let offset_dt_token = @tokenize.DateTimeToken(
+    @tokenize.OffsetDateTime("1979-05-27T07:32:00Z"),
   )
-  let local_dt_token = @toml.DateTimeToken(
-    @toml.LocalDateTime("1979-05-27T07:32:00"),
+  let local_dt_token = @tokenize.DateTimeToken(
+    @tokenize.LocalDateTime("1979-05-27T07:32:00"),
   )
-  let local_date_token = @toml.DateTimeToken(@toml.LocalDate("1979-05-27"))
-  let local_time_token = @toml.DateTimeToken(@toml.LocalTime("07:32:00"))
+  let local_date_token = @tokenize.DateTimeToken(
+    @tokenize.LocalDate("1979-05-27"),
+  )
+  let local_time_token = @tokenize.DateTimeToken(
+    @tokenize.LocalTime("07:32:00"),
+  )
 
   // Test that tokens can be created (basic instantiation test)
   match offset_dt_token {
-    @toml.DateTimeToken(@toml.OffsetDateTime(s)) =>
+    @tokenize.DateTimeToken(@tokenize.OffsetDateTime(s)) =>
       inspect(s, content="1979-05-27T07:32:00Z")
     _ => fail("Expected offset datetime token")
   }
   match local_dt_token {
-    @toml.DateTimeToken(@toml.LocalDateTime(s)) =>
+    @tokenize.DateTimeToken(@tokenize.LocalDateTime(s)) =>
       inspect(s, content="1979-05-27T07:32:00")
     _ => fail("Expected local datetime token")
   }
   match local_date_token {
-    @toml.DateTimeToken(@toml.LocalDate(s)) => inspect(s, content="1979-05-27")
+    @tokenize.DateTimeToken(@tokenize.LocalDate(s)) =>
+      inspect(s, content="1979-05-27")
     _ => fail("Expected local date token")
   }
   match local_time_token {
-    @toml.DateTimeToken(@toml.LocalTime(s)) => inspect(s, content="07:32:00")
+    @tokenize.DateTimeToken(@tokenize.LocalTime(s)) =>
+      inspect(s, content="07:32:00")
     _ => fail("Expected local time token")
   }
 }
@@ -270,12 +259,10 @@ test "array homogeneity validation" {
   inspect(@toml.TomlValue::is_homogeneous_array(string_array), content="true")
   let datetime_array = Array::new()
   datetime_array.push(
-    @toml.TomlDateTime(@toml.OffsetDateTime("2023-01-01T00:00:00Z")),
+    @toml.TomlDateTime(OffsetDateTime("2023-01-01T00:00:00Z")),
   )
-  datetime_array.push(
-    @toml.TomlDateTime(@toml.LocalDateTime("2023-01-02T00:00:00")),
-  )
-  datetime_array.push(@toml.TomlDateTime(@toml.LocalDate("2023-01-03")))
+  datetime_array.push(@toml.TomlDateTime(LocalDateTime("2023-01-02T00:00:00")))
+  datetime_array.push(@toml.TomlDateTime(LocalDate("2023-01-03")))
   inspect(@toml.TomlValue::is_homogeneous_array(datetime_array), content="true")
 
   // Empty array (should be valid)
@@ -305,7 +292,7 @@ test "array heterogeneity detection" {
 
   // Mixed datetime and string (should be invalid)
   let mixed_dt_string = Array::new()
-  mixed_dt_string.push(@toml.TomlDateTime(@toml.LocalDate("2023-01-01")))
+  mixed_dt_string.push(@toml.TomlDateTime(LocalDate("2023-01-01")))
   mixed_dt_string.push(@toml.TomlString("not a date"))
   inspect(
     @toml.TomlValue::is_homogeneous_array(mixed_dt_string),
@@ -355,7 +342,7 @@ test "toml value validation" {
   inspect(@toml.TomlFloat(3.14).validate(), content="true")
   inspect(@toml.TomlBoolean(true).validate(), content="true")
   inspect(
-    @toml.TomlDateTime(@toml.OffsetDateTime("2023-01-01T00:00:00Z")).validate(),
+    @toml.TomlDateTime(OffsetDateTime("2023-01-01T00:00:00Z")).validate(),
     content="true",
   )
 }

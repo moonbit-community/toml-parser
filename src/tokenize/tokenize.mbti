@@ -1,0 +1,44 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bob/toml/tokenize"
+
+// Values
+fn tokenize(String) -> Array[Token] raise
+
+// Errors
+
+// Types and methods
+pub(all) enum Token {
+  StringToken(String)
+  IntegerToken(Int64)
+  FloatToken(Double)
+  BooleanToken(Bool)
+  DateTimeToken(TomlDateTime)
+  LeftBracket
+  RightBracket
+  LeftBrace
+  RightBrace
+  Equals
+  Comma
+  Dot
+  Identifier(String)
+  Newline
+  EOF
+}
+impl Eq for Token
+impl Show for Token
+impl ToJson for Token
+
+pub(all) enum TomlDateTime {
+  OffsetDateTime(String)
+  LocalDateTime(String)
+  LocalDate(String)
+  LocalTime(String)
+}
+impl Eq for TomlDateTime
+impl Show for TomlDateTime
+impl ToJson for TomlDateTime
+
+// Type aliases
+
+// Traits
+
