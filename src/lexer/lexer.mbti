@@ -14,6 +14,7 @@ fn Lexer::new(String) -> Self
 fn Lexer::peek(Self) -> Char?
 fn Lexer::read_basic_string(Self) -> String raise
 fn Lexer::read_number(Self, Bool) -> Token raise
+fn Lexer::skip_whitespace(Self) -> Unit
 
 pub(all) enum Token {
   StringToken(String)

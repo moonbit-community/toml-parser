@@ -4,8 +4,8 @@
 struct Lexer {
   input : String
   mut position : Int
-  mut line : Int
-  mut column : Int
+  // mut line : Int
+  // mut column : Int
 }
 
 ///| Tests for lexer creation
@@ -13,10 +13,9 @@ test "lexer creation" {
   let lexer = Lexer::new("key = value")
   inspect(lexer.input, content="key = value")
   inspect(lexer.position, content="0")
-  inspect(lexer.line, content="1")
-  inspect(lexer.column, content="1")
+  // inspect(lexer.line, content="1")
+  // inspect(lexer.column, content="1")
 }
-
 
 ///| Skip whitespace characters not including newlines
 /// # Example:
@@ -33,11 +32,11 @@ pub fn Lexer::skip_whitespace(self : Lexer) -> Unit {
     let ch = self.input.unsafe_charcode_at(pos)
     if ch is (' ' | '\t' | '\r') {
       self.position += 1
-      self.column += 1
+      // self.column += 1
       continue pos + 1
     } else {
       break
-    }  
+    }
   }
 }
 
@@ -49,7 +48,6 @@ fn Lexer::skip_comment(self : Lexer) -> Unit {
     }
   }
 }
-
 
 ///| Check if character is alpha (letter)
 fn is_alpha(ch : Char) -> Bool {
@@ -95,20 +93,17 @@ pub fn Lexer::advance(self : Lexer) -> Unit {
     if !ch.is_surrogate() {
       self.position += 1
       if ch is '\n' {
-        self.line += 1
-        self.column = 1
+        // self.line += 1
+        // self.column = 1
       } else {
-        self.column += 1
+        // self.column += 1
       }
     } else {
       self.position += 2
-      self.column += 1
+      // self.column += 1
     }
   }
 }
-
-
-
 
 ///| Parse an identifier or keyword
 fn Lexer::read_identifier(self : Lexer) -> String {
@@ -375,7 +370,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
 
 ///| Create a new lexer
 pub fn Lexer::new(input : String) -> Lexer {
-  { input, position: 0, line: 1, column: 1 }
+  { input, position: 0 }
 }
 
 ///| Tokenize entire input
