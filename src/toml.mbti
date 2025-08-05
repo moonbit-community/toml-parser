@@ -2,7 +2,7 @@
 package "bob/toml"
 
 import(
-  "bob/toml/lexer"
+  "bob/toml/tokenize"
 )
 
 // Values
@@ -12,10 +12,10 @@ fn parse(String) -> TomlValue raise
 
 // Types and methods
 pub struct Parser {
-  tokens : Array[@lexer.Token]
+  tokens : Array[@tokenize.Token]
   mut position : Int
 }
-fn Parser::new(Array[@lexer.Token]) -> Self
+fn Parser::new(Array[@tokenize.Token]) -> Self
 
 pub(all) enum TomlValue {
   TomlString(String)
@@ -24,7 +24,7 @@ pub(all) enum TomlValue {
   TomlBoolean(Bool)
   TomlArray(Array[TomlValue])
   TomlTable(Map[String, TomlValue])
-  TomlDateTime(@lexer.TomlDateTime)
+  TomlDateTime(@tokenize.TomlDateTime)
 }
 fn TomlValue::is_homogeneous_array(Array[Self]) -> Bool
 fn TomlValue::to_string(Self) -> String

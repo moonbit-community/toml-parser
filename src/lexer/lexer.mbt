@@ -1,11 +1,16 @@
 /// Lexer implementation for TOML
 
 ///| Lexer state (will implement methods later)
-struct Lexer {
+pub(all) struct Lexer {
   input : String
   mut position : Int
   // mut line : Int
   // mut column : Int
+}
+
+///| Create a new lexer
+pub fn Lexer::new(input : String) -> Lexer {
+  { input, position: 0 }
 }
 
 ///| Tests for lexer creation
@@ -41,27 +46,12 @@ pub fn Lexer::skip_whitespace(self : Lexer) -> Unit {
 }
 
 ///| Skip comments (start with #)
-fn Lexer::skip_comment(self : Lexer) -> Unit {
+pub fn Lexer::skip_comment(self : Lexer) -> Unit {
   if self.peek() is Some('#') {
     while self.peek() is Some(ch) && ch != '\n' {
       self.advance()
     }
   }
-}
-
-///| Check if character is alpha (letter)
-fn is_alpha(ch : Char) -> Bool {
-  (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_'
-}
-
-///| Check if character is numeric
-fn is_numeric(ch : Char) -> Bool {
-  ch >= '0' && ch <= '9'
-}
-
-///| Check if character is alphanumeric
-fn is_alphanumeric(ch : Char) -> Bool {
-  is_alpha(ch) || is_numeric(ch)
 }
 
 ///| Get current character without advancing
@@ -106,10 +96,11 @@ pub fn Lexer::advance(self : Lexer) -> Unit {
 }
 
 ///| Parse an identifier or keyword
-fn Lexer::read_identifier(self : Lexer) -> String {
+pub fn Lexer::read_identifier(self : Lexer) -> String {
   // let mut result = ""
   let sb = StringBuilder::new()
-  while self.peek() is Some(ch) && (is_alphanumeric(ch) || ch == '-') {
+  while self.peek() is Some(ch) &&
+        ch is ('a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-') {
     self.advance()
     sb.write_char(ch)
   }
@@ -153,7 +144,7 @@ pub fn Lexer::read_basic_string(self : Lexer) -> String raise {
 }
 
 ///| Parse a literal string (single quotes) without escape sequences
-fn Lexer::read_literal_string(self : Lexer) -> String raise {
+pub fn Lexer::read_literal_string(self : Lexer) -> String raise {
   self.advance() // consume opening quote
   let mut result = ""
   while self.peek() is Some(ch) && ch != '\'' {
@@ -166,7 +157,7 @@ fn Lexer::read_literal_string(self : Lexer) -> String raise {
 
 ///| Check if character is hexadecimal digit
 fn is_hex_digit(ch : Char) -> Bool {
-  is_numeric(ch) || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F')
+  ch is ('0'..='9' | 'a'..='f' | 'A'..='F')
 }
 
 ///| Check if character is binary digit
@@ -180,7 +171,7 @@ fn is_octal_digit(ch : Char) -> Bool {
 }
 
 ///| Parse hexadecimal number
-fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
+pub fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
   let mut result = 0L
   while self.peek() is Some(ch) && (is_hex_digit(ch) || ch == '_') {
     self.advance()
@@ -199,7 +190,7 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
 }
 
 ///| Parse octal number
-fn Lexer::read_octal_number(self : Lexer) -> Int64 {
+pub fn Lexer::read_octal_number(self : Lexer) -> Int64 {
   let mut result = 0L
   while self.peek() is Some(ch) && (is_octal_digit(ch) || ch == '_') {
     self.advance()
@@ -212,7 +203,7 @@ fn Lexer::read_octal_number(self : Lexer) -> Int64 {
 }
 
 ///| Parse binary number
-fn Lexer::read_binary_number(self : Lexer) -> Int64 {
+pub fn Lexer::read_binary_number(self : Lexer) -> Int64 {
   let mut result = 0L
   while self.peek() is Some(ch) && (is_binary_digit(ch) || ch == '_') {
     if ch != '_' {
@@ -224,75 +215,4 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 {
     }
   }
   result
-}
-
-///| Parse a number (integer or float), with optional negative sign
-/// # Example:
-/// ```
-/// let lexer = Lexer::new("123")
-/// inspect(lexer.read_number(false), content="IntegerToken(123)")
-/// ```
-pub fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
-  let sb = StringBuilder::new()
-  if is_negative {
-    sb.write_char('-')
-  }
-  let mut is_float = false
-
-  // Check if this might be a special format number (0x, 0o, 0b)
-  if self.peek() is Some('0') && !is_negative {
-    let saved_pos = self.position
-    self.advance() // consume '0'
-    match self.peek() {
-      Some('x') | Some('X') => {
-        self.advance() // consume 'x' or 'X'
-        let value = self.read_hex_number()
-        return IntegerToken(if is_negative { -value } else { value })
-      }
-      Some('o') | Some('O') => {
-        self.advance() // consume 'o' or 'O'
-        let value = self.read_octal_number()
-        return IntegerToken(if is_negative { -value } else { value })
-      }
-      Some('b') | Some('B') => {
-        self.advance() // consume 'b' or 'B'
-        let value = self.read_binary_number()
-        return IntegerToken(if is_negative { -value } else { value })
-      }
-      _ =>
-        // Not a special format, restore position and continue as normal
-        self.position = saved_pos
-    }
-  }
-
-  // Read digits
-  while self.peek() is Some(ch) && (is_numeric(ch) || ch == '_') {
-    self.advance()
-    if ch != '_' {
-      sb.write_char(ch)
-    }
-  }
-
-  // Check for decimal point
-  if self.peek() is Some('.') {
-    is_float = true
-    self.advance()
-    sb.write_char('.')
-    while self.peek() is Some(ch) && (is_numeric(ch) || ch == '_') {
-      self.advance()
-      if ch != '_' {
-        sb.write_char(ch)
-      }
-    }
-  }
-  let s = sb.to_string()
-  if is_float {
-    FloatToken(@strconv.parse_double(s)) catch {
-      _ => fail("Invalid float: " + s)
-    }
-  } else {
-    IntegerToken(@strconv.parse_int64(s)) catch {
-      _ => fail("Invalid integer: " + s)
-    }
-  }
 }

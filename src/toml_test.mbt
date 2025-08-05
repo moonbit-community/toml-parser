@@ -198,9 +198,9 @@ test "toml datetime edge cases" {
 ///| Tests for parser creation  
 test "parser creation" {
   let tokens = Array::new()
-  tokens.push(@lexer.Identifier("key"))
-  tokens.push(@lexer.Equals)
-  tokens.push(@lexer.StringToken("value"))
+  tokens.push(@tokenize.Identifier("key"))
+  tokens.push(@tokenize.Equals)
+  tokens.push(@tokenize.StringToken("value"))
   let parser = @toml.Parser::new(tokens)
   inspect(parser.position, content="0")
   inspect(parser.tokens.length(), content="3")
@@ -208,33 +208,38 @@ test "parser creation" {
 
 ///| Tests for datetime token creation
 test "datetime token creation" {
-  let offset_dt_token = @lexer.DateTimeToken(
-    @lexer.OffsetDateTime("1979-05-27T07:32:00Z"),
+  let offset_dt_token = @tokenize.DateTimeToken(
+    @tokenize.OffsetDateTime("1979-05-27T07:32:00Z"),
   )
-  let local_dt_token = @lexer.DateTimeToken(
-    @lexer.LocalDateTime("1979-05-27T07:32:00"),
+  let local_dt_token = @tokenize.DateTimeToken(
+    @tokenize.LocalDateTime("1979-05-27T07:32:00"),
   )
-  let local_date_token = @lexer.DateTimeToken(@lexer.LocalDate("1979-05-27"))
-  let local_time_token = @lexer.DateTimeToken(@lexer.LocalTime("07:32:00"))
+  let local_date_token = @tokenize.DateTimeToken(
+    @tokenize.LocalDate("1979-05-27"),
+  )
+  let local_time_token = @tokenize.DateTimeToken(
+    @tokenize.LocalTime("07:32:00"),
+  )
 
   // Test that tokens can be created (basic instantiation test)
   match offset_dt_token {
-    @lexer.DateTimeToken(@lexer.OffsetDateTime(s)) =>
+    @tokenize.DateTimeToken(@tokenize.OffsetDateTime(s)) =>
       inspect(s, content="1979-05-27T07:32:00Z")
     _ => fail("Expected offset datetime token")
   }
   match local_dt_token {
-    @lexer.DateTimeToken(@lexer.LocalDateTime(s)) =>
+    @tokenize.DateTimeToken(@tokenize.LocalDateTime(s)) =>
       inspect(s, content="1979-05-27T07:32:00")
     _ => fail("Expected local datetime token")
   }
   match local_date_token {
-    @lexer.DateTimeToken(@lexer.LocalDate(s)) =>
+    @tokenize.DateTimeToken(@tokenize.LocalDate(s)) =>
       inspect(s, content="1979-05-27")
     _ => fail("Expected local date token")
   }
   match local_time_token {
-    @lexer.DateTimeToken(@lexer.LocalTime(s)) => inspect(s, content="07:32:00")
+    @tokenize.DateTimeToken(@tokenize.LocalTime(s)) =>
+      inspect(s, content="07:32:00")
     _ => fail("Expected local time token")
   }
 }

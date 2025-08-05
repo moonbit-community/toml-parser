@@ -1,6 +1,6 @@
 ///| Tests for the TOML lexer
 test "tokenize simple key-value" {
-  let tokens = @lexer.tokenize("key = \"value\"")
+  let tokens = @tokenize.tokenize("key = \"value\"")
   @json.inspect(tokens, content=[
     ["Identifier", "key"],
     "Equals",
@@ -11,7 +11,7 @@ test "tokenize simple key-value" {
 
 ///|
 test "tokenize integer" {
-  let tokens = @lexer.tokenize("number = 42")
+  let tokens = @tokenize.tokenize("number = 42")
   @json.inspect(tokens, content=[
     ["Identifier", "number"],
     "Equals",
@@ -22,7 +22,7 @@ test "tokenize integer" {
 
 ///|
 test "tokenize float" {
-  let tokens = @lexer.tokenize("pi = 3.14")
+  let tokens = @tokenize.tokenize("pi = 3.14")
   @json.inspect(tokens, content=[
     ["Identifier", "pi"],
     "Equals",
@@ -33,7 +33,7 @@ test "tokenize float" {
 
 ///|
 test "tokenize boolean" {
-  let tokens = @lexer.tokenize("enabled = true")
+  let tokens = @tokenize.tokenize("enabled = true")
   @json.inspect(tokens, content=[
     ["Identifier", "enabled"],
     "Equals",
@@ -44,7 +44,7 @@ test "tokenize boolean" {
 
 ///|
 test "tokenize array syntax" {
-  let tokens = @lexer.tokenize("[1, 2, 3]")
+  let tokens = @tokenize.tokenize("[1, 2, 3]")
   @json.inspect(tokens, content=[
     "LeftBracket",
     ["IntegerToken", "1"],
@@ -59,7 +59,7 @@ test "tokenize array syntax" {
 
 ///|
 test "tokenize with comments" {
-  let tokens = @lexer.tokenize("key = \"value\" # this is a comment")
+  let tokens = @tokenize.tokenize("key = \"value\" # this is a comment")
   @json.inspect(tokens, content=[
     ["Identifier", "key"],
     "Equals",
@@ -70,7 +70,7 @@ test "tokenize with comments" {
 
 ///|
 test "tokenize multiline" {
-  let tokens = @lexer.tokenize("key1 = \"value1\"\nkey2 = 42")
+  let tokens = @tokenize.tokenize("key1 = \"value1\"\nkey2 = 42")
   @json.inspect(tokens, content=[
     ["Identifier", "key1"],
     "Equals",
@@ -88,7 +88,7 @@ test "unicode or emoji" {
   let str =
     #|key1 = "💩"
     #|key2 = "💩"
-  let tokens = @lexer.tokenize(str)
+  let tokens = @tokenize.tokenize(str)
   @json.inspect(tokens, content=[
     ["Identifier", "key1"],
     "Equals",

@@ -1,1 +1,1 @@
-{"name" : "bob/toml/tokenize"}
+{"name" : "bob/toml/tokenize", "import" : ["bob/toml/lexer"]}

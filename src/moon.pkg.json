@@ -1,6 +1,6 @@
 {
   "warn-list": "-15",
   "import": [
-    "bob/toml/lexer"
+    "bob/toml/tokenize"
   ]
 }
