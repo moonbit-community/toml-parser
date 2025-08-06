@@ -24,5 +24,5 @@ test "test invalid hex digit error" {
       ["Identifier", "GHI"],
       "EOF",
     ],
-  }) // FIXME: Should fail with invalid hex digit    
+  }) // FIXME: Should fail with invalid hex digit
 }
