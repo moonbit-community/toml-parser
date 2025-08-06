@@ -346,3 +346,112 @@ test "toml value validation" {
     content="true",
   )
 }
+
+///| Additional tests to improve toml.mbt coverage
+
+///| Test is_homogeneous_array with float arrays
+test "toml array homogeneity with floats" {
+  // Test homogeneous float array
+  let float_array = Array::new()
+  float_array.push(@toml.TomlFloat(1.5))
+  float_array.push(@toml.TomlFloat(2.5))
+  float_array.push(@toml.TomlFloat(3.5))
+  inspect(@toml.TomlValue::is_homogeneous_array(float_array), content="true")
+
+  // Test array starting with float in homogeneity check
+  let mixed_with_float_first = Array::new()
+  mixed_with_float_first.push(@toml.TomlFloat(1.5))
+  mixed_with_float_first.push(@toml.TomlInteger(2L))
+  inspect(
+    @toml.TomlValue::is_homogeneous_array(mixed_with_float_first),
+    content="false",
+  )
+}
+
+///| Test is_homogeneous_array with table arrays
+test "toml array homogeneity with tables" {
+  // Test homogeneous table array
+  let table_array = Array::new()
+  let table1 : Map[String, @toml.TomlValue] = Map::new()
+  table1["key1"] = @toml.TomlString("value1")
+  let table2 : Map[String, @toml.TomlValue] = Map::new()
+  table2["key2"] = @toml.TomlString("value2")
+  table_array.push(@toml.TomlTable(table1))
+  table_array.push(@toml.TomlTable(table2))
+  inspect(@toml.TomlValue::is_homogeneous_array(table_array), content="true")
+
+  // Test array starting with table in homogeneity check
+  let mixed_with_table_first = Array::new()
+  mixed_with_table_first.push(@toml.TomlTable(table1))
+  mixed_with_table_first.push(@toml.TomlString("not a table"))
+  inspect(
+    @toml.TomlValue::is_homogeneous_array(mixed_with_table_first),
+    content="false",
+  )
+}
+
+///| Test is_homogeneous_array with boolean check in loop
+test "toml array homogeneity boolean in loop" {
+  // Test array with boolean as second element (covers boolean case in loop)
+  let mixed_with_bool_second = Array::new()
+  mixed_with_bool_second.push(@toml.TomlString("first"))
+  mixed_with_bool_second.push(@toml.TomlBoolean(true)) // This covers the boolean case in the loop
+  inspect(
+    @toml.TomlValue::is_homogeneous_array(mixed_with_bool_second),
+    content="false",
+  )
+}
+
+///| Test is_homogeneous_array with table check in loop
+test "toml array homogeneity table in loop" {
+  // Test array with table as second element (covers table case in loop)
+  let mixed_with_table_second = Array::new()
+  mixed_with_table_second.push(@toml.TomlString("first"))
+  let table : Map[String, @toml.TomlValue] = Map::new()
+  table["key"] = @toml.TomlString("value")
+  mixed_with_table_second.push(@toml.TomlTable(table)) // This covers the table case in the loop
+  inspect(
+    @toml.TomlValue::is_homogeneous_array(mixed_with_table_second),
+    content="false",
+  )
+}
+
+///| Test validate with invalid nested array
+test "toml validate with invalid nested array" {
+  // Create a nested structure with an invalid array inside
+  let outer_array = Array::new()
+  let inner_invalid_array = Array::new()
+  inner_invalid_array.push(@toml.TomlString("string"))
+  inner_invalid_array.push(@toml.TomlInteger(42L)) // Mixed types
+
+  // Create another valid inner array
+  let inner_valid_array = Array::new()
+  inner_valid_array.push(@toml.TomlString("string1"))
+  inner_valid_array.push(@toml.TomlString("string2"))
+
+  // Add both to outer array
+  outer_array.push(@toml.TomlArray(inner_valid_array))
+  outer_array.push(@toml.TomlArray(inner_invalid_array)) // This one is invalid
+  let nested_array_value = @toml.TomlArray(outer_array)
+
+  // This should return false because one of the nested arrays is invalid
+  inspect(nested_array_value.validate(), content="false")
+}
+
+///| Test validate with table containing invalid nested structure
+test "toml validate table with invalid nested value" {
+  let table : Map[String, @toml.TomlValue] = Map::new()
+
+  // Add a valid value
+  table["valid_key"] = @toml.TomlString("valid_value")
+
+  // Add an invalid nested array
+  let invalid_array = Array::new()
+  invalid_array.push(@toml.TomlString("string"))
+  invalid_array.push(@toml.TomlInteger(42L)) // Mixed types make it invalid
+  table["invalid_array"] = @toml.TomlArray(invalid_array)
+  let table_value = @toml.TomlTable(table)
+
+  // This should return false because the table contains an invalid array
+  inspect(table_value.validate(), content="false")
+}
