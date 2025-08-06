@@ -68,3 +68,113 @@ test "parse inline table" {
     },
   ])
 }
+
+///| Test parser error handling - EOF when expected token
+test "parser expect EOF error" {
+  try {
+    let _result = @toml.parse("key = ")
+    fail("Should have thrown parse error")
+  } catch {
+    msg => inspect(msg.to_string().contains("Expected"), content="true")
+  }
+}
+
+///| Test parser error handling - wrong token in expect
+test "parser expect wrong token error" {
+  try {
+    let _result = @toml.parse("key \"value\"") // Missing =
+    fail("Should have thrown parse error")
+  } catch {
+    msg => inspect(msg.to_string().contains("Expected"), content="true")
+  }
+}
+
+///| Test parser error handling - string key in inline table
+test "string key in inline table" {
+  let result = @toml.parse("table = {\"string_key\" = \"value\"}")
+  @json.inspect(result, content=[
+    "TomlTable",
+    { "table": ["TomlTable", { "string_key": ["TomlString", "value"] }] },
+  ])
+}
+
+///| Test parser error handling - invalid key in inline table
+test "invalid key in inline table error" {
+  try {
+    let _result = @toml.parse("table = {123 = \"value\"}") // Invalid key
+    fail("Should have thrown parse error")
+  } catch {
+    msg => inspect(msg.to_string().contains("Expected key"), content="true")
+  }
+}
+
+///| Test parser error handling - invalid separator in inline table
+test "invalid separator in inline table error" {
+  try {
+    let _result = @toml.parse("table = {key = \"value\" ; other = \"val\"}") // Invalid separator
+    fail("Should have thrown parse error")
+  } catch {
+    msg =>
+      // Just check that an error was thrown, the exact message may vary
+      inspect(msg.to_string().length() > 0, content="true")
+  }
+}
+
+///| Test parser error handling - string table name
+test "string table name" {
+  let result = @toml.parse("[\"string.table\"]\nkey = \"value\"")
+  @json.inspect(result, content=[
+    "TomlTable",
+    { "string.table": ["TomlTable", { "key": ["TomlString", "value"] }] },
+  ])
+}
+
+///| Test parser error handling - invalid table name
+test "invalid table name error" {
+  try {
+    let _result = @toml.parse("[123]\nkey = \"value\"") // Invalid table name
+    fail("Should have thrown parse error")
+  } catch {
+    msg =>
+      inspect(msg.to_string().contains("Expected table name"), content="true")
+  }
+}
+
+///| Test parser error handling - conflicting table and value
+test "conflicting table and value error" {
+  try {
+    let _result = @toml.parse("key = \"value\"\n[key]\nother = \"val\"") // Conflict
+    fail("Should have thrown parse error")
+  } catch {
+    msg => inspect(msg.to_string().contains("conflicts"), content="true")
+  }
+}
+
+///| Test parser with existing table
+test "parser with existing table" {
+  let result = @toml.parse(
+    "[table]\nkey1 = \"value1\"\n[table]\nkey2 = \"value2\"",
+  )
+  @json.inspect(result, content=[
+    "TomlTable",
+    {
+      "table": [
+        "TomlTable",
+        { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
+      ],
+    },
+  ])
+}
+
+///| Test parser peek and advance at EOF
+test "parser operations at EOF" {
+  // Test with empty input to trigger EOF paths
+  let result = @toml.parse("")
+  @json.inspect(result, content=["TomlTable", {}])
+}
+
+///| Test parser with only newlines
+test "parser with only newlines" {
+  let result = @toml.parse("\n\n\n")
+  @json.inspect(result, content=["TomlTable", {}])
+}

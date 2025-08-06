@@ -102,3 +102,170 @@ test "unicode or emoji" {
   // more tests
 
 }
+
+///| Test DateTimeToken to_json
+test "DateTimeToken to_json" {
+  let dt = @tokenize.OffsetDateTime("1979-05-27T07:32:00Z")
+  let token = @tokenize.DateTimeToken(dt)
+  @json.inspect(token, content=[
+    "DateTimeToken",
+    ["OffsetDateTime", "1979-05-27T07:32:00Z"],
+  ])
+}
+
+///| Test LeftBrace token to_json  
+test "LeftBrace token to_json" {
+  let token = @tokenize.LeftBrace
+  @json.inspect(token, content="LeftBrace")
+}
+
+///| Test RightBrace token to_json
+test "RightBrace token to_json" {
+  let token = @tokenize.RightBrace
+  @json.inspect(token, content="RightBrace")
+}
+
+///| Test Dot token to_json
+test "Dot token to_json" {
+  let token = @tokenize.Dot
+  @json.inspect(token, content="Dot")
+}
+
+///| Test tokenize inline table with braces
+test "tokenize inline table with braces" {
+  let tokens = @tokenize.tokenize("{name = \"test\"}")
+  @json.inspect(tokens, content=[
+    "LeftBrace",
+    ["Identifier", "name"],
+    "Equals",
+    ["StringToken", "test"],
+    "RightBrace",
+    ["EOF"],
+  ])
+}
+
+///| Test tokenize dotted key
+test "tokenize dotted key" {
+  let tokens = @tokenize.tokenize("table.key = \"value\"")
+  @json.inspect(tokens, content=[
+    ["Identifier", "table"],
+    "Dot",
+    ["Identifier", "key"],
+    "Equals",
+    ["StringToken", "value"],
+    ["EOF"],
+  ])
+}
+
+///| Test TomlDateTime variants to_json
+test "TomlDateTime variants to_json" {
+  let offset_dt = @tokenize.OffsetDateTime("1979-05-27T07:32:00+01:00")
+  @json.inspect(offset_dt, content=[
+    "OffsetDateTime", "1979-05-27T07:32:00+01:00",
+  ])
+  let local_dt = @tokenize.LocalDateTime("1979-05-27T07:32:00")
+  @json.inspect(local_dt, content=["LocalDateTime", "1979-05-27T07:32:00"])
+  let local_date = @tokenize.LocalDate("1979-05-27")
+  @json.inspect(local_date, content=["LocalDate", "1979-05-27"])
+  let local_time = @tokenize.LocalTime("07:32:00")
+  @json.inspect(local_time, content=["LocalTime", "07:32:00"])
+}
+
+///| Test tokenize with escaped characters in strings
+test "tokenize escaped characters" {
+  let tokens = @tokenize.tokenize("key = \"hello\\nworld\"")
+  @json.inspect(tokens, content=[
+    ["Identifier", "key"],
+    "Equals",
+    ["StringToken", "hello\nworld"],
+    ["EOF"],
+  ])
+}
+
+///| Test tokenize with empty string
+test "tokenize empty string" {
+  let tokens = @tokenize.tokenize("key = \"\"")
+  @json.inspect(tokens, content=[
+    ["Identifier", "key"],
+    "Equals",
+    ["StringToken", ""],
+    ["EOF"],
+  ])
+}
+
+///| Test tokenize with negative numbers
+test "tokenize negative integer" {
+  let tokens = @tokenize.tokenize("negative = -42")
+  @json.inspect(tokens, content=[
+    ["Identifier", "negative"],
+    "Equals",
+    ["IntegerToken", "-42"],
+    ["EOF"],
+  ])
+}
+
+///| Test tokenize with negative float
+test "tokenize negative float" {
+  let tokens = @tokenize.tokenize("negative_float = -3.14")
+  @json.inspect(tokens, content=[
+    ["Identifier", "negative_float"],
+    "Equals",
+    ["FloatToken", -3.14],
+    ["EOF"],
+  ])
+}
+
+///| Test tokenize boolean false
+test "tokenize boolean false" {
+  let tokens = @tokenize.tokenize("disabled = false")
+  @json.inspect(tokens, content=[
+    ["Identifier", "disabled"],
+    "Equals",
+    ["BooleanToken", false],
+    ["EOF"],
+  ])
+}
+
+///| Test tokenize complex inline table
+test "tokenize complex inline table" {
+  let tokens = @tokenize.tokenize("{a = 1, b = \"hello\", c = true}")
+  @json.inspect(tokens, content=[
+    "LeftBrace",
+    ["Identifier", "a"],
+    "Equals",
+    ["IntegerToken", "1"],
+    "Comma",
+    ["Identifier", "b"],
+    "Equals",
+    ["StringToken", "hello"],
+    "Comma",
+    ["Identifier", "c"],
+    "Equals",
+    ["BooleanToken", true],
+    "RightBrace",
+    ["EOF"],
+  ])
+}
+
+///| Test tokenize whitespace handling
+test "tokenize with extra whitespace" {
+  let tokens = @tokenize.tokenize("  key  =  \"value\"  ")
+  @json.inspect(tokens, content=[
+    ["Identifier", "key"],
+    "Equals",
+    ["StringToken", "value"],
+    ["EOF"],
+  ])
+}
+
+///| Test tokenize empty input
+test "tokenize empty input" {
+  let tokens = @tokenize.tokenize("")
+  @json.inspect(tokens, content=[["EOF"]])
+}
+
+///| Test tokenize with just newlines
+test "tokenize just newlines" {
+  let tokens = @tokenize.tokenize("\n\n")
+  @json.inspect(tokens, content=["Newline", "Newline", ["EOF"]])
+}
