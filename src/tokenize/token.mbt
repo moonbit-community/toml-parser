@@ -22,28 +22,7 @@ pub(all) enum Token {
   // Special
   Newline
   EOF
-} derive(Eq, Show)
-
-///|
-pub impl ToJson for Token with to_json(self) {
-  match self {
-    StringToken(s) => ["StringToken", s]
-    IntegerToken(i) => ["IntegerToken", i]
-    FloatToken(f) => ["FloatToken", f]
-    BooleanToken(b) => ["BooleanToken", b]
-    DateTimeToken(dt) => ["DateTimeToken", dt]
-    LeftBracket => "LeftBracket"
-    RightBracket => "RightBracket"
-    LeftBrace => "LeftBrace"
-    RightBrace => "RightBrace"
-    Equals => "Equals"
-    Comma => "Comma"
-    Dot => "Dot"
-    Identifier(s) => ["Identifier", s]
-    Newline => "Newline"
-    EOF => ["EOF"]
-  }
-}
+} derive(Eq, Show, ToJson(style="flat"))
 
 ///| DateTime type for TOML datetime values
 pub(all) enum TomlDateTime {
@@ -51,14 +30,4 @@ pub(all) enum TomlDateTime {
   LocalDateTime(String) // e.g., "1979-05-27T07:32:00"
   LocalDate(String) // e.g., "1979-05-27"
   LocalTime(String) // e.g., "07:32:00"
-} derive(Eq, Show)
-
-///|
-pub impl ToJson for TomlDateTime with to_json(self) {
-  match self {
-    OffsetDateTime(s) => ["OffsetDateTime", s]
-    LocalDateTime(s) => ["LocalDateTime", s]
-    LocalDate(s) => ["LocalDate", s]
-    LocalTime(s) => ["LocalTime", s]
-  }
-}
+} derive(Eq, Show, ToJson(style="flat"))
