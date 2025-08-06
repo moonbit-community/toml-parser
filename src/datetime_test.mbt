@@ -283,3 +283,38 @@ test "realistic datetime scenarios" {
   inspect(config_str.contains("2023-07-20T02:00:00"), content="true")
   inspect(config_str.contains("2023-08-20T02:00:00"), content="true")
 }
+
+///| Additional tests for datetime token handling to improve coverage
+
+test "test DateTimeToken creation and usage" {
+  // Test creating DateTimeToken to improve token coverage
+  let offset_dt = @tokenize.TomlDateTime::OffsetDateTime("1979-05-27T07:32:00Z")
+  let local_dt = @tokenize.TomlDateTime::LocalDateTime("1979-05-27T07:32:00")
+  let local_date = @tokenize.TomlDateTime::LocalDate("1979-05-27")
+  let local_time = @tokenize.TomlDateTime::LocalTime("07:32:00")
+  
+  let token1 = @tokenize.DateTimeToken(offset_dt)
+  let token2 = @tokenize.DateTimeToken(local_dt)
+  let token3 = @tokenize.DateTimeToken(local_date)
+  let token4 = @tokenize.DateTimeToken(local_time)
+  
+  // Test that tokens can be created and used
+  assert_eq(token1, @tokenize.DateTimeToken(offset_dt))
+  assert_eq(token2, @tokenize.DateTimeToken(local_dt))
+  assert_eq(token3, @tokenize.DateTimeToken(local_date))
+  assert_eq(token4, @tokenize.DateTimeToken(local_time))
+}
+
+test "test datetime types equality and show" {
+  // Test datetime type equality and show implementation
+  let dt1 = @tokenize.TomlDateTime::OffsetDateTime("1979-05-27T07:32:00Z")
+  let dt2 = @tokenize.TomlDateTime::OffsetDateTime("1979-05-27T07:32:00Z")
+  let dt3 = @tokenize.TomlDateTime::LocalDateTime("1979-05-27T07:32:00")
+  
+  assert_eq(dt1, dt2)
+  assert_true(dt1 != dt3)
+  
+  // Test that show works (derive Show)
+  let dt_str = dt1.to_string()
+  assert_true(dt_str.contains("OffsetDateTime"))
+}

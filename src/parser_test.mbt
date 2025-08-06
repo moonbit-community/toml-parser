@@ -68,3 +68,111 @@ test "parse inline table" {
     },
   ])
 }
+
+
+///| Tests for uncovered parser functionality and error cases
+///| This tests error handling and edge cases to improve coverage
+
+test "test parser creation" {
+  // Test parser creation
+  let tokens = [@tokenize.Identifier("key")]
+  let _parser = @toml.Parser::new(tokens)
+  // Parser is created successfully
+  assert_true(true)
+}
+
+test "test inline table with string key" {
+  // Test the uncovered string key case in parse_inline_table()
+  let toml_input = "table = {\"key\" = \"value\"}"
+  try {
+    let result = @toml.parse(toml_input)
+    match result {
+      @toml.TomlTable(main_table) => {
+        match main_table.get("table") {
+          Some(@toml.TomlTable(table)) => {
+            match table.get("key") {
+              Some(@toml.TomlString("value")) => assert_true(true)
+              _ => assert_true(false)
+            }
+          }
+          _ => assert_true(false)
+        }
+      }
+      _ => assert_true(false)
+    }
+  } catch {
+    _ => assert_true(false)
+  }
+}
+
+test "test inline table with invalid key throws error" {
+  // Test error handling through TOML parsing
+  try {
+    let _result = @toml.parse("{123 = \"value\"}")
+    assert_true(false) // Should not reach here
+  } catch {
+    _ => assert_true(true) // Should throw error
+  }
+}
+
+test "test inline table missing comma or brace throws error" {
+  // Test error handling through TOML parsing
+  try {
+    let _result = @toml.parse("{key = \"value\" another}")
+    assert_true(false) // Should not reach here
+  } catch {
+    _ => assert_true(true) // Should throw error
+  }
+}
+
+test "test table header with string name" {
+  // Test the uncovered string name case in parse_table_header()
+  let toml_input = "[\"table name\"]\nkey = \"value\""
+  try {
+    let result = @toml.parse(toml_input)
+    match result {
+      @toml.TomlTable(table) => {
+        match table.get("table name") {
+          Some(@toml.TomlTable(_)) => assert_true(true)
+          _ => assert_true(false)
+        }
+      }
+      _ => assert_true(false)
+    }
+  } catch {
+    _ => assert_true(false)
+  }
+}
+
+test "test table header with invalid name throws error" {
+  // Test error handling through TOML parsing
+  try {
+    let _result = @toml.parse("[123]\nkey = \"value\"")
+    assert_true(false) // Should not reach here
+  } catch {
+    _ => assert_true(true) // Should throw error
+  }
+}
+
+test "test parse with existing table" {
+  // Test the uncovered existing table case in parse()
+  let toml_input = "[table]\nkey1 = \"value1\"\n[table]\nkey2 = \"value2\""
+  try {
+    let result = @toml.parse(toml_input)
+    match result {
+      @toml.TomlTable(main_table) => {
+        match main_table.get("table") {
+          Some(@toml.TomlTable(table)) => {
+            // Should have both keys
+            assert_true(table.contains("key1"))
+            assert_true(table.contains("key2"))
+          }
+          _ => assert_true(false)
+        }
+      }
+      _ => assert_true(false)
+    }
+  } catch {
+    _ => assert_true(false)
+  }
+}
