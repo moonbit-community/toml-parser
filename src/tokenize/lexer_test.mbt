@@ -231,6 +231,56 @@ test "test escaped single quote in string" {
     "EOF",
   ])
 }
+
+///|
+fn Error::failure_message(x : Error) -> String {
+  match x {
+    Failure(msg) => msg.split(" ")[2:].map(x => x.to_string()).join(" ")
+    // TODO: Array[Show]::join? 
+    // msg.split(":")[1:].map(x=>x.to_string()).join("")
+    _ => "Unexpected error".to_string()
+  }
+}
+
+///|
+test "test invalid escape sequence error" {
+  let maybe_tokens = try? @tokenize.tokenize("key = \"test\\z invalid\"")
+  // TODO: ArgsLoc no absolute loc
+  @json.inspect(
+    maybe_tokens.unwrap_err().failure_message(),
+    content="Invalid escape sequence: \\z",
+  ) // Should fail with invalid escape sequence
+}
+
+///|
+test "test unterminated string error" {
+  let maybe_tokens = try? @tokenize.tokenize("key = \"unterminated")
+  // TODO: ArgsLoc no absolute loc
+  @json.inspect(
+    maybe_tokens.unwrap_err().failure_message(),
+    content="Unterminated string",
+  ) // Should fail with unterminated string
+}
+
+///|
+test "test unexpected end after escape" {
+  let maybe_tokens = try? @tokenize.tokenize("key = \"test\\")
+  // TODO: ArgsLoc no absolute loc
+  @json.inspect(
+    maybe_tokens.unwrap_err().failure_message(),
+    content="Unexpected end of input after escape character",
+  ) // Should fail with unexpected end after escape
+}
+
+///|
+test "test invalid characters" {
+  let maybe_tokens = try? @tokenize.tokenize("key @ value")
+  @json.inspect(
+    maybe_tokens.unwrap_err().failure_message(),
+    content="Unexpected character: @",
+  ) // Should fail with unexpected character
+}
+
 ///|
 test "test binary number with underscores" {
   let tokens = @tokenize.tokenize("bin = 0b1010_1100")
@@ -240,4 +290,13 @@ test "test binary number with underscores" {
     ["IntegerToken", "172"],
     "EOF",
   ])
+}
+
+///|
+test "test negative sign not followed by number" {
+  let maybe_tokens = try? @tokenize.tokenize("key = -abc")
+  @json.inspect(
+    maybe_tokens.unwrap_err().failure_message(),
+    content="Unexpected character: -",
+  )
 }
