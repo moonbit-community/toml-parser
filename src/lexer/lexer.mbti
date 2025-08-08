@@ -26,14 +26,6 @@ fn Lexer::new(String) -> Self
 fn Lexer::new_line(Self) -> Unit
 fn Lexer::peek(Self) -> Char?
 fn Lexer::peek_charcode(Self) -> Int?
-fn Lexer::read_basic_string(Self) -> String raise
-fn Lexer::read_binary_number(Self) -> Int64
-fn Lexer::read_hex_number(Self) -> Int64 raise
-fn Lexer::read_identifier(Self) -> String
-fn Lexer::read_literal_string(Self) -> String raise
-fn Lexer::read_multiline_basic_string(Self) -> String raise
-fn Lexer::read_multiline_literal_string(Self) -> String raise
-fn Lexer::read_octal_number(Self) -> Int64
 fn Lexer::repeat_if(Self, (Char) -> Bool) -> Unit
 fn Lexer::skip_comment(Self) -> Unit
 fn Lexer::skip_whitespace(Self) -> Unit

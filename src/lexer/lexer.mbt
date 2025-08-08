@@ -157,25 +157,28 @@ pub fn Lexer::expect_char(self : Self, ch : Char, msg? : String) -> Unit raise {
   }
 }
 
-
 ///|
 /// Expect a string and advance, or fail with detailed error
 /// Note the parameter `str` is not expected to have a newline
 /// otherwise the line position is not correct
 /// # Example
-pub fn Lexer::expect_string(self : Self, str : String, msg? : String) -> Unit raise {
-  
+pub fn Lexer::expect_string(
+  self : Self,
+  str : String,
+  msg? : String,
+) -> Unit raise {
+
   // store the original postion for precise error reporting
   let saved_pos = self.position
   let saved_line = self.line
-  let saved_column  = self.column  
+  let saved_column = self.column
   for i = 0; i < str.length(); i = i + 1 {
     if self.peek_charcode() is Some(ch) && ch == str.unsafe_charcode_at(i) {
       self.advance()
     } else {
       self.position = saved_pos
       self.line = saved_line
-      self.column = saved_column  
+      self.column = saved_column
       fail(self.error(msg.unwrap_or("Expected string: " + str)))
     }
   }
@@ -205,349 +208,6 @@ pub fn Lexer::advance(self : Lexer) -> Unit {
   }
 }
 
-///| Parse an identifier or keyword
-pub fn Lexer::read_identifier(self : Lexer) -> String {
-  // let mut result = ""
-  let sb = StringBuilder::new()
-  while self.peek_charcode() is Some(ch) &&
-        ch is ('a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-') {
-    self.advance()
-    sb.write_char(ch.unsafe_to_char())
-  }
-  sb.to_string()
-}
-
-///| Parse a basic string (double quotes) with escape sequences
-/// # Example:
-/// ```
-/// let lexer = Lexer::new("\"Hello, \\\"world\\\"!\"")
-/// inspect(lexer.read_basic_string(), content="Hello, \"world\"!")
-/// ```
-pub fn Lexer::read_basic_string(self : Lexer) -> String raise {
-  self.advance() // consume opening quote
-  let sb = StringBuilder::new()
-  while self.peek() is Some(ch) && ch != '"' {
-    self.advance() // consume character`  
-    if ch == '\\' {
-      // Handle escape sequences
-      match self.peek_charcode() {
-        Some(escaped) => {
-          self.advance() // consume escape character  
-          match escaped {
-            'n' => sb.write_char('\n')
-            't' => sb.write_char('\t')
-            'r' => sb.write_char('\r')
-            '\\' => sb.write_char('\\')
-            '"' => sb.write_char('"')
-            '\'' => sb.write_char('\'')
-            'b' => sb.write_char('\u0008')
-            'f' => sb.write_char('\u000C')
-            'u' => sb.write_char(self.read_unicode_4_escape())
-            'U' => sb.write_char(self.read_unicode_8_escape())
-            _ =>
-              fail(
-                self.error(
-                  "Invalid escape sequence: \\\{escaped.to_char().unwrap_or('?')}",
-                ),
-              )
-            // TODO:refine the error message 
-          }
-        }
-        None =>
-          fail(self.error("Unexpected end of input after escape character"))
-      }
-    } else {
-      sb.write_char(ch)
-    }
-  }
-  self.expect_char('"', msg="Unterminated string")
-  sb.to_string()
-}
-
-///| Parse a literal string (single quotes) without escape sequences
-pub fn Lexer::read_literal_string(self : Lexer) -> String raise {
-  self.advance() // consume opening quote
-  let sb = StringBuilder::new()
-  self.repeat_if(ch => if ch != '\'' {
-    sb.write_char(ch)
-    true
-  } else {
-    false
-  })
-  self.expect_char('\'', msg="Unterminated string")
-  sb.to_string()
-}
-
-///| Parse a multi-line basic string (triple double quotes) with escape sequences
-/// # Example:
-/// ```
-/// let lexer = Lexer::new("\"\"\"Hello,\nworld!\"\"\"")
-/// inspect(lexer.read_multiline_basic_string(), content="Hello,\nworld!")
-/// ```
-pub fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
-  // consume opening triple quotes
-  // self.advance() // first "
-  // self.advance() // second "
-  // self.advance() // third "
-  self.expect_string("\"\"\"")  
-  // Skip line ending immediately following the opening delimiter
-  if self.try_consume_charcode('\r') {
-    if self.try_consume_charcode('\n') {
-      self.new_line()
-    }
-  } else if self.try_consume_charcode('\n') {
-    self.new_line()
-  }
-  let sb = StringBuilder::new()
-  while self.position < self.input.length() {
-    // Check for closing triple quotes
-    if self.peek() is Some('"') {
-      let saved_pos = self.position
-      let saved_line = self.line
-      let saved_column = self.column
-      self.advance()
-      if self.try_consume_charcode('"') {
-        if self.try_consume_charcode('"') {
-          return sb.to_string()
-        }
-      }
-      // Not triple quotes, restore position and continue
-      self.position = saved_pos
-      self.line = saved_line
-      self.column = saved_column
-    }
-    match self.peek() {
-      Some(ch) => {
-        self.advance()
-        if ch == '\\' {
-          // Handle escape sequences
-          match self.peek() {
-            Some(escaped) => {
-              self.advance()
-              match escaped {
-                'n' => sb.write_char('\n')
-                't' => sb.write_char('\t')
-                'r' => sb.write_char('\r')
-                '\\' => sb.write_char('\\')
-                '"' => sb.write_char('"')
-                '\'' => sb.write_char('\'')
-                'b' => sb.write_char('\u0008')
-                'f' => sb.write_char('\u000C')
-                'u' => sb.write_char(self.read_unicode_4_escape())
-                'U' => sb.write_char(self.read_unicode_8_escape())
-                // Line ending backslash (trim whitespace at line start)
-                '\r' | '\n' => {
-                  self.new_line()
-                  if escaped == '\r' && self.peek() is Some('\n') {
-                    self.advance() // consume the \n after \r
-                  }
-                  // Skip whitespace at the beginning of the next line
-                  while self.peek() is Some(ws) && ws is (' ' | '\t') {
-                    self.advance()
-                  }
-                }
-                _ =>
-                  fail(
-                    self.error(
-                      "Invalid escape sequence: \\" + Char::to_string(escaped),
-                    ),
-                  )
-              }
-            }
-            None =>
-              fail(self.error("Unexpected end of input after escape character"))
-          }
-        } else {
-          sb.write_char(ch)
-          if ch == '\n' {
-            self.new_line()
-          }
-        }
-      }
-      None => fail(self.error("Unterminated multiline string"))
-    }
-  }
-  fail(self.error("Unterminated multiline string"))
-}
-
-///| Parse a multi-line literal string (triple single quotes) without escape sequences
-/// # Example:
-/// ```
-/// let lexer = Lexer::new("'''Hello,\nworld!'''")
-/// inspect(lexer.read_multiline_literal_string(), content="Hello,\nworld!")
-/// ```
-pub fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
-  // consume opening triple quotes
-  self.expect_string("'''")
-  // Skip line ending immediately following the opening delimiter
-  if self.peek() is Some('\r') {
-    self.advance()
-    if self.peek() is Some('\n') {
-      self.advance()
-      self.new_line()
-    }
-  } else if self.peek() is Some('\n') {
-    self.advance()
-    self.new_line()
-  }
-  let sb = StringBuilder::new()
-  while self.position < self.input.length() {
-    // Check for closing triple quotes
-    if self.peek() is Some('\'') {
-      let saved_pos = self.position
-      let saved_line = self.line
-      let saved_column = self.column
-      self.advance()
-      if self.try_consume_charcode('\'') {
-        if self.try_consume_charcode('\'') {
-          return sb.to_string()
-        }
-      }
-      // Not triple quotes, restore position and continue
-      self.position = saved_pos
-      self.line = saved_line
-      self.column = saved_column
-    }
-    match self.peek() {
-      Some(ch) => {
-        self.advance()
-        sb.write_char(ch)
-        if ch == '\n' {
-          self.new_line()
-        }
-      }
-      None => fail(self.error("Unterminated multiline literal string"))
-    }
-  }
-  fail(self.error("Unterminated multiline literal string"))
-}
-
-///| Check if character is hexadecimal digit
-fn is_hex_digit(ch : Char) -> Bool {
-  ch is ('0'..='9' | 'a'..='f' | 'A'..='F')
-}
-
-///| Parse Unicode escape sequence \uXXXX
-fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
-  let mut code = 0
-  for i = 0; i < 4; i = i + 1 {
-    match self.peek() {
-      Some(ch) if is_hex_digit(ch) => {
-        self.advance()
-        let digit = match ch {
-          '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
-            ch.to_int() - '0'.to_int()
-          'a' | 'b' | 'c' | 'd' | 'e' | 'f' => ch.to_int() - 'a'.to_int() + 10
-          'A' | 'B' | 'C' | 'D' | 'E' | 'F' => ch.to_int() - 'A'.to_int() + 10
-          _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch)))
-        }
-        code = code * 16 + digit
-      }
-      _ =>
-        fail(
-          self.error("Invalid Unicode escape sequence: expected 4 hex digits"),
-        )
-    }
-  }
-  match code.to_char() {
-    Some(ch) => ch
-    None => fail(self.error("Invalid Unicode code point: " + code.to_string()))
-  }
-}
-
-///| Parse Unicode escape sequence \UXXXXXXXX
-fn Lexer::read_unicode_8_escape(self : Lexer) -> Char raise {
-  let mut code = 0
-  for i = 0; i < 8; i = i + 1 {
-    match self.peek() {
-      Some(ch) if is_hex_digit(ch) => {
-        self.advance()
-        let digit = match ch {
-          '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
-            ch.to_int() - '0'.to_int()
-          'a' | 'b' | 'c' | 'd' | 'e' | 'f' => ch.to_int() - 'a'.to_int() + 10
-          'A' | 'B' | 'C' | 'D' | 'E' | 'F' => ch.to_int() - 'A'.to_int() + 10
-          _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch)))
-        }
-        code = code * 16 + digit
-      }
-      _ =>
-        fail(
-          self.error("Invalid Unicode escape sequence: expected 8 hex digits"),
-        )
-    }
-  }
-  if code > 0x10FFFF || (code >= 0xD800 && code <= 0xDFFF) {
-    fail(self.error("Invalid Unicode code point: " + code.to_string()))
-  }
-  match code.to_char() {
-    Some(ch) => ch
-    None => fail(self.error("Invalid Unicode code point: " + code.to_string()))
-  }
-}
-
-///| Check if character is binary digit
-fn is_binary_digit(ch : Char) -> Bool {
-  ch == '0' || ch == '1'
-}
-
-///| Check if character is octal digit
-fn is_octal_digit(ch : Char) -> Bool {
-  ch >= '0' && ch <= '7'
-}
-
-///| Parse hexadecimal number
-pub fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
-  let mut result = 0L
-  while self.peek() is Some(ch) && (is_hex_digit(ch) || ch == '_') {
-    self.advance()
-    if ch != '_' {
-      let digit = match ch {
-        '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
-          ch.to_int() - '0'.to_int()
-        'a' | 'b' | 'c' | 'd' | 'e' | 'f' => ch.to_int() - 'a'.to_int() + 10
-        'A' | 'B' | 'C' | 'D' | 'E' | 'F' => ch.to_int() - 'A'.to_int() + 10
-        _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch)))
-      }
-      result = result * 16L + digit.to_int64()
-    }
-  }
-  result
-}
-
-///| Parse octal number
-pub fn Lexer::read_octal_number(self : Lexer) -> Int64 {
-  let mut result = 0L
-  while self.peek() is Some(ch) && (is_octal_digit(ch) || ch == '_') {
-    self.advance()
-    if ch != '_' {
-      let digit = ch.to_int() - '0'.to_int()
-      result = result * 8L + digit.to_int64()
-    }
-  }
-  result
-}
-
-///| Parse binary number
-/// # Example:
-/// ```
-/// let lexer = Lexer::new("0b1010")
-/// inspect(lexer.read_binary_number(), content="0")
-/// ```
-pub fn Lexer::read_binary_number(self : Lexer) -> Int64 {
-  let mut result = 0L
-  self.repeat_if(ch => if is_binary_digit(ch) || ch == '_' {
-    if ch != '_' {
-      let digit = ch.to_int() - '0'.to_int()
-      result = result * 2L + digit.to_int64()
-    }
-    true
-  } else {
-    false
-  })
-  result
-}
-
 ///| Test position tracking with explicit new_line() API
 test "position tracking" {
   let lexer = Lexer::new("hello\nworld")
@@ -567,37 +227,6 @@ test "position tracking" {
   lexer.new_line()
   inspect(lexer.get_line(), content="2")
   inspect(lexer.get_column(), content="1")
-}
-
-///| Test Unicode escape sequences
-test "unicode escape sequences" {
-  let lexer1 = Lexer::new("\"\\u0041\"") // 'A'
-  let result1 = lexer1.read_basic_string()
-  inspect(result1, content="A")
-  let lexer2 = Lexer::new("\"\\U00000041\"") // 'A'
-  let result2 = lexer2.read_basic_string()
-  inspect(result2, content="A")
-}
-
-///| Test multiline basic string
-test "multiline basic string" {
-  let lexer = Lexer::new("\"\"\"line1\nline2\"\"\"")
-  let result = lexer.read_multiline_basic_string()
-  inspect(result, content="line1\nline2")
-}
-
-///| Test multiline literal string
-test "multiline literal string" {
-  let lexer = Lexer::new("'''line1\nline2'''")
-  let result = lexer.read_multiline_literal_string()
-  inspect(result, content="line1\nline2")
-}
-
-///| Test line ending backslash in multiline string
-test "line ending backslash" {
-  let lexer = Lexer::new("\"\"\"line1\\\n   line2\"\"\"")
-  let result = lexer.read_multiline_basic_string()
-  inspect(result, content="line1line2") // whitespace should be trimmed
 }
 
 ///| Test skip whitespace with position tracking
