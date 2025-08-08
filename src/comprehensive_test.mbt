@@ -448,7 +448,10 @@ test "error handling" {
 
   // Unterminated string
   @json.inspect(try? parse_no_loc("key = \"unterminated"), content={
-    "Err": { "$tag": "Failure", "0": "Unterminated string at line 1, column 20" },
+    "Err": {
+      "$tag": "Failure",
+      "0": "Unterminated string at line 1, column 20",
+    },
   })
 
   // Invalid syntax - incomplete array

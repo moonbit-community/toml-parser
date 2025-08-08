@@ -95,14 +95,21 @@ pub fn Lexer::expect_char(self : Self, ch : Char, msg? : String) -> Unit raise {
     self.advance()
   } else {
     let base_msg = msg.unwrap_or("Expected character: " + Char::to_string(ch))
-    let location = " at line " + self.line.to_string() + ", column " + self.column.to_string()
+    let location = " at line " +
+      self.line.to_string() +
+      ", column " +
+      self.column.to_string()
     fail(base_msg + location)
   }
 }
 
 ///| Create a detailed error message with position information
 pub fn Lexer::error(self : Lexer, msg : String) -> String {
-  msg + " at line " + self.line.to_string() + ", column " + self.column.to_string()
+  msg +
+  " at line " +
+  self.line.to_string() +
+  ", column " +
+  self.column.to_string()
 }
 
 ///| Get current character and advance position
@@ -160,10 +167,16 @@ pub fn Lexer::read_basic_string(self : Lexer) -> String raise {
             'f' => sb.write_char('\u000C')
             'u' => sb.write_char(self.read_unicode_4_escape())
             'U' => sb.write_char(self.read_unicode_8_escape())
-            _ => fail(self.error("Invalid escape sequence: \\" + Char::to_string(escaped)))
+            _ =>
+              fail(
+                self.error(
+                  "Invalid escape sequence: \\" + Char::to_string(escaped),
+                ),
+              )
           }
         }
-        None => fail(self.error("Unexpected end of input after escape character"))
+        None =>
+          fail(self.error("Unexpected end of input after escape character"))
       }
     } else {
       sb.write_char(ch)
@@ -196,7 +209,7 @@ pub fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
   self.advance() // first "
   self.advance() // second "
   self.advance() // third "
-  
+
   // Skip line ending immediately following the opening delimiter
   if self.peek() is Some('\r') {
     self.advance()
@@ -208,7 +221,6 @@ pub fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
     self.advance()
     self.new_line()
   }
-  
   let sb = StringBuilder::new()
   while self.position < self.input.length() {
     // Check for closing triple quotes
@@ -229,7 +241,6 @@ pub fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
       self.line = saved_line
       self.column = saved_column
     }
-    
     match self.peek() {
       Some(ch) => {
         self.advance()
@@ -260,10 +271,16 @@ pub fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
                     self.advance()
                   }
                 }
-                _ => fail(self.error("Invalid escape sequence: \\" + Char::to_string(escaped)))
+                _ =>
+                  fail(
+                    self.error(
+                      "Invalid escape sequence: \\" + Char::to_string(escaped),
+                    ),
+                  )
               }
             }
-            None => fail(self.error("Unexpected end of input after escape character"))
+            None =>
+              fail(self.error("Unexpected end of input after escape character"))
           }
         } else {
           sb.write_char(ch)
@@ -289,7 +306,7 @@ pub fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
   self.advance() // first '
   self.advance() // second '
   self.advance() // third '
-  
+
   // Skip line ending immediately following the opening delimiter
   if self.peek() is Some('\r') {
     self.advance()
@@ -301,7 +318,6 @@ pub fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
     self.advance()
     self.new_line()
   }
-  
   let sb = StringBuilder::new()
   while self.position < self.input.length() {
     // Check for closing triple quotes
@@ -322,7 +338,6 @@ pub fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
       self.line = saved_line
       self.column = saved_column
     }
-    
     match self.peek() {
       Some(ch) => {
         self.advance()
@@ -358,7 +373,10 @@ fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
         }
         code = code * 16 + digit
       }
-      _ => fail(self.error("Invalid Unicode escape sequence: expected 4 hex digits"))
+      _ =>
+        fail(
+          self.error("Invalid Unicode escape sequence: expected 4 hex digits"),
+        )
     }
   }
   match code.to_char() {
@@ -383,7 +401,10 @@ fn Lexer::read_unicode_8_escape(self : Lexer) -> Char raise {
         }
         code = code * 16 + digit
       }
-      _ => fail(self.error("Invalid Unicode escape sequence: expected 8 hex digits"))
+      _ =>
+        fail(
+          self.error("Invalid Unicode escape sequence: expected 8 hex digits"),
+        )
     }
   }
   if code > 0x10FFFF || (code >= 0xD800 && code <= 0xDFFF) {
@@ -455,19 +476,16 @@ test "position tracking" {
   let lexer = Lexer::new("hello\nworld")
   inspect(lexer.get_line(), content="1")
   inspect(lexer.get_column(), content="1")
-  
   lexer.advance() // h
   inspect(lexer.get_column(), content="2")
-  
   for i = 0; i < 4; i = i + 1 {
     lexer.advance() // e,l,l,o
   }
   inspect(lexer.get_column(), content="6")
-  
   lexer.advance() // \n
   inspect(lexer.get_column(), content="7") // Column advances normally
   inspect(lexer.get_line(), content="1") // Line doesn't change automatically
-  
+
   // Explicitly call new_line() when encountering newline
   lexer.new_line()
   inspect(lexer.get_line(), content="2")
@@ -479,7 +497,6 @@ test "unicode escape sequences" {
   let lexer1 = Lexer::new("\"\\u0041\"") // 'A'
   let result1 = lexer1.read_basic_string()
   inspect(result1, content="A")
-  
   let lexer2 = Lexer::new("\"\\U00000041\"") // 'A'
   let result2 = lexer2.read_basic_string()
   inspect(result2, content="A")
@@ -519,14 +536,11 @@ test "explicit new_line API" {
   let lexer = Lexer::new("test")
   inspect(lexer.get_line(), content="1")
   inspect(lexer.get_column(), content="1")
-  
   lexer.new_line()
   inspect(lexer.get_line(), content="2")
   inspect(lexer.get_column(), content="1")
-  
   lexer.advance() // t
   inspect(lexer.get_column(), content="2")
-  
   lexer.new_line()
   inspect(lexer.get_line(), content="3")
   inspect(lexer.get_column(), content="1")
