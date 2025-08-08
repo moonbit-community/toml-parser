@@ -8,6 +8,17 @@ pub(all) struct Lexer {
   mut column : Int
 }
 
+///| Get a view of the input string
+/// # Example:
+/// ```
+/// let lexer = Lexer::new("Hello, world!")
+/// lexer.advance()
+/// lexer.advance()
+/// inspect(lexer.view(), content="llo, world!")
+/// ```
+pub fn Lexer::view(self : Lexer) -> @string.View {
+  self.input.view(start_offset=self.position)
+}
 ///| Create a new lexer
 pub fn Lexer::new(input : String) -> Lexer {
   { input, position: 0, line: 1, column: 1 }
