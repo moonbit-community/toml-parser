@@ -157,6 +157,30 @@ pub fn Lexer::expect_char(self : Self, ch : Char, msg? : String) -> Unit raise {
   }
 }
 
+
+///|
+/// Expect a string and advance, or fail with detailed error
+/// Note the parameter `str` is not expected to have a newline
+/// otherwise the line position is not correct
+/// # Example
+pub fn Lexer::expect_string(self : Self, str : String, msg? : String) -> Unit raise {
+  
+  // store the original postion for precise error reporting
+  let saved_pos = self.position
+  let saved_line = self.line
+  let saved_column  = self.column  
+  for i = 0; i < str.length(); i = i + 1 {
+    if self.peek_charcode() is Some(ch) && ch == str.unsafe_charcode_at(i) {
+      self.advance()
+    } else {
+      self.position = saved_pos
+      self.line = saved_line
+      self.column = saved_column  
+      fail(self.error(msg.unwrap_or("Expected string: " + str)))
+    }
+  }
+}
+
 ///| Create a detailed error message with position information
 pub fn Lexer::error(self : Lexer, msg : String) -> String {
   msg +
@@ -265,9 +289,7 @@ pub fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
   // self.advance() // first "
   // self.advance() // second "
   // self.advance() // third "
-  self.expect_char('"')
-  self.expect_char('"')
-  self.expect_char('"')
+  self.expect_string("\"\"\"")  
   // Skip line ending immediately following the opening delimiter
   if self.try_consume_charcode('\r') {
     if self.try_consume_charcode('\n') {
@@ -356,10 +378,7 @@ pub fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
 /// ```
 pub fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
   // consume opening triple quotes
-  self.advance() // first '
-  self.advance() // second '
-  self.advance() // third '
-
+  self.expect_string("'''")
   // Skip line ending immediately following the opening delimiter
   if self.peek() is Some('\r') {
     self.advance()

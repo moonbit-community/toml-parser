@@ -18,6 +18,7 @@ fn Lexer::check_is_charcode(Self, Int) -> Bool
 fn Lexer::check_not_charcode(Self, Int) -> Bool
 fn Lexer::error(Self, String) -> String
 fn Lexer::expect_char(Self, Char, msg? : String) -> Unit raise
+fn Lexer::expect_string(Self, String, msg? : String) -> Unit raise
 fn Lexer::get_column(Self) -> Int
 fn Lexer::get_line(Self) -> Int
 fn Lexer::get_position(Self) -> Int
