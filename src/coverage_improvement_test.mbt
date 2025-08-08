@@ -16,7 +16,7 @@ test "test tokenizer unreachable path coverage" {
     ["Identifier", "simple"],
     "Equals",
     ["BooleanToken", true],
-    ["EOF"],
+    "EOF",
   ])
 }
 
@@ -51,7 +51,7 @@ test "test literal string handling" {
     ["Identifier", "literal"],
     "Equals",
     ["StringToken", "this is a literal string"],
-    ["EOF"],
+    "EOF",
   ])
 }
 
@@ -90,6 +90,6 @@ test "test mixed case hex digits" {
     ["Identifier", "mixed_hex"],
     "Equals",
     ["IntegerToken", "11259375"], // 0xaBcDeF = 11259375
-    ["EOF"],
+    "EOF",
   ])
 }
