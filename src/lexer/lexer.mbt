@@ -19,6 +19,24 @@ pub(all) struct Lexer {
 pub fn Lexer::view(self : Lexer) -> @string.View {
   self.input.view(start_offset=self.position)
 }
+
+///|
+/// Update the lexer's position and column based on a new view
+/// # Example:
+/// ```
+/// let lexer = Lexer::new("Hello, world!")
+/// match lexer.view() {
+///  [.."Hello", .. rest] => lexer.update_view(rest)
+///  _ => ()
+/// }
+/// inspect(lexer.peek(), content="Some(',')")
+/// ```
+pub fn Lexer::update_view(self : Lexer, view : @string.View) -> Unit {
+  let new_offset = view.start_offset()
+  self.column = new_offset - self.position + self.column
+  self.position = new_offset
+}
+
 ///| Create a new lexer
 pub fn Lexer::new(input : String) -> Lexer {
   { input, position: 0, line: 1, column: 1 }

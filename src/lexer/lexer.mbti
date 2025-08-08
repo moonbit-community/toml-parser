@@ -34,6 +34,7 @@ fn Lexer::repeat_if(Self, (Char) -> Bool) -> Unit
 fn Lexer::skip_comment(Self) -> Unit
 fn Lexer::skip_whitespace(Self) -> Unit
 fn Lexer::try_consume_charcode(Self, Int) -> Bool
+fn Lexer::update_view(Self, @string.StringView) -> Unit
 fn Lexer::view(Self) -> @string.StringView
 
 // Type aliases

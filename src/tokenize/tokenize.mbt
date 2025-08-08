@@ -330,30 +330,26 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
   let mut is_float = false
 
   // Check if this might be a special format number (0x, 0o, 0b)
-  if self.peek() is Some('0') && !is_negative {
-    self.advance() // consume '0'
-    match self.peek() {
-      Some('x') | Some('X') => {
-        self.advance() // consume 'x' or 'X'
+  if !is_negative {
+    match self.view() {
+      ['0', 'x' | 'X', .. rest] => {
+        self.update_view(rest)
         let value = self.read_hex_number()
         return IntegerToken(if is_negative { -value } else { value })
       }
-      Some('o') | Some('O') => {
-        self.advance() // consume 'o' or 'O'
+      ['0', 'o' | 'O', .. rest] => {
+        self.update_view(rest)
         let value = self.read_octal_number()
         return IntegerToken(if is_negative { -value } else { value })
       }
-      Some('b') | Some('B') => {
-        self.advance() // consume 'b' or 'B'
+      ['0', 'b' | 'B', .. rest] => {
+        self.update_view(rest)
         let value = self.read_binary_number()
         return IntegerToken(if is_negative { -value } else { value })
       }
-      _ =>
-        // Not a special format, continue with '0' already consumed
-        sb.write_char('0')
+      _ => () // continue with non binary mode
     }
   }
-
   // Read digits
   while self.peek() is Some(ch) && (is_numeric(ch) || ch == '_') {
     self.advance()
