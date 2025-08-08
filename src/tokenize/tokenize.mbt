@@ -96,6 +96,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
     None => return EOF
     Some('\n') => {
       self.advance()
+      self.new_line()
       return Newline
     }
     Some('[') => {

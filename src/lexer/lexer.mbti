@@ -9,9 +9,15 @@ package "bob/toml/lexer"
 pub(all) struct Lexer {
   input : String
   mut position : Int
+  mut line : Int
+  mut column : Int
 }
 fn Lexer::advance(Self) -> Unit
+fn Lexer::error(Self, String) -> String
 fn Lexer::expect_char(Self, Char, msg? : String) -> Unit raise
+fn Lexer::get_column(Self) -> Int
+fn Lexer::get_line(Self) -> Int
+fn Lexer::get_position(Self) -> Int
 fn Lexer::new(String) -> Self
 fn Lexer::peek(Self) -> Char?
 fn Lexer::read_basic_string(Self) -> String raise
@@ -19,6 +25,8 @@ fn Lexer::read_binary_number(Self) -> Int64
 fn Lexer::read_hex_number(Self) -> Int64 raise
 fn Lexer::read_identifier(Self) -> String
 fn Lexer::read_literal_string(Self) -> String raise
+fn Lexer::read_multiline_basic_string(Self) -> String raise
+fn Lexer::read_multiline_literal_string(Self) -> String raise
 fn Lexer::read_octal_number(Self) -> Int64
 fn Lexer::skip_comment(Self) -> Unit
 fn Lexer::skip_whitespace(Self) -> Unit

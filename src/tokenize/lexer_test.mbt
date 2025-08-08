@@ -248,7 +248,7 @@ test "test invalid escape sequence error" {
   // TODO: ArgsLoc no absolute loc
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid escape sequence: \\z",
+    content="Invalid escape sequence: \\z at line 1, column 14",
   ) // Should fail with invalid escape sequence
 }
 
@@ -258,7 +258,7 @@ test "test unterminated string error" {
   // TODO: ArgsLoc no absolute loc
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Unterminated string",
+    content="Unterminated string at line 1, column 20",
   ) // Should fail with unterminated string
 }
 
@@ -268,7 +268,7 @@ test "test unexpected end after escape" {
   // TODO: ArgsLoc no absolute loc
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Unexpected end of input after escape character",
+    content="Unexpected end of input after escape character at line 1, column 13",
   ) // Should fail with unexpected end after escape
 }
 
