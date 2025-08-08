@@ -46,12 +46,57 @@ pub fn Lexer::skip_whitespace(self : Lexer) -> Unit {
   }
 }
 
+///|
+/// 
+/// peeck and check it matches a bmp character
+/// TODO @param ch change its type to UInt16 when overloading
+/// support is there
+pub fn Lexer::check_is_charcode(self : Lexer, ch : Int) -> Bool {
+  self.position < self.input.length() &&
+  self.input.unsafe_charcode_at(self.position) == ch
+}
+
+///|
+pub fn Lexer::check_not_charcode(self : Lexer, ch : Int) -> Bool {
+  self.position < self.input.length() &&
+  self.input.unsafe_charcode_at(self.position) != ch
+}
+
+///|
+pub fn Lexer::try_consume_charcode(self : Lexer, ch : Int) -> Bool {
+  if self.check_is_charcode(ch) {
+    self.advance()
+    true
+  } else {
+    false
+  }
+}
+
+///|
+pub fn Lexer::advance_until_charcode(self : Lexer, ch : Int) -> Unit {
+  while self.check_not_charcode(ch) {
+    self.advance()
+  }
+}
+
+///|
+/// advance as long as the predicate is true
+/// # Example:
+/// ```
+/// let lexer = Lexer::new("Hello, world!")
+/// lexer.repeat_if(ch=> ch is ('a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-'))
+/// inspect(lexer.peek(), content="Some(',')")
+/// ```
+pub fn Lexer::repeat_if(self : Lexer, f : (Char) -> Bool) -> Unit {
+  while self.peek() is Some(ch) && f(ch) {
+    self.advance()
+  }
+}
+
 ///| Skip comments (start with #)
 pub fn Lexer::skip_comment(self : Lexer) -> Unit {
-  if self.peek() is Some('#') {
-    while self.peek() is Some(ch) && ch != '\n' {
-      self.advance()
-    }
+  if self.check_is_charcode('#') {
+    self.advance_until_charcode('\n')
   }
 }
 
@@ -65,6 +110,15 @@ pub fn Lexer::skip_comment(self : Lexer) -> Unit {
 /// ```
 pub fn Lexer::peek(self : Lexer) -> Char? {
   self.input.get_char(self.position)
+}
+
+///|
+pub fn Lexer::peek_charcode(self : Lexer) -> Int? {
+  if self.position < self.input.length() {
+    Some(self.input.unsafe_charcode_at(self.position))
+  } else {
+    None
+  }
 }
 
 ///| Get current line number for error reporting
@@ -117,13 +171,12 @@ pub fn Lexer::error(self : Lexer, msg : String) -> String {
 /// Note: Does not automatically track newlines - call new_line() explicitly when needed
 pub fn Lexer::advance(self : Lexer) -> Unit {
   if self.position < self.input.length() {
+    self.column += 1
     let ch = self.input.unsafe_charcode_at(self.position)
     if !ch.is_surrogate() {
       self.position += 1
-      self.column += 1
     } else {
       self.position += 2
-      self.column += 1
     }
   }
 }
@@ -132,10 +185,10 @@ pub fn Lexer::advance(self : Lexer) -> Unit {
 pub fn Lexer::read_identifier(self : Lexer) -> String {
   // let mut result = ""
   let sb = StringBuilder::new()
-  while self.peek() is Some(ch) &&
+  while self.peek_charcode() is Some(ch) &&
         ch is ('a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-') {
     self.advance()
-    sb.write_char(ch)
+    sb.write_char(ch.unsafe_to_char())
   }
   sb.to_string()
 }
@@ -153,7 +206,7 @@ pub fn Lexer::read_basic_string(self : Lexer) -> String raise {
     self.advance() // consume character`  
     if ch == '\\' {
       // Handle escape sequences
-      match self.peek() {
+      match self.peek_charcode() {
         Some(escaped) => {
           self.advance() // consume escape character  
           match escaped {
@@ -170,9 +223,10 @@ pub fn Lexer::read_basic_string(self : Lexer) -> String raise {
             _ =>
               fail(
                 self.error(
-                  "Invalid escape sequence: \\" + Char::to_string(escaped),
+                  "Invalid escape sequence: \\\{escaped.to_char().unwrap_or('?')}",
                 ),
               )
+            // TODO:refine the error message 
           }
         }
         None =>
@@ -190,10 +244,12 @@ pub fn Lexer::read_basic_string(self : Lexer) -> String raise {
 pub fn Lexer::read_literal_string(self : Lexer) -> String raise {
   self.advance() // consume opening quote
   let sb = StringBuilder::new()
-  while self.peek() is Some(ch) && ch != '\'' {
-    self.advance() // consume character
+  self.repeat_if(ch => if ch != '\'' {
     sb.write_char(ch)
-  }
+    true
+  } else {
+    false
+  })
   self.expect_char('\'', msg="Unterminated string")
   sb.to_string()
 }
@@ -206,19 +262,18 @@ pub fn Lexer::read_literal_string(self : Lexer) -> String raise {
 /// ```
 pub fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
   // consume opening triple quotes
-  self.advance() // first "
-  self.advance() // second "
-  self.advance() // third "
-
+  // self.advance() // first "
+  // self.advance() // second "
+  // self.advance() // third "
+  self.expect_char('"')
+  self.expect_char('"')
+  self.expect_char('"')
   // Skip line ending immediately following the opening delimiter
-  if self.peek() is Some('\r') {
-    self.advance()
-    if self.peek() is Some('\n') {
-      self.advance()
+  if self.try_consume_charcode('\r') {
+    if self.try_consume_charcode('\n') {
       self.new_line()
     }
-  } else if self.peek() is Some('\n') {
-    self.advance()
+  } else if self.try_consume_charcode('\n') {
     self.new_line()
   }
   let sb = StringBuilder::new()
@@ -229,10 +284,8 @@ pub fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
       let saved_line = self.line
       let saved_column = self.column
       self.advance()
-      if self.peek() is Some('"') {
-        self.advance()
-        if self.peek() is Some('"') {
-          self.advance()
+      if self.try_consume_charcode('"') {
+        if self.try_consume_charcode('"') {
           return sb.to_string()
         }
       }
@@ -326,10 +379,8 @@ pub fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
       let saved_line = self.line
       let saved_column = self.column
       self.advance()
-      if self.peek() is Some('\'') {
-        self.advance()
-        if self.peek() is Some('\'') {
-          self.advance()
+      if self.try_consume_charcode('\'') {
+        if self.try_consume_charcode('\'') {
           return sb.to_string()
         }
       }
@@ -459,15 +510,22 @@ pub fn Lexer::read_octal_number(self : Lexer) -> Int64 {
 }
 
 ///| Parse binary number
+/// # Example:
+/// ```
+/// let lexer = Lexer::new("0b1010")
+/// inspect(lexer.read_binary_number(), content="0")
+/// ```
 pub fn Lexer::read_binary_number(self : Lexer) -> Int64 {
   let mut result = 0L
-  while self.peek() is Some(ch) && (is_binary_digit(ch) || ch == '_') {
-    self.advance() // Always advance first
+  self.repeat_if(ch => if is_binary_digit(ch) || ch == '_' {
     if ch != '_' {
       let digit = ch.to_int() - '0'.to_int()
       result = result * 2L + digit.to_int64()
     }
-  }
+    true
+  } else {
+    false
+  })
   result
 }
 
