@@ -424,42 +424,42 @@ test "microservice configuration" {
   ])
 }
 
+///| same as parse except it will 
+/// reraise the error without location to make it stable
+fn parse_no_loc(s : String) -> @toml.TomlValue raise {
+  @toml.parse(s) catch {
+    Failure(err) =>
+      raise Failure([..err.split(" ")[2:].map(x => x.to_string()).join(" ")])
+    err => raise err
+  }
+}
+
 ///| Test error handling with expect tests
 test "error handling" {
-  // Test various error conditions using try? for snapshot testing
-  fn strip_location(err : String) -> String {
-    // FIXME: allow StringView  
-    [..err.split(" ")[2:]].map(x => x.to_string()).join(" ")
-  }
 
-  fn parse_fail(s : String) -> Json {
-    @toml.parse(s).to_json() catch {
-      // /Users/hongbozhang/git/toml-parser/src/parser.mbt:54:10-54:32 Expected value
-      // Strip the location info
-      // err => Json::string(err.to_string())
-      Failure(err) => Json::string(strip_location(err.to_string()))
-      err => Json::string(err.to_string())
-    }
-  }
   // Missing value
-  @json.inspect(parse_fail("key ="), content="Expected value")
+  @json.inspect(try? parse_no_loc("key ="), content={
+    "Err": { "$tag": "Failure", "0": "Expected value" },
+  })
   // Missing key
-  @json.inspect(parse_fail("= \"value\""), content="Expected key")
+  @json.inspect(try? parse_no_loc("= \"value\""), content={
+    "Err": { "$tag": "Failure", "0": "Expected key" },
+  })
 
   // Unterminated string
-  @json.inspect(
-    parse_fail("key = \"unterminated"),
-    content="Unterminated string",
-  )
+  @json.inspect(try? parse_no_loc("key = \"unterminated"), content={
+    "Err": { "$tag": "Failure", "0": "Unterminated string" },
+  })
 
   // Invalid syntax - incomplete array
-  @json.inspect(
-    parse_fail("key = [1, 2"),
-    content="Expected ',' or ']' in array",
-  )
+  @json.inspect(try? parse_no_loc("key = [1, 2"), content={
+    "Err": { "$tag": "Failure", "0": "Expected ',' or ']' in array" },
+  })
 
   // Empty key
-  @json.inspect(parse_fail(" = \"value\""), content="Expected key")
+  @json.inspect(try? parse_no_loc(" = \"value\""), content={
+    "Err": { "$tag": "Failure", "0": "Expected key" },
+  })
 }
 
 ///| Test edge cases with expect tests
