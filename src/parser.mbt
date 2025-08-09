@@ -131,7 +131,7 @@ fn Parser::parse_table_header(self : Parser) -> Array[String] raise {
 
   // Parse table path (supports dotted notation)
   let path = Array::new()
-  
+
   // Parse first key
   let first_key = match self.advance() {
     Identifier(name) => name
@@ -139,7 +139,7 @@ fn Parser::parse_table_header(self : Parser) -> Array[String] raise {
     _ => fail("Expected table name")
   }
   path.push(first_key)
-  
+
   // Parse additional keys separated by dots
   while self.peek() == Dot {
     ignore(self.advance()) // consume dot
@@ -157,12 +157,13 @@ fn Parser::parse_table_header(self : Parser) -> Array[String] raise {
 }
 
 ///| Create or get a nested table structure from a path
-fn create_nested_table(root_table : Map[String, TomlValue], path : Array[String]) -> Map[String, TomlValue] raise {
+fn create_nested_table(
+  root_table : Map[String, TomlValue],
+  path : Array[String],
+) -> Map[String, TomlValue] raise {
   let mut current_table = root_table
-  
   for i = 0; i < path.length(); i = i + 1 {
     let key = path[i]
-    
     if current_table.contains(key) {
       match current_table.get(key) {
         Some(TomlTable(existing_table)) => current_table = existing_table
@@ -175,7 +176,6 @@ fn create_nested_table(root_table : Map[String, TomlValue], path : Array[String]
       current_table = new_table
     }
   }
-  
   current_table
 }
 
@@ -211,7 +211,7 @@ pub fn parse(input : String) -> TomlValue raise {
       LeftBracket => {
         // Parse table header (supporting nested tables)
         let table_path = parser.parse_table_header()
-        
+
         // Create or get the nested table structure
         current_table = create_nested_table(main_table, table_path)
       }

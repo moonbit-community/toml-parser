@@ -256,21 +256,15 @@ test "nested tables" {
         {
           "alpha": [
             "TomlTable",
-            {
-              "ip": ["TomlString", "10.0.0.1"],
-              "dc": ["TomlString", "eqdc10"]
-            }
+            { "ip": ["TomlString", "10.0.0.1"], "dc": ["TomlString", "eqdc10"] },
           ],
           "beta": [
-            "TomlTable", 
-            {
-              "ip": ["TomlString", "10.0.0.2"],
-              "dc": ["TomlString", "eqdc10"]
-            }
-          ]
-        }
-      ]
-    }
+            "TomlTable",
+            { "ip": ["TomlString", "10.0.0.2"], "dc": ["TomlString", "eqdc10"] },
+          ],
+        },
+      ],
+    },
   ])
 }
 
@@ -332,18 +326,18 @@ test "nested tables" {
 //   ])
 // }
 
-// TODO: Multiline strings not yet supported
-// test "multiline basic strings" {
-//   let multiline_basic_toml =
-//     #|str1 = """
-//     #|Roses are red
-//     #|Violets are blue"""
-//     #|
-//   @json.inspect(@toml.parse(multiline_basic_toml), content=[
-//     "TomlTable",
-//     { "str1": ["TomlString", "Roses are red\nViolets are blue"] }
-//   ])
-// }
+///| Test multiline basic strings
+test "multiline basic strings" {
+  let multiline_basic_toml =
+    #|str1 = """
+    #|Roses are red
+    #|Violets are blue"""
+    #|
+  @json.inspect(@toml.parse(multiline_basic_toml), content=[
+    "TomlTable",
+    { "str1": ["TomlString", "Roses are red\nViolets are blue"] },
+  ])
+}
 
 ///| Test literal strings (single quotes)
 test "literal strings" {
