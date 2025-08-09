@@ -1,6 +1,10 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "bob/toml/lexer"
 
+import(
+  "moonbitlang/core/string"
+)
+
 // Values
 
 // Errors
@@ -9,19 +13,29 @@ package "bob/toml/lexer"
 pub(all) struct Lexer {
   input : String
   mut position : Int
+  mut line : Int
+  mut column : Int
 }
 fn Lexer::advance(Self) -> Unit
+fn Lexer::advance_until_charcode(Self, Int) -> Unit
+fn Lexer::check_is_charcode(Self, Int) -> Bool
+fn Lexer::check_not_charcode(Self, Int) -> Bool
+fn Lexer::error(Self, String) -> String
 fn Lexer::expect_char(Self, Char, msg? : String) -> Unit raise
+fn Lexer::expect_string(Self, String, msg? : String) -> Unit raise
+fn Lexer::get_column(Self) -> Int
+fn Lexer::get_line(Self) -> Int
+fn Lexer::get_position(Self) -> Int
 fn Lexer::new(String) -> Self
+fn Lexer::new_line(Self) -> Unit
 fn Lexer::peek(Self) -> Char?
-fn Lexer::read_basic_string(Self) -> String raise
-fn Lexer::read_binary_number(Self) -> Int64
-fn Lexer::read_hex_number(Self) -> Int64 raise
-fn Lexer::read_identifier(Self) -> String
-fn Lexer::read_literal_string(Self) -> String raise
-fn Lexer::read_octal_number(Self) -> Int64
+fn Lexer::peek_charcode(Self) -> Int?
+fn Lexer::repeat_if(Self, (Char) -> Bool) -> Unit
 fn Lexer::skip_comment(Self) -> Unit
 fn Lexer::skip_whitespace(Self) -> Unit
+fn Lexer::try_consume_charcode(Self, Int) -> Bool
+fn Lexer::update_view(Self, @string.StringView) -> Unit
+fn Lexer::view(Self) -> @string.StringView
 
 // Type aliases
 
