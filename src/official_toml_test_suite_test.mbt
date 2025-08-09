@@ -237,42 +237,36 @@ test "basic table" {
   ])
 }
 
-// TODO: Nested tables [a.b.c] not yet supported  
-// test "nested tables" {
-//   let nested_table_toml =
-//     #|[servers.alpha]
-//     #|ip = "10.0.0.1"
-//     #|dc = "eqdc10"
-//     #|
-//     #|[servers.beta]
-//     #|ip = "10.0.0.2"
-//     #|dc = "eqdc10"
-//     #|
-//   @json.inspect(@toml.parse(nested_table_toml), content=[
-//     "TomlTable",
-//     {
-//       "servers": [
-//         "TomlTable",
-//         {
-//           "alpha": [
-//             "TomlTable",
-//             {
-//               "ip": ["TomlString", "10.0.0.1"],
-//               "dc": ["TomlString", "eqdc10"]
-//             }
-//           ],
-//           "beta": [
-//             "TomlTable", 
-//             {
-//               "ip": ["TomlString", "10.0.0.2"],
-//               "dc": ["TomlString", "eqdc10"]
-//             }
-//           ]
-//         }
-//       ]
-//     }
-//   ])
-// }
+///| Test nested tables [a.b.c] syntax
+test "nested tables" {
+  let nested_table_toml =
+    #|[servers.alpha]
+    #|ip = "10.0.0.1"
+    #|dc = "eqdc10"
+    #|
+    #|[servers.beta]
+    #|ip = "10.0.0.2"
+    #|dc = "eqdc10"
+    #|
+  @json.inspect(@toml.parse(nested_table_toml), content=[
+    "TomlTable",
+    {
+      "servers": [
+        "TomlTable",
+        {
+          "alpha": [
+            "TomlTable",
+            { "ip": ["TomlString", "10.0.0.1"], "dc": ["TomlString", "eqdc10"] },
+          ],
+          "beta": [
+            "TomlTable",
+            { "ip": ["TomlString", "10.0.0.2"], "dc": ["TomlString", "eqdc10"] },
+          ],
+        },
+      ],
+    },
+  ])
+}
 
 // TODO: Array of tables [[array]] not yet supported
 // test "array of tables" {
@@ -332,18 +326,18 @@ test "basic table" {
 //   ])
 // }
 
-// TODO: Multiline strings not yet supported
-// test "multiline basic strings" {
-//   let multiline_basic_toml =
-//     #|str1 = """
-//     #|Roses are red
-//     #|Violets are blue"""
-//     #|
-//   @json.inspect(@toml.parse(multiline_basic_toml), content=[
-//     "TomlTable",
-//     { "str1": ["TomlString", "Roses are red\nViolets are blue"] }
-//   ])
-// }
+///| Test multiline basic strings
+test "multiline basic strings" {
+  let multiline_basic_toml =
+    #|str1 = """
+    #|Roses are red
+    #|Violets are blue"""
+    #|
+  @json.inspect(@toml.parse(multiline_basic_toml), content=[
+    "TomlTable",
+    { "str1": ["TomlString", "Roses are red\nViolets are blue"] },
+  ])
+}
 
 ///| Test literal strings (single quotes)
 test "literal strings" {

@@ -160,7 +160,7 @@ test "test table name conflicts with existing value" {
     content={
       "Err": {
         "$tag": "Failure",
-        "0": "Table name conflicts with existing value",
+        "0": "Table path conflicts with existing value: table",
       },
     },
   )

@@ -124,21 +124,59 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
   TomlTable(table)
 }
 
-///| Parse a table header: [section]
-fn Parser::parse_table_header(self : Parser) -> String raise {
+///| Parse a table header: [section] or [section.subsection]
+fn Parser::parse_table_header(self : Parser) -> Array[String] raise {
   // Expect [
   self.expect(LeftBracket)
 
-  // Parse table name
-  let table_name = match self.advance() {
+  // Parse table path (supports dotted notation)
+  let path = Array::new()
+
+  // Parse first key
+  let first_key = match self.advance() {
     Identifier(name) => name
     StringToken(name) => name
     _ => fail("Expected table name")
   }
+  path.push(first_key)
+
+  // Parse additional keys separated by dots
+  while self.peek() == Dot {
+    ignore(self.advance()) // consume dot
+    let key = match self.advance() {
+      Identifier(name) => name
+      StringToken(name) => name
+      _ => fail("Expected table name after dot")
+    }
+    path.push(key)
+  }
 
   // Expect ]
   self.expect(RightBracket)
-  table_name
+  path
+}
+
+///| Create or get a nested table structure from a path
+fn create_nested_table(
+  root_table : Map[String, TomlValue],
+  path : Array[String],
+) -> Map[String, TomlValue] raise {
+  let mut current_table = root_table
+  for i = 0; i < path.length(); i = i + 1 {
+    let key = path[i]
+    if current_table.contains(key) {
+      match current_table.get(key) {
+        Some(TomlTable(existing_table)) => current_table = existing_table
+        Some(_) => fail("Table path conflicts with existing value: " + key)
+        None => fail("Unexpected error: table should exist")
+      }
+    } else {
+      let new_table = Map::new()
+      current_table[key] = TomlTable(new_table)
+      current_table = new_table
+    }
+  }
+  current_table
 }
 
 ///| Parse a key-value pair: key = value
@@ -171,21 +209,11 @@ pub fn parse(input : String) -> TomlValue raise {
     }
     match parser.peek() {
       LeftBracket => {
-        // Parse table header
-        let table_name = parser.parse_table_header()
+        // Parse table header (supporting nested tables)
+        let table_path = parser.parse_table_header()
 
-        // Create new table if it doesn't exist
-        if main_table.contains(table_name) {
-          match main_table.get(table_name) {
-            Some(TomlTable(existing_table)) => current_table = existing_table
-            Some(_) => fail("Table name conflicts with existing value")
-            None => fail("Unexpected error: table should exist")
-          }
-        } else {
-          let new_table = Map::new()
-          main_table[table_name] = TomlTable(new_table)
-          current_table = new_table
-        }
+        // Create or get the nested table structure
+        current_table = create_nested_table(main_table, table_path)
       }
       _ => {
         // Parse key-value pair
