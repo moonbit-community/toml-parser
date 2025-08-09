@@ -240,42 +240,33 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
 fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
   // consume opening triple quotes
   self.expect_string("'''")
-  // Skip line ending immediately following the opening delimiter
-  if self.peek() is Some('\r') {
-    self.advance()
-    if self.peek() is Some('\n') {
-      self.advance()
-      self.new_line()
-    }
-  } else if self.peek() is Some('\n') {
-    self.advance()
-    self.new_line()
-  }
   let sb = StringBuilder::new()
-  while self.get_position() < self.input.length() {
-    // Check for closing triple quotes
-    if self.peek() is Some('\'') {
-      self.advance()
-      if self.try_consume_charcode('\'') {
-        if self.try_consume_charcode('\'') {
-          return sb.to_string()
-        }
+  while true {
+    match self.view() {
+      [.. "'''", .. rest] => {
+        // finish reading the string
+        self.update_view(rest)
+        break
       }
-      // Not triple quotes, continue parsing (we've already consumed the quote)
-      sb.write_char('\'')
-    }
-    match self.peek() {
-      Some(ch) => {
-        self.advance()
-        sb.write_char(ch)
-        if ch == '\n' {
+      [.. "\r\n", .. rest] => {
+        sb.write_string("\r\n")
+        self.update_view(rest)
+        self.new_line()
+      }
+      // TODO: support .. ("\n"|"\r\n")
+      // CR: zhangyu
+
+      [ch, .. rest] => {
+        if ch is '\n' {
           self.new_line()
         }
+        self.update_view(rest)
+        sb.write_char(ch)
       }
-      None => fail(self.error("Unterminated multiline literal string"))
+      [] => fail(self.error("Unterminated multiline literal string"))
     }
-  }
-  fail(self.error("Unterminated multiline literal string"))
+  } // FIXME: special typing rules for `while true`
+  sb.to_string()
 }
 
 ///| Parse hexadecimal number
