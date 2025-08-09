@@ -21,11 +21,6 @@ fn is_binary_digit(ch : Char) -> Bool {
   ch == '0' || ch == '1'
 }
 
-///| Check if character is octal digit
-fn is_octal_digit(ch : Char) -> Bool {
-  ch >= '0' && ch <= '7'
-}
-
 ///| Parse an identifier or keyword
 fn Lexer::read_identifier(self : Lexer) -> String {
   let sb = StringBuilder::new()
@@ -291,14 +286,28 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
 ///| Parse octal number
 fn Lexer::read_octal_number(self : Lexer) -> Int64 {
   let mut result = 0L
-  while self.peek() is Some(ch) && (is_octal_digit(ch) || ch == '_') {
-    self.advance()
-    if ch != '_' {
-      let digit = ch.to_int() - '0'.to_int()
-      result = result * 8L + digit.to_int64()
+  while true {
+    match self.view() {
+      ['0'..='7' | '_' as x, .. rest] => {
+        self.update_view(rest)
+        if x != '_' {
+          let digit = x.to_int() - '0'
+          result = result * 8 + digit.to_int64()
+        }
+      }
+      _ => break
     }
   }
   result
+}
+
+///|
+test {
+  let lexer = @lexer.Lexer::new("0o755")
+  lexer.advance() // consume '0'
+  lexer.advance() // consume 'o'
+  let result = lexer.read_octal_number()
+  inspect(result, content="493")
 }
 
 ///| Parse binary number
