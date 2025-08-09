@@ -29,10 +29,14 @@ fn is_octal_digit(ch : Char) -> Bool {
 ///| Parse an identifier or keyword
 fn Lexer::read_identifier(self : Lexer) -> String {
   let sb = StringBuilder::new()
-  while self.peek_charcode() is Some(ch) &&
-        ch is ('a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-') {
-    self.advance()
-    sb.write_char(ch.unsafe_to_char())
+  while true {
+    match self.view() {
+      ['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' as x, .. rest] => {
+        self.update_view(rest)
+        sb.write_char(x)
+      }
+      _ => break
+    }
   }
   sb.to_string()
 }

@@ -24,12 +24,12 @@ pub fn Lexer::view(self : Lexer) -> @string.View {
 /// Update the lexer's position and column based on a new view
 /// # Example:
 /// ```
-/// let lexer = Lexer::new("Hello, world!")
+/// let lexer = Lexer::new("😈x中world!")
 /// match lexer.view() {
-///  [.."Hello", .. rest] => lexer.update_view(rest)
+///  [.."😈x", .. rest] => lexer.update_view(rest)
 ///  _ => ()
 /// }
-/// inspect(lexer.peek(), content="Some(',')")
+/// inspect(lexer.peek(), content="Some('中')")
 /// ```
 pub fn Lexer::update_view(self : Lexer, view : @string.View) -> Unit {
   let new_offset = view.start_offset()
