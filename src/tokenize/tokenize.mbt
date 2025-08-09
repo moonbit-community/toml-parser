@@ -16,11 +16,6 @@ fn is_hex_digit(ch : Char) -> Bool {
   ch is ('0'..='9' | 'a'..='f' | 'A'..='F')
 }
 
-///| Check if character is binary digit
-fn is_binary_digit(ch : Char) -> Bool {
-  ch == '0' || ch == '1'
-}
-
 ///| Parse an identifier or keyword
 fn Lexer::read_identifier(self : Lexer) -> String {
   let sb = StringBuilder::new()
@@ -166,16 +161,12 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
   let sb = StringBuilder::new()
   while self.get_position() < self.input.length() {
     // Check for closing triple quotes
-    if self.peek() is Some('"') {
-      self.advance()
-      if self.try_consume_charcode('"') {
-        if self.try_consume_charcode('"') {
-          return sb.to_string()
-        }
+    match self.view() {
+      [.. "\"\"\"", .. rest] => {
+        self.update_view(rest)
+        return sb.to_string()
       }
-      // Not triple quotes, continue parsing (we've already consumed the quote)
-      // Note: This is a simplification - a proper implementation would backtrack
-      sb.write_char('"')
+      _ => ()
     }
     match self.peek() {
       Some(ch) => {
@@ -199,12 +190,18 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
                 // Line ending backslash (trim whitespace at line start)
                 '\r' | '\n' => {
                   self.new_line()
-                  if escaped == '\r' && self.peek() is Some('\n') {
-                    self.advance() // consume the \n after \r
+                  if escaped == '\r' {
+                    match self.view() {
+                      ['\n', .. rest] => self.update_view(rest)
+                      _ => ()
+                    }
                   }
                   // Skip whitespace at the beginning of the next line
-                  while self.peek() is Some(ws) && ws is (' ' | '\t') {
-                    self.advance()
+                  while true {
+                    match self.view() {
+                      [' ' | '\t', .. rest] => self.update_view(rest)
+                      _ => break
+                    }
                   }
                 }
                 _ =>
@@ -267,17 +264,21 @@ fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
 ///| Parse hexadecimal number
 fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
   let mut result = 0L
-  while self.peek() is Some(ch) && (is_hex_digit(ch) || ch == '_') {
-    self.advance()
-    if ch != '_' {
-      let digit = match ch {
-        '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
-          ch.to_int() - '0'.to_int()
-        'a' | 'b' | 'c' | 'd' | 'e' | 'f' => ch.to_int() - 'a'.to_int() + 10
-        'A' | 'B' | 'C' | 'D' | 'E' | 'F' => ch.to_int() - 'A'.to_int() + 10
-        _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch)))
+  while true {
+    match self.view() {
+      ['0'..='9' | 'a'..='f' | 'A'..='F' | '_' as ch, .. rest] => {
+        self.update_view(rest)
+        if ch != '_' {
+          let digit = match ch {
+            '0'..='9' => ch.to_int() - '0'
+            'a'..='f' => ch.to_int() - 'a' + 10
+            'A'..='F' => ch.to_int() - 'A' + 10
+            _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch)))
+          }
+          result = result * 16L + digit.to_int64()
+        }
       }
-      result = result * 16L + digit.to_int64()
+      _ => break
     }
   }
   result
@@ -313,15 +314,18 @@ test {
 ///| Parse binary number
 fn Lexer::read_binary_number(self : Lexer) -> Int64 {
   let mut result = 0L
-  self.repeat_if(ch => if is_binary_digit(ch) || ch == '_' {
-    if ch != '_' {
-      let digit = ch.to_int() - '0'.to_int()
-      result = result * 2L + digit.to_int64()
+  while true {
+    match self.view() {
+      ['0' | '1' | '_' as ch, .. rest] => {
+        self.update_view(rest)
+        if ch != '_' {
+          let digit = ch.to_int() - '0'.to_int()
+          result = result * 2L + digit.to_int64()
+        }
+      }
+      _ => break
     }
-    true
-  } else {
-    false
-  })
+  }
   result
 }
 
@@ -355,24 +359,37 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
     }
   }
   // Read digits
-  while self.peek() is Some(ch) && (is_numeric(ch) || ch == '_') {
-    self.advance()
-    if ch != '_' {
-      sb.write_char(ch)
+  while true {
+    match self.view() {
+      ['0'..='9' | '_' as ch, .. rest] => {
+        self.update_view(rest)
+        if ch != '_' {
+          sb.write_char(ch)
+        }
+      }
+      _ => break
     }
   }
 
   // Check for decimal point
-  if self.peek() is Some('.') {
-    is_float = true
-    self.advance()
-    sb.write_char('.')
-    while self.peek() is Some(ch) && (is_numeric(ch) || ch == '_') {
-      self.advance()
-      if ch != '_' {
-        sb.write_char(ch)
+  match self.view() {
+    ['.', .. rest] => {
+      is_float = true
+      self.update_view(rest)
+      sb.write_char('.')
+      while true {
+        match self.view() {
+          ['0'..='9' | '_' as ch, .. rest] => {
+            self.update_view(rest)
+            if ch != '_' {
+              sb.write_char(ch)
+            }
+          }
+          _ => break
+        }
       }
     }
+    _ => ()
   }
   let s = sb.to_string()
   if is_float {
@@ -431,8 +448,18 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       self.advance()
       return Dot
     }
-    Some('"') => StringToken(self.read_basic_string())
-    Some('\'') => StringToken(self.read_literal_string())
+    Some('"') =>
+      // Check for multiline basic string
+      match self.view() {
+        [.. "\"\"\"", ..] => StringToken(self.read_multiline_basic_string())
+        _ => StringToken(self.read_basic_string())
+      }
+    Some('\'') =>
+      // Check for multiline literal string
+      match self.view() {
+        [.. "'''", ..] => StringToken(self.read_multiline_literal_string())
+        _ => StringToken(self.read_literal_string())
+      }
     Some(ch) =>
       if is_numeric(ch) {
         self.read_number(false)
