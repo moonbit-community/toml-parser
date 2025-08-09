@@ -124,12 +124,8 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
   TomlTable(table)
 }
 
-///| Parse a table header: [section] or [section.subsection]
-fn Parser::parse_table_header(self : Parser) -> Array[String] raise {
-  // Expect [
-  self.expect(LeftBracket)
-
-  // Parse table path (supports dotted notation)
+///| Parse a table path: section.subsection.key
+fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
   let path = Array::new()
 
   // Parse first key
@@ -150,9 +146,31 @@ fn Parser::parse_table_header(self : Parser) -> Array[String] raise {
     }
     path.push(key)
   }
+  path
+}
 
-  // Expect ]
-  self.expect(RightBracket)
+///| Parse an array of tables path: section.subsection.key
+fn Parser::parse_array_of_tables_path(self : Parser) -> Array[String] raise {
+  let path = Array::new()
+
+  // Parse first key
+  let first_key = match self.advance() {
+    Identifier(name) => name
+    StringToken(name) => name
+    _ => fail("Expected table name in array of tables")
+  }
+  path.push(first_key)
+
+  // Parse additional keys separated by dots
+  while self.peek() == Dot {
+    ignore(self.advance()) // consume dot
+    let key = match self.advance() {
+      Identifier(name) => name
+      StringToken(name) => name
+      _ => fail("Expected table name after dot in array of tables")
+    }
+    path.push(key)
+  }
   path
 }
 
@@ -177,6 +195,56 @@ fn create_nested_table(
     }
   }
   current_table
+}
+
+///| Create or append to an array of tables structure from a path
+fn create_array_of_tables(
+  root_table : Map[String, TomlValue],
+  path : Array[String],
+) -> Map[String, TomlValue] raise {
+  let mut current_table = root_table
+
+  // Navigate to the parent of the final key
+  for i = 0; i < path.length() - 1; i = i + 1 {
+    let key = path[i]
+    if current_table.contains(key) {
+      match current_table.get(key) {
+        Some(TomlTable(existing_table)) => current_table = existing_table
+        Some(_) =>
+          fail("Array of tables path conflicts with existing value: " + key)
+        None => fail("Unexpected error: table should exist")
+      }
+    } else {
+      let new_table = Map::new()
+      current_table[key] = TomlTable(new_table)
+      current_table = new_table
+    }
+  }
+
+  // Handle the final key as an array of tables
+  let final_key = path[path.length() - 1]
+  let new_table = Map::new()
+  if current_table.contains(final_key) {
+    match current_table.get(final_key) {
+      Some(TomlArray(existing_array)) => {
+        // Append a new table to the existing array
+        existing_array.push(TomlTable(new_table))
+        new_table
+      }
+      Some(_) =>
+        fail(
+          "Array of tables conflicts with existing non-array value: " +
+          final_key,
+        )
+      None => fail("Unexpected error: array should exist")
+    }
+  } else {
+    // Create new array with the first table
+    let array = Array::new()
+    array.push(TomlTable(new_table))
+    current_table[final_key] = TomlArray(array)
+    new_table
+  }
 }
 
 ///| Parse a key-value pair: key = value
@@ -209,11 +277,25 @@ pub fn parse(input : String) -> TomlValue raise {
     }
     match parser.peek() {
       LeftBracket => {
-        // Parse table header (supporting nested tables)
-        let table_path = parser.parse_table_header()
+        // Look ahead to see if this is [[ (array of tables) or [ (regular table)
+        ignore(parser.advance()) // consume first [
+        if parser.peek() == LeftBracket {
+          // This is array of tables [[...]]
+          ignore(parser.advance()) // consume second [
+          let table_path = parser.parse_array_of_tables_path()
+          parser.expect(RightBracket) // expect first ]
+          parser.expect(RightBracket) // expect second ]
 
-        // Create or get the nested table structure
-        current_table = create_nested_table(main_table, table_path)
+          // Create or append to the array of tables structure
+          current_table = create_array_of_tables(main_table, table_path)
+        } else {
+          // This is a regular table [...]
+          let table_path = parser.parse_table_path()
+          parser.expect(RightBracket)
+
+          // Create or get the nested table structure
+          current_table = create_nested_table(main_table, table_path)
+        }
       }
       _ => {
         // Parse key-value pair

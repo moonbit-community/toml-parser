@@ -8,12 +8,14 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
 - ✅ Support for arrays with homogeneity validation (`[1, 2, 3]`)
 - ✅ Support for inline tables (`{key = value, key2 = value2}`)
 - ✅ **Full datetime support** (RFC 3339 compliant)
+- ✅ **Table headers** (`[section]` and `[section.subsection]`)
+- ✅ **Array of tables** (`[[section]]` syntax)
 - ✅ TOML 1.0 specification compliance validation
 - ✅ Lexical analysis with proper tokenization
 - ✅ Recursive descent parser
 - ✅ Error handling with descriptive messages
 - ✅ JSON-compatible output format
-- ✅ Comprehensive test suite (58+ tests)
+- ✅ Comprehensive test suite (165+ tests)
 
 ## Supported TOML Features
 
@@ -29,6 +31,11 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
   - **Local Date-Time**: `1979-05-27T07:32:00`
   - **Local Date**: `1979-05-27`
   - **Local Time**: `07:32:00`
+
+### Tables and Structure
+- **Table headers**: `[section]`, `[section.subsection]`
+- **Array of tables**: `[[products]]` for repeated table structures
+- **Nested table access**: Full dotted path support
 
 ### Basic Syntax
 - Key-value pairs: `key = value`
@@ -145,6 +152,37 @@ match parse(toml) {
     }
   }
   Err(msg) => println("Error: " + msg)
+}
+```
+
+### Table Headers and Array of Tables
+
+```moonbit
+let toml = "
+title = \"Configuration Example\"
+
+[database]
+server = \"192.168.1.1\"
+port = 5432
+
+[[products]]
+name = \"Hammer\"
+sku = 738594937
+
+[[products]]
+name = \"Nail\"
+sku = 284758393
+"
+
+match parse(toml) {
+  Ok(TomlTable(table)) => {
+    // Access nested table
+    let db = table["database"]
+    // Access array of tables
+    let products = table["products"]
+    println("Parsed complex TOML structure")
+  }
+  Err(msg) => println("Parse error: " + msg)
 }
 ```
 
@@ -268,8 +306,8 @@ This parser implements the complete TOML 1.0 specification including:
 
 ## Roadmap
 
-- [ ] Support for table headers `[section]`
-- [ ] Support for array of tables `[[section]]`
+- [x] ~~Support for table headers `[section]`~~ ✅ **Completed**
+- [x] ~~Support for array of tables `[[section]]`~~ ✅ **Completed**
 - [ ] Multi-line strings
 - [ ] Comments handling
 - [x] ~~Date and time types~~ ✅ **Completed**
