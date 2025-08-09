@@ -237,42 +237,42 @@ test "basic table" {
   ])
 }
 
-// TODO: Nested tables [a.b.c] not yet supported  
-// test "nested tables" {
-//   let nested_table_toml =
-//     #|[servers.alpha]
-//     #|ip = "10.0.0.1"
-//     #|dc = "eqdc10"
-//     #|
-//     #|[servers.beta]
-//     #|ip = "10.0.0.2"
-//     #|dc = "eqdc10"
-//     #|
-//   @json.inspect(@toml.parse(nested_table_toml), content=[
-//     "TomlTable",
-//     {
-//       "servers": [
-//         "TomlTable",
-//         {
-//           "alpha": [
-//             "TomlTable",
-//             {
-//               "ip": ["TomlString", "10.0.0.1"],
-//               "dc": ["TomlString", "eqdc10"]
-//             }
-//           ],
-//           "beta": [
-//             "TomlTable", 
-//             {
-//               "ip": ["TomlString", "10.0.0.2"],
-//               "dc": ["TomlString", "eqdc10"]
-//             }
-//           ]
-//         }
-//       ]
-//     }
-//   ])
-// }
+///| Test nested tables [a.b.c] syntax
+test "nested tables" {
+  let nested_table_toml =
+    #|[servers.alpha]
+    #|ip = "10.0.0.1"
+    #|dc = "eqdc10"
+    #|
+    #|[servers.beta]
+    #|ip = "10.0.0.2"
+    #|dc = "eqdc10"
+    #|
+  @json.inspect(@toml.parse(nested_table_toml), content=[
+    "TomlTable",
+    {
+      "servers": [
+        "TomlTable",
+        {
+          "alpha": [
+            "TomlTable",
+            {
+              "ip": ["TomlString", "10.0.0.1"],
+              "dc": ["TomlString", "eqdc10"]
+            }
+          ],
+          "beta": [
+            "TomlTable", 
+            {
+              "ip": ["TomlString", "10.0.0.2"],
+              "dc": ["TomlString", "eqdc10"]
+            }
+          ]
+        }
+      ]
+    }
+  ])
+}
 
 // TODO: Array of tables [[array]] not yet supported
 // test "array of tables" {

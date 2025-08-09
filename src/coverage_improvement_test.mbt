@@ -1,11 +1,67 @@
 ///| Tests specifically designed to improve coverage of uncovered lines
 test "test complex TOML with all token types" {
   let complex_toml = "string_key = \"value with \\\"quotes\\\"\"\ninteger_key = 42\nfloat_key = 3.14159\nbool_key = true\nint_array = [1, 2, 3, 4, 5]\ninline_table = { name = \"John\", age = 30 }\n[database]\nserver = \"192.168.1.1\"\nports = [ 8001, 8001, 8002 ]\nconnection_max = 5000\nenabled = true\n[servers.alpha]\nip = \"10.0.0.1\"\ndc = \"eqdc10\"\n[servers.beta]\nip = \"10.0.0.2\"\ndc = \"eqdc10\""
+  // This now successfully parses with nested tables support
   @json.inspect(try? parse_no_loc(complex_toml), content={
-    "Err": { "$tag": "Failure", "0": "Expected RightBracket, but found Dot" },
+    "Ok": [
+      "TomlTable",
+      {
+        "string_key": ["TomlString", "value with \"quotes\""],
+        "integer_key": ["TomlInteger", "42"],
+        "float_key": ["TomlFloat", 3.14159],
+        "bool_key": ["TomlBoolean", true],
+        "int_array": [
+          "TomlArray",
+          [
+            ["TomlInteger", "1"],
+            ["TomlInteger", "2"],
+            ["TomlInteger", "3"],
+            ["TomlInteger", "4"],
+            ["TomlInteger", "5"],
+          ],
+        ],
+        "inline_table": [
+          "TomlTable",
+          { "name": ["TomlString", "John"], "age": ["TomlInteger", "30"] },
+        ],
+        "database": [
+          "TomlTable",
+          {
+            "server": ["TomlString", "192.168.1.1"],
+            "ports": [
+              "TomlArray",
+              [
+                ["TomlInteger", "8001"],
+                ["TomlInteger", "8001"],
+                ["TomlInteger", "8002"],
+              ],
+            ],
+            "connection_max": ["TomlInteger", "5000"],
+            "enabled": ["TomlBoolean", true],
+          },
+        ],
+        "servers": [
+          "TomlTable",
+          {
+            "alpha": [
+              "TomlTable",
+              {
+                "ip": ["TomlString", "10.0.0.1"],
+                "dc": ["TomlString", "eqdc10"],
+              },
+            ],
+            "beta": [
+              "TomlTable",
+              {
+                "ip": ["TomlString", "10.0.0.2"],
+                "dc": ["TomlString", "eqdc10"],
+              },
+            ],
+          },
+        ],
+      },
+    ],
   })
-  /// FIXME: should parse but fail
-
 }
 
 ///|
