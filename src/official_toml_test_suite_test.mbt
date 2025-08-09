@@ -268,42 +268,133 @@ test "nested tables" {
   ])
 }
 
-// TODO: Array of tables [[array]] not yet supported
-// test "array of tables" {
-//   let array_of_tables_toml =
-//     #|[[products]]
-//     #|name = "Hammer"
-//     #|sku = 738594937
-//     #|
-//     #|[[products]]
-//     #|name = "Nail"
-//     #|sku = 284758393
-//     #|
-//   @json.inspect(@toml.parse(array_of_tables_toml), content=[
-//     "TomlTable",
-//     {
-//       "products": [
-//         "TomlArray",
-//         [
-//           [
-//             "TomlTable",
-//             {
-//               "name": ["TomlString", "Hammer"],
-//               "sku": ["TomlInteger", "738594937"]
-//             }
-//           ],
-//           [
-//             "TomlTable",
-//             {
-//               "name": ["TomlString", "Nail"],
-//               "sku": ["TomlInteger", "284758393"]
-//             }
-//           ]
-//         ]
-//       ]
-//     }
-//   ])
-// }
+///| Test array of tables [[array]] syntax
+test "array of tables" {
+  let array_of_tables_toml =
+    #|[[products]]
+    #|name = "Hammer"
+    #|sku = 738594937
+    #|
+    #|[[products]]
+    #|name = "Nail"
+    #|sku = 284758393
+    #|
+  @json.inspect(@toml.parse(array_of_tables_toml), content=[
+    "TomlTable",
+    {
+      "products": [
+        "TomlArray",
+        [
+          [
+            "TomlTable",
+            {
+              "name": ["TomlString", "Hammer"],
+              "sku": ["TomlInteger", "738594937"],
+            },
+          ],
+          [
+            "TomlTable",
+            {
+              "name": ["TomlString", "Nail"],
+              "sku": ["TomlInteger", "284758393"],
+            },
+          ],
+        ],
+      ],
+    },
+  ])
+}
+
+///| Test array of tables with nested paths
+test "nested array of tables" {
+  let nested_array_toml =
+    #|[[fruit.physical]]
+    #|color = "red"
+    #|shape = "round"
+    #|
+    #|[[fruit.physical]]
+    #|color = "yellow"
+    #|shape = "banana"
+    #|
+  @json.inspect(@toml.parse(nested_array_toml), content=[
+    "TomlTable",
+    {
+      "fruit": [
+        "TomlTable",
+        {
+          "physical": [
+            "TomlArray",
+            [
+              [
+                "TomlTable",
+                {
+                  "color": ["TomlString", "red"],
+                  "shape": ["TomlString", "round"],
+                },
+              ],
+              [
+                "TomlTable",
+                {
+                  "color": ["TomlString", "yellow"],
+                  "shape": ["TomlString", "banana"],
+                },
+              ],
+            ],
+          ],
+        },
+      ],
+    },
+  ])
+}
+
+///| Test mixed regular tables and array of tables
+test "mixed tables and array of tables" {
+  let mixed_toml =
+    #|title = "Test Document"
+    #|
+    #|[owner]
+    #|name = "John Doe"
+    #|
+    #|[[products]]
+    #|name = "Hammer"
+    #|price = 12.99
+    #|
+    #|[[products]]
+    #|name = "Saw"
+    #|price = 25.50
+    #|
+    #|[database]
+    #|server = "192.168.1.1"
+    #|port = 5432
+    #|
+  @json.inspect(@toml.parse(mixed_toml), content=[
+    "TomlTable",
+    {
+      "title": ["TomlString", "Test Document"],
+      "owner": ["TomlTable", { "name": ["TomlString", "John Doe"] }],
+      "products": [
+        "TomlArray",
+        [
+          [
+            "TomlTable",
+            { "name": ["TomlString", "Hammer"], "price": ["TomlFloat", 12.99] },
+          ],
+          [
+            "TomlTable",
+            { "name": ["TomlString", "Saw"], "price": ["TomlFloat", 25.50] },
+          ],
+        ],
+      ],
+      "database": [
+        "TomlTable",
+        {
+          "server": ["TomlString", "192.168.1.1"],
+          "port": ["TomlInteger", "5432"],
+        },
+      ],
+    },
+  ])
+}
 
 // TODO: Datetime parsing not yet implemented (though data structures exist)
 // test "datetime values" {
