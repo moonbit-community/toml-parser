@@ -103,6 +103,7 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
     let key = match self.advance() {
       Identifier(k) => k
       StringToken(k) => k
+      IntegerToken(i) => i.to_string()
       _ => fail("Expected key in inline table")
     }
 
@@ -132,6 +133,7 @@ fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
   let first_key = match self.advance() {
     Identifier(name) => name
     StringToken(name) => name
+    IntegerToken(i) => i.to_string()
     _ => fail("Expected table name")
   }
   path.push(first_key)
@@ -142,6 +144,7 @@ fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
     let key = match self.advance() {
       Identifier(name) => name
       StringToken(name) => name
+      IntegerToken(i) => i.to_string()
       _ => fail("Expected table name after dot")
     }
     path.push(key)
@@ -157,6 +160,7 @@ fn Parser::parse_array_of_tables_path(self : Parser) -> Array[String] raise {
   let first_key = match self.advance() {
     Identifier(name) => name
     StringToken(name) => name
+    IntegerToken(i) => i.to_string()
     _ => fail("Expected table name in array of tables")
   }
   path.push(first_key)
@@ -167,6 +171,7 @@ fn Parser::parse_array_of_tables_path(self : Parser) -> Array[String] raise {
     let key = match self.advance() {
       Identifier(name) => name
       StringToken(name) => name
+      IntegerToken(i) => i.to_string()
       _ => fail("Expected table name after dot in array of tables")
     }
     path.push(key)
@@ -253,6 +258,7 @@ fn Parser::parse_key_value(self : Parser) -> (String, TomlValue) raise {
   let key = match self.advance() {
     Identifier(k) => k
     StringToken(k) => k
+    IntegerToken(i) => i.to_string()
     _ => fail("Expected key")
   }
 
