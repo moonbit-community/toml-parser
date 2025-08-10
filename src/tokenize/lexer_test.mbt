@@ -681,3 +681,69 @@ test "test hex overflow edge case" {
     "EOF",
   ])
 }
+
+///| Test Unicode escape that might fail to_char conversion
+test "unicode code point conversion failure" {
+  // Try to find a Unicode code that's valid as int but invalid as char
+  // Code point 0x110000 is too large for valid Unicode
+  let maybe_tokens = try? @tokenize.tokenize("key = \"\\U00110000\"")
+  let error_msg = maybe_tokens.unwrap_err().failure_message()
+  match error_msg.strip_prefix("Invalid Unicode code point: ") {
+    Some(_) => inspect(true, content="true") // Expected error
+    None => inspect(false, content="true") // Unexpected error
+  }
+}
+
+///| Test very specific multiline string that could reach None peek
+test "multiline string abrupt end" {
+  // Create a multiline string that ends abruptly without proper closing
+  let input = "key = \"\"\"content without closing"
+  let maybe_tokens = try? @tokenize.tokenize(input)
+  let error_msg = maybe_tokens.unwrap_err().failure_message()
+  // This should trigger one of the unterminated multiline string errors
+  let is_unterminated = match
+    error_msg.strip_prefix("Unterminated multiline string") {
+    Some(_) => true
+    None => false
+  }
+  inspect(is_unterminated, content="true")
+}
+
+///| Test edge case: try to reach the Unicode 8 None conversion path
+test "unicode 8 digit none conversion attempt" {
+  // Try an edge case that might trigger the None path in unicode 8 escape
+  // Use a very large value that might fail conversion
+  let maybe_tokens = try? @tokenize.tokenize("key = \"\\U7FFFFFFF\"")
+  let error_msg = maybe_tokens.unwrap_err().failure_message()
+  // Should get invalid Unicode code point error
+  let has_invalid_unicode = match
+    error_msg.strip_prefix("Invalid Unicode code point: ") {
+    Some(_) => true
+    None => false
+  }
+  inspect(has_invalid_unicode, content="true")
+}
+
+///| Test edge case: try to reach hex digit error path (likely unreachable)
+test "attempt hex digit error path" {
+  // This tests the theoretical hex digit error path, though it's likely unreachable
+  // due to pattern matching filtering
+  let tokens = @tokenize.tokenize("hex = 0xABCDEF123456")
+  @json.inspect(tokens, content=[
+    ["Identifier", "hex"],
+    "Equals",
+    ["IntegerToken", "188900967593046"],
+    "EOF",
+  ])
+}
+
+///| Test multiline string with potential truncation
+test "multiline string potential truncation" {
+  // Try to create a scenario where multiline string processing might hit None
+  let input = "key = \"\"\"partial"
+  let maybe_tokens = try? @tokenize.tokenize(input)
+  // Should get unterminated string error
+  let error_msg = maybe_tokens.unwrap_err().failure_message()
+  let is_unterminated = error_msg.contains("Unterminated")
+  inspect(is_unterminated, content="true")
+}
