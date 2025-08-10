@@ -30,6 +30,20 @@ pub struct Parser {
   mut position : Int
 }
 
+///|
+pub fn Parser::view(self : Parser) -> ArrayView[Token] {
+  self.tokens[self.position:]
+}
+
+///| FIXME: expose upstream in the core
+fn[T] ArrayView::start(self : ArrayView[T]) -> Int = "%arrayview.start"
+
+///|
+pub fn Parser::update_view(self : Parser, view : ArrayView[Token]) -> Unit {
+  let new_offset = view.start() // consistent
+  self.position = new_offset
+}
+
 ///| Convert TomlValue to string representation
 pub fn TomlValue::to_string(self : TomlValue) -> String {
   match self {
