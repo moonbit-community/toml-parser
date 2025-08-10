@@ -126,9 +126,12 @@ test "test table header with string name" {
 }
 
 ///|
-test "test table header invalid name" {
+test "test table header numeric name" {
   @json.inspect(try? parse_no_loc("[123]\nkey = \"value\""), content={
-    "Err": { "$tag": "Failure", "0": "Expected table name" },
+    "Ok": [
+      "TomlTable",
+      { "123": ["TomlTable", { "key": ["TomlString", "value"] }] },
+    ],
   })
 }
 

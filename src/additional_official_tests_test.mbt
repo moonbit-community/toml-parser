@@ -25,20 +25,21 @@ test "key name variations" {
   ])
 }
 
-// TODO: Numeric keys not yet supported
-// test "numeric keys" {
-//   let numeric_keys_toml =
-//     #|1234 = "value"
-//     #|0 = "zero"
-//     #|
-//   @json.inspect(@toml.parse(numeric_keys_toml), content=[
-//     "TomlTable",
-//     {
-//       "1234": ["TomlString", "value"],
-//       "0": ["TomlString", "zero"]
-//     }
-//   ])
-// }
+///|
+test "numeric keys" {
+  let numeric_keys_toml =
+    #|1234 = "value"
+    #|0 = "zero"
+    #|
+  @json.inspect(@toml.parse(numeric_keys_toml), content=[
+    "TomlTable",
+    { "1234": ["TomlString", "value"], "0": ["TomlString", "zero"] },
+  ])
+  // according to the spec, bare keys may only contain ASCII letters, ASCII digits, underscores, 
+  // and dashes (A-Za-z0-9_-).
+  // Note that bare keys are allowed to be composed of only ASCII digits, e.g. 1234, but are
+  // always interpreted as strings.
+}
 
 ///| Test complex escape sequences  
 test "complex escape sequences" {
