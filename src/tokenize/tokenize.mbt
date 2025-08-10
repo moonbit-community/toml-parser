@@ -142,9 +142,9 @@ fn Lexer::read_literal_string(self : Lexer) -> String raise {
 }
 
 ///| Parse a multi-line basic string (triple double quotes) with escape sequences
+/// The openining triple quotes are already consumed by the caller
 fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
-  // consume opening triple quotes
-  self.expect_string("\"\"\"")
+
   // Skip line ending immediately following the opening delimiter
   if self.try_consume_charcode('\r') {
     if self.try_consume_charcode('\n') {
@@ -408,18 +408,17 @@ test "read_number" {
 fn Lexer::next_token(self : Lexer) -> Token raise {
   self.skip_whitespace()
   self.skip_comment()
-  
   match self.view() {
     // End of input
     [] => EOF
-    
+
     // Newline
     ['\n', .. rest] => {
       self.update_view(rest)
       self.new_line()
       Newline
     }
-    
+
     // Single character tokens
     ['[', .. rest] => {
       self.update_view(rest)
@@ -449,18 +448,21 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       self.update_view(rest)
       Dot
     }
-    
+
     // String literals
-    [.. "\"\"\"", ..] => StringToken(self.read_multiline_basic_string())
+    [.. "\"\"\"", .. rest] => {
+      self.update_view(rest)
+      StringToken(self.read_multiline_basic_string())
+    }
     ['"', ..] => StringToken(self.read_basic_string())
     [.. "'''", ..] => StringToken(self.read_multiline_literal_string())
     ['\'', ..] => StringToken(self.read_literal_string())
-    
+
     // Numbers
     ['0'..='9', ..] => self.read_number(false)
-    
+
     // Negative numbers
-    ['-', next_ch, ..] if is_numeric(next_ch) => {
+    ['-', next_ch, ..] if is_numeric(next_ch) =>
       match self.view() {
         ['-', .. rest] => {
           self.update_view(rest)
@@ -468,8 +470,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
         }
         _ => fail("Internal error: pattern matching inconsistency")
       }
-    }
-    
+
     // Identifiers and keywords
     ['a'..='z' | 'A'..='Z' | '_', ..] => {
       let identifier = self.read_identifier()
@@ -479,7 +480,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
         _ => Identifier(identifier)
       }
     }
-    
+
     // Unexpected characters
     [ch, ..] => fail("Unexpected character: " + Char::to_string(ch))
   }
@@ -520,6 +521,7 @@ test "unicode escape sequences" {
 ///| Test multiline basic string
 test "multiline basic string" {
   let lexer = Lexer::new("\"\"\"line1\nline2\"\"\"")
+  lexer.expect_string("\"\"\"")
   let result = lexer.read_multiline_basic_string()
   inspect(result, content="line1\nline2")
 }
@@ -534,6 +536,7 @@ test "multiline literal string" {
 ///| Test line ending backslash in multiline string
 test "line ending backslash" {
   let lexer = Lexer::new("\"\"\"line1\\\n   line2\"\"\"")
+  lexer.expect_string("\"\"\"")
   let result = lexer.read_multiline_basic_string()
   inspect(result, content="line1line2") // whitespace should be trimmed
 }
