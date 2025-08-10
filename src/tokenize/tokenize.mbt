@@ -252,7 +252,22 @@ fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
 
 ///| Parse hexadecimal number
 fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
-  let mut result = 0L
+  let mut result = match self.view() {
+    ['0', 'x' | 'X', '0'..='9' | 'a'..='f' | 'A'..='F' as ch, .. rest] => {
+      self.update_view(rest)
+      let digit = match ch {
+        '0'..='9' => ch.to_int() - '0'
+        'a'..='f' => ch.to_int() - 'a' + 10
+        'A'..='F' => ch.to_int() - 'A' + 10
+        _ => abort("Internal error: pattern matching inconsistency")
+      }
+      digit.to_int64()
+    }
+    _ =>
+      fail(
+        self.error("Invalid hex number, expected 0..=9, a..=f, A..=F after 0x"),
+      )
+  }
   while true {
     match self.view() {
       ['0'..='9' | 'a'..='f' | 'A'..='F' | '_' as ch, .. rest] => {
@@ -270,7 +285,20 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
       _ => break
     }
   }
-  result
+  // 0-width assertion
+  match self.view() {
+    [] => result
+    [delimited, ..] =>
+      if delimited is (' ' | '\t' | '\r' | '\n' | ',' | ']' | '}' | '#') {
+        result
+      } else {
+        fail(
+          self.error(
+            "Invalid hex number, expected whitespace, comma, or end of input after 0x",
+          ),
+        )
+      }
+  }
 }
 
 ///| Parse octal number
@@ -544,8 +572,7 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
   // Check if this might be a special format number (0x, 0o, 0b)
   if !is_negative {
     match self.view() {
-      ['0', 'x' | 'X', .. rest] => {
-        self.update_view(rest)
+      ['0', 'x' | 'X', .. ] => {
         let value = self.read_hex_number()
         return IntegerToken(if is_negative { -value } else { value })
       }
@@ -817,8 +844,6 @@ test "identifier parsing" {
 ///| Test hex number parsing
 test "hex number parsing" {
   let lexer = Lexer::new("0xDEADBEEF")
-  lexer.advance() // consume '0'
-  lexer.advance() // consume 'x'
   let result = lexer.read_hex_number()
   inspect(result, content="3735928559")
 }
