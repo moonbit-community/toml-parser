@@ -251,3 +251,9 @@ test "test inline table with array values" {
     },
   )
 }
+
+test {
+  let toml_test = "invalid = 1.2.3"
+  let result = try? parse_no_loc(toml_test)
+  @json.inspect(result, content=({"Err":{"$tag":"Failure","0":"Expected key"}}))
+}
