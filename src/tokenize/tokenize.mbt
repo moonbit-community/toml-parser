@@ -1,11 +1,6 @@
 ///|
 typealias @lexer.Lexer
 
-///| Check if character is numeric
-fn is_numeric(ch : Char) -> Bool {
-  ch >= '0' && ch <= '9'
-}
-
 ///| Check if character is hexadecimal digit
 fn is_hex_digit(ch : Char) -> Bool {
   ch is ('0'..='9' | 'a'..='f' | 'A'..='F')
@@ -34,10 +29,9 @@ fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
       Some(ch) if is_hex_digit(ch) => {
         self.advance()
         let digit = match ch {
-          '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
-            ch.to_int() - '0'.to_int()
-          'a' | 'b' | 'c' | 'd' | 'e' | 'f' => ch.to_int() - 'a'.to_int() + 10
-          'A' | 'B' | 'C' | 'D' | 'E' | 'F' => ch.to_int() - 'A'.to_int() + 10
+          '0'..='9' => ch.to_int() - '0'
+          'a'..='f' => ch.to_int() - 'a' + 10
+          'A'..='F' => ch.to_int() - 'A' + 10
           _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch)))
         }
         code = code * 16 + digit
@@ -462,13 +456,13 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
     ['0'..='9', ..] => self.read_number(false)
 
     // Negative numbers
-    ['-', next_ch, ..] if is_numeric(next_ch) =>
+    ['-', '0'..='9', ..] =>
       match self.view() {
         ['-', .. rest] => {
           self.update_view(rest)
           self.read_number(true)
         }
-        _ => fail("Internal error: pattern matching inconsistency")
+        _ => abort("Internal error: pattern matching inconsistency")
       }
 
     // Identifiers and keywords
