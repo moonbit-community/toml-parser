@@ -48,18 +48,14 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
 Add this parser to your MoonBit project:
 
 ```bash
-moon add username/toml-parser
+moon add bob/toml
 ```
 
-## Quick Start
-
-```moonbit
-fn main {
-  // Parse a simple TOML string
-  let toml_content = "name = \"Alice\"\nage = 25\nenabled = true"  
-  match @toml.parse(toml_content) {
-    Ok(result) => println("Parsed: " + result.to_string())
-    Err(error) => println("Error: " + error)
+Then add it directly to your `moon.mod.json`:
+```json
+{
+  "deps": {
+    "bob/toml": "*"
   }
 }
 ```
