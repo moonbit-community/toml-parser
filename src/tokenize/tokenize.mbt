@@ -302,8 +302,15 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
 }
 
 ///| Parse octal number
-fn Lexer::read_octal_number(self : Lexer) -> Int64 {
-  let mut result = 0L
+fn Lexer::read_octal_number(self : Lexer) -> Int64 raise {
+  let mut result = match self.view() {
+    ['0', 'o' | 'O', '0'..='7' as ch, .. rest] => {
+      self.update_view(rest)
+      let digit = ch.to_int() - '0'
+      digit.to_int64()
+    }
+    _ => fail(self.error("Invalid octal number, expected 0..=7 after 0o"))
+  }
   while true {
     match self.view() {
       ['0'..='7' | '_' as x, .. rest] => {
@@ -316,21 +323,39 @@ fn Lexer::read_octal_number(self : Lexer) -> Int64 {
       _ => break
     }
   }
-  result
+  // 0-width assertion
+  match self.view() {
+    [] => result
+    [delimited, ..] =>
+      if delimited is (' ' | '\t' | '\r' | '\n' | ',' | ']' | '}' | '#') {
+        result
+      } else {
+        fail(
+          self.error(
+            "Invalid octal number, expected whitespace, comma, or end of input after 0o",
+          ),
+        )
+      }
+  }
 }
 
 ///|
 test {
   let lexer = @lexer.Lexer::new("0o755")
-  lexer.advance() // consume '0'
-  lexer.advance() // consume 'o'
   let result = lexer.read_octal_number()
   inspect(result, content="493")
 }
 
 ///| Parse binary number
-fn Lexer::read_binary_number(self : Lexer) -> Int64 {
-  let mut result = 0L
+fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
+  let mut result = match self.view() {
+    ['0', 'b' | 'B', '0' | '1' as ch, .. rest] => {
+      self.update_view(rest)
+      let digit = ch.to_int() - '0'.to_int()
+      digit.to_int64()
+    }
+    _ => fail(self.error("Invalid binary number, expected 0 or 1 after 0b"))
+  }
   while true {
     match self.view() {
       ['0' | '1' | '_' as ch, .. rest] => {
@@ -343,7 +368,20 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 {
       _ => break
     }
   }
-  result
+  // 0-width assertion
+  match self.view() {
+    [] => result
+    [delimited, ..] =>
+      if delimited is (' ' | '\t' | '\r' | '\n' | ',' | ']' | '}' | '#') {
+        result
+      } else {
+        fail(
+          self.error(
+            "Invalid binary number, expected whitespace, comma, or end of input after 0b",
+          ),
+        )
+      }
+  }
 }
 
 ///| Check if the current input matches a datetime pattern without consuming characters
@@ -572,17 +610,15 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
   // Check if this might be a special format number (0x, 0o, 0b)
   if !is_negative {
     match self.view() {
-      ['0', 'x' | 'X', .. ] => {
+      ['0', 'x' | 'X', ..] => {
         let value = self.read_hex_number()
         return IntegerToken(if is_negative { -value } else { value })
       }
-      ['0', 'o' | 'O', .. rest] => {
-        self.update_view(rest)
+      ['0', 'o' | 'O', ..] => {
         let value = self.read_octal_number()
         return IntegerToken(if is_negative { -value } else { value })
       }
-      ['0', 'b' | 'B', .. rest] => {
-        self.update_view(rest)
+      ['0', 'b' | 'B', ..] => {
         let value = self.read_binary_number()
         return IntegerToken(if is_negative { -value } else { value })
       }
@@ -851,8 +887,6 @@ test "hex number parsing" {
 ///| Test octal number parsing  
 test "octal number parsing" {
   let lexer = Lexer::new("0o755")
-  lexer.advance() // consume '0'
-  lexer.advance() // consume 'o'
   let result = lexer.read_octal_number()
   inspect(result, content="493")
 }
@@ -860,8 +894,6 @@ test "octal number parsing" {
 ///| Test binary number parsing
 test "binary number parsing" {
   let lexer = Lexer::new("0b1010")
-  lexer.advance() // consume '0'
-  lexer.advance() // consume 'b'
   let result = lexer.read_binary_number()
   inspect(result, content="10")
 }
