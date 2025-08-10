@@ -2,7 +2,7 @@
   "name": "bob/toml",
   "version": "0.1.2",
   "readme": "README.md",
-  "repository": "",
+  "repository": "https://github.com/moonbit-community/toml-parser",
   "license": "Apache-2.0",
   "keywords": ["toml", "parser", "config"],
   "description": "A TOML parser implementation in MoonBit",
