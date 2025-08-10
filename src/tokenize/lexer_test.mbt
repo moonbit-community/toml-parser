@@ -540,17 +540,14 @@ test "multiline literal string unterminated" {
   )
 }
 
-///| Test hex number with invalid digit in error path
+///| Test hex number with no digits after 0x
 test "hex number invalid digit error path" {
-  // This tests the error case in read_hex_number that should not be reached
-  // due to pattern matching, but is included for completeness
-  let tokens = @tokenize.tokenize("key = 0x")
-  @json.inspect(tokens, content=[
-    ["Identifier", "key"],
-    "Equals",
-    ["IntegerToken", "0"],
-    "EOF",
-  ])
+  // This should fail because there are no hex digits after 0x
+  let maybe_tokens = try? @tokenize.tokenize("key = 0x")
+  @json.inspect(
+    maybe_tokens.unwrap_err().failure_message(),
+    content="Invalid hex number, expected 0..=9, a..=f, A..=F after 0x at line 1, column 7",
+  )
 }
 
 ///| Test invalid float parsing case
