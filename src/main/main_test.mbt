@@ -30,7 +30,11 @@ test "test TomlArray to_string" {
 
 ///|
 test "test simple TOML parsing as in main demo" {
-  let toml_input = "name = \"John Doe\"\nage = 30\nenabled = true"
+  let toml_input =
+    #|name = "John Doe"
+    #|age = 30
+    #|enabled = true
+    #|
   try {
     let result = @toml.parse(toml_input)
     // Should parse successfully
@@ -59,7 +63,9 @@ test "test TOML with array parsing as in main demo" {
 
 ///|
 test "test TOML with inline table parsing as in main demo" {
-  let toml_table = "person = {name = \"Alice\", age = 25}"
+  let toml_table =
+    #|person = {name = "Alice", age = 25}
+    #|
   try {
     let result = @toml.parse(toml_table)
     // Should parse successfully
