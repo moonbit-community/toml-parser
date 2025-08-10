@@ -6,11 +6,6 @@ fn is_numeric(ch : Char) -> Bool {
   ch >= '0' && ch <= '9'
 }
 
-///| Check if character is alpha (letter)
-fn is_alpha(ch : Char) -> Bool {
-  (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_'
-}
-
 ///| Check if character is hexadecimal digit
 fn is_hex_digit(ch : Char) -> Bool {
   ch is ('0'..='9' | 'a'..='f' | 'A'..='F')
@@ -413,78 +408,80 @@ test "read_number" {
 fn Lexer::next_token(self : Lexer) -> Token raise {
   self.skip_whitespace()
   self.skip_comment()
-  match self.peek() {
-    None => return EOF
-    Some('\n') => {
-      self.advance()
+  
+  match self.view() {
+    // End of input
+    [] => EOF
+    
+    // Newline
+    ['\n', .. rest] => {
+      self.update_view(rest)
       self.new_line()
-      return Newline
+      Newline
     }
-    Some('[') => {
-      self.advance()
-      return LeftBracket
+    
+    // Single character tokens
+    ['[', .. rest] => {
+      self.update_view(rest)
+      LeftBracket
     }
-    Some(']') => {
-      self.advance()
-      return RightBracket
+    [']', .. rest] => {
+      self.update_view(rest)
+      RightBracket
     }
-    Some('{') => {
-      self.advance()
-      return LeftBrace
+    ['{', .. rest] => {
+      self.update_view(rest)
+      LeftBrace
     }
-    Some('}') => {
-      self.advance()
-      return RightBrace
+    ['}', .. rest] => {
+      self.update_view(rest)
+      RightBrace
     }
-    Some('=') => {
-      self.advance()
-      return Equals
+    ['=', .. rest] => {
+      self.update_view(rest)
+      Equals
     }
-    Some(',') => {
-      self.advance()
-      return Comma
+    [',', .. rest] => {
+      self.update_view(rest)
+      Comma
     }
-    Some('.') => {
-      self.advance()
-      return Dot
+    ['.', .. rest] => {
+      self.update_view(rest)
+      Dot
     }
-    Some('"') =>
-      // Check for multiline basic string
+    
+    // String literals
+    [.. "\"\"\"", ..] => StringToken(self.read_multiline_basic_string())
+    ['"', ..] => StringToken(self.read_basic_string())
+    [.. "'''", ..] => StringToken(self.read_multiline_literal_string())
+    ['\'', ..] => StringToken(self.read_literal_string())
+    
+    // Numbers
+    ['0'..='9', ..] => self.read_number(false)
+    
+    // Negative numbers
+    ['-', next_ch, ..] if is_numeric(next_ch) => {
       match self.view() {
-        [.. "\"\"\"", ..] => StringToken(self.read_multiline_basic_string())
-        _ => StringToken(self.read_basic_string())
-      }
-    Some('\'') =>
-      // Check for multiline literal string
-      match self.view() {
-        [.. "'''", ..] => StringToken(self.read_multiline_literal_string())
-        _ => StringToken(self.read_literal_string())
-      }
-    Some(ch) =>
-      if is_numeric(ch) {
-        self.read_number(false)
-      } else if ch == '-' {
-        // Check if this is a negative number or negative special float
-        self.advance() // consume the '-'
-        match self.peek() {
-          Some(next_ch) if is_numeric(next_ch) =>
-            // This is a negative number, read it
-            self.read_number(true)
-          _ =>
-            // Not a negative number, this is an error in TOML
-            fail("Unexpected character: " + Char::to_string(ch))
+        ['-', .. rest] => {
+          self.update_view(rest)
+          self.read_number(true)
         }
-      } else if is_alpha(ch) {
-        let identifier = self.read_identifier()
-        // Check for boolean keywords
-        match identifier {
-          "true" => BooleanToken(true)
-          "false" => BooleanToken(false)
-          _ => Identifier(identifier)
-        }
-      } else {
-        fail("Unexpected character: " + Char::to_string(ch))
+        _ => fail("Internal error: pattern matching inconsistency")
       }
+    }
+    
+    // Identifiers and keywords
+    ['a'..='z' | 'A'..='Z' | '_', ..] => {
+      let identifier = self.read_identifier()
+      match identifier {
+        "true" => BooleanToken(true)
+        "false" => BooleanToken(false)
+        _ => Identifier(identifier)
+      }
+    }
+    
+    // Unexpected characters
+    [ch, ..] => fail("Unexpected character: " + Char::to_string(ch))
   }
 }
 
