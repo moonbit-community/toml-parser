@@ -1,6 +1,24 @@
 ///| Tests specifically designed to improve coverage of uncovered lines
 test "test complex TOML with all token types" {
-  let complex_toml = "string_key = \"value with \\\"quotes\\\"\"\ninteger_key = 42\nfloat_key = 3.14159\nbool_key = true\nint_array = [1, 2, 3, 4, 5]\ninline_table = { name = \"John\", age = 30 }\n[database]\nserver = \"192.168.1.1\"\nports = [ 8001, 8001, 8002 ]\nconnection_max = 5000\nenabled = true\n[servers.alpha]\nip = \"10.0.0.1\"\ndc = \"eqdc10\"\n[servers.beta]\nip = \"10.0.0.2\"\ndc = \"eqdc10\""
+  let complex_toml =
+    #|string_key = "value with \"quotes\""
+    #|integer_key = 42
+    #|float_key = 3.14159
+    #|bool_key = true
+    #|int_array = [1, 2, 3, 4, 5]
+    #|inline_table = { name = "John", age = 30 }
+    #|[database]
+    #|server = "192.168.1.1"
+    #|ports = [ 8001, 8001, 8002 ]
+    #|connection_max = 5000
+    #|enabled = true
+    #|[servers.alpha]
+    #|ip = "10.0.0.1"
+    #|dc = "eqdc10"
+    #|[servers.beta]
+    #|ip = "10.0.0.2"
+    #|dc = "eqdc10"
+    #|
   // This now successfully parses with nested tables support
   @json.inspect(try? parse_no_loc(complex_toml), content={
     "Ok": [
@@ -113,7 +131,13 @@ test "test literal string handling" {
 
 ///|
 test "test various escape sequences coverage" {
-  let toml_with_escapes = "newline = \"line1\\nline2\"\ntab = \"col1\\tcol2\"\ncarriage = \"line1\\rline2\"\nbackslash = \"path\\\\to\\\\file\"\nquote = \"say \\\"hello\\\"\""
+  let toml_with_escapes =
+    #|newline = "line1\nline2"
+    #|tab = "col1\tcol2"
+    #|carriage = "line1\rline2"
+    #|backslash = "path\\to\\file"
+    #|quote = "say \"hello\""
+    #|
   @json.inspect(try? parse_no_loc(toml_with_escapes), content={
     "Ok": [
       "TomlTable",
@@ -130,7 +154,12 @@ test "test various escape sequences coverage" {
 
 ///|
 test "test whitespace and comment skipping" {
-  let toml_with_whitespace = "key1 = \"value1\"\n\n\nkey2 = \"value2\""
+  let toml_with_whitespace =
+    #|key1 = "value1"
+    #|
+    #|
+    #|key2 = "value2"
+    #|
   @json.inspect(try? parse_no_loc(toml_with_whitespace), content={
     "Ok": [
       "TomlTable",

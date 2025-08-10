@@ -310,7 +310,10 @@ test "negative numbers in context" {
   ])
 
   // Inline table with negative values
-  @json.inspect(@toml.parse("coords = {x = -10, y = 20, z = -5.5}"), content=[
+  let coords_toml =
+    #|coords = {x = -10, y = 20, z = -5.5}
+    #|
+  @json.inspect(@toml.parse(coords_toml), content=[
     "TomlTable",
     {
       "coords": [
@@ -471,13 +474,19 @@ test "edge cases" {
   @json.inspect(@toml.parse(""), content=["TomlTable", {}])
 
   // Only comments and whitespace should result in empty table
-  @json.inspect(@toml.parse("# Just a comment\n  \n# Another comment"), content=[
-    "TomlTable",
-    {},
-  ])
+  let comments_only_toml =
+    #|# Just a comment
+    #|  
+    #|# Another comment
+    #|
+  @json.inspect(@toml.parse(comments_only_toml), content=["TomlTable", {}])
 
   // Mixed single and double quotes should parse correctly
-  @json.inspect(@toml.parse("single = 'value'\ndouble = \"value\""), content=[
+  let mixed_quotes_toml =
+    #|single = 'value'
+    #|double = "value"
+    #|
+  @json.inspect(@toml.parse(mixed_quotes_toml), content=[
     "TomlTable",
     { "single": ["TomlString", "value"], "double": ["TomlString", "value"] },
   ])

@@ -30,7 +30,12 @@ test "parse simple key-value float" {
 
 ///|
 test "parse multiple key-value pairs" {
-  let result = @toml.parse("name = \"Alice\"\nage = 30\nenabled = false")
+  let multiple_kvp_toml =
+    #|name = "Alice"
+    #|age = 30
+    #|enabled = false
+    #|
+  let result = @toml.parse(multiple_kvp_toml)
   @json.inspect(result, content=[
     "TomlTable",
     {
@@ -57,7 +62,10 @@ test "parse array" {
 
 ///|
 test "parse inline table" {
-  let result = @toml.parse("person = {name = \"Bob\", age = 25}")
+  let inline_table_toml =
+    #|person = {name = "Bob", age = 25}
+    #|
+  let result = @toml.parse(inline_table_toml)
   @json.inspect(result, content=[
     "TomlTable",
     {
@@ -117,7 +125,11 @@ test "test inline table missing comma or closing brace" {
 
 ///|
 test "test table header with string name" {
-  @json.inspect(try? parse_no_loc("[\"table name\"]\nkey = \"value\""), content={
+  let string_table_name_toml =
+    #|["table name"]
+    #|key = "value"
+    #|
+  @json.inspect(try? parse_no_loc(string_table_name_toml), content={
     "Ok": [
       "TomlTable",
       { "table name": ["TomlTable", { "key": ["TomlString", "value"] }] },
@@ -127,7 +139,11 @@ test "test table header with string name" {
 
 ///|
 test "test table header numeric name" {
-  @json.inspect(try? parse_no_loc("[123]\nkey = \"value\""), content={
+  let numeric_table_name_toml =
+    #|[123]
+    #|key = "value"
+    #|
+  @json.inspect(try? parse_no_loc(numeric_table_name_toml), content={
     "Ok": [
       "TomlTable",
       { "123": ["TomlTable", { "key": ["TomlString", "value"] }] },
@@ -137,36 +153,38 @@ test "test table header numeric name" {
 
 ///|
 test "test duplicate table redefinition" {
-  @json.inspect(
-    try? parse_no_loc("[table]\nkey1 = \"value1\"\n[table]\nkey2 = \"value2\""),
-    content={
-      "Ok": [
-        "TomlTable",
-        {
-          "table": [
-            "TomlTable",
-            {
-              "key1": ["TomlString", "value1"],
-              "key2": ["TomlString", "value2"],
-            },
-          ],
-        },
-      ],
-    },
-  )
+  let duplicate_table_toml =
+    #|[table]
+    #|key1 = "value1"
+    #|[table]
+    #|key2 = "value2"
+    #|
+  @json.inspect(try? parse_no_loc(duplicate_table_toml), content={
+    "Ok": [
+      "TomlTable",
+      {
+        "table": [
+          "TomlTable",
+          { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
+        ],
+      },
+    ],
+  })
 }
 
 ///|
 test "test table name conflicts with existing value" {
-  @json.inspect(
-    try? parse_no_loc("table = \"string\"\n[table]\nkey = \"value\""),
-    content={
-      "Err": {
-        "$tag": "Failure",
-        "0": "Table path conflicts with existing value: table",
-      },
+  let conflicting_table_toml =
+    #|table = "string"
+    #|[table]
+    #|key = "value"
+    #|
+  @json.inspect(try? parse_no_loc(conflicting_table_toml), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Table path conflicts with existing value: table",
     },
-  )
+  })
 }
 
 ///| Tests for inline table edge cases  
