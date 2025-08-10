@@ -16,6 +16,8 @@ pub struct Parser {
   mut position : Int
 }
 fn Parser::new(Array[@tokenize.Token]) -> Self
+fn Parser::update_view(Self, ArrayView[@tokenize.Token]) -> Unit
+fn Parser::view(Self) -> ArrayView[@tokenize.Token]
 
 pub(all) enum TomlValue {
   TomlString(String)
