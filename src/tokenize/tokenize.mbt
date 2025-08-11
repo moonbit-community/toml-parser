@@ -675,12 +675,48 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
         self.read_number(false)
       }
 
-    // Negative numbers or negative timezone offsets in datetime
+    // Negative numbers
     ['-', '0'..='9', ..] =>
       match self.view() {
         ['-', .. rest] => {
           self.update_view(rest)
           self.read_number(true)
+        }
+        _ => abort("Internal error: pattern matching inconsistency")
+      }
+
+    // Handle negative special float values (-inf, -nan)
+    ['-', 'i', 'n', 'f', ..] =>
+      match self.view() {
+        ['-', 'i', 'n', 'f', .. rest] => {
+          self.update_view(rest)
+          FloatToken(-1.0 / 0.0) // negative infinity
+        }
+        _ => abort("Internal error: pattern matching inconsistency")
+      }
+    ['-', 'n', 'a', 'n', ..] =>
+      match self.view() {
+        ['-', 'n', 'a', 'n', .. rest] => {
+          self.update_view(rest)
+          FloatToken(0.0 / 0.0) // NaN
+        }
+        _ => abort("Internal error: pattern matching inconsistency")
+      }
+
+    // Handle positive special float values (+inf, +nan) 
+    ['+', 'i', 'n', 'f', ..] =>
+      match self.view() {
+        ['+', 'i', 'n', 'f', .. rest] => {
+          self.update_view(rest)
+          FloatToken(1.0 / 0.0) // positive infinity
+        }
+        _ => abort("Internal error: pattern matching inconsistency")
+      }
+    ['+', 'n', 'a', 'n', ..] =>
+      match self.view() {
+        ['+', 'n', 'a', 'n', .. rest] => {
+          self.update_view(rest)
+          FloatToken(0.0 / 0.0) // NaN
         }
         _ => abort("Internal error: pattern matching inconsistency")
       }
@@ -691,6 +727,8 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       match identifier {
         "true" => BooleanToken(true)
         "false" => BooleanToken(false)
+        "inf" => FloatToken(1.0 / 0.0) // positive infinity
+        "nan" => FloatToken(0.0 / 0.0) // NaN
         _ => Identifier(identifier)
       }
     }

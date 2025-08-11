@@ -509,28 +509,28 @@ test "integer formats" {
   ])
 }
 
-// TODO: Float special values not yet supported - Need to find correct MoonBit API
-// test "float special values" {
-//   let float_special_toml =
-//     #|infinity1 = inf
-//     #|infinity2 = +inf
-//     #|infinity3 = -inf
-//     #|not_a_number1 = nan
-//     #|not_a_number2 = +nan
-//     #|not_a_number3 = -nan
-//     #|
-//   @json.inspect(@toml.parse(float_special_toml), content=[
-//     "TomlTable",
-//     {
-//       "infinity1": ["TomlFloat", @double.positive_infinity],
-//       "infinity2": ["TomlFloat", @double.positive_infinity],
-//       "infinity3": ["TomlFloat", @double.negative_infinity],
-//       "not_a_number1": ["TomlFloat", @double.not_a_number()],
-//       "not_a_number2": ["TomlFloat", @double.not_a_number()],
-//       "not_a_number3": ["TomlFloat", @double.not_a_number()]
-//     }
-//   ])
-// }
+///|
+test "float special values" {
+  let float_special_toml =
+    #|infinity1 = inf
+    #|infinity2 = +inf
+    #|infinity3 = -inf
+    #|not_a_number1 = nan
+    #|not_a_number2 = +nan
+    #|not_a_number3 = -nan
+    #|
+  @json.inspect(@toml.parse(float_special_toml), content=[
+    "TomlTable",
+    {
+      "infinity1": ["TomlFloat", 1.0 / 0.0],
+      "infinity2": ["TomlFloat", 1.0 / 0.0],
+      "infinity3": ["TomlFloat", -1.0 / 0.0],
+      "not_a_number1": ["TomlFloat", 0.0 / 0.0],
+      "not_a_number2": ["TomlFloat", 0.0 / 0.0],
+      "not_a_number3": ["TomlFloat", 0.0 / 0.0],
+    },
+  ])
+}
 
 ///| Test for heterogeneous arrays (should be invalid according to TOML spec)
 test "heterogeneous arrays should be invalid" {
