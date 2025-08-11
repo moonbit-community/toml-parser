@@ -318,6 +318,221 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 {
   result
 }
 
+///| Check if the current input matches a datetime pattern without consuming characters
+fn Lexer::is_datetime_pattern(self : Lexer) -> Bool {
+  // Use pattern matching on the view to look ahead
+
+  // Check for LocalTime pattern: HH:MM:SS[.fff]
+  match self.view() {
+    [
+      '0'..='9',
+      '0'..='9',
+      ':',
+      '0'..='9',
+      '0'..='9',
+      ':',
+      '0'..='9',
+      '0'..='9',
+      ..,
+    ] =>
+      // This looks like time, need to verify it's not part of something else
+      match self.view() {
+        [
+          '0'..='9',
+          '0'..='9',
+          ':',
+          '0'..='9',
+          '0'..='9',
+          ':',
+          '0'..='9',
+          '0'..='9',
+          '.',
+          '0'..='9',
+          .. rest,
+        ] =>
+          // Time with fractional seconds - check what follows
+          check_datetime_terminator(rest)
+        [
+          '0'..='9',
+          '0'..='9',
+          ':',
+          '0'..='9',
+          '0'..='9',
+          ':',
+          '0'..='9',
+          '0'..='9',
+          .. rest,
+        ] =>
+          // Time without fractional seconds - check what follows
+          check_datetime_terminator(rest)
+        _ => false
+      }
+    _ =>
+      // Check for date patterns: YYYY-MM-DD[T...]
+      match self.view() {
+        [
+          '0'..='9',
+          '0'..='9',
+          '0'..='9',
+          '0'..='9',
+          '-',
+          '0'..='9',
+          '0'..='9',
+          '-',
+          '0'..='9',
+          '0'..='9',
+          ..,
+        ] =>
+          // This is a date pattern
+          true
+        _ => false
+      }
+  }
+}
+
+///| Check if characters after a potential datetime are valid terminators
+fn check_datetime_terminator(view : @string.View) -> Bool {
+  match view {
+    [] | [' ' | '\t' | '\n' | '\r' | '=' | ',' | ']' | '}', ..] => true
+    _ => false
+  }
+}
+
+///| Read a complete datetime token
+fn Lexer::read_datetime(self : Lexer) -> Token {
+  let sb = StringBuilder::new()
+
+  // Check if this starts with time pattern (LocalTime)
+  match self.view() {
+    [
+      '0'..='9',
+      '0'..='9',
+      ':',
+      '0'..='9',
+      '0'..='9',
+      ':',
+      '0'..='9',
+      '0'..='9',
+      ..,
+    ] => {
+      // Read time: HH:MM:SS
+      for _i = 0; _i < 8; _i = _i + 1 {
+        match self.view() {
+          ['0'..='9' | ':' as ch, .. rest] => {
+            self.update_view(rest)
+            sb.write_char(ch)
+          }
+          _ => break
+        }
+      }
+
+      // Check for fractional seconds
+      match self.view() {
+        ['.', .. rest] => {
+          self.update_view(rest)
+          sb.write_char('.')
+
+          // Read fractional digits
+          while true {
+            match self.view() {
+              ['0'..='9' as ch, .. rest] => {
+                self.update_view(rest)
+                sb.write_char(ch)
+              }
+              _ => break
+            }
+          }
+        }
+        _ => () // No fractional seconds
+      }
+      return DateTimeToken(LocalTime(sb.to_string()))
+    }
+    _ => () // Continue with date-based patterns
+  }
+
+  // Read date part: YYYY-MM-DD  
+  for _i = 0; _i < 10; _i = _i + 1 {
+    match self.view() {
+      ['0'..='9' | '-' as ch, .. rest] => {
+        self.update_view(rest)
+        sb.write_char(ch)
+      }
+      _ => break
+    }
+  }
+
+  // Check what comes after the date
+  match self.view() {
+    ['T', .. rest] => {
+      // This is a datetime with time component
+      self.update_view(rest)
+      sb.write_char('T')
+
+      // Read time part: HH:MM:SS
+      for _i = 0; _i < 8; _i = _i + 1 {
+        match self.view() {
+          ['0'..='9' | ':' as ch, .. rest] => {
+            self.update_view(rest)
+            sb.write_char(ch)
+          }
+          _ => break
+        }
+      }
+
+      // Check for fractional seconds
+      match self.view() {
+        ['.', .. rest] => {
+          self.update_view(rest)
+          sb.write_char('.')
+
+          // Read fractional digits
+          while true {
+            match self.view() {
+              ['0'..='9' as ch, .. rest] => {
+                self.update_view(rest)
+                sb.write_char(ch)
+              }
+              _ => break
+            }
+          }
+        }
+        _ => () // No fractional seconds
+      }
+
+      // Check for timezone
+      match self.view() {
+        ['Z', .. rest] => {
+          self.update_view(rest)
+          sb.write_char('Z')
+          return DateTimeToken(OffsetDateTime(sb.to_string()))
+        }
+        ['+' | '-' as sign, .. rest] => {
+          self.update_view(rest)
+          sb.write_char(sign)
+
+          // Read timezone offset: HH:MM
+          for _i = 0; _i < 5; _i = _i + 1 {
+            match self.view() {
+              ['0'..='9' | ':' as ch, .. rest] => {
+                self.update_view(rest)
+                sb.write_char(ch)
+              }
+              _ => break
+            }
+          }
+          return DateTimeToken(OffsetDateTime(sb.to_string()))
+        }
+        _ =>
+          // No timezone, this is a LocalDateTime
+          return DateTimeToken(LocalDateTime(sb.to_string()))
+      }
+    }
+    _ =>
+      // This is just a date (LocalDate)
+      return DateTimeToken(LocalDate(sb.to_string()))
+  }
+}
+
 ///| Parse a number (integer or float), with optional negative sign
 fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
   let sb = StringBuilder::new()
@@ -452,10 +667,15 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
     [.. "'''", ..] => StringToken(self.read_multiline_literal_string())
     ['\'', ..] => StringToken(self.read_literal_string())
 
-    // Numbers
-    ['0'..='9', ..] => self.read_number(false)
+    // DateTime patterns (check before numbers)
+    ['0'..='9', ..] =>
+      if self.is_datetime_pattern() {
+        self.read_datetime()
+      } else {
+        self.read_number(false)
+      }
 
-    // Negative numbers
+    // Negative numbers or negative timezone offsets in datetime
     ['-', '0'..='9', ..] =>
       match self.view() {
         ['-', .. rest] => {
@@ -581,4 +801,15 @@ test "binary number parsing" {
   lexer.advance() // consume 'b'
   let result = lexer.read_binary_number()
   inspect(result, content="10")
+}
+
+///| Test datetime tokenization
+test "datetime tokenization" {
+  let tokens = tokenize("date = 1979-05-27T07:32:00Z")
+  @json.inspect(tokens, content=[
+    ["Identifier", "date"],
+    "Equals",
+    ["DateTimeToken", ["OffsetDateTime", "1979-05-27T07:32:00Z"]],
+    "EOF",
+  ])
 }

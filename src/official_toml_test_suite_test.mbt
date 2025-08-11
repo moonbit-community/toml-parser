@@ -396,26 +396,29 @@ test "mixed tables and array of tables" {
   ])
 }
 
-// TODO: Datetime parsing not yet implemented (though data structures exist)
-// test "datetime values" {
-//   let datetime_toml =
-//     #|date1 = 1979-05-27T07:32:00Z
-//     #|date2 = 1979-05-27T00:32:00-07:00
-//     #|local_date = 1979-05-27
-//     #|local_time = 07:32:00
-//     #|local_datetime = 1979-05-27T07:32:00
-//     #|
-//   @json.inspect(@toml.parse(datetime_toml), content=[
-//     "TomlTable",
-//     {
-//       "date1": ["TomlDateTime", ["OffsetDateTime", "1979-05-27T07:32:00Z"]],
-//       "date2": ["TomlDateTime", ["OffsetDateTime", "1979-05-27T00:32:00-07:00"]],
-//       "local_date": ["TomlDateTime", ["LocalDate", "1979-05-27"]],
-//       "local_time": ["TomlDateTime", ["LocalTime", "07:32:00"]],
-//       "local_datetime": ["TomlDateTime", ["LocalDateTime", "1979-05-27T07:32:00"]]
-//     }
-//   ])
-// }
+///|
+test "datetime values" {
+  let datetime_toml =
+    #|date1 = 1979-05-27T07:32:00Z
+    #|date2 = 1979-05-27T00:32:00-07:00
+    #|local_date = 1979-05-27
+    #|local_time = 07:32:00
+    #|local_datetime = 1979-05-27T07:32:00
+    #|
+  @json.inspect(@toml.parse(datetime_toml), content=[
+    "TomlTable",
+    {
+      "date1": ["TomlDateTime", ["OffsetDateTime", "1979-05-27T07:32:00Z"]],
+      "date2": ["TomlDateTime", ["OffsetDateTime", "1979-05-27T00:32:00-07:00"]],
+      "local_date": ["TomlDateTime", ["LocalDate", "1979-05-27"]],
+      "local_time": ["TomlDateTime", ["LocalTime", "07:32:00"]],
+      "local_datetime": [
+        "TomlDateTime",
+        ["LocalDateTime", "1979-05-27T07:32:00"],
+      ],
+    },
+  ])
+}
 
 ///| Test multiline basic strings
 test "multiline basic strings" {

@@ -68,6 +68,10 @@ fn Parser::parse_value(self : Parser) -> TomlValue raise {
       self.update_view(rest)
       TomlBoolean(b)
     }
+    [DateTimeToken(dt), .. rest] => {
+      self.update_view(rest)
+      TomlDateTime(dt)
+    }
     [LeftBracket, .. rest] => {
       self.update_view(rest)
       self.parse_array()
