@@ -519,15 +519,16 @@ test "float special values" {
     #|not_a_number2 = +nan
     #|not_a_number3 = -nan
     #|
+  // FIXME: json.inspect get null
   @json.inspect(@toml.parse(float_special_toml), content=[
     "TomlTable",
     {
-      "infinity1": ["TomlFloat", 1.0 / 0.0],
-      "infinity2": ["TomlFloat", 1.0 / 0.0],
-      "infinity3": ["TomlFloat", -1.0 / 0.0],
-      "not_a_number1": ["TomlFloat", 0.0 / 0.0],
-      "not_a_number2": ["TomlFloat", 0.0 / 0.0],
-      "not_a_number3": ["TomlFloat", 0.0 / 0.0],
+      "infinity1": ["TomlFloat", @double.infinity],
+      "infinity2": ["TomlFloat", @double.infinity],
+      "infinity3": ["TomlFloat", @double.neg_infinity],
+      "not_a_number1": ["TomlFloat", @double.not_a_number],
+      "not_a_number2": ["TomlFloat", @double.not_a_number],
+      "not_a_number3": ["TomlFloat", @double.not_a_number],
     },
   ])
 }
