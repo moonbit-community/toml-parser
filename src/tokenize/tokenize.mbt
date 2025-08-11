@@ -139,13 +139,13 @@ fn Lexer::read_literal_string(self : Lexer) -> String raise {
 /// The openining triple quotes are already consumed by the caller
 fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
 
-  // Skip line ending immediately following the opening delimiter
-  if self.try_consume_charcode('\r') {
-    if self.try_consume_charcode('\n') {
+  // Skip line ending immediately following the opening delimiter  
+  match self.view() {
+    [.. "\r\n", .. rest] | ['\n', .. rest] => {
+      self.update_view(rest)
       self.new_line()
     }
-  } else if self.try_consume_charcode('\n') {
-    self.new_line()
+    _ => ()
   }
   let sb = StringBuilder::new()
   while self.get_position() < self.input.length() {
@@ -220,7 +220,18 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
 ///| Parse a multi-line literal string (triple single quotes) without escape sequences
 fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
   // consume opening triple quotes
-  self.expect_string("'''")
+  // strip the newline following the opening delimiter immediately
+  match self.view() {
+    [.. "\r\n", .. rest] => {
+      self.update_view(rest)
+      self.new_line()
+    }
+    [.. "\n", .. rest] => {
+      self.update_view(rest)
+      self.new_line()
+    }
+    _ => ()
+  }
   let sb = StringBuilder::new()
   while true {
     match self.view() {
@@ -727,7 +738,10 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       StringToken(self.read_multiline_basic_string())
     }
     ['"', ..] => StringToken(self.read_basic_string())
-    [.. "'''", ..] => StringToken(self.read_multiline_literal_string())
+    [.. "'''", .. rest] => {
+      self.update_view(rest)
+      StringToken(self.read_multiline_literal_string())
+    }
     ['\'', ..] => StringToken(self.read_literal_string())
 
     // DateTime patterns (check before numbers)
@@ -844,6 +858,7 @@ test "multiline basic string" {
 ///| Test multiline literal string
 test "multiline literal string" {
   let lexer = Lexer::new("'''line1\nline2'''")
+  lexer.expect_string("'''")
   let result = lexer.read_multiline_literal_string()
   inspect(result, content="line1\nline2")
 }

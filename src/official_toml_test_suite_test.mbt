@@ -213,9 +213,6 @@ test "complex values combination" {
   ])
 }
 
-// TODO: The following tests are commented out because they require features not yet implemented in the parser
-// Once these features are implemented, these tests should be uncommented and verified
-
 ///| Test basic table syntax
 test "basic table" {
   let table_toml =
@@ -451,24 +448,28 @@ test "literal strings" {
 }
 
 // TODO: Multiline literal strings not yet supported
-// test "multiline literal strings" {
-//   let multiline_literal_toml =
-//     #|regex2 = '''I [dw]on't need \d{2} apples'''
-//     #|lines = '''
-//     #|The first newline is
-//     #|trimmed in raw strings.
-//     #|   All other whitespace
-//     #|   is preserved.
-//     #|'''
-//     #|
-//   @json.inspect(@toml.parse(multiline_literal_toml), content=[
-//     "TomlTable",
-//     {
-//       "regex2": ["TomlString", "I [dw]on't need \\d{2} apples"],
-//       "lines": ["TomlString", "The first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved.\n"]
-//     }
-//   ])
-// }
+
+///|
+test "multiline literal strings" {
+  let multiline_literal_toml =
+    #|regex2 = '''I [dw]on't need \d{2} apples'''
+    #|lines = '''
+    #|The first newline is
+    #|trimmed in raw strings.
+    #|   All other whitespace
+    #|   is preserved.
+    #|'''
+    #|
+  @json.inspect(@toml.parse(multiline_literal_toml), content=[
+    "TomlTable",
+    {
+      "regex2": ["TomlString", "I [dw]on't need \\d{2} apples"],
+      "lines": [
+        "TomlString", "The first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved.\n",
+      ],
+    },
+  ])
+}
 
 ///| Test comments functionality
 test "comments" {
