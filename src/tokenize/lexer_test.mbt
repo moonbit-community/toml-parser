@@ -744,3 +744,60 @@ test "multiline string potential truncation" {
   let is_unterminated = error_msg.contains("Unterminated")
   inspect(is_unterminated, content="true")
 }
+
+///|
+test "trailing _ in binary number" {
+  let maybe_tokens = try? @tokenize.tokenize("key = 0b10_10_")
+  @json.inspect(
+    maybe_tokens.unwrap_err().failure_message(),
+    content="Invalid binary number, no trailing digits after _ at line 1, column 14",
+  )
+}
+
+///|
+test "consequence _ in binary number" {
+  let maybe_tokens = try? @tokenize.tokenize("key = 0b10__10_10")
+  // according to spec, this should fail
+  @json.inspect(
+    maybe_tokens.unwrap_err().failure_message(),
+    content="Invalid binary number, consecutive _ at line 1, column 11",
+  )
+}
+
+///|
+test "trailing _ in hex number" {
+  let maybe_tokens = try? @tokenize.tokenize("key = 0xAB_CD_")
+  @json.inspect(
+    maybe_tokens.unwrap_err().failure_message(),
+    content="Invalid hex number, no trailing digits after _ at line 1, column 14",
+  )
+}
+
+///|
+test "consecutive _ in hex number" {
+  let maybe_tokens = try? @tokenize.tokenize("key = 0xAB__CD_EF")
+  // according to spec, this should fail
+  @json.inspect(
+    maybe_tokens.unwrap_err().failure_message(),
+    content="Invalid hex number, consecutive _ at line 1, column 11",
+  )
+}
+
+///|
+test "trailing _ in octal number" {
+  let maybe_tokens = try? @tokenize.tokenize("key = 0o755_")
+  @json.inspect(
+    maybe_tokens.unwrap_err().failure_message(),
+    content="Invalid octal number, no trailing digits after _ at line 1, column 12",
+  )
+}
+
+///|
+test "consecutive _ in octal number" {
+  let maybe_tokens = try? @tokenize.tokenize("key = 0o7__55_44")
+  // according to spec, this should fail
+  @json.inspect(
+    maybe_tokens.unwrap_err().failure_message(),
+    content="Invalid octal number, consecutive _ at line 1, column 10",
+  )
+}

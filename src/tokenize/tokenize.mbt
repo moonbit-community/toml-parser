@@ -281,18 +281,29 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
   }
   while true {
     match self.view() {
-      ['0'..='9' | 'a'..='f' | 'A'..='F' | '_' as ch, .. rest] => {
+      ['0'..='9' | 'a'..='f' | 'A'..='F' as ch, .. rest] => {
         self.update_view(rest)
-        if ch != '_' {
-          let digit = match ch {
-            '0'..='9' => ch.to_int() - '0'
-            'a'..='f' => ch.to_int() - 'a' + 10
-            'A'..='F' => ch.to_int() - 'A' + 10
-            _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch)))
-          }
-          result = result * 16L + digit.to_int64()
+        let digit = match ch {
+          '0'..='9' => ch.to_int() - '0'
+          'a'..='f' => ch.to_int() - 'a' + 10
+          'A'..='F' => ch.to_int() - 'A' + 10
+          _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch)))
         }
+        result = result * 16L + digit.to_int64()
       }
+      ['_', '0'..='9' | 'a'..='f' | 'A'..='F' as ch2, .. rest] => {
+        self.update_view(rest)
+        let digit = match ch2 {
+          '0'..='9' => ch2.to_int() - '0'
+          'a'..='f' => ch2.to_int() - 'a' + 10
+          'A'..='F' => ch2.to_int() - 'A' + 10
+          _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch2)))
+        }
+        result = result * 16L + digit.to_int64()
+      }
+      ['_', '_', ..] => fail(self.error("Invalid hex number, consecutive _"))
+      ['_', ..] =>
+        fail(self.error("Invalid hex number, no trailing digits after _"))
       _ => break
     }
   }
@@ -324,13 +335,19 @@ fn Lexer::read_octal_number(self : Lexer) -> Int64 raise {
   }
   while true {
     match self.view() {
-      ['0'..='7' | '_' as x, .. rest] => {
+      ['0'..='7' as ch, .. rest] => {
         self.update_view(rest)
-        if x != '_' {
-          let digit = x.to_int() - '0'
-          result = result * 8 + digit.to_int64()
-        }
+        let digit = ch.to_int() - '0'
+        result = result * 8L + digit.to_int64()
       }
+      ['_', '0'..='7' as ch2, .. rest] => {
+        self.update_view(rest)
+        let digit = ch2.to_int() - '0'
+        result = result * 8L + digit.to_int64()
+      }
+      ['_', '_', ..] => fail(self.error("Invalid octal number, consecutive _"))
+      ['_', ..] =>
+        fail(self.error("Invalid octal number, no trailing digits after _"))
       _ => break
     }
   }
@@ -362,20 +379,26 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
   let mut result = match self.view() {
     ['0', 'b' | 'B', '0' | '1' as ch, .. rest] => {
       self.update_view(rest)
-      let digit = ch.to_int() - '0'.to_int()
+      let digit = ch.to_int() - '0'
       digit.to_int64()
     }
     _ => fail(self.error("Invalid binary number, expected 0 or 1 after 0b"))
   }
   while true {
     match self.view() {
-      ['0' | '1' | '_' as ch, .. rest] => {
+      ['0' | '1' as ch, .. rest] => {
         self.update_view(rest)
-        if ch != '_' {
-          let digit = ch.to_int() - '0'.to_int()
-          result = result * 2L + digit.to_int64()
-        }
+        let digit = ch.to_int() - '0'.to_int()
+        result = result * 2L + digit.to_int64()
       }
+      ['_', '0' | '1' as ch2, .. rest] => {
+        self.update_view(rest)
+        let digit = ch2.to_int() - '0'
+        result = result * 2L + digit.to_int64()
+      }
+      ['_', '_', ..] => fail(self.error("Invalid binary number, consecutive _"))
+      ['_', ..] =>
+        fail(self.error("Invalid binary number, no trailing digits after _"))
       _ => break
     }
   }
