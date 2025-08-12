@@ -148,70 +148,68 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
     _ => ()
   }
   let sb = StringBuilder::new()
-  while self.get_position() < self.input.length() {
-    // Check for closing triple quotes
+  while true {
     match self.view() {
       [.. "\"\"\"", .. rest] => {
+        // Check for closing triple quotes  
         self.update_view(rest)
         return sb.to_string()
       }
-      _ => ()
-    }
-    match self.peek() {
-      Some(ch) => {
+      ['\\', ..] => {
         self.advance()
-        if ch == '\\' {
-          // Handle escape sequences
-          match self.peek() {
-            Some(escaped) => {
-              self.advance()
-              match escaped {
-                'n' => sb.write_char('\n')
-                't' => sb.write_char('\t')
-                'r' => sb.write_char('\r')
-                '\\' => sb.write_char('\\')
-                '"' => sb.write_char('"')
-                '\'' => sb.write_char('\'')
-                'b' => sb.write_char('\u0008')
-                'f' => sb.write_char('\u000C')
-                'u' => sb.write_char(self.read_unicode_4_escape())
-                'U' => sb.write_char(self.read_unicode_8_escape())
-                // Line ending backslash (trim whitespace at line start)
-                '\r' | '\n' => {
-                  self.new_line()
-                  if escaped == '\r' {
-                    match self.view() {
-                      ['\n', .. rest] => self.update_view(rest)
-                      _ => ()
-                    }
-                  }
-                  // Skip whitespace at the beginning of the next line
-                  while true {
-                    match self.view() {
-                      [' ' | '\t', .. rest] => self.update_view(rest)
-                      _ => break
-                    }
+
+        // Handle escape sequences
+        match self.peek() {
+          Some(escaped) => {
+            self.advance()
+            match escaped {
+              'n' => sb.write_char('\n')
+              't' => sb.write_char('\t')
+              'r' => sb.write_char('\r')
+              '\\' => sb.write_char('\\')
+              '"' => sb.write_char('"')
+              '\'' => sb.write_char('\'')
+              'b' => sb.write_char('\u0008')
+              'f' => sb.write_char('\u000C')
+              'u' => sb.write_char(self.read_unicode_4_escape())
+              'U' => sb.write_char(self.read_unicode_8_escape())
+              // Line ending backslash (trim whitespace at line start)
+              '\r' | '\n' => {
+                self.new_line()
+                if escaped == '\r' {
+                  match self.view() {
+                    ['\n', .. rest] => self.update_view(rest)
+                    _ => ()
                   }
                 }
-                _ =>
-                  fail(
-                    self.error(
-                      "Invalid escape sequence: \\" + Char::to_string(escaped),
-                    ),
-                  )
+                // Skip whitespace at the beginning of the next line
+                while true {
+                  match self.view() {
+                    [' ' | '\t', .. rest] => self.update_view(rest)
+                    _ => break
+                  }
+                }
               }
+              _ =>
+                fail(
+                  self.error(
+                    "Invalid escape sequence: \\" + Char::to_string(escaped),
+                  ),
+                )
             }
-            None =>
-              fail(self.error("Unexpected end of input after escape character"))
           }
-        } else {
-          sb.write_char(ch)
-          if ch == '\n' {
-            self.new_line()
-          }
+          None =>
+            fail(self.error("Unexpected end of input after escape character"))
         }
       }
-      None => fail(self.error("Unterminated multiline string"))
+      [ch, ..rest] => {
+        self.update_view(rest)
+        sb.write_char(ch)
+        if ch == '\n' {
+          self.new_line()
+        }
+      }
+      [] => fail(self.error("Unterminated multiline string"))
     }
   }
   fail(self.error("Unterminated multiline string"))
