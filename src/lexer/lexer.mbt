@@ -1,7 +1,7 @@
 /// Lexer implementation for TOML
 
 ///| Lexer state with position tracking for better error reporting
-pub(all) struct Lexer {
+struct Lexer {
   input : String
   mut position : Int
   mut line : Int
