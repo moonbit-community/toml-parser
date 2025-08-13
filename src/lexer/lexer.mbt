@@ -79,43 +79,6 @@ pub fn Lexer::skip_single_newline(self : Lexer) -> Unit {
   }
 }
 
-///|
-/// advance as long as the predicate is true
-/// # Example:
-/// ```
-/// let lexer = Lexer::new("Hello, world!")
-/// lexer.repeat_if(ch=> ch is ('a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-'))
-/// inspect(lexer.peek(), content="Some(',')")
-/// ```
-pub fn Lexer::repeat_if(self : Lexer, f : (Char) -> Bool) -> Unit {
-  let next = loop self.view() {
-    [ch, .. rest] if f(ch) => continue rest
-    rest => rest
-  }
-  self.update_view(next)
-}
-
-///| Skip comments (start with #)
-/// Not consuming newline characters
-pub fn Lexer::skip_comment(self : Lexer) -> Unit {
-  match self.view() {
-    ['#', .. rest] => {
-      self.update_view(rest)
-      // self.advance_until_charcode('\n')
-
-      loop self.view() {
-        ['\r', '\n', ..] | ['\n', ..] | [] as rest => {
-          // batch the computation and only update once   
-          self.update_view(rest)
-          // not consuming newline characters          
-          break // exit here
-        }
-        [_, .. rest] => continue rest
-      }
-    }
-    _ => ()
-  }
-}
 
 ///| Get current character without advancing
 /// # Example:
@@ -184,7 +147,8 @@ pub fn Lexer::expect_string(
   str : String,
   msg? : String,
 ) -> Unit raise {
-
+  // TODO: reduce the usage of advance()
+  // should document that no newline expected
   // store the original postion for precise error reporting
   let saved_pos = self.position
   let saved_line = self.line
