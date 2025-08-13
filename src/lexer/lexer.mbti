@@ -12,8 +12,6 @@ import(
 // Types and methods
 type Lexer
 fn Lexer::advance(Self) -> Unit
-fn Lexer::advance_until_charcode(Self, Int) -> Unit
-fn Lexer::check_not_charcode(Self, Int) -> Bool
 fn Lexer::error(Self, String) -> String
 fn Lexer::expect_char(Self, Char, msg? : String) -> Unit raise
 fn Lexer::expect_string(Self, String, msg? : String) -> Unit raise

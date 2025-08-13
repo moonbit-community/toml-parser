@@ -60,14 +60,12 @@ test "lexer creation" {
 /// inspect(lexer.peek(), content="Some('H')")
 /// ```
 pub fn Lexer::skip_whitespace(self : Lexer) -> Unit {
-  loop self.view() {
-    ['\r', '\n', ..] => () // don't skip newline
-    [' ' | '\t' | '\r', .. rest] => {
-      self.update_view(rest)
-      continue rest
-    }
-    _ => break
+  let next = loop self.view() {
+    ['\r', '\n', ..] | ['\n', ..] as rest => rest
+    [' ' | '\t' | '\r', .. rest] => continue rest
+    rest => rest
   }
+  self.update_view(next)
 }
 
 ///|
@@ -82,19 +80,6 @@ pub fn Lexer::skip_single_newline(self : Lexer) -> Unit {
 }
 
 ///|
-pub fn Lexer::check_not_charcode(self : Lexer, ch : Int) -> Bool {
-  self.position < self.input.length() &&
-  self.input.unsafe_charcode_at(self.position) != ch
-}
-
-///|
-pub fn Lexer::advance_until_charcode(self : Lexer, ch : Int) -> Unit {
-  while self.check_not_charcode(ch) {
-    self.advance()
-  }
-}
-
-///|
 /// advance as long as the predicate is true
 /// # Example:
 /// ```
@@ -103,9 +88,11 @@ pub fn Lexer::advance_until_charcode(self : Lexer, ch : Int) -> Unit {
 /// inspect(lexer.peek(), content="Some(',')")
 /// ```
 pub fn Lexer::repeat_if(self : Lexer, f : (Char) -> Bool) -> Unit {
-  while self.peek() is Some(ch) && f(ch) {
-    self.advance()
+  let next = loop self.view() {
+    [ch, .. rest] if f(ch) => continue rest
+    rest => rest
   }
+  self.update_view(next)
 }
 
 ///| Skip comments (start with #)
