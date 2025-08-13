@@ -79,7 +79,6 @@ pub fn Lexer::skip_single_newline(self : Lexer) -> Unit {
   }
 }
 
-
 ///| Get current character without advancing
 /// # Example:
 /// ```
