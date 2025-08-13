@@ -22,8 +22,6 @@ fn Lexer::new(String) -> Self
 fn Lexer::new_line(Self) -> Unit
 fn Lexer::peek(Self) -> Char?
 fn Lexer::peek_charcode(Self) -> Int?
-fn Lexer::repeat_if(Self, (Char) -> Bool) -> Unit
-fn Lexer::skip_comment(Self) -> Unit
 fn Lexer::skip_single_newline(Self) -> Unit
 fn Lexer::skip_whitespace(Self) -> Unit
 fn Lexer::update_view(Self, @string.StringView) -> Unit

@@ -697,6 +697,28 @@ test "read_number" {
   inspect(lexer.read_number(false), content="IntegerToken(123)")
 }
 
+///| Skip comments (start with #)
+/// Not consuming newline characters
+fn Lexer::skip_comment(self : Lexer) -> Unit {
+  match self.view() {
+    ['#', .. rest] => {
+      self.update_view(rest)
+      // self.advance_until_charcode('\n')
+
+      loop self.view() {
+        ['\r', '\n', ..] | ['\n', ..] | [] as rest => {
+          // batch the computation and only update once   
+          self.update_view(rest)
+          // not consuming newline characters          
+          break // exit here
+        }
+        [_, .. rest] => continue rest
+      }
+    }
+    _ => ()
+  }
+}
+
 ///| Get the next token
 fn Lexer::next_token(self : Lexer) -> Token raise {
   self.skip_whitespace()
