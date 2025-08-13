@@ -1,1 +1,3 @@
-{"name" : "bob/toml/tokenize", "import" : ["bob/toml/lexer"]}
+{"name" : "bob/toml/tokenize", 
+ "warn-list": "-21",
+"import" : ["bob/toml/lexer"]}
