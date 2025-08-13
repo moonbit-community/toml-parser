@@ -16,7 +16,7 @@ test "test TomlDateTime types and equality" {
 ///|
 test "test datetime token JSON serialization" {
   let offset_dt = @tokenize.OffsetDateTime("1979-05-27T07:32:00+01:00")
-  let token = @tokenize.DateTimeToken(offset_dt)
+  let token = @tokenize.DateTimeToken(offset_dt, loc=@tokenize.default_loc())
 
   // Test that datetime token can be serialized to JSON
   let json_result = token.to_json()
@@ -45,14 +45,17 @@ test "test different datetime formats" {
 ///|
 test "test datetime token creation and usage" {
   let dt = @tokenize.OffsetDateTime("2023-12-25T00:00:00Z")
-  let token = @tokenize.DateTimeToken(dt)
+  let loc = @tokenize.default_loc()
+  let token = @tokenize.DateTimeToken(dt, loc=loc)
 
   // Test token equality
   let same_token = @tokenize.DateTimeToken(
     @tokenize.OffsetDateTime("2023-12-25T00:00:00Z"),
+    loc=loc
   )
   let diff_token = @tokenize.DateTimeToken(
     @tokenize.OffsetDateTime("2023-12-26T00:00:00Z"),
+    loc=loc
   )
   inspect(token == same_token, content="true")
   inspect(token == diff_token, content="false")
