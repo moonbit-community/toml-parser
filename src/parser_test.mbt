@@ -108,7 +108,9 @@ test "test inline table with string keys" {
 
 ///|
 test "test inline table invalid syntax" {
-  @json.inspect(try? parse_no_loc("table = {key value}"), content=({"Err":{"$tag":"Failure","0":"Expected '='"}}))
+  @json.inspect(try? parse_no_loc("table = {key value}"), content={
+    "Err": { "$tag": "Failure", "0": "Expected '='" },
+  })
 }
 
 ///|

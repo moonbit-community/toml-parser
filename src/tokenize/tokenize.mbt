@@ -497,7 +497,10 @@ fn check_datetime_terminator(view : @string.View) -> Bool {
 }
 
 ///| Read a complete datetime token
-fn Lexer::read_datetime_with_loc(self : Lexer, start_pos : @lexer.Position) -> Token {
+fn Lexer::read_datetime_with_loc(
+  self : Lexer,
+  start_pos : @lexer.Position,
+) -> Token {
   let sb = StringBuilder::new()
 
   // Check if this starts with time pattern (LocalTime)
@@ -544,7 +547,10 @@ fn Lexer::read_datetime_with_loc(self : Lexer, start_pos : @lexer.Position) -> T
         _ => () // No fractional seconds
       }
       let end_pos = self.get_loc()
-      return DateTimeToken(LocalTime(sb.to_string()), loc=make_loc(start_pos, end_pos))
+      return DateTimeToken(
+        LocalTime(sb.to_string()),
+        loc=make_loc(start_pos, end_pos),
+      )
     }
     _ => () // Continue with date-based patterns
   }
@@ -604,7 +610,10 @@ fn Lexer::read_datetime_with_loc(self : Lexer, start_pos : @lexer.Position) -> T
           self.update_view(rest)
           sb.write_char('Z')
           let end_pos = self.get_loc()
-          return DateTimeToken(OffsetDateTime(sb.to_string()), loc=make_loc(start_pos, end_pos))
+          return DateTimeToken(
+            OffsetDateTime(sb.to_string()),
+            loc=make_loc(start_pos, end_pos),
+          )
         }
         ['+' | '-' as sign, .. rest] => {
           self.update_view(rest)
@@ -621,25 +630,38 @@ fn Lexer::read_datetime_with_loc(self : Lexer, start_pos : @lexer.Position) -> T
             }
           }
           let end_pos = self.get_loc()
-          return DateTimeToken(OffsetDateTime(sb.to_string()), loc=make_loc(start_pos, end_pos))
+          return DateTimeToken(
+            OffsetDateTime(sb.to_string()),
+            loc=make_loc(start_pos, end_pos),
+          )
         }
         _ => {
           // No timezone, this is a LocalDateTime
           let end_pos = self.get_loc()
-          return DateTimeToken(LocalDateTime(sb.to_string()), loc=make_loc(start_pos, end_pos))
+          return DateTimeToken(
+            LocalDateTime(sb.to_string()),
+            loc=make_loc(start_pos, end_pos),
+          )
         }
       }
     }
     _ => {
       // This is just a date (LocalDate)
       let end_pos = self.get_loc()
-      return DateTimeToken(LocalDate(sb.to_string()), loc=make_loc(start_pos, end_pos))
+      return DateTimeToken(
+        LocalDate(sb.to_string()),
+        loc=make_loc(start_pos, end_pos),
+      )
     }
   }
 }
 
 ///| Parse a number (integer or float), with optional negative sign
-fn Lexer::read_number_with_loc(self : Lexer, is_negative : Bool, start_pos : @lexer.Position) -> Token raise {
+fn Lexer::read_number_with_loc(
+  self : Lexer,
+  is_negative : Bool,
+  start_pos : @lexer.Position,
+) -> Token raise {
   let sb = StringBuilder::new()
   if is_negative {
     sb.write_char('-')
@@ -652,17 +674,38 @@ fn Lexer::read_number_with_loc(self : Lexer, is_negative : Bool, start_pos : @le
       ['0', 'x' | 'X', ..] => {
         let value = self.read_hex_number()
         let end_pos = self.get_loc()
-        return IntegerToken(if is_negative { -value } else { value }, loc=make_loc(start_pos, end_pos))
+        return IntegerToken(
+          if is_negative {
+            -value
+          } else {
+            value
+          },
+          loc=make_loc(start_pos, end_pos),
+        )
       }
       ['0', 'o' | 'O', ..] => {
         let value = self.read_octal_number()
         let end_pos = self.get_loc()
-        return IntegerToken(if is_negative { -value } else { value }, loc=make_loc(start_pos, end_pos))
+        return IntegerToken(
+          if is_negative {
+            -value
+          } else {
+            value
+          },
+          loc=make_loc(start_pos, end_pos),
+        )
       }
       ['0', 'b' | 'B', ..] => {
         let value = self.read_binary_number()
         let end_pos = self.get_loc()
-        return IntegerToken(if is_negative { -value } else { value }, loc=make_loc(start_pos, end_pos))
+        return IntegerToken(
+          if is_negative {
+            -value
+          } else {
+            value
+          },
+          loc=make_loc(start_pos, end_pos),
+        )
       }
       _ => () // continue with non binary mode
     }
@@ -704,11 +747,11 @@ fn Lexer::read_number_with_loc(self : Lexer, is_negative : Bool, start_pos : @le
   let end_pos = self.get_loc()
   let loc = make_loc(start_pos, end_pos)
   if is_float {
-    FloatToken(@strconv.parse_double(s), loc=loc) catch {
+    FloatToken(@strconv.parse_double(s), loc~) catch {
       _ => fail("Invalid float: " + s)
     }
   } else {
-    IntegerToken(@strconv.parse_int64(s), loc=loc) catch {
+    IntegerToken(@strconv.parse_int64(s), loc~) catch {
       _ => fail("Invalid integer: " + s)
     }
   }
@@ -720,12 +763,13 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
   self.read_number_with_loc(is_negative, start_pos)
 }
 
-
-
 ///|
 test "read_number" {
   let lexer = Lexer::new("123")
-  inspect(lexer.read_number(false), content="IntegerToken(123, loc={start: {line: 1, column: 1}, end: {line: 1, column: 4}})")
+  inspect(
+    lexer.read_number(false),
+    content="IntegerToken(123, loc={start: {line: 1, column: 1}, end: {line: 1, column: 4}})",
+  )
 }
 
 ///| Skip comments and whitespace but not newline characters
@@ -887,11 +931,11 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       let end_pos = self.get_loc()
       let loc = make_loc(start_pos, end_pos)
       match identifier {
-        "true" => BooleanToken(true, loc=loc)
-        "false" => BooleanToken(false, loc=loc)
-        "inf" => FloatToken(1.0 / 0.0, loc=loc) // positive infinity
-        "nan" => FloatToken(0.0 / 0.0, loc=loc) // NaN
-        _ => Identifier(identifier, loc=loc)
+        "true" => BooleanToken(true, loc~)
+        "false" => BooleanToken(false, loc~)
+        "inf" => FloatToken(1.0 / 0.0, loc~) // positive infinity
+        "nan" => FloatToken(0.0 / 0.0, loc~) // NaN
+        _ => Identifier(identifier, loc~)
       }
     }
 
@@ -920,7 +964,10 @@ pub fn tokenize(input : String) -> Array[Token] raise {
 ///| Test read_number
 test "read_number" {
   let lexer = Lexer::new("123")
-  inspect(lexer.read_number(false), content="IntegerToken(123, loc={start: {line: 1, column: 1}, end: {line: 1, column: 4}})")
+  inspect(
+    lexer.read_number(false),
+    content="IntegerToken(123, loc={start: {line: 1, column: 1}, end: {line: 1, column: 4}})",
+  )
 }
 
 ///| Test Unicode escape sequences
@@ -1002,5 +1049,10 @@ test "binary number parsing" {
 ///| Test datetime tokenization
 test "datetime tokenization" {
   let tokens = tokenize("date = 1979-05-27T07:32:00Z")
-  @json.inspect(tokens, content=([["Identifier","date"],"Equals",["DateTimeToken",["OffsetDateTime","1979-05-27T07:32:00Z"]],"EOF"]))
+  @json.inspect(tokens, content=[
+    ["Identifier", "date"],
+    "Equals",
+    ["DateTimeToken", ["OffsetDateTime", "1979-05-27T07:32:00Z"]],
+    "EOF",
+  ])
 }
