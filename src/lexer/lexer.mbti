@@ -13,7 +13,6 @@ import(
 type Lexer
 fn Lexer::advance(Self) -> Unit
 fn Lexer::advance_until_charcode(Self, Int) -> Unit
-fn Lexer::check_is_charcode(Self, Int) -> Bool
 fn Lexer::check_not_charcode(Self, Int) -> Bool
 fn Lexer::error(Self, String) -> String
 fn Lexer::expect_char(Self, Char, msg? : String) -> Unit raise
@@ -27,8 +26,8 @@ fn Lexer::peek(Self) -> Char?
 fn Lexer::peek_charcode(Self) -> Int?
 fn Lexer::repeat_if(Self, (Char) -> Bool) -> Unit
 fn Lexer::skip_comment(Self) -> Unit
+fn Lexer::skip_single_newline(Self) -> Unit
 fn Lexer::skip_whitespace(Self) -> Unit
-fn Lexer::try_consume_charcode(Self, Int) -> Bool
 fn Lexer::update_view(Self, @string.StringView) -> Unit
 fn Lexer::view(Self) -> @string.StringView
 

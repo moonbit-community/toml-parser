@@ -138,15 +138,7 @@ fn Lexer::read_literal_string(self : Lexer) -> String raise {
 ///| Parse a multi-line basic string (triple double quotes) with escape sequences
 /// The openining triple quotes are already consumed by the caller
 fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
-
-  // Skip line ending immediately following the opening delimiter  
-  match self.view() {
-    [.. "\r\n", .. rest] | ['\n', .. rest] => {
-      self.update_view(rest)
-      self.new_line()
-    }
-    _ => ()
-  }
+  self.skip_single_newline()
   let sb = StringBuilder::new()
   while true {
     match self.view() {
@@ -827,7 +819,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
     }
 
     // Unexpected characters
-    [ch, ..] => fail("Unexpected character: " + Char::to_string(ch))
+    [ch, ..] => fail("Unexpected character: '\{ch}'")
   }
 }
 

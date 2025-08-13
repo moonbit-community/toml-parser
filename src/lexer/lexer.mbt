@@ -60,45 +60,31 @@ test "lexer creation" {
 /// inspect(lexer.peek(), content="Some('H')")
 /// ```
 pub fn Lexer::skip_whitespace(self : Lexer) -> Unit {
-  for pos = self.position {
-    if pos >= self.input.length() {
-      break
+  loop self.view() {
+    ['\r', '\n', ..] => () // don't skip newline
+    [' ' | '\t' | '\r', .. rest] => {
+      self.update_view(rest)
+      continue rest
     }
-    let ch = self.input.unsafe_charcode_at(pos)
-    if ch is (' ' | '\t' | '\r') {
-      self.position += 1
-      self.column += 1
-      continue pos + 1
-    } else {
-      break
-    }
+    _ => break
   }
 }
 
 ///|
-/// 
-/// peeck and check it matches a bmp character
-/// TODO @param ch change its type to UInt16 when overloading
-/// support is there
-pub fn Lexer::check_is_charcode(self : Lexer, ch : Int) -> Bool {
-  self.position < self.input.length() &&
-  self.input.unsafe_charcode_at(self.position) == ch
+pub fn Lexer::skip_single_newline(self : Lexer) -> Unit {
+  match self.view() {
+    ['\r', '\n', .. rest] | ['\n', .. rest] => {
+      self.update_view(rest)
+      self.new_line()
+    }
+    _ => ()
+  }
 }
 
 ///|
 pub fn Lexer::check_not_charcode(self : Lexer, ch : Int) -> Bool {
   self.position < self.input.length() &&
   self.input.unsafe_charcode_at(self.position) != ch
-}
-
-///|
-pub fn Lexer::try_consume_charcode(self : Lexer, ch : Int) -> Bool {
-  if self.check_is_charcode(ch) {
-    self.advance()
-    true
-  } else {
-    false
-  }
 }
 
 ///|
@@ -123,9 +109,24 @@ pub fn Lexer::repeat_if(self : Lexer, f : (Char) -> Bool) -> Unit {
 }
 
 ///| Skip comments (start with #)
+/// Not consuming newline characters
 pub fn Lexer::skip_comment(self : Lexer) -> Unit {
-  if self.check_is_charcode('#') {
-    self.advance_until_charcode('\n')
+  match self.view() {
+    ['#', .. rest] => {
+      self.update_view(rest)
+      // self.advance_until_charcode('\n')
+
+      loop self.view() {
+        ['\r', '\n', ..] | ['\n', ..] | [] as rest => {
+          // batch the computation and only update once   
+          self.update_view(rest)
+          // not consuming newline characters          
+          break // exit here
+        }
+        [_, .. rest] => continue rest
+      }
+    }
+    _ => ()
   }
 }
 

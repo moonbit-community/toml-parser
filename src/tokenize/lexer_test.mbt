@@ -277,7 +277,7 @@ test "test invalid characters" {
   let maybe_tokens = try? @tokenize.tokenize("key @ value")
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Unexpected character: @",
+    content="Unexpected character: '@'",
   ) // Should fail with unexpected character
 }
 
@@ -297,7 +297,7 @@ test "test negative sign not followed by number" {
   let maybe_tokens = try? @tokenize.tokenize("key = -abc")
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Unexpected character: -",
+    content="Unexpected character: '-'",
   )
 }
 
