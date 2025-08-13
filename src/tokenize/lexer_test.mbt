@@ -106,7 +106,7 @@ test "unicode or emoji" {
 ///| Test uncovered Token JSON serialization methods
 test "test DateTimeToken JSON serialization" {
   let dt = @tokenize.OffsetDateTime("1979-05-27T07:32:00Z")
-  let token = @tokenize.DateTimeToken(dt)
+  let token = @tokenize.DateTimeToken(dt, loc=@tokenize.default_loc())
   @json.inspect(token, content=[
     "DateTimeToken",
     ["OffsetDateTime", "1979-05-27T07:32:00Z"],

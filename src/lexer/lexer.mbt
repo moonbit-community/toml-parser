@@ -1,6 +1,6 @@
 ///| Lexer implementation for TOML
 #valtype
-pub(all) struct Loc {
+pub(all) struct Position {
   line : Int
   column : Int
 } derive(Eq, Show, ToJson)
@@ -106,7 +106,7 @@ pub fn Lexer::peek_charcode(self : Lexer) -> Int? {
 }
 
 ///|
-pub fn Lexer::get_loc(self : Lexer) -> Loc {
+pub fn Lexer::get_loc(self : Lexer) -> Position {
   { line: self.line, column: self.column }
 }
 

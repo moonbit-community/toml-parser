@@ -1,6 +1,17 @@
 ///|
 typealias @lexer.Lexer
 
+///| Default location for testing and compatibility
+pub fn default_loc() -> Loc {
+  let pos : @lexer.Position = { line: 1, column: 1 }
+  { start: pos, end: pos }
+}
+
+///| Create a location from lexer positions
+fn make_loc(start_pos : @lexer.Position, end_pos : @lexer.Position) -> Loc {
+  { start: start_pos, end: end_pos }
+}
+
 ///| Check if character is hexadecimal digit
 fn is_hex_digit(ch : Char) -> Bool {
   ch is ('0'..='9' | 'a'..='f' | 'A'..='F')
@@ -486,7 +497,7 @@ fn check_datetime_terminator(view : @string.View) -> Bool {
 }
 
 ///| Read a complete datetime token
-fn Lexer::read_datetime(self : Lexer) -> Token {
+fn Lexer::read_datetime_with_loc(self : Lexer, start_pos : @lexer.Position) -> Token {
   let sb = StringBuilder::new()
 
   // Check if this starts with time pattern (LocalTime)
@@ -532,7 +543,8 @@ fn Lexer::read_datetime(self : Lexer) -> Token {
         }
         _ => () // No fractional seconds
       }
-      return DateTimeToken(LocalTime(sb.to_string()))
+      let end_pos = self.get_loc()
+      return DateTimeToken(LocalTime(sb.to_string()), loc=make_loc(start_pos, end_pos))
     }
     _ => () // Continue with date-based patterns
   }
@@ -591,7 +603,8 @@ fn Lexer::read_datetime(self : Lexer) -> Token {
         ['Z', .. rest] => {
           self.update_view(rest)
           sb.write_char('Z')
-          return DateTimeToken(OffsetDateTime(sb.to_string()))
+          let end_pos = self.get_loc()
+          return DateTimeToken(OffsetDateTime(sb.to_string()), loc=make_loc(start_pos, end_pos))
         }
         ['+' | '-' as sign, .. rest] => {
           self.update_view(rest)
@@ -607,21 +620,26 @@ fn Lexer::read_datetime(self : Lexer) -> Token {
               _ => break
             }
           }
-          return DateTimeToken(OffsetDateTime(sb.to_string()))
+          let end_pos = self.get_loc()
+          return DateTimeToken(OffsetDateTime(sb.to_string()), loc=make_loc(start_pos, end_pos))
         }
-        _ =>
+        _ => {
           // No timezone, this is a LocalDateTime
-          return DateTimeToken(LocalDateTime(sb.to_string()))
+          let end_pos = self.get_loc()
+          return DateTimeToken(LocalDateTime(sb.to_string()), loc=make_loc(start_pos, end_pos))
+        }
       }
     }
-    _ =>
+    _ => {
       // This is just a date (LocalDate)
-      return DateTimeToken(LocalDate(sb.to_string()))
+      let end_pos = self.get_loc()
+      return DateTimeToken(LocalDate(sb.to_string()), loc=make_loc(start_pos, end_pos))
+    }
   }
 }
 
 ///| Parse a number (integer or float), with optional negative sign
-fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
+fn Lexer::read_number_with_loc(self : Lexer, is_negative : Bool, start_pos : @lexer.Position) -> Token raise {
   let sb = StringBuilder::new()
   if is_negative {
     sb.write_char('-')
@@ -633,15 +651,18 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
     match self.view() {
       ['0', 'x' | 'X', ..] => {
         let value = self.read_hex_number()
-        return IntegerToken(if is_negative { -value } else { value })
+        let end_pos = self.get_loc()
+        return IntegerToken(if is_negative { -value } else { value }, loc=make_loc(start_pos, end_pos))
       }
       ['0', 'o' | 'O', ..] => {
         let value = self.read_octal_number()
-        return IntegerToken(if is_negative { -value } else { value })
+        let end_pos = self.get_loc()
+        return IntegerToken(if is_negative { -value } else { value }, loc=make_loc(start_pos, end_pos))
       }
       ['0', 'b' | 'B', ..] => {
         let value = self.read_binary_number()
-        return IntegerToken(if is_negative { -value } else { value })
+        let end_pos = self.get_loc()
+        return IntegerToken(if is_negative { -value } else { value }, loc=make_loc(start_pos, end_pos))
       }
       _ => () // continue with non binary mode
     }
@@ -680,21 +701,31 @@ fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
     _ => ()
   }
   let s = sb.to_string()
+  let end_pos = self.get_loc()
+  let loc = make_loc(start_pos, end_pos)
   if is_float {
-    FloatToken(@strconv.parse_double(s)) catch {
+    FloatToken(@strconv.parse_double(s), loc=loc) catch {
       _ => fail("Invalid float: " + s)
     }
   } else {
-    IntegerToken(@strconv.parse_int64(s)) catch {
+    IntegerToken(@strconv.parse_int64(s), loc=loc) catch {
       _ => fail("Invalid integer: " + s)
     }
   }
 }
 
+///| Backward compatibility wrapper for read_number
+fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
+  let start_pos = self.get_loc()
+  self.read_number_with_loc(is_negative, start_pos)
+}
+
+
+
 ///|
 test "read_number" {
   let lexer = Lexer::new("123")
-  inspect(lexer.read_number(false), content="IntegerToken(123)")
+  inspect(lexer.read_number(false), content="IntegerToken(123, loc={start: {line: 1, column: 1}, end: {line: 1, column: 4}})")
 }
 
 ///| Skip comments and whitespace but not newline characters
@@ -715,65 +746,89 @@ fn Lexer::skip_comments_or_whitespace(self : Lexer) -> Unit {
 ///| Get the next token
 fn Lexer::next_token(self : Lexer) -> Token raise {
   self.skip_comments_or_whitespace()
+  let start_pos = self.get_loc()
   match self.view() {
     // End of input
-    [] => EOF
+    [] => {
+      let end_pos = self.get_loc()
+      EOF(loc=make_loc(start_pos, end_pos))
+    }
 
     // Newline
     ['\n', .. rest] => {
       self.update_view(rest)
       self.new_line()
-      Newline
+      let end_pos = self.get_loc()
+      Newline(loc=make_loc(start_pos, end_pos))
     }
 
     // Single character tokens
     ['[', .. rest] => {
       self.update_view(rest)
-      LeftBracket
+      let end_pos = self.get_loc()
+      LeftBracket(loc=make_loc(start_pos, end_pos))
     }
     [']', .. rest] => {
       self.update_view(rest)
-      RightBracket
+      let end_pos = self.get_loc()
+      RightBracket(loc=make_loc(start_pos, end_pos))
     }
     ['{', .. rest] => {
       self.update_view(rest)
-      LeftBrace
+      let end_pos = self.get_loc()
+      LeftBrace(loc=make_loc(start_pos, end_pos))
     }
     ['}', .. rest] => {
       self.update_view(rest)
-      RightBrace
+      let end_pos = self.get_loc()
+      RightBrace(loc=make_loc(start_pos, end_pos))
     }
     ['=', .. rest] => {
       self.update_view(rest)
-      Equals
+      let end_pos = self.get_loc()
+      Equals(loc=make_loc(start_pos, end_pos))
     }
     [',', .. rest] => {
       self.update_view(rest)
-      Comma
+      let end_pos = self.get_loc()
+      Comma(loc=make_loc(start_pos, end_pos))
     }
     ['.', .. rest] => {
       self.update_view(rest)
-      Dot
+      let end_pos = self.get_loc()
+      Dot(loc=make_loc(start_pos, end_pos))
     }
 
     // String literals
     [.. "\"\"\"", .. rest] => {
       self.update_view(rest)
-      StringToken(self.read_multiline_basic_string())
+      let value = self.read_multiline_basic_string()
+      let end_pos = self.get_loc()
+      StringToken(value, loc=make_loc(start_pos, end_pos))
     }
-    ['"', ..] => StringToken(self.read_basic_string())
+    ['"', ..] => {
+      let value = self.read_basic_string()
+      let end_pos = self.get_loc()
+      StringToken(value, loc=make_loc(start_pos, end_pos))
+    }
     [.. "'''", .. rest] => {
       self.update_view(rest)
-      StringToken(self.read_multiline_literal_string())
+      let value = self.read_multiline_literal_string()
+      let end_pos = self.get_loc()
+      StringToken(value, loc=make_loc(start_pos, end_pos))
     }
-    ['\'', ..] => StringToken(self.read_literal_string())
+    ['\'', ..] => {
+      let value = self.read_literal_string()
+      let end_pos = self.get_loc()
+      StringToken(value, loc=make_loc(start_pos, end_pos))
+    }
 
     // DateTime patterns (check before numbers)
     ['0'..='9', ..] =>
       if self.is_datetime_pattern() {
-        self.read_datetime()
+        self.read_datetime_with_loc(start_pos)
       } else {
-        self.read_number(false)
+        self.read_number_with_loc(false, start_pos)
       }
 
     // Negative numbers
@@ -781,7 +836,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       match self.view() {
         ['-', .. rest] => {
           self.update_view(rest)
-          self.read_number(true)
+          self.read_number_with_loc(true, start_pos)
         }
         _ => abort("Internal error: pattern matching inconsistency")
       }
@@ -791,7 +846,8 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       match self.view() {
         ['-', 'i', 'n', 'f', .. rest] => {
           self.update_view(rest)
-          FloatToken(-1.0 / 0.0) // negative infinity
+          let end_pos = self.get_loc()
+          FloatToken(-1.0 / 0.0, loc=make_loc(start_pos, end_pos)) // negative infinity
         }
         _ => abort("Internal error: pattern matching inconsistency")
       }
@@ -799,7 +855,8 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       match self.view() {
         ['-', 'n', 'a', 'n', .. rest] => {
           self.update_view(rest)
-          FloatToken(0.0 / 0.0) // NaN
+          let end_pos = self.get_loc()
+          FloatToken(0.0 / 0.0, loc=make_loc(start_pos, end_pos)) // NaN
         }
         _ => abort("Internal error: pattern matching inconsistency")
       }
@@ -809,7 +866,8 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       match self.view() {
         ['+', 'i', 'n', 'f', .. rest] => {
           self.update_view(rest)
-          FloatToken(1.0 / 0.0) // positive infinity
+          let end_pos = self.get_loc()
+          FloatToken(1.0 / 0.0, loc=make_loc(start_pos, end_pos)) // positive infinity
         }
         _ => abort("Internal error: pattern matching inconsistency")
       }
@@ -817,7 +875,8 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       match self.view() {
         ['+', 'n', 'a', 'n', .. rest] => {
           self.update_view(rest)
-          FloatToken(0.0 / 0.0) // NaN
+          let end_pos = self.get_loc()
+          FloatToken(0.0 / 0.0, loc=make_loc(start_pos, end_pos)) // NaN
         }
         _ => abort("Internal error: pattern matching inconsistency")
       }
@@ -825,12 +884,14 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
     // Identifiers and keywords
     ['a'..='z' | 'A'..='Z' | '_', ..] => {
       let identifier = self.read_identifier()
+      let end_pos = self.get_loc()
+      let loc = make_loc(start_pos, end_pos)
       match identifier {
-        "true" => BooleanToken(true)
-        "false" => BooleanToken(false)
-        "inf" => FloatToken(1.0 / 0.0) // positive infinity
-        "nan" => FloatToken(0.0 / 0.0) // NaN
-        _ => Identifier(identifier)
+        "true" => BooleanToken(true, loc=loc)
+        "false" => BooleanToken(false, loc=loc)
+        "inf" => FloatToken(1.0 / 0.0, loc=loc) // positive infinity
+        "nan" => FloatToken(0.0 / 0.0, loc=loc) // NaN
+        _ => Identifier(identifier, loc=loc)
       }
     }
 
@@ -846,8 +907,9 @@ pub fn tokenize(input : String) -> Array[Token] raise {
   while true {
     let token = lexer.next_token()
     tokens.push(token)
-    if token == EOF {
-      break tokens
+    match token {
+      EOF(_) => break tokens
+      _ => ()
     }
   } else {
     // This should never be reached, but needed for type checking
@@ -858,7 +920,7 @@ pub fn tokenize(input : String) -> Array[Token] raise {
 ///| Test read_number
 test "read_number" {
   let lexer = Lexer::new("123")
-  inspect(lexer.read_number(false), content="IntegerToken(123)")
+  inspect(lexer.read_number(false), content="IntegerToken(123, loc={start: {line: 1, column: 1}, end: {line: 1, column: 4}})")
 }
 
 ///| Test Unicode escape sequences
@@ -940,10 +1002,5 @@ test "binary number parsing" {
 ///| Test datetime tokenization
 test "datetime tokenization" {
   let tokens = tokenize("date = 1979-05-27T07:32:00Z")
-  @json.inspect(tokens, content=[
-    ["Identifier", "date"],
-    "Equals",
-    ["DateTimeToken", ["OffsetDateTime", "1979-05-27T07:32:00Z"]],
-    "EOF",
-  ])
+  @json.inspect(tokens, content=([["Identifier","date"],"Equals",["DateTimeToken",["OffsetDateTime","1979-05-27T07:32:00Z"]],"EOF"]))
 }
