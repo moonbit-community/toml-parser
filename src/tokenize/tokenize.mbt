@@ -125,13 +125,15 @@ fn Lexer::read_basic_string(self : Lexer) -> String raise {
 fn Lexer::read_literal_string(self : Lexer) -> String raise {
   self.advance() // consume opening quote
   let sb = StringBuilder::new()
-  self.repeat_if(ch => if ch != '\'' {
-    sb.write_char(ch)
-    true
-  } else {
-    false
-  })
-  self.expect_char('\'', msg="Unterminated string")
+  let next = loop self.view() {
+    ['\'', .. rest] => rest
+    [ch, .. rest] => {
+      sb.write_char(ch)
+      continue rest
+    }
+    [] => fail(self.error("Unterminated string"))
+  }
+  self.update_view(next)
   sb.to_string()
 }
 
