@@ -46,16 +46,16 @@ test "test different datetime formats" {
 test "test datetime token creation and usage" {
   let dt = @tokenize.OffsetDateTime("2023-12-25T00:00:00Z")
   let loc = @tokenize.default_loc()
-  let token = @tokenize.DateTimeToken(dt, loc=loc)
+  let token = @tokenize.DateTimeToken(dt, loc~)
 
   // Test token equality
   let same_token = @tokenize.DateTimeToken(
     @tokenize.OffsetDateTime("2023-12-25T00:00:00Z"),
-    loc=loc
+    loc~,
   )
   let diff_token = @tokenize.DateTimeToken(
     @tokenize.OffsetDateTime("2023-12-26T00:00:00Z"),
-    loc=loc
+    loc~,
   )
   inspect(token == same_token, content="true")
   inspect(token == diff_token, content="false")

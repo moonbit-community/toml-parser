@@ -199,9 +199,9 @@ test "toml datetime edge cases" {
 test "parser creation" {
   let tokens = Array::new()
   let loc = @tokenize.default_loc()
-  tokens.push(@tokenize.Identifier("key", loc=loc))
-  tokens.push(@tokenize.Equals(loc=loc))
-  tokens.push(@tokenize.StringToken("value", loc=loc))
+  tokens.push(@tokenize.Identifier("key", loc~))
+  tokens.push(@tokenize.Equals(loc~))
+  tokens.push(@tokenize.StringToken("value", loc~))
   let parser = @toml.Parser::new(tokens)
   inspect(parser.position, content="0")
   inspect(parser.tokens.length(), content="3")
@@ -212,19 +212,19 @@ test "datetime token creation" {
   let loc = @tokenize.default_loc()
   let offset_dt_token = @tokenize.DateTimeToken(
     @tokenize.OffsetDateTime("1979-05-27T07:32:00Z"),
-    loc=loc
+    loc~,
   )
   let local_dt_token = @tokenize.DateTimeToken(
     @tokenize.LocalDateTime("1979-05-27T07:32:00"),
-    loc=loc
+    loc~,
   )
   let local_date_token = @tokenize.DateTimeToken(
     @tokenize.LocalDate("1979-05-27"),
-    loc=loc
+    loc~,
   )
   let local_time_token = @tokenize.DateTimeToken(
     @tokenize.LocalTime("07:32:00"),
-    loc=loc
+    loc~,
   )
 
   // Test that tokens can be created (basic instantiation test)
