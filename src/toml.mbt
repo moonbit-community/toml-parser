@@ -7,22 +7,7 @@ pub(all) enum TomlValue {
   TomlArray(Array[TomlValue])
   TomlTable(Map[String, TomlValue])
   TomlDateTime(TomlDateTime)
-} derive(Eq, Show)
-
-///|
-pub impl ToJson for TomlValue with to_json(self) {
-  match self {
-    TomlString(s) => ["TomlString", s]
-    TomlInteger(i) => ["TomlInteger", i]
-    TomlFloat(f) => ["TomlFloat", f]
-    TomlBoolean(b) => ["TomlBoolean", b]
-    TomlArray(arr) => ["TomlArray", arr]
-    TomlTable(table) => ["TomlTable", table]
-    TomlDateTime(dt) => ["TomlDateTime", dt]
-  }
-}
-
-///| Removed ParseResult typealias - now using checked exceptions
+} derive(Eq, Show, ToJson(style="flat"))
 
 ///| Parser state (will implement methods later)
 pub struct Parser {
