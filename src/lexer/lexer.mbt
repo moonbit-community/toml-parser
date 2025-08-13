@@ -1,4 +1,9 @@
-/// Lexer implementation for TOML
+///| Lexer implementation for TOML
+#valtype
+pub(all) struct Loc {
+  line : Int
+  column : Int
+} derive(Eq, Show, ToJson)
 
 ///| Lexer state with position tracking for better error reporting
 struct Lexer {
@@ -100,14 +105,9 @@ pub fn Lexer::peek_charcode(self : Lexer) -> Int? {
   }
 }
 
-///| Get current line number for error reporting
-pub fn Lexer::get_line(self : Lexer) -> Int {
-  self.line
-}
-
-///| Get current column number for error reporting
-pub fn Lexer::get_column(self : Lexer) -> Int {
-  self.column
+///|
+pub fn Lexer::get_loc(self : Lexer) -> Loc {
+  { line: self.line, column: self.column }
 }
 
 ///| Get current position for error reporting
@@ -191,43 +191,43 @@ pub fn Lexer::advance(self : Lexer) -> Unit {
 ///| Test position tracking with explicit new_line() API
 test "position tracking" {
   let lexer = Lexer::new("hello\nworld")
-  inspect(lexer.get_line(), content="1")
-  inspect(lexer.get_column(), content="1")
+  inspect(lexer.get_loc().line, content="1")
+  inspect(lexer.get_loc().column, content="1")
   lexer.advance() // h
-  inspect(lexer.get_column(), content="2")
+  inspect(lexer.get_loc().column, content="2")
   for i = 0; i < 4; i = i + 1 {
     lexer.advance() // e,l,l,o
   }
-  inspect(lexer.get_column(), content="6")
+  inspect(lexer.get_loc().column, content="6")
   lexer.advance() // \n
-  inspect(lexer.get_column(), content="7") // Column advances normally
-  inspect(lexer.get_line(), content="1") // Line doesn't change automatically
+  inspect(lexer.get_loc().column, content="7") // Column advances normally
+  inspect(lexer.get_loc().line, content="1") // Line doesn't change automatically
 
   // Explicitly call new_line() when encountering newline
   lexer.new_line()
-  inspect(lexer.get_line(), content="2")
-  inspect(lexer.get_column(), content="1")
+  inspect(lexer.get_loc().line, content="2")
+  inspect(lexer.get_loc().column, content="1")
 }
 
 ///| Test skip whitespace with position tracking
 test "skip whitespace with position tracking" {
   let lexer = Lexer::new("  \t\rH")
   lexer.skip_whitespace()
-  inspect(lexer.get_column(), content="5") // moved past 4 whitespace chars
+  inspect(lexer.get_loc().column, content="5") // moved past 4 whitespace chars
   inspect(lexer.peek(), content="Some('H')")
 }
 
 ///| Test explicit new_line API
 test "explicit new_line API" {
   let lexer = Lexer::new("test")
-  inspect(lexer.get_line(), content="1")
-  inspect(lexer.get_column(), content="1")
+  inspect(lexer.get_loc().line, content="1")
+  inspect(lexer.get_loc().column, content="1")
   lexer.new_line()
-  inspect(lexer.get_line(), content="2")
-  inspect(lexer.get_column(), content="1")
+  inspect(lexer.get_loc().line, content="2")
+  inspect(lexer.get_loc().column, content="1")
   lexer.advance() // t
-  inspect(lexer.get_column(), content="2")
+  inspect(lexer.get_loc().column, content="2")
   lexer.new_line()
-  inspect(lexer.get_line(), content="3")
-  inspect(lexer.get_column(), content="1")
+  inspect(lexer.get_loc().line, content="3")
+  inspect(lexer.get_loc().column, content="1")
 }
