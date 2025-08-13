@@ -4,7 +4,11 @@
   "readme": "README.md",
   "repository": "https://github.com/moonbit-community/toml-parser",
   "license": "Apache-2.0",
-  "keywords": ["toml", "parser", "config"],
+  "keywords": [
+    "toml",
+    "parser",
+    "config"
+  ],
   "description": "A TOML parser implementation in MoonBit",
   "source": "src"
 }
