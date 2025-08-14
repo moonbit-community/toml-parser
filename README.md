@@ -13,9 +13,9 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
 - ✅ TOML 1.0 specification compliance validation
 - ✅ Lexical analysis with proper tokenization
 - ✅ Recursive descent parser
-- ✅ Error handling with descriptive messages
+- ✅ Error handling with descriptive messages and location tracking
 - ✅ JSON-compatible output format
-- ✅ Comprehensive test suite (165+ tests)
+- ✅ Comprehensive test suite (260+ tests)
 
 ## Supported TOML Features
 
@@ -55,7 +55,7 @@ Then add it directly to your `moon.mod.json`:
 ```json
 {
   "deps": {
-    "bob/toml": "*"
+    "bob/toml": "^0.1.3"
   }
 }
 ```
@@ -261,7 +261,18 @@ src/
     └── moon.pkg.json     # Main package configuration
 ```
 
-## Development
+## Development Status
+
+**Current Release**: v0.1.3 (Stable)  
+**Active Development Branch**: `hongbo/fix_mulltipleline_string`  
+**Status**: Actively developed with focus on multi-line string support and enhanced error reporting
+
+### Recent Improvements
+- ✅ Enhanced error location tracking in lexer and parser
+- ✅ Comprehensive test suite expansion (260+ tests)  
+- ✅ Official TOML test suite integration
+- ✅ Unicode key support and complex escape sequences
+- 🚧 Multi-line string parsing (in progress)
 
 ### Running Tests
 
@@ -269,13 +280,16 @@ src/
 moon test
 ```
 
-Current test coverage: **58 tests** covering:
+Current test coverage: **260 tests** covering:
 - Basic TOML data types
 - DateTime functionality (all 4 types)
 - Array homogeneity validation
 - TOML 1.0 specification compliance
 - Edge cases and real-world scenarios
-- Error handling
+- Error handling with location tracking
+- Official TOML test suite integration
+- Unicode key support and escape sequences
+- Complex nested structures
 
 ### Running the Demo
 
@@ -299,16 +313,19 @@ This parser implements the complete TOML 1.0 specification including:
 - ✅ **Inline tables** with proper nesting
 - ✅ **RFC 3339 datetime format** compliance
 - ✅ **Recursive validation** for complex structures
+- ✅ **Enhanced error reporting** with line/column location tracking
+- ✅ **Unicode key support** for international characters
+- ✅ **Comprehensive test coverage** with official TOML test suite integration
 
 ## Roadmap
 
 - [x] ~~Support for table headers `[section]`~~ ✅ **Completed**
 - [x] ~~Support for array of tables `[[section]]`~~ ✅ **Completed**
-- [ ] Multi-line strings
-- [ ] Comments handling
 - [x] ~~Date and time types~~ ✅ **Completed**
+- [x] ~~Better error messages with line/column information~~ ✅ **Completed**
+- [ ] Multi-line strings (🚧 **In Progress**)
+- [ ] Comments handling
 - [ ] Dotted key notation
-- [ ] Better error messages with line/column information
 - [ ] Escape sequence handling in strings
 
 ## Contributing
