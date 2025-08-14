@@ -1,0 +1,41 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bob/toml"
+
+import(
+  "bob/toml/tokenize"
+)
+
+// Values
+fn parse(String) -> TomlValue raise
+
+// Errors
+
+// Types and methods
+pub struct Parser {
+  tokens : Array[@tokenize.Token]
+  mut position : Int
+}
+fn Parser::new(Array[@tokenize.Token]) -> Self
+fn Parser::update_view(Self, ArrayView[@tokenize.Token]) -> Unit
+fn Parser::view(Self) -> ArrayView[@tokenize.Token]
+
+pub(all) enum TomlValue {
+  TomlString(String)
+  TomlInteger(Int64)
+  TomlFloat(Double)
+  TomlBoolean(Bool)
+  TomlArray(Array[TomlValue])
+  TomlTable(Map[String, TomlValue])
+  TomlDateTime(@tokenize.TomlDateTime)
+}
+fn TomlValue::is_homogeneous_array(Array[Self]) -> Bool
+fn TomlValue::to_string(Self) -> String
+fn TomlValue::validate(Self) -> Bool
+impl Eq for TomlValue
+impl Show for TomlValue
+impl ToJson for TomlValue
+
+// Type aliases
+
+// Traits
+
