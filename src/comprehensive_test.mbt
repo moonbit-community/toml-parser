@@ -490,10 +490,10 @@ test "error handling" {
   })
 
   // Unterminated string
-  @json.inspect(try? @toml.parse("key = \"unterminated"), content={
+  @json.inspect(try? parse_no_loc("key = \"unterminated"), content={
     "Err": {
       "$tag": "Failure",
-      "0": "FAILED: /Users/hongbozhang/git/toml-parser/src/lexer/lexer.mbt:135:5-135:30 Unterminated string at line 1, column 20",
+      "0": "Unterminated string at line 1, column 20",
     },
   })
 
@@ -510,6 +510,397 @@ test "error handling" {
     "Err": {
       "$tag": "Failure",
       "0": "Expected key at {start: {line: 1, column: 2}, end: {line: 1, column: 3}}",
+    },
+  })
+}
+
+///| Test location tracking for various error scenarios
+test "error location tracking" {
+
+  // Test 1: Error at beginning of line
+  @json.inspect(try? parse_no_loc("=missing_key"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected key at {start: {line: 1, column: 1}, end: {line: 1, column: 2}}",
+    },
+  })
+
+  // Test 2: Error in the middle of a line
+  @json.inspect(try? parse_no_loc("valid_key = "), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 1, column: 13}, end: {line: 1, column: 13}}",
+    },
+  })
+
+  // Test 3: Error with spaces before it
+  @json.inspect(try? parse_no_loc("   key = "), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 1, column: 10}, end: {line: 1, column: 10}}",
+    },
+  })
+
+  // Test 4: Missing equals sign
+  @json.inspect(try? parse_no_loc("key \"value\""), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected '=' at {start: {line: 1, column: 5}, end: {line: 1, column: 12}}",
+    },
+  })
+
+  // Test 5: Invalid value type
+  @json.inspect(try? parse_no_loc("key = invalid_unquoted"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 1, column: 7}, end: {line: 1, column: 23}}",
+    },
+  })
+}
+
+///| Test multiline error location tracking
+test "multiline error locations" {
+
+  // Test 1: Error on second line
+  let multiline_test1 =
+    #|key1 = "valid"
+    #|key2 = 
+    #|
+  @json.inspect(try? parse_no_loc(multiline_test1), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 2, column: 8}, end: {line: 3, column: 1}}",
+    },
+  })
+
+  // Test 2: Error on third line
+  let multiline_test2 =
+    #|key1 = "valid"
+    #|key2 = "also_valid"
+    #|= missing_key
+    #|
+  @json.inspect(try? parse_no_loc(multiline_test2), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected key at {start: {line: 3, column: 1}, end: {line: 3, column: 2}}",
+    },
+  })
+
+  // Test 3: Array error on second line
+  let multiline_test3 =
+    #|key1 = "valid"
+    #|key2 = [1, 2, 
+    #|
+  @json.inspect(try? parse_no_loc(multiline_test3), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 3, column: 1}, end: {line: 3, column: 1}}",
+    },
+  })
+
+  // Test 4: Error after newlines and comments
+  let multiline_test4 =
+    #|# Comment line
+    #|
+    #|key1 = "valid"
+    #|   
+    #|= error_here
+    #|
+  @json.inspect(try? parse_no_loc(multiline_test4), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected key at {start: {line: 5, column: 1}, end: {line: 5, column: 2}}",
+    },
+  })
+}
+
+///| Test array parsing error locations
+test "array error locations" {
+
+  // Test 1: Missing closing bracket at specific position
+  @json.inspect(try? parse_no_loc("arr = [1, 2, 3"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected ',' or ']' in array at {start: {line: 1, column: 15}, end: {line: 1, column: 15}}",
+    },
+  })
+
+  // Test 2: Missing comma between elements
+  @json.inspect(try? parse_no_loc("arr = [1 2]"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected ',' or ']' in array at {start: {line: 1, column: 10}, end: {line: 1, column: 11}}",
+    },
+  })
+
+  // Test 3: Invalid value in array
+  @json.inspect(try? parse_no_loc("arr = [1, invalid, 3]"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 1, column: 11}, end: {line: 1, column: 18}}",
+    },
+  })
+
+  // Test 4: Nested array error
+  @json.inspect(try? parse_no_loc("arr = [[1, 2], [3, ]"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected ',' or ']' in array at {start: {line: 1, column: 21}, end: {line: 1, column: 21}}",
+    },
+  })
+
+  // Test 5: Array with newlines
+  let array_multiline =
+    #|arr = [
+    #|  1,
+    #|  2,
+    #|  invalid_value
+    #|]
+    #|
+  @json.inspect(try? parse_no_loc(array_multiline), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 4, column: 3}, end: {line: 4, column: 16}}",
+    },
+  })
+}
+
+///| Test inline table error locations
+test "inline table error locations" {
+
+  // Test 1: Missing closing brace
+  @json.inspect(try? parse_no_loc("table = {key = \"value\""), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected ',' or '}' in inline table at {start: {line: 1, column: 23}, end: {line: 1, column: 23}}",
+    },
+  })
+
+  // Test 2: Missing key in inline table
+  @json.inspect(try? parse_no_loc("table = {= \"value\"}"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected key in inline table at {start: {line: 1, column: 10}, end: {line: 1, column: 11}}",
+    },
+  })
+
+  // Test 3: Missing value in inline table  
+  @json.inspect(try? parse_no_loc("table = {key = }"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 1, column: 16}, end: {line: 1, column: 17}}",
+    },
+  })
+
+  // Test 4: Missing equals in inline table
+  @json.inspect(try? parse_no_loc("table = {key \"value\"}"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected '=' at {start: {line: 1, column: 14}, end: {line: 1, column: 21}}",
+    },
+  })
+
+  // Test 5: Invalid syntax after comma
+  @json.inspect(try? parse_no_loc("table = {key1 = \"val1\", }"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected key in inline table at {start: {line: 1, column: 25}, end: {line: 1, column: 26}}",
+    },
+  })
+}
+
+///| Test table header error locations  
+test "table header error locations" {
+
+  // Test 1: Missing closing bracket in table header
+  @json.inspect(try? parse_no_loc("[table_name"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected ']' at {start: {line: 1, column: 12}, end: {line: 1, column: 12}}",
+    },
+  })
+
+  // Test 2: Missing table name
+  @json.inspect(try? parse_no_loc("[]"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected table name at {start: {line: 1, column: 2}, end: {line: 1, column: 3}}",
+    },
+  })
+
+  // Test 3: Array of tables missing second bracket
+  @json.inspect(try? parse_no_loc("[[table_name]"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected ']' at {start: {line: 1, column: 14}, end: {line: 1, column: 14}}",
+    },
+  })
+
+  // Test 4: Array of tables missing table name
+  @json.inspect(try? parse_no_loc("[[]]"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected table name in array of tables at {start: {line: 1, column: 3}, end: {line: 1, column: 4}}",
+    },
+  })
+
+  // Test 5: Invalid character in table name position
+  @json.inspect(try? parse_no_loc("[#invalid]"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected table name at {start: {line: 1, column: 11}, end: {line: 1, column: 11}}",
+    },
+  })
+}
+
+///| Test precise column tracking with various spacing
+test "precise column tracking" {
+
+  // Test 1: Error at specific column with tabs (assuming tab = 1 column)
+  @json.inspect(try? parse_no_loc("\tkey ="), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 1, column: 7}, end: {line: 1, column: 7}}",
+    },
+  })
+
+  // Test 2: Error with mixed spaces and content
+  @json.inspect(try? parse_no_loc("  key1 = \"val\"  key2 = "), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 1, column: 24}, end: {line: 1, column: 24}}",
+    },
+  })
+
+  // Test 3: Long key name error position
+  @json.inspect(try? parse_no_loc("very_long_key_name_here = "), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 1, column: 27}, end: {line: 1, column: 27}}",
+    },
+  })
+
+  // Test 4: Error position after unicode characters
+  @json.inspect(try? parse_no_loc("café = "), content={
+    "Err": { "$tag": "Failure", "0": "Unexpected character: 'é'" },
+  })
+
+  // Test 5: Multiple equals signs - error on second one
+  @json.inspect(try? parse_no_loc("key = = \"value\""), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 1, column: 7}, end: {line: 1, column: 8}}",
+    },
+  })
+}
+
+///| Test complex error scenarios with precise location tracking
+test "complex error location scenarios" {
+
+  // Test 1: Deep nesting error location
+  let deep_nested =
+    #|outer = {
+    #|  middle = {
+    #|    inner = {
+    #|      key = 
+    #|    }
+    #|  }
+    #|}
+    #|
+  @json.inspect(try? parse_no_loc(deep_nested), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected key in inline table at {start: {line: 1, column: 10}, end: {line: 2, column: 1}}",
+    },
+  })
+
+  // Test 2: Error at end of file
+  @json.inspect(try? parse_no_loc("key = [1, 2, 3"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected ',' or ']' in array at {start: {line: 1, column: 15}, end: {line: 1, column: 15}}",
+    },
+  })
+
+  // Test 3: Error with different quote types
+  @json.inspect(try? parse_no_loc("key = 'unterminated"), content={
+    "Err": { "$tag": "Failure", "0": "Unterminated string at line 1, column 8" },
+  })
+
+  // Test 4: Error in array of tables with location  
+  let aot_error =
+    #|[[servers]]
+    #|name = "server1"
+    #|
+    #|[[servers]]
+    #|name = 
+    #|
+  @json.inspect(try? parse_no_loc(aot_error), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 5, column: 8}, end: {line: 6, column: 1}}",
+    },
+  })
+
+  // Test 5: Error with trailing whitespace and newlines
+  let trailing_ws =
+    #|key1 = "value"   
+    #|key2 =    
+    #|   
+    #|
+  @json.inspect(try? parse_no_loc(trailing_ws), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 2, column: 11}, end: {line: 3, column: 1}}",
+    },
+  })
+}
+
+///| Test location tracking with comments and special characters
+test "location tracking with special cases" {
+
+  // Test 1: Error after comment on same line (should fail since comments aren't implemented)
+  @json.inspect(try? parse_no_loc("key = # comment"), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 1, column: 16}, end: {line: 1, column: 16}}",
+    },
+  })
+
+  // Test 2: Error with windows-style line endings (if supported)
+  @json.inspect(try? parse_no_loc("key1 = \"value\"\r\nkey2 = "), content={
+    "Err": { "$tag": "Failure", "0": "Unexpected character: '\r'" },
+  })
+
+  // Test 3: Error with just spaces as a key
+  @json.inspect(try? parse_no_loc("   = \"value\""), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected key at {start: {line: 1, column: 4}, end: {line: 1, column: 5}}",
+    },
+  })
+
+  // Test 4: Complex array with error at specific nested position
+  let complex_array =
+    #|data = [
+    #|  [1, 2, 3],
+    #|  ["a", "b", ],
+    #|  [true, false, invalid_token]
+    #|]
+    #|
+  @json.inspect(try? parse_no_loc(complex_array), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 4, column: 17}, end: {line: 4, column: 30}}",
+    },
+  })
+
+  // Test 5: Very long line with error at the end
+  let long_line = "very_long_key_name_that_goes_on_and_on_and_on_and_on_and_on = "
+  @json.inspect(try? parse_no_loc(long_line), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 1, column: 63}, end: {line: 1, column: 63}}",
     },
   })
 }
