@@ -80,7 +80,10 @@ test "parse inline table" {
 ///| Tests for uncovered parser error conditions
 test "test parser expect method failure" {
   @json.inspect(try? parse_no_loc("key = [missing_bracket"), content={
-    "Err": { "$tag": "Failure", "0": "Expected value" },
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 1, column: 8}, end: {line: 1, column: 23}}",
+    },
   })
 }
 
@@ -92,7 +95,10 @@ test "test parser EOF handling in peek" {
 ///|
 test "test parser EOF handling in advance" {
   @json.inspect(try? parse_no_loc("key ="), content={
-    "Err": { "$tag": "Failure", "0": "Expected value" },
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 1, column: 6}, end: {line: 1, column: 6}}",
+    },
   })
 }
 
@@ -109,14 +115,20 @@ test "test inline table with string keys" {
 ///|
 test "test inline table invalid syntax" {
   @json.inspect(try? parse_no_loc("table = {key value}"), content={
-    "Err": { "$tag": "Failure", "0": "Expected '='" },
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected '=' at {start: {line: 1, column: 14}, end: {line: 1, column: 19}}",
+    },
   })
 }
 
 ///|
 test "test inline table missing comma or closing brace" {
   @json.inspect(try? parse_no_loc("table = {key = \"value\" invalid}"), content={
-    "Err": { "$tag": "Failure", "0": "Expected ',' or '}' in inline table" },
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected ',' or '}' in inline table at {start: {line: 1, column: 24}, end: {line: 1, column: 31}}",
+    },
   })
 }
 
@@ -179,7 +191,7 @@ test "test table name conflicts with existing value" {
   @json.inspect(try? parse_no_loc(conflicting_table_toml), content={
     "Err": {
       "$tag": "Failure",
-      "0": "Table path conflicts with existing value: table",
+      "0": "Table path conflicts with existing value: table at {start: {line: 2, column: 8}, end: {line: 3, column: 1}}",
     },
   })
 }

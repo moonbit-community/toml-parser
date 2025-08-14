@@ -45,7 +45,7 @@ fn Parser::parse_value(self : Parser) -> TomlValue raise {
       self.update_view(rest)
       self.parse_inline_table()
     }
-    _ => fail("Expected value")
+    rest => parse_error(rest, "Expected value")
   }
 }
 
@@ -80,7 +80,7 @@ fn Parser::parse_array(self : Parser) -> TomlValue raise {
         self.update_view(rest)
         break
       }
-      _ => fail("Expected ',' or ']' in array")
+      _ => parse_error(self.view(), "Expected ',' or ']' in array")
     }
   }
   TomlArray(values)
@@ -111,13 +111,13 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
         self.update_view(rest)
         i.to_string()
       }
-      _ => fail("Expected key in inline table")
+      rest => parse_error(rest, "Expected key in inline table")
     }
 
     // Expect =
     match self.view() {
       [Equals(..), .. rest] => self.update_view(rest)
-      _ => fail("Expected '='")
+      rest => parse_error(rest, "Expected '='")
     }
 
     // Parse value
@@ -129,7 +129,7 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
         self.update_view(rest)
         break
       }
-      _ => fail("Expected ',' or '}' in inline table")
+      _ => parse_error(self.view(), "Expected ',' or '}' in inline table")
     }
   }
   TomlTable(table)
@@ -153,7 +153,7 @@ fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
       self.update_view(rest)
       i.to_string()
     }
-    _ => fail("Expected table name")
+    rest => parse_error(rest, "Expected table name")
   }
   path.push(first_key)
 
@@ -175,7 +175,7 @@ fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
             self.update_view(rest2)
             i.to_string()
           }
-          _ => fail("Expected table name after dot")
+          rest2 => parse_error(rest2, "Expected table name after dot")
         }
         path.push(key)
       }
@@ -203,7 +203,7 @@ fn Parser::parse_array_of_tables_path(self : Parser) -> Array[String] raise {
       self.update_view(rest)
       i.to_string()
     }
-    _ => fail("Expected table name in array of tables")
+    rest => parse_error(rest, "Expected table name in array of tables")
   }
   path.push(first_key)
 
@@ -225,7 +225,10 @@ fn Parser::parse_array_of_tables_path(self : Parser) -> Array[String] raise {
             self.update_view(rest2)
             i.to_string()
           }
-          _ => fail("Expected table name after dot in array of tables")
+          rest2 =>
+            parse_error(
+              rest2, "Expected table name after dot in array of tables",
+            )
         }
         path.push(key)
       }
@@ -239,12 +242,17 @@ fn Parser::parse_array_of_tables_path(self : Parser) -> Array[String] raise {
 fn create_nested_table(
   root_table : Map[String, TomlValue],
   path : Array[String],
+  error_tokens : ArrayView[@tokenize.Token],
 ) -> Map[String, TomlValue] raise {
   let mut current_table = root_table
   for key in path {
     match current_table.get(key) {
       Some(TomlTable(existing_table)) => current_table = existing_table
-      Some(_) => fail("Table path conflicts with existing value: " + key)
+      Some(_) =>
+        parse_error(
+          error_tokens,
+          "Table path conflicts with existing value: " + key,
+        )
       None => {
         let new_table = Map::new()
         current_table[key] = TomlTable(new_table)
@@ -259,6 +267,7 @@ fn create_nested_table(
 fn create_array_of_tables(
   root_table : Map[String, TomlValue],
   path : Array[String],
+  error_tokens : ArrayView[@tokenize.Token],
 ) -> Map[String, TomlValue] raise {
   let mut current_table = root_table
 
@@ -267,7 +276,10 @@ fn create_array_of_tables(
     match current_table.get(key) {
       Some(TomlTable(existing_table)) => current_table = existing_table
       Some(_) =>
-        fail("Array of tables path conflicts with existing value: " + key)
+        parse_error(
+          error_tokens,
+          "Array of tables path conflicts with existing value: " + key,
+        )
       None => {
         let new_table = Map::new()
         current_table[key] = TomlTable(new_table)
@@ -286,7 +298,8 @@ fn create_array_of_tables(
       new_table
     }
     Some(_) =>
-      fail(
+      parse_error(
+        error_tokens,
         "Array of tables conflicts with existing non-array value: " + final_key,
       )
     None => {
@@ -296,6 +309,14 @@ fn create_array_of_tables(
       current_table[final_key] = TomlArray(array)
       new_table
     }
+  }
+}
+
+///|
+fn[T] parse_error(tokens : ArrayView[@tokenize.Token], msg : String) -> T raise {
+  match tokens {
+    [token, ..] => fail(msg + " at " + token.loc().to_string())
+    [] => fail(msg + " at the end of input")
   }
 }
 
@@ -315,13 +336,13 @@ fn Parser::parse_key_value(self : Parser) -> (String, TomlValue) raise {
       self.update_view(rest)
       i.to_string()
     }
-    _ => fail("Expected key")
+    rest => parse_error(rest, "Expected key")
   }
 
   // Expect =
   match self.view() {
     [Equals(..), .. rest] => self.update_view(rest)
-    _ => fail("Expected '='")
+    rest => parse_error(rest, "Expected '='")
   }
 
   // Parse value
@@ -350,27 +371,35 @@ pub fn parse(input : String) -> TomlValue raise {
             // expect first ]
             match parser.view() {
               [RightBracket(..), .. rest3] => parser.update_view(rest3)
-              _ => fail("Expected ']'")
+              rest3 => parse_error(rest3, "Expected ']'")
             }
             // expect second ]
             match parser.view() {
               [RightBracket(..), .. rest4] => parser.update_view(rest4)
-              _ => fail("Expected ']'")
+              rest4 => parse_error(rest4, "Expected ']'")
             }
 
             // Create or append to the array of tables structure
-            current_table = create_array_of_tables(main_table, table_path)
+            current_table = create_array_of_tables(
+              main_table,
+              table_path,
+              parser.view(),
+            )
           }
           _ => {
             // This is a regular table [...]
             let table_path = parser.parse_table_path()
             match parser.view() {
               [RightBracket(..), .. rest3] => parser.update_view(rest3)
-              _ => fail("Expected ']'")
+              rest3 => parse_error(rest3, "Expected ']'")
             }
 
             // Create or get the nested table structure
-            current_table = create_nested_table(main_table, table_path)
+            current_table = create_nested_table(
+              main_table,
+              table_path,
+              parser.view(),
+            )
           }
         }
       }
