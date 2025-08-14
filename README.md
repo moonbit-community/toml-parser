@@ -8,6 +8,7 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
 - ✅ Support for arrays with homogeneity validation (`[1, 2, 3]`)
 - ✅ Support for inline tables (`{key = value, key2 = value2}`)
 - ✅ **Dotted key notation** (`a.b.c = value` creates nested tables)
+- ✅ **Escape sequence handling** (`\n`, `\t`, `\"`, `\\`, `\uXXXX`, `\UXXXXXXXX`)
 - ✅ **Full datetime support** (RFC 3339 compliant)
 - ✅ **Table headers** (`[section]` and `[section.subsection]`)
 - ✅ **Array of tables** (`[[section]]` syntax)
@@ -21,7 +22,7 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
 ## Supported TOML Features
 
 ### Data Types
-- **Strings**: `"Hello, World!"`
+- **Strings**: `"Hello, World!"` with full escape sequence support
 - **Integers**: `42`, `-17`
 - **Floats**: `3.14`, `-0.01`
 - **Booleans**: `true`, `false`
@@ -44,6 +45,13 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
 - Comments: `# This is a comment` (planned)
 - Multi-line support with proper whitespace handling
 - TOML 1.0 specification compliance
+
+### Escape Sequences
+- **Basic Escapes**: `\n` (newline), `\t` (tab), `\r` (carriage return)
+- **Quote Escapes**: `\"` (double quote), `\'` (single quote), `\\` (backslash)
+- **Control Characters**: `\b` (backspace), `\f` (form feed)
+- **Unicode Escapes**: `\uXXXX` (4-digit hex), `\UXXXXXXXX` (8-digit hex)
+- **Line Continuation**: `\` at end of line in multiline strings
 
 ## Installation
 
@@ -326,9 +334,9 @@ This parser implements the complete TOML 1.0 specification including:
 - [x] ~~Date and time types~~ ✅ **Completed**
 - [x] ~~Better error messages with line/column information~~ ✅ **Completed**
 - [x] ~~Dotted key notation~~ ✅ **Completed**
+- [x] ~~Escape sequence handling in strings~~ ✅ **Completed**
 - [ ] Multi-line strings (🚧 **In Progress**)
 - [ ] Comments handling
-- [ ] Escape sequence handling in strings
 
 ## Contributing
 
