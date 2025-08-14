@@ -38,6 +38,7 @@ pub(all) enum Token {
   Newline(loc~ : Loc)
   EOF(loc~ : Loc)
 }
+fn Token::loc(Self) -> Loc
 impl Eq for Token
 impl Show for Token
 impl ToJson for Token
