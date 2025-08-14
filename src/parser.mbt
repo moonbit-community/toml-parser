@@ -263,45 +263,39 @@ fn create_array_of_tables(
   let mut current_table = root_table
 
   // Navigate to the parent of the final key
-  for i = 0; i < path.length() - 1; i = i + 1 {
-    let key = path[i]
-    if current_table.contains(key) {
-      match current_table.get(key) {
-        Some(TomlTable(existing_table)) => current_table = existing_table
-        Some(_) =>
-          fail("Array of tables path conflicts with existing value: " + key)
-        None => fail("Unexpected error: table should exist")
+  for key in path[:-1] {
+    match current_table.get(key) {
+      Some(TomlTable(existing_table)) => current_table = existing_table
+      Some(_) =>
+        fail("Array of tables path conflicts with existing value: " + key)
+      None => {
+        let new_table = Map::new()
+        current_table[key] = TomlTable(new_table)
+        current_table = new_table
       }
-    } else {
-      let new_table = Map::new()
-      current_table[key] = TomlTable(new_table)
-      current_table = new_table
     }
   }
 
   // Handle the final key as an array of tables
   let final_key = path[path.length() - 1]
-  let new_table = Map::new()
-  if current_table.contains(final_key) {
-    match current_table.get(final_key) {
-      Some(TomlArray(existing_array)) => {
-        // Append a new table to the existing array
-        existing_array.push(TomlTable(new_table))
-        new_table
-      }
-      Some(_) =>
-        fail(
-          "Array of tables conflicts with existing non-array value: " +
-          final_key,
-        )
-      None => fail("Unexpected error: array should exist")
+  let new_table = {}
+  match current_table.get(final_key) {
+    Some(TomlArray(existing_array)) => {
+      // Append a new table to the existing array
+      existing_array.push(TomlTable(new_table))
+      new_table
     }
-  } else {
-    // Create new array with the first table
-    let array = Array::new()
-    array.push(TomlTable(new_table))
-    current_table[final_key] = TomlArray(array)
-    new_table
+    Some(_) =>
+      fail(
+        "Array of tables conflicts with existing non-array value: " + final_key,
+      )
+    None => {
+      // Create new array with the first table
+      let array = Array::new()
+      array.push(TomlTable(new_table))
+      current_table[final_key] = TomlArray(array)
+      new_table
+    }
   }
 }
 
