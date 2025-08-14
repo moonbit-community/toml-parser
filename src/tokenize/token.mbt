@@ -61,3 +61,24 @@ pub(all) enum TomlDateTime {
   LocalDate(String) // e.g., "1979-05-27"
   LocalTime(String) // e.g., "07:32:00"
 } derive(Eq, Show, ToJson(style="flat"))
+
+///|
+pub fn Token::loc(self : Self) -> Loc {
+  match self {
+    StringToken(_, loc~) => loc
+    IntegerToken(_, loc~) => loc
+    FloatToken(_, loc~) => loc
+    BooleanToken(_, loc~) => loc
+    DateTimeToken(_, loc~) => loc
+    LeftBracket(loc~) => loc
+    RightBracket(loc~) => loc
+    LeftBrace(loc~) => loc
+    RightBrace(loc~) => loc
+    Equals(loc~) => loc
+    Comma(loc~) => loc
+    Dot(loc~) => loc
+    Identifier(_, loc~) => loc
+    Newline(loc~) => loc
+    EOF(loc~) => loc
+  }
+}
