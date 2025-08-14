@@ -12,9 +12,9 @@ This todo file follows a two-level structure where **first-level tasks** should 
 
 ### 1.2 String Processing Enhancements  
 - [ ] Implement multi-line string support (`"""` syntax)
-- [ ] Add escape sequence handling in strings (`\n`, `\t`, `\"`, etc.)
-- [ ] Support literal strings with single quotes
-- [ ] Add Unicode escape sequences (`\uXXXX`, `\UXXXXXXXX`)
+- [x] ~~Add escape sequence handling in strings (`\n`, `\t`, `\"`, etc.)~~ ✅ **Completed**
+- [x] ~~Support literal strings with single quotes~~ ✅ **Completed**
+- [x] ~~Add Unicode escape sequences (`\uXXXX`, `\UXXXXXXXX`)~~ ✅ **Completed**
 
 ### 1.3 Comments System
 - [ ] Implement comment parsing in lexer (ignore `# comment` lines)
