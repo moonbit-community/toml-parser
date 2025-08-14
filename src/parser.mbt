@@ -5,29 +5,29 @@ typealias @tokenize.(Token, TomlDateTime)
 fnalias @tokenize.tokenize
 
 ///| Check if we're at the end of tokens
-fn Parser::is_at_end(self : Parser) -> Bool {
-  self.position >= self.tokens.length()
-}
+// fn Parser::is_at_end(self : Parser) -> Bool {
+//   self.position >= self.tokens.length()
+// }
 
 ///| Get current token without advancing
-fn Parser::peek(self : Parser) -> Token {
-  if self.is_at_end() {
-    EOF(loc=@tokenize.default_loc())
-  } else {
-    self.tokens[self.position]
-  }
-}
+// fn Parser::peek(self : Parser) -> Token {
+//   if self.is_at_end() {
+//     EOF(loc=@tokenize.default_loc())
+//   } else {
+//     self.tokens[self.position]
+//   }
+// }
 
 ///| Get current token and advance position
-fn Parser::advance(self : Parser) -> Token {
-  if self.is_at_end() {
-    EOF(loc=@tokenize.default_loc())
-  } else {
-    let token = self.tokens[self.position]
-    self.position = self.position + 1
-    token
-  }
-}
+// fn Parser::advance(self : Parser) -> Token {
+//   if self.is_at_end() {
+//     EOF(loc=@tokenize.default_loc())
+//   } else {
+//     let token = self.tokens[self.position]
+//     self.position = self.position + 1
+//     token
+//   }
+// }
 
 ///| Skip newline tokens
 fn Parser::skip_newlines(self : Parser) -> Unit {
@@ -78,9 +78,12 @@ fn Parser::parse_value(self : Parser) -> TomlValue raise {
 fn Parser::parse_array(self : Parser) -> TomlValue raise {
   let values = []
   self.skip_newlines()
-  if self.peek() is RightBracket(..) {
-    ignore(self.advance()) // consume ]
-    return TomlArray(values)
+  match self.view() {
+    [RightBracket(..), .. rest] => {
+      self.update_view(rest)
+      return TomlArray(values)
+    }
+    _ => ()
   }
   while true {
     let value = self.parse_value()
@@ -90,9 +93,12 @@ fn Parser::parse_array(self : Parser) -> TomlValue raise {
       [Comma(..), .. rest] => {
         self.update_view(rest)
         self.skip_newlines()
-        if self.peek() is RightBracket(..) {
-          ignore(self.advance())
-          break
+        match self.view() {
+          [RightBracket(..), .. rest] => {
+            self.update_view(rest)
+            break
+          }
+          _ => ()
         }
       }
       [RightBracket(..), .. rest] => {
@@ -108,32 +114,44 @@ fn Parser::parse_array(self : Parser) -> TomlValue raise {
 ///| Parse an inline table {key = value, key2 = value2}
 fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
   let table = {}
-  if self.peek() is RightBrace(..) {
-    ignore(self.advance()) // consume }
-    return TomlTable(table)
+  match self.view() {
+    [RightBrace(..), .. rest] => {
+      self.update_view(rest)
+      return TomlTable(table)
+    }
+    _ => ()
   }
   while true {
     // Parse key
-    let key = match self.advance() {
-      Identifier(k, ..) => k
-      StringToken(k, ..) => k
-      IntegerToken(i, ..) => i.to_string()
+    let key = match self.view() {
+      [Identifier(k, ..), .. rest] => {
+        self.update_view(rest)
+        k
+      }
+      [StringToken(k, ..), .. rest] => {
+        self.update_view(rest)
+        k
+      }
+      [IntegerToken(i, ..), .. rest] => {
+        self.update_view(rest)
+        i.to_string()
+      }
       _ => fail("Expected key in inline table")
     }
 
     // Expect =
-    match self.peek() {
-      Equals(..) => ignore(self.advance())
+    match self.view() {
+      [Equals(..), .. rest] => self.update_view(rest)
       _ => fail("Expected '='")
     }
 
     // Parse value
     let value = self.parse_value()
     table[key] = value
-    match self.peek() {
-      Comma(..) => ignore(self.advance())
-      RightBrace(..) => {
-        ignore(self.advance())
+    match self.view() {
+      [Comma(..), .. rest] => self.update_view(rest)
+      [RightBrace(..), .. rest] => {
+        self.update_view(rest)
         break
       }
       _ => fail("Expected ',' or '}' in inline table")
@@ -147,24 +165,47 @@ fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
   let path = Array::new()
 
   // Parse first key
-  let first_key = match self.advance() {
-    Identifier(name, ..) => name
-    StringToken(name, ..) => name
-    IntegerToken(i, ..) => i.to_string()
+  let first_key = match self.view() {
+    [Identifier(name, ..), .. rest] => {
+      self.update_view(rest)
+      name
+    }
+    [StringToken(name, ..), .. rest] => {
+      self.update_view(rest)
+      name
+    }
+    [IntegerToken(i, ..), .. rest] => {
+      self.update_view(rest)
+      i.to_string()
+    }
     _ => fail("Expected table name")
   }
   path.push(first_key)
 
   // Parse additional keys separated by dots
-  while self.peek() is Dot(..) {
-    ignore(self.advance()) // consume dot
-    let key = match self.advance() {
-      Identifier(name, ..) => name
-      StringToken(name, ..) => name
-      IntegerToken(i, ..) => i.to_string()
-      _ => fail("Expected table name after dot")
+  while true {
+    match self.view() {
+      [Dot(..), .. rest] => {
+        self.update_view(rest)
+        let key = match self.view() {
+          [Identifier(name, ..), .. rest2] => {
+            self.update_view(rest2)
+            name
+          }
+          [StringToken(name, ..), .. rest2] => {
+            self.update_view(rest2)
+            name
+          }
+          [IntegerToken(i, ..), .. rest2] => {
+            self.update_view(rest2)
+            i.to_string()
+          }
+          _ => fail("Expected table name after dot")
+        }
+        path.push(key)
+      }
+      _ => break
     }
-    path.push(key)
   }
   path
 }
@@ -174,24 +215,47 @@ fn Parser::parse_array_of_tables_path(self : Parser) -> Array[String] raise {
   let path = Array::new()
 
   // Parse first key
-  let first_key = match self.advance() {
-    Identifier(name) => name
-    StringToken(name) => name
-    IntegerToken(i) => i.to_string()
+  let first_key = match self.view() {
+    [Identifier(name), .. rest] => {
+      self.update_view(rest)
+      name
+    }
+    [StringToken(name), .. rest] => {
+      self.update_view(rest)
+      name
+    }
+    [IntegerToken(i), .. rest] => {
+      self.update_view(rest)
+      i.to_string()
+    }
     _ => fail("Expected table name in array of tables")
   }
   path.push(first_key)
 
   // Parse additional keys separated by dots
-  while self.peek() is Dot(..) {
-    ignore(self.advance()) // consume dot
-    let key = match self.advance() {
-      Identifier(name, ..) => name
-      StringToken(name, ..) => name
-      IntegerToken(i, ..) => i.to_string()
-      _ => fail("Expected table name after dot in array of tables")
+  while true {
+    match self.view() {
+      [Dot(..), .. rest] => {
+        self.update_view(rest)
+        let key = match self.view() {
+          [Identifier(name, ..), .. rest2] => {
+            self.update_view(rest2)
+            name
+          }
+          [StringToken(name, ..), .. rest2] => {
+            self.update_view(rest2)
+            name
+          }
+          [IntegerToken(i, ..), .. rest2] => {
+            self.update_view(rest2)
+            i.to_string()
+          }
+          _ => fail("Expected table name after dot in array of tables")
+        }
+        path.push(key)
+      }
+      _ => break
     }
-    path.push(key)
   }
   path
 }
@@ -272,16 +336,25 @@ fn create_array_of_tables(
 ///| Parse a key-value pair: key = value
 fn Parser::parse_key_value(self : Parser) -> (String, TomlValue) raise {
   // Parse key
-  let key = match self.advance() {
-    Identifier(k) => k
-    StringToken(k) => k
-    IntegerToken(i) => i.to_string()
+  let key = match self.view() {
+    [Identifier(k), .. rest] => {
+      self.update_view(rest)
+      k
+    }
+    [StringToken(k), .. rest] => {
+      self.update_view(rest)
+      k
+    }
+    [IntegerToken(i), .. rest] => {
+      self.update_view(rest)
+      i.to_string()
+    }
     _ => fail("Expected key")
   }
 
   // Expect =
-  match self.peek() {
-    Equals(..) => ignore(self.advance())
+  match self.view() {
+    [Equals(..), .. rest] => self.update_view(rest)
     _ => fail("Expected '='")
   }
 
@@ -298,38 +371,41 @@ pub fn parse(input : String) -> TomlValue raise {
   let mut current_table = main_table
   while true {
     parser.skip_newlines()
-    match parser.peek() {
-      EOF(..) => break
-      LeftBracket(..) => {
+    match parser.view() {
+      [EOF(..), ..] => break
+      [LeftBracket(..), .. rest] => {
+        parser.update_view(rest)
         // Look ahead to see if this is [[ (array of tables) or [ (regular table)
-        ignore(parser.advance()) // consume first [
-        if parser.peek() is LeftBracket(..) {
-          // This is array of tables [[...]]
-          ignore(parser.advance()) // consume second [
-          let table_path = parser.parse_array_of_tables_path()
-          // expect first ]
-          match parser.peek() {
-            RightBracket(..) => ignore(parser.advance())
-            _ => fail("Expected ']'")
-          }
-          // expect second ]
-          match parser.peek() {
-            RightBracket(..) => ignore(parser.advance())
-            _ => fail("Expected ']'")
-          }
+        match parser.view() {
+          [LeftBracket(..), .. rest2] => {
+            // This is array of tables [[...]]
+            parser.update_view(rest2)
+            let table_path = parser.parse_array_of_tables_path()
+            // expect first ]
+            match parser.view() {
+              [RightBracket(..), .. rest3] => parser.update_view(rest3)
+              _ => fail("Expected ']'")
+            }
+            // expect second ]
+            match parser.view() {
+              [RightBracket(..), .. rest4] => parser.update_view(rest4)
+              _ => fail("Expected ']'")
+            }
 
-          // Create or append to the array of tables structure
-          current_table = create_array_of_tables(main_table, table_path)
-        } else {
-          // This is a regular table [...]
-          let table_path = parser.parse_table_path()
-          match parser.peek() {
-            RightBracket(..) => ignore(parser.advance())
-            _ => fail("Expected ']'")
+            // Create or append to the array of tables structure
+            current_table = create_array_of_tables(main_table, table_path)
           }
+          _ => {
+            // This is a regular table [...]
+            let table_path = parser.parse_table_path()
+            match parser.view() {
+              [RightBracket(..), .. rest3] => parser.update_view(rest3)
+              _ => fail("Expected ']'")
+            }
 
-          // Create or get the nested table structure
-          current_table = create_nested_table(main_table, table_path)
+            // Create or get the nested table structure
+            current_table = create_nested_table(main_table, table_path)
+          }
         }
       }
       _ => {
