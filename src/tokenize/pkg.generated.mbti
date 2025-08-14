@@ -1,0 +1,58 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bob/toml/tokenize"
+
+import(
+  "bob/toml/lexer"
+)
+
+// Values
+fn default_loc() -> Loc
+
+fn tokenize(String) -> Array[Token] raise
+
+// Errors
+
+// Types and methods
+pub(all) struct Loc {
+  start : @lexer.Position
+  end : @lexer.Position
+}
+impl Eq for Loc
+impl Show for Loc
+impl ToJson for Loc
+
+pub(all) enum Token {
+  StringToken(String, loc~ : Loc)
+  IntegerToken(Int64, loc~ : Loc)
+  FloatToken(Double, loc~ : Loc)
+  BooleanToken(Bool, loc~ : Loc)
+  DateTimeToken(TomlDateTime, loc~ : Loc)
+  LeftBracket(loc~ : Loc)
+  RightBracket(loc~ : Loc)
+  LeftBrace(loc~ : Loc)
+  RightBrace(loc~ : Loc)
+  Equals(loc~ : Loc)
+  Comma(loc~ : Loc)
+  Dot(loc~ : Loc)
+  Identifier(String, loc~ : Loc)
+  Newline(loc~ : Loc)
+  EOF(loc~ : Loc)
+}
+impl Eq for Token
+impl Show for Token
+impl ToJson for Token
+
+pub(all) enum TomlDateTime {
+  OffsetDateTime(String)
+  LocalDateTime(String)
+  LocalDate(String)
+  LocalTime(String)
+}
+impl Eq for TomlDateTime
+impl Show for TomlDateTime
+impl ToJson for TomlDateTime
+
+// Type aliases
+
+// Traits
+

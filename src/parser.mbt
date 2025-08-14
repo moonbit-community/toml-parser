@@ -4,31 +4,6 @@ typealias @tokenize.(Token, TomlDateTime)
 ///|
 fnalias @tokenize.tokenize
 
-///| Check if we're at the end of tokens
-// fn Parser::is_at_end(self : Parser) -> Bool {
-//   self.position >= self.tokens.length()
-// }
-
-///| Get current token without advancing
-// fn Parser::peek(self : Parser) -> Token {
-//   if self.is_at_end() {
-//     EOF(loc=@tokenize.default_loc())
-//   } else {
-//     self.tokens[self.position]
-//   }
-// }
-
-///| Get current token and advance position
-// fn Parser::advance(self : Parser) -> Token {
-//   if self.is_at_end() {
-//     EOF(loc=@tokenize.default_loc())
-//   } else {
-//     let token = self.tokens[self.position]
-//     self.position = self.position + 1
-//     token
-//   }
-// }
-
 ///| Skip newline tokens
 fn Parser::skip_newlines(self : Parser) -> Unit {
   while true {
@@ -266,18 +241,15 @@ fn create_nested_table(
   path : Array[String],
 ) -> Map[String, TomlValue] raise {
   let mut current_table = root_table
-  for i = 0; i < path.length(); i = i + 1 {
-    let key = path[i]
-    if current_table.contains(key) {
-      match current_table.get(key) {
-        Some(TomlTable(existing_table)) => current_table = existing_table
-        Some(_) => fail("Table path conflicts with existing value: " + key)
-        None => fail("Unexpected error: table should exist")
+  for key in path {
+    match current_table.get(key) {
+      Some(TomlTable(existing_table)) => current_table = existing_table
+      Some(_) => fail("Table path conflicts with existing value: " + key)
+      None => {
+        let new_table = Map::new()
+        current_table[key] = TomlTable(new_table)
+        current_table = new_table
       }
-    } else {
-      let new_table = Map::new()
-      current_table[key] = TomlTable(new_table)
-      current_table = new_table
     }
   }
   current_table

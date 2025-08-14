@@ -1,0 +1,40 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bob/toml/lexer"
+
+import(
+  "moonbitlang/core/string"
+)
+
+// Values
+
+// Errors
+
+// Types and methods
+type Lexer
+fn Lexer::advance(Self) -> Unit
+fn Lexer::error(Self, String) -> String
+fn Lexer::expect_char(Self, Char, msg? : String) -> Unit raise
+fn Lexer::expect_string(Self, String, msg? : String) -> Unit raise
+fn Lexer::get_loc(Self) -> Position
+fn Lexer::get_position(Self) -> Int
+fn Lexer::new(String) -> Self
+fn Lexer::new_line(Self) -> Unit
+fn Lexer::peek(Self) -> Char?
+fn Lexer::peek_charcode(Self) -> Int?
+fn Lexer::skip_single_newline(Self) -> Unit
+fn Lexer::skip_whitespace(Self) -> Unit
+fn Lexer::update_view(Self, @string.StringView) -> Unit
+fn Lexer::view(Self) -> @string.StringView
+
+pub(all) struct Position {
+  line : Int
+  column : Int
+}
+impl Eq for Position
+impl Show for Position
+impl ToJson for Position
+
+// Type aliases
+
+// Traits
+
