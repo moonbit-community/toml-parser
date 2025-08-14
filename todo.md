@@ -25,10 +25,10 @@ This todo file follows a two-level structure where **first-level tasks** should 
 ## 2. Advanced TOML Features (🟡 Medium Priority)
 
 ### 2.1 Dotted Key Support
-- [ ] Implement dotted key notation parsing (`a.b.c = value`)
-- [ ] Add nested table creation from dotted keys
-- [ ] Handle conflicts between dotted keys and explicit tables
-- [ ] Add validation for duplicate key definitions
+- [x] ~~Implement dotted key notation parsing (`a.b.c = value`)~~ ✅ **Completed**
+- [x] ~~Add nested table creation from dotted keys~~ ✅ **Completed**
+- [x] ~~Handle conflicts between dotted keys and explicit tables~~ ✅ **Completed**
+- [x] ~~Add validation for duplicate key definitions~~ ✅ **Completed**
 
 ### 2.2 Table Processing Improvements
 - [ ] Enhance table header validation and error messages
