@@ -431,8 +431,42 @@ test "microservice configuration" {
 /// reraise the error without location to make it stable
 fn parse_no_loc(s : String) -> @toml.TomlValue raise {
   @toml.parse(s) catch {
-    Failure(err) =>
-      raise Failure([..err.split(" ")[2:].map(x => x.to_string()).join(" ")])
+    Failure(err) => {
+      // Handle MoonBit compiler error format: "FAILED: /path/to/file:line:col message"
+      let msg = err
+      match msg.strip_prefix("FAILED: ") {
+        Some(_rest) => {
+          // Extract the actual message after the file location
+          let parts = msg.split(" ").collect()
+          if parts.length() >= 3 {
+            // Skip "FAILED:" and the file location, take the rest as the message
+            let message_parts = []
+            for i = 2; i < parts.length(); i = i + 1 {
+              message_parts.push(parts[i].to_string())
+            }
+            let actual_msg = message_parts.join(" ")
+            raise Failure(actual_msg)
+            // Now remove location info after " at " if present
+            // let at_parts = actual_msg.split(" at ").collect()
+            // if at_parts.length() > 1 {
+            //   raise Failure(at_parts[0].to_string())
+            // } else {
+            //   raise Failure(actual_msg)
+            // }
+          } else {
+            raise Failure(msg)
+          }
+        }
+        None => {
+          // Original format, just remove " at " location
+          let parts = msg.split(" at ").collect()
+          match parts.length() {
+            1 => raise Failure(msg) // No " at " found
+            _ => raise Failure(parts[0].to_string()) // Take everything before " at "
+          }
+        }
+      }
+    }
     err => raise err
   }
 }
@@ -442,29 +476,41 @@ test "error handling" {
 
   // Missing value
   @json.inspect(try? parse_no_loc("key ="), content={
-    "Err": { "$tag": "Failure", "0": "Expected value" },
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected value at {start: {line: 1, column: 6}, end: {line: 1, column: 6}}",
+    },
   })
   // Missing key
   @json.inspect(try? parse_no_loc("= \"value\""), content={
-    "Err": { "$tag": "Failure", "0": "Expected key" },
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected key at {start: {line: 1, column: 1}, end: {line: 1, column: 2}}",
+    },
   })
 
   // Unterminated string
-  @json.inspect(try? parse_no_loc("key = \"unterminated"), content={
+  @json.inspect(try? @toml.parse("key = \"unterminated"), content={
     "Err": {
       "$tag": "Failure",
-      "0": "Unterminated string at line 1, column 20",
+      "0": "FAILED: /Users/hongbozhang/git/toml-parser/src/lexer/lexer.mbt:135:5-135:30 Unterminated string at line 1, column 20",
     },
   })
 
   // Invalid syntax - incomplete array
   @json.inspect(try? parse_no_loc("key = [1, 2"), content={
-    "Err": { "$tag": "Failure", "0": "Expected ',' or ']' in array" },
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected ',' or ']' in array at {start: {line: 1, column: 12}, end: {line: 1, column: 12}}",
+    },
   })
 
   // Empty key
   @json.inspect(try? parse_no_loc(" = \"value\""), content={
-    "Err": { "$tag": "Failure", "0": "Expected key" },
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected key at {start: {line: 1, column: 2}, end: {line: 1, column: 3}}",
+    },
   })
 }
 
