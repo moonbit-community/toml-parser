@@ -260,3 +260,176 @@ test "test inline table with array values" {
     },
   )
 }
+
+///| Test dotted key notation - simple case
+test "dotted key notation simple" {
+  let dotted_simple_toml = "a.b.c = \"value\""
+  @json.inspect(@toml.parse(dotted_simple_toml), content=[
+    "TomlTable",
+    {
+      "a": [
+        "TomlTable", 
+        {
+          "b": [
+            "TomlTable",
+            {
+              "c": ["TomlString", "value"]
+            }
+          ]
+        }
+      ]
+    }
+  ])
+}
+
+///| Test dotted key notation - multiple values
+test "dotted key notation multiple" {
+  let dotted_multiple_toml = 
+    #|a.b.c = "value1"
+    #|a.b.d = "value2"
+    #|a.e = "value3"
+    #|f = "value4"
+    #|
+  @json.inspect(@toml.parse(dotted_multiple_toml), content=[
+    "TomlTable",
+    {
+      "a": [
+        "TomlTable",
+        {
+          "b": [
+            "TomlTable",
+            {
+              "c": ["TomlString", "value1"],
+              "d": ["TomlString", "value2"]
+            }
+          ],
+          "e": ["TomlString", "value3"]
+        }
+      ],
+      "f": ["TomlString", "value4"]
+    }
+  ])
+}
+
+///| Test dotted key notation - different data types
+test "dotted key notation data types" {
+  let dotted_types_toml =
+    #|server.host = "localhost"
+    #|server.port = 8080
+    #|server.enabled = true
+    #|server.timeout = 30.5
+    #|server.tags = ["web", "api"]
+    #|
+  @json.inspect(@toml.parse(dotted_types_toml), content=[
+    "TomlTable",
+    {
+      "server": [
+        "TomlTable",
+        {
+          "host": ["TomlString", "localhost"],
+          "port": ["TomlInteger", "8080"],
+          "enabled": ["TomlBoolean", true],
+          "timeout": ["TomlFloat", 30.5],
+          "tags": [
+            "TomlArray",
+            [["TomlString", "web"], ["TomlString", "api"]]
+          ]
+        }
+      ]
+    }
+  ])
+}
+
+///| Test dotted key notation - quoted keys
+test "dotted key notation quoted keys" {
+  let dotted_quoted_toml = "\"first.part\".\"second.part\" = \"value\""
+  @json.inspect(@toml.parse(dotted_quoted_toml), content=[
+    "TomlTable",
+    {
+      "first.part": [
+        "TomlTable",
+        {
+          "second.part": ["TomlString", "value"]
+        }
+      ]
+    }
+  ])
+}
+
+///| Test dotted key notation - integer keys
+test "dotted key notation integer keys" {
+  let dotted_integer_toml = "1.2.3 = \"numeric path\""
+  @json.inspect(@toml.parse(dotted_integer_toml), content=[
+    "TomlTable", 
+    {
+      "1": [
+        "TomlTable",
+        {
+          "2": [
+            "TomlTable",
+            {
+              "3": ["TomlString", "numeric path"]
+            }
+          ]
+        }
+      ]
+    }
+  ])
+}
+
+///| Test dotted key notation - conflict with table headers
+test "dotted key notation table conflict" {
+  let conflict_toml =
+    #|a.b = "dotted"
+    #|[a]
+    #|c = "table"
+    #|
+  @json.inspect(@toml.parse(conflict_toml), content=[
+    "TomlTable",
+    {
+      "a": [
+        "TomlTable",
+        {
+          "b": ["TomlString", "dotted"],
+          "c": ["TomlString", "table"]
+        }
+      ]
+    }
+  ])
+}
+
+///| Test dotted key notation - deep nesting
+test "dotted key notation deep nesting" {
+  let deep_nested_toml = "a.b.c.d.e.f = \"deep\""
+  @json.inspect(@toml.parse(deep_nested_toml), content=[
+    "TomlTable",
+    {
+      "a": [
+        "TomlTable",
+        {
+          "b": [
+            "TomlTable", 
+            {
+              "c": [
+                "TomlTable",
+                {
+                  "d": [
+                    "TomlTable",
+                    {
+                      "e": [
+                        "TomlTable",
+                        {
+                          "f": ["TomlString", "deep"]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ])
+}

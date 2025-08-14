@@ -680,7 +680,7 @@ test "inline table error locations" {
   @json.inspect(try? parse_no_loc("table = {= \"value\"}"), content={
     "Err": {
       "$tag": "Failure",
-      "0": "Expected key in inline table at {start: {line: 1, column: 10}, end: {line: 1, column: 11}}",
+      "0": "Expected key at {start: {line: 1, column: 10}, end: {line: 1, column: 11}}",
     },
   })
 
@@ -704,7 +704,7 @@ test "inline table error locations" {
   @json.inspect(try? parse_no_loc("table = {key1 = \"val1\", }"), content={
     "Err": {
       "$tag": "Failure",
-      "0": "Expected key in inline table at {start: {line: 1, column: 25}, end: {line: 1, column: 26}}",
+      "0": "Expected key at {start: {line: 1, column: 25}, end: {line: 1, column: 26}}",
     },
   })
 }
@@ -810,7 +810,7 @@ test "complex error location scenarios" {
   @json.inspect(try? parse_no_loc(deep_nested), content={
     "Err": {
       "$tag": "Failure",
-      "0": "Expected key in inline table at {start: {line: 1, column: 10}, end: {line: 2, column: 1}}",
+      "0": "Expected key at {start: {line: 1, column: 10}, end: {line: 2, column: 1}}",
     },
   })
 

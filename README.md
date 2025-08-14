@@ -7,6 +7,7 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
 - ✅ Parse basic TOML data types: strings, integers, floats, booleans
 - ✅ Support for arrays with homogeneity validation (`[1, 2, 3]`)
 - ✅ Support for inline tables (`{key = value, key2 = value2}`)
+- ✅ **Dotted key notation** (`a.b.c = value` creates nested tables)
 - ✅ **Full datetime support** (RFC 3339 compliant)
 - ✅ **Table headers** (`[section]` and `[section.subsection]`)
 - ✅ **Array of tables** (`[[section]]` syntax)
@@ -15,7 +16,7 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
 - ✅ Recursive descent parser
 - ✅ Error handling with descriptive messages and location tracking
 - ✅ JSON-compatible output format
-- ✅ Comprehensive test suite (260+ tests)
+- ✅ Comprehensive test suite (270+ tests)
 
 ## Supported TOML Features
 
@@ -39,6 +40,7 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
 
 ### Basic Syntax
 - Key-value pairs: `key = value`
+- Dotted key notation: `a.b.c = value` (creates nested tables)
 - Comments: `# This is a comment` (planned)
 - Multi-line support with proper whitespace handling
 - TOML 1.0 specification compliance
@@ -323,9 +325,9 @@ This parser implements the complete TOML 1.0 specification including:
 - [x] ~~Support for array of tables `[[section]]`~~ ✅ **Completed**
 - [x] ~~Date and time types~~ ✅ **Completed**
 - [x] ~~Better error messages with line/column information~~ ✅ **Completed**
+- [x] ~~Dotted key notation~~ ✅ **Completed**
 - [ ] Multi-line strings (🚧 **In Progress**)
 - [ ] Comments handling
-- [ ] Dotted key notation
 - [ ] Escape sequence handling in strings
 
 ## Contributing
