@@ -35,29 +35,33 @@ test "test simple TOML parsing as in main demo" {
     #|age = 30
     #|enabled = true
     #|
-  try {
-    let result = @toml.parse(toml_input)
-    // Should parse successfully
-    let expected_content = result.to_string()
-    inspect(expected_content.contains("John Doe"), content="true")
-    inspect(expected_content.contains("30"), content="true")
-    inspect(expected_content.contains("true"), content="true")
-  } catch {
-    _ => fail("Should parse successfully")
+  let result = try? @toml.parse(toml_input)
+  // Should parse successfully
+  @json.inspect(result.is_ok(), content=true)
+  match result {
+    Ok(parsed_result) => {
+      let expected_content = parsed_result.to_string()
+      inspect(expected_content.contains("John Doe"), content="true")
+      inspect(expected_content.contains("30"), content="true")
+      inspect(expected_content.contains("true"), content="true")
+    }
+    Err(_) => fail("Should parse successfully")
   }
 }
 
 ///|
 test "test TOML with array parsing as in main demo" {
   let toml_array = "numbers = [1, 2, 3, 4, 5]"
-  try {
-    let result = @toml.parse(toml_array)
-    // Should parse successfully
-    let result_str = result.to_string()
-    inspect(result_str.contains("numbers"), content="true")
-    inspect(result_str.contains("[1, 2, 3, 4, 5]"), content="true")
-  } catch {
-    _ => fail("Should parse successfully")
+  let result = try? @toml.parse(toml_array)
+  // Should parse successfully
+  @json.inspect(result.is_ok(), content=true)
+  match result {
+    Ok(parsed_result) => {
+      let result_str = parsed_result.to_string()
+      inspect(result_str.contains("numbers"), content="true")
+      inspect(result_str.contains("[1, 2, 3, 4, 5]"), content="true")
+    }
+    Err(_) => fail("Should parse successfully")
   }
 }
 
@@ -66,15 +70,17 @@ test "test TOML with inline table parsing as in main demo" {
   let toml_table =
     #|person = {name = "Alice", age = 25}
     #|
-  try {
-    let result = @toml.parse(toml_table)
-    // Should parse successfully
-    let result_str = result.to_string()
-    inspect(result_str.contains("person"), content="true")
-    inspect(result_str.contains("Alice"), content="true")
-    inspect(result_str.contains("25"), content="true")
-  } catch {
-    _ => fail("Should parse successfully")
+  let result = try? @toml.parse(toml_table)
+  // Should parse successfully
+  @json.inspect(result.is_ok(), content=true)
+  match result {
+    Ok(parsed_result) => {
+      let result_str = parsed_result.to_string()
+      inspect(result_str.contains("person"), content="true")
+      inspect(result_str.contains("Alice"), content="true")
+      inspect(result_str.contains("25"), content="true")
+    }
+    Err(_) => fail("Should parse successfully")
   }
 }
 
