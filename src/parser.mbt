@@ -328,7 +328,7 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
       // Handle float tokens that represent dotted numeric keys like "1.2"
       self.update_view(rest)
       let float_str = f.to_string()
-      
+
       // Split the float string on the dot to create dotted keys
       let dot_index = match float_str.find(".") {
         Some(i) => i
@@ -338,12 +338,11 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
           return path
         }
       }
-      
       let first_part = float_str.substring(start=0, end=dot_index)
       let second_part = float_str.substring(start=dot_index + 1)
       path.push(first_part)
       path.push(second_part)
-      
+
       // Continue parsing for more dots after this float
       while true {
         match self.view() {
@@ -424,29 +423,28 @@ fn set_dotted_key_value(
   table : Map[String, TomlValue],
   key_path : Array[String],
   value : TomlValue,
-  error_tokens : ArrayView[@tokenize.Token]
+  error_tokens : ArrayView[@tokenize.Token],
 ) -> Unit raise {
   if key_path.length() == 0 {
     parse_error(error_tokens, "Empty key path")
   }
-  
   if key_path.length() == 1 {
     // Simple key assignment
     table[key_path[0]] = value
     return
   }
-  
+
   // Navigate through the dotted path, creating tables as needed
   let mut current_table = table
   for i = 0; i < key_path.length() - 1; i = i + 1 {
     let key = key_path[i]
     match current_table.get(key) {
-      Some(TomlTable(existing_table)) => {
-        current_table = existing_table
-      }
-      Some(_) => {
-        parse_error(error_tokens, "Dotted key path conflicts with existing non-table value: " + key)
-      }
+      Some(TomlTable(existing_table)) => current_table = existing_table
+      Some(_) =>
+        parse_error(
+          error_tokens,
+          "Dotted key path conflicts with existing non-table value: " + key,
+        )
       None => {
         // Create new nested table
         let new_table = Map::new()
@@ -455,7 +453,7 @@ fn set_dotted_key_value(
       }
     }
   }
-  
+
   // Set the final value
   let final_key = key_path[key_path.length() - 1]
   current_table[final_key] = value
