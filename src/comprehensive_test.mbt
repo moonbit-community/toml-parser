@@ -955,7 +955,13 @@ test "edge cases" {
   ])
 
   // Whitespace around equals sign
-  @json.inspect(@toml.parse("spaced   =   \"value\"  "), content=[
+  @json.inspect(
+    @toml.parse(
+      (
+        #|spaced   =   "value"  
+      ),
+    ),
+    content=[
     "TomlTable",
     { "spaced": ["TomlString", "value"] },
   ])
