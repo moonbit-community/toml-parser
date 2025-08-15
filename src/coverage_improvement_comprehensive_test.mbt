@@ -199,12 +199,7 @@ test "array_of_tables_path_conflict_error" {
         #|[[key]]
       ),
     )
-  @json.inspect(result, content={
-    "Err": {
-      "$tag": "Failure",
-      "0": "FAILED: /Users/hongbozhang/git/toml-parser/src/parser.mbt:304:20-304:64 Array of tables conflicts with existing non-array value: key at {start: {line: 2, column: 8}, end: {line: 2, column: 8}}",
-    },
-  }) // Expected error
+  @json.inspect(result, content=({"Err":{"$tag":"Failure","0":"Array of tables conflicts with existing non-array value: key at {start: {line: 2, column: 8}, end: {line: 2, column: 8}}"}})) // Expected error
 }
 
 ///| Test empty inline table
