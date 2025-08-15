@@ -5,7 +5,21 @@ typealias @lexer.Position
 pub(all) struct Loc {
   start : Position
   end : Position
-} derive(Eq, Show, ToJson)
+} derive(Eq, Show)
+
+///| minimal format for visual debugging
+/// # Example
+/// ```
+/// let loc = Loc::{start: {line:1, column:1}, end: {line:1, column:10}}
+/// @json.inspect(loc, content = "1:1-1:10")
+/// ```
+///
+pub impl ToJson for Loc with to_json(self) {
+  "\{self.start.line}:\{self.start.column}-\{self.end.line}:\{self.end.column}"
+}
+// impl ToJson for Loc with to_json(self) {
+//   ["Loc", self.start, self.end]
+// }
 
 ///| Token types for the lexer
 pub(all) enum Token {
@@ -36,21 +50,21 @@ pub(all) enum Token {
 ///| skip loc
 pub impl ToJson for Token with to_json(self) {
   match self {
-    StringToken(s, ..) => ["StringToken", s]
-    IntegerToken(i, ..) => ["IntegerToken", i]
-    FloatToken(f, ..) => ["FloatToken", f]
-    BooleanToken(b, ..) => ["BooleanToken", b]
-    DateTimeToken(dt, ..) => ["DateTimeToken", dt]
-    LeftBracket(..) => "LeftBracket"
-    RightBracket(..) => "RightBracket"
-    LeftBrace(..) => "LeftBrace"
-    RightBrace(..) => "RightBrace"
-    Equals(..) => "Equals"
-    Comma(..) => "Comma"
-    Dot(..) => "Dot"
-    Identifier(s, ..) => ["Identifier", s]
-    Newline(..) => "Newline"
-    EOF(..) => "EOF"
+    StringToken(s, loc~) => ["StringToken", s, { "loc": loc }]
+    IntegerToken(i, loc~) => ["IntegerToken", i, { "loc": loc }]
+    FloatToken(f, loc~) => ["FloatToken", f, { "loc": loc }]
+    BooleanToken(b, loc~) => ["BooleanToken", b, { "loc": loc }]
+    DateTimeToken(dt, loc~) => ["DateTimeToken", dt, { "loc": loc }]
+    LeftBracket(loc~) => ["LeftBracket", { "loc": loc }]
+    RightBracket(loc~) => ["RightBracket", { "loc": loc }]
+    LeftBrace(loc~) => ["LeftBrace", { "loc": loc }]
+    RightBrace(loc~) => ["RightBrace", { "loc": loc }]
+    Equals(loc~) => ["Equals", { "loc": loc }]
+    Comma(loc~) => ["Comma", { "loc": loc }]
+    Dot(loc~) => ["Dot", { "loc": loc }]
+    Identifier(s, loc~) => ["Identifier", s, { "loc": loc }]
+    Newline(loc~) => ["Newline", { "loc": loc }]
+    EOF(loc~) => ["EOF", { "loc": loc }]
   }
 }
 

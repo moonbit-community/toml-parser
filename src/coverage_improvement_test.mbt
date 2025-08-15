@@ -87,10 +87,10 @@ test "test tokenizer unreachable path coverage" {
   // This is trying to hit the unreachable else branch in tokenize function
   let tokens = @tokenize.tokenize("simple = true")
   @json.inspect(tokens, content=[
-    ["Identifier", "simple"],
-    "Equals",
-    ["BooleanToken", true],
-    "EOF",
+    ["Identifier", "simple", { "loc": "1:1-1:7" }],
+    ["Equals", { "loc": "1:8-1:9" }],
+    ["BooleanToken", true, { "loc": "1:10-1:14" }],
+    ["EOF", { "loc": "1:14-1:14" }],
   ])
 }
 
@@ -122,10 +122,10 @@ test "test edge case number formats for error paths" {
 test "test literal string handling" {
   let tokens = @tokenize.tokenize("literal = 'this is a literal string'")
   @json.inspect(tokens, content=[
-    ["Identifier", "literal"],
-    "Equals",
-    ["StringToken", "this is a literal string"],
-    "EOF",
+    ["Identifier", "literal", { "loc": "1:1-1:8" }],
+    ["Equals", { "loc": "1:9-1:10" }],
+    ["StringToken", "this is a literal string", { "loc": "1:11-1:37" }],
+    ["EOF", { "loc": "1:37-1:37" }],
   ])
 }
 
@@ -172,9 +172,9 @@ test "test whitespace and comment skipping" {
 test "test mixed case hex digits" {
   let tokens = @tokenize.tokenize("mixed_hex = 0xaBcDeF")
   @json.inspect(tokens, content=[
-    ["Identifier", "mixed_hex"],
-    "Equals",
-    ["IntegerToken", "11259375"], // 0xaBcDeF = 11259375
-    "EOF",
+    ["Identifier", "mixed_hex", { "loc": "1:1-1:10" }],
+    ["Equals", { "loc": "1:11-1:12" }],
+    ["IntegerToken", "11259375", { "loc": "1:13-1:21" }],
+    ["EOF", { "loc": "1:21-1:21" }],
   ])
 }
