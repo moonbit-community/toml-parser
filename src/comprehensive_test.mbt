@@ -961,10 +961,8 @@ test "edge cases" {
         #|spaced   =   "value"  
       ),
     ),
-    content=[
-    "TomlTable",
-    { "spaced": ["TomlString", "value"] },
-  ])
+    content=["TomlTable", { "spaced": ["TomlString", "value"] }],
+  )
 
   // Multiple newlines and comments
   let complex_whitespace =
