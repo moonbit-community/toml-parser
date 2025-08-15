@@ -1050,9 +1050,13 @@ test "binary number parsing" {
 test "datetime tokenization" {
   let tokens = tokenize("date = 1979-05-27T07:32:00Z")
   @json.inspect(tokens, content=[
-    ["Identifier", "date"],
-    "Equals",
-    ["DateTimeToken", ["OffsetDateTime", "1979-05-27T07:32:00Z"]],
-    "EOF",
+    ["Identifier", "date", { "loc": "1:1-1:5" }],
+    ["Equals", { "loc": "1:6-1:7" }],
+    [
+      "DateTimeToken",
+      ["OffsetDateTime", "1979-05-27T07:32:00Z"],
+      { "loc": "1:8-1:28" },
+    ],
+    ["EOF", { "loc": "1:28-1:28" }],
   ])
 }
