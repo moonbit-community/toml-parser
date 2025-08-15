@@ -91,7 +91,13 @@ test "array_of_tables_path_with_integer_key" {
 ///| Test invalid Unicode escape sequences to trigger error paths
 test "invalid_unicode_escapes" {
   try {
-    ignore(@toml.parse("key = \"\\uZZZZ\""))
+    ignore(
+      @toml.parse(
+        (
+          #|key = "\uZZZZ"
+        ),
+      ),
+    )
     inspect(false, content="true") // Should not reach here
   } catch {
     _ => inspect(true, content="true") // Expected error
@@ -101,7 +107,13 @@ test "invalid_unicode_escapes" {
 ///| Test invalid 8-byte Unicode escape
 test "invalid_8byte_unicode_escape" {
   try {
-    ignore(@toml.parse("key = \"\\U00200000\"")) // Invalid code point > 0x10FFFF
+    ignore(
+      @toml.parse(
+        (
+          #|key = "\U00200000"
+        ),
+      ),
+    ) // Invalid code point > 0x10FFFF
     inspect(false, content="true") // Should not reach here
   } catch {
     _ => inspect(true, content="true") // Expected error
@@ -111,7 +123,13 @@ test "invalid_8byte_unicode_escape" {
 ///| Test unterminated multiline string
 test "unterminated_multiline_string" {
   try {
-    ignore(@toml.parse("key = \"\"\"This is unterminated"))
+    ignore(
+      @toml.parse(
+        (
+          #|key = """This is unterminated
+        ),
+      ),
+    )
     inspect(false, content="true") // Should not reach here
   } catch {
     _ => inspect(true, content="true") // Expected error
