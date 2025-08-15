@@ -240,7 +240,13 @@ test "numerical edge cases" {
 
 ///|
 test "empty array" {
-  @json.inspect(@toml.parse("empty_array = []"), content=[
+  @json.inspect(
+    @toml.parse(
+      (
+        #|empty_array = []
+      ),
+    ),
+    content=[
     "TomlTable",
     { "empty_array": ["TomlArray", []] },
   ])
@@ -282,19 +288,37 @@ test "negative numbers" {
 ///| Test negative numbers in various contexts
 test "negative numbers in context" {
   // Single negative integer
-  @json.inspect(@toml.parse("count = -5"), content=[
+  @json.inspect(
+    @toml.parse(
+      (
+        #|count = -5
+      ),
+    ),
+    content=[
     "TomlTable",
     { "count": ["TomlInteger", "-5"] },
   ])
 
   // Single negative float  
-  @json.inspect(@toml.parse("temperature = -15.5"), content=[
+  @json.inspect(
+    @toml.parse(
+      (
+        #|temperature = -15.5
+      ),
+    ),
+    content=[
     "TomlTable",
     { "temperature": ["TomlFloat", -15.5] },
   ])
 
   // Array with mixed positive and negative numbers
-  @json.inspect(@toml.parse("values = [1, -2, 3.0, -4.5]"), content=[
+  @json.inspect(
+    @toml.parse(
+      (
+        #|values = [1, -2, 3.0, -4.5]
+      ),
+    ),
+    content=[
     "TomlTable",
     {
       "values": [
@@ -908,7 +932,14 @@ test "location tracking with special cases" {
 ///| Test edge cases with expect tests
 test "edge cases" {
   // Empty input should result in empty table
-  @json.inspect(@toml.parse(""), content=["TomlTable", {}])
+  @json.inspect(
+    @toml.parse(
+      (
+        #|
+      ),
+    ),
+    content=["TomlTable", {}],
+  )
 
   // Only comments and whitespace should result in empty table
   let comments_only_toml =
