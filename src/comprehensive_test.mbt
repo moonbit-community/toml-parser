@@ -950,3 +950,303 @@ test "edge cases" {
     { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
   ])
 }
+
+///| Test comprehensive comment handling functionality
+test "comprehensive comment handling" {
+  // Test basic line comments
+  let toml_with_line_comments =
+    #|# This is a line comment
+    #|name = "John Doe"
+    #|# Another comment
+    #|age = 30
+    #|
+  @json.inspect(@toml.parse(toml_with_line_comments), content=[
+    "TomlTable",
+    { "name": ["TomlString", "John Doe"], "age": ["TomlInteger", "30"] },
+  ])
+
+  // Test inline comments
+  let toml_with_inline_comments = "key = \"value\" # This is an inline comment"
+  @json.inspect(@toml.parse(toml_with_inline_comments), content=[
+    "TomlTable",
+    { "key": ["TomlString", "value"] },
+  ])
+
+  // Test comments in arrays
+  let toml_with_array_comments =
+    #|numbers = [
+    #|  1, # first number
+    #|  2, # second number
+    #|  3  # third number
+    #|]
+    #|
+  @json.inspect(@toml.parse(toml_with_array_comments), content=[
+    "TomlTable",
+    {
+      "numbers": [
+        "TomlArray",
+        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
+      ],
+    },
+  ])
+
+  // Test comments in tables
+  let toml_with_table_comments =
+    #|[database] # Database configuration
+    #|host = "localhost" # Database host
+    #|port = 5432 # Database port
+    #|
+  @json.inspect(@toml.parse(toml_with_table_comments), content=[
+    "TomlTable",
+    {
+      "database": [
+        "TomlTable",
+        { "host": ["TomlString", "localhost"], "port": ["TomlInteger", "5432"] },
+      ],
+    },
+  ])
+
+  // Test empty comments
+  let toml_with_empty_comments =
+    #|key1 = "value1" #
+    #|key2 = "value2" # 
+    #|key3 = "value3"
+    #|
+  @json.inspect(@toml.parse(toml_with_empty_comments), content=[
+    "TomlTable",
+    {
+      "key1": ["TomlString", "value1"],
+      "key2": ["TomlString", "value2"],
+      "key3": ["TomlString", "value3"],
+    },
+  ])
+
+  // Test comments with special characters
+  let toml_with_special_comments =
+    #|# Comment with special chars: !@#$%^&*()_+-=[]{}|;':",./<>?
+    #|key = "value" # Inline with special chars: !@#$%^&*()
+    #|
+  @json.inspect(@toml.parse(toml_with_special_comments), content=[
+    "TomlTable",
+    { "key": ["TomlString", "value"] },
+  ])
+
+  // Test multiple consecutive comments
+  let toml_with_multiple_comments =
+    #|# First comment
+    #|# Second comment
+    #|# Third comment
+    #|key = "value"
+    #|# Fourth comment
+    #|# Fifth comment
+    #|
+  @json.inspect(@toml.parse(toml_with_multiple_comments), content=[
+    "TomlTable",
+    { "key": ["TomlString", "value"] },
+  ])
+
+  // Test comments at end of file
+  let toml_with_end_comments =
+    #|key = "value"
+    #|# Comment at end
+    #|# Another comment
+    #|
+  @json.inspect(@toml.parse(toml_with_end_comments), content=[
+    "TomlTable",
+    { "key": ["TomlString", "value"] },
+  ])
+}
+
+///| Test comment handling edge cases
+test "comment edge cases" {
+  // Test comment after equals sign (this should fail, so we expect an error)
+  let toml_equals_comment = "key = # comment"
+  @json.inspect(try? @toml.parse(toml_equals_comment), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "FAILED: C:\\Users\\RainHuang\\Desktop\\bugfix\\pretask\\src\\parser.mbt:318:20-318:64 Expected value at {start: {line: 1, column: 16}, end: {line: 1, column: 16}}",
+    },
+  })
+
+  // Test comment in empty array
+  let toml_empty_array_comment =
+    #|arr = [
+    #|  # empty array with comment
+    #|]
+    #|
+  @json.inspect(@toml.parse(toml_empty_array_comment), content=[
+    "TomlTable",
+    { "arr": ["TomlArray", []] },
+  ])
+
+  // Test comment in empty table
+  let toml_empty_table_comment =
+    #|[section] # empty section
+    #|
+  @json.inspect(@toml.parse(toml_empty_table_comment), content=[
+    "TomlTable",
+    { "section": ["TomlTable", {}] },
+  ])
+
+  // Test comment with unicode characters
+  let toml_unicode_comment =
+    #|# 中文注释 / Chinese comment
+    #|key = "value" # 内联中文注释 / Inline Chinese comment
+    #|
+  @json.inspect(@toml.parse(toml_unicode_comment), content=[
+    "TomlTable",
+    { "key": ["TomlString", "value"] },
+  ])
+
+  // Test comment with emoji
+  let toml_emoji_comment =
+    #|# 🚀 Rocket comment
+    #|key = "value" # 🎉 Party comment
+    #|
+  @json.inspect(@toml.parse(toml_emoji_comment), content=[
+    "TomlTable",
+    { "key": ["TomlString", "value"] },
+  ])
+}
+
+///| Test comment handling in complex structures
+test "comments in complex structures" {
+  // Test comments in nested arrays
+  let toml_nested_array_comments =
+    #|nested = [
+    #|  [1, 2], # first sub-array
+    #|  [3, 4], # second sub-array
+    #|  # third sub-array
+    #|  [5, 6]
+    #|]
+    #|
+  @json.inspect(@toml.parse(toml_nested_array_comments), content=[
+    "TomlTable",
+    {
+      "nested": [
+        "TomlArray",
+        [
+          ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"]]],
+          ["TomlArray", [["TomlInteger", "3"], ["TomlInteger", "4"]]],
+          ["TomlArray", [["TomlInteger", "5"], ["TomlInteger", "6"]]],
+        ],
+      ],
+    },
+  ])
+
+  // Test comments in array of tables
+  let toml_array_of_tables_comments =
+    #|[[items]] # first item
+    #|name = "item1"
+    #|value = 100
+    #|
+    #|[[items]] # second item
+    #|name = "item2"
+    #|value = 200
+    #|
+  @json.inspect(@toml.parse(toml_array_of_tables_comments), content=[
+    "TomlTable",
+    {
+      "items": [
+        "TomlArray",
+        [
+          [
+            "TomlTable",
+            { "name": ["TomlString", "item1"], "value": ["TomlInteger", "100"] },
+          ],
+          [
+            "TomlTable",
+            { "name": ["TomlString", "item2"], "value": ["TomlInteger", "200"] },
+          ],
+        ],
+      ],
+    },
+  ])
+}
+
+///| Test comment handling with different data types
+test "comments with different data types" {
+  // Test comments with strings
+  let toml_string_comments =
+    #|str1 = "hello" # simple string
+    #|str2 = "world" # another string
+    #|
+  @json.inspect(@toml.parse(toml_string_comments), content=[
+    "TomlTable",
+    { "str1": ["TomlString", "hello"], "str2": ["TomlString", "world"] },
+  ])
+
+  // Test comments with integers
+  let toml_integer_comments =
+    #|int1 = 42 # answer to life
+    #|int2 = 100 # century
+    #|
+  @json.inspect(@toml.parse(toml_integer_comments), content=[
+    "TomlTable",
+    { "int1": ["TomlInteger", "42"], "int2": ["TomlInteger", "100"] },
+  ])
+
+  // Test comments with floats
+  let toml_float_comments =
+    #|float1 = 3.14 # pi
+    #|float2 = 2.718 # e
+    #|
+  @json.inspect(@toml.parse(toml_float_comments), content=[
+    "TomlTable",
+    { "float1": ["TomlFloat", 3.14], "float2": ["TomlFloat", 2.718] },
+  ])
+
+  // Test comments with booleans
+  let toml_boolean_comments =
+    #|bool1 = true # truth
+    #|bool2 = false # falsehood
+    #|
+  @json.inspect(@toml.parse(toml_boolean_comments), content=[
+    "TomlTable",
+    { "bool1": ["TomlBoolean", true], "bool2": ["TomlBoolean", false] },
+  ])
+
+  // Test comments with datetimes
+  let toml_datetime_comments =
+    #|dt1 = 2023-01-01T00:00:00Z # new year
+    #|dt2 = 2023-12-31T23:59:59 # year end
+    #|
+  @json.inspect(@toml.parse(toml_datetime_comments), content=[
+    "TomlTable",
+    {
+      "dt1": ["TomlDateTime", ["OffsetDateTime", "2023-01-01T00:00:00Z"]],
+      "dt2": ["TomlDateTime", ["LocalDateTime", "2023-12-31T23:59:59"]],
+    },
+  ])
+}
+
+///| Test comment handling with whitespace variations
+test "comments with whitespace variations" {
+  // Test comment with no space after #
+  let toml_no_space_comment = "key = \"value\" #comment"
+  @json.inspect(@toml.parse(toml_no_space_comment), content=[
+    "TomlTable",
+    { "key": ["TomlString", "value"] },
+  ])
+
+  // Test comment with multiple spaces after #
+  let toml_multi_space_comment = "key = \"value\" #   multiple spaces"
+  @json.inspect(@toml.parse(toml_multi_space_comment), content=[
+    "TomlTable",
+    { "key": ["TomlString", "value"] },
+  ])
+
+  // Test comment with tabs
+  let toml_tab_comment = "key = \"value\" #\tcomment with tab"
+  @json.inspect(@toml.parse(toml_tab_comment), content=[
+    "TomlTable",
+    { "key": ["TomlString", "value"] },
+  ])
+
+  // Test comment with mixed whitespace
+  let toml_mixed_whitespace_comment = "key = \"value\" # \t \t mixed whitespace"
+  @json.inspect(@toml.parse(toml_mixed_whitespace_comment), content=[
+    "TomlTable",
+    { "key": ["TomlString", "value"] },
+  ])
+}

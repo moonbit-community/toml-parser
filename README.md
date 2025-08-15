@@ -305,7 +305,7 @@ This parser implements the complete TOML 1.0 specification including:
 - [x] ~~Support for table headers `[section]`~~ ✅ **Completed**
 - [x] ~~Support for array of tables `[[section]]`~~ ✅ **Completed**
 - [ ] Multi-line strings
-- [ ] Comments handling
+- [x] ~~Comments handling~~ ✅ **Completed**
 - [x] ~~Date and time types~~ ✅ **Completed**
 - [ ] Dotted key notation
 - [ ] Better error messages with line/column information
