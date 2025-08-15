@@ -367,7 +367,11 @@ fn Lexer::read_octal_number(self : Lexer) -> Int64 raise {
 
 ///|
 test {
-  let lexer = @lexer.Lexer::new("0o755")
+  let lexer = @lexer.Lexer::new(
+    (
+      #|0o755
+    ),
+  )
   let result = lexer.read_octal_number()
   inspect(result, content="493")
 }

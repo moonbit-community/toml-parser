@@ -1,6 +1,10 @@
 ///| Tests for the TOML parser
 test "parse simple key-value string" {
-  let result = @toml.parse("name = \"John\"")
+  let result = @toml.parse(
+    (
+      #|name = "John"
+    ),
+  )
   @json.inspect(result, content=[
     "TomlTable",
     { "name": ["TomlString", "John"] },
@@ -9,13 +13,21 @@ test "parse simple key-value string" {
 
 ///|
 test "parse simple key-value integer" {
-  let result = @toml.parse("age = 25")
+  let result = @toml.parse(
+    (
+      #|age = 25
+    ),
+  )
   @json.inspect(result, content=["TomlTable", { "age": ["TomlInteger", "25"] }])
 }
 
 ///|
 test "parse simple key-value boolean" {
-  let result = @toml.parse("enabled = true")
+  let result = @toml.parse(
+    (
+      #|enabled = true
+    ),
+  )
   @json.inspect(result, content=[
     "TomlTable",
     { "enabled": ["TomlBoolean", true] },
@@ -24,7 +36,11 @@ test "parse simple key-value boolean" {
 
 ///|
 test "parse simple key-value float" {
-  let result = @toml.parse("pi = 3.14")
+  let result = @toml.parse(
+    (
+      #|pi = 3.14
+    ),
+  )
   @json.inspect(result, content=["TomlTable", { "pi": ["TomlFloat", 3.14] }])
 }
 
@@ -48,7 +64,11 @@ test "parse multiple key-value pairs" {
 
 ///|
 test "parse array" {
-  let result = @toml.parse("numbers = [1, 2, 3]")
+  let result = @toml.parse(
+    (
+      #|numbers = [1, 2, 3]
+    ),
+  )
   @json.inspect(result, content=[
     "TomlTable",
     {
@@ -263,8 +283,12 @@ test "test inline table with array values" {
 
 ///| Test dotted key notation - simple case
 test "dotted key notation simple" {
-  let dotted_simple_toml = "a.b.c = \"value\""
-  @json.inspect(@toml.parse(dotted_simple_toml), content=[
+  let result = @toml.parse(
+    (
+      #|a.b.c = "value"
+    ),
+  )
+  @json.inspect(result, content=[
     "TomlTable",
     {
       "a": [
@@ -329,8 +353,12 @@ test "dotted key notation data types" {
 
 ///| Test dotted key notation - quoted keys
 test "dotted key notation quoted keys" {
-  let dotted_quoted_toml = "\"first.part\".\"second.part\" = \"value\""
-  @json.inspect(@toml.parse(dotted_quoted_toml), content=[
+  let result = @toml.parse(
+    (
+      #|"first.part"."second.part" = "value"
+    ),
+  )
+  @json.inspect(result, content=[
     "TomlTable",
     { "first.part": ["TomlTable", { "second.part": ["TomlString", "value"] }] },
   ])
@@ -338,8 +366,12 @@ test "dotted key notation quoted keys" {
 
 ///| Test dotted key notation - integer keys
 test "dotted key notation integer keys" {
-  let dotted_integer_toml = "1.2.3 = \"numeric path\""
-  @json.inspect(@toml.parse(dotted_integer_toml), content=[
+  let result = @toml.parse(
+    (
+      #|1.2.3 = "numeric path"
+    ),
+  )
+  @json.inspect(result, content=[
     "TomlTable",
     {
       "1": [
@@ -370,8 +402,12 @@ test "dotted key notation table conflict" {
 
 ///| Test dotted key notation - deep nesting
 test "dotted key notation deep nesting" {
-  let deep_nested_toml = "a.b.c.d.e.f = \"deep\""
-  @json.inspect(@toml.parse(deep_nested_toml), content=[
+  let result = @toml.parse(
+    (
+      #|a.b.c.d.e.f = "deep"
+    ),
+  )
+  @json.inspect(result, content=[
     "TomlTable",
     {
       "a": [

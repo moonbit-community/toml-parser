@@ -5,7 +5,11 @@
 ///| Test EOF handling in parser - covered by creating empty token arrays
 test "parser_eof_handling" {
   // Test empty parse input to exercise EOF conditions
-  let result = @toml.parse("")
+  let result = @toml.parse(
+    (
+      #|
+    ),
+  )
   @json.inspect(result, content=["TomlTable", {}])
 }
 
@@ -159,7 +163,14 @@ test "nested_validation_failure_in_array" {
 ///| Test table path conflict error  
 test "table_path_conflict_error" {
   try {
-    ignore(@toml.parse("key = 42\n[key]"))
+    ignore(
+      @toml.parse(
+        (
+          #|key = 42
+          #|[key]
+        ),
+      ),
+    )
     inspect(false, content="true") // Should not reach here
   } catch {
     _ => inspect(true, content="true") // Expected error
@@ -169,7 +180,14 @@ test "table_path_conflict_error" {
 ///| Test array of tables path conflict error
 test "array_of_tables_path_conflict_error" {
   try {
-    ignore(@toml.parse("key = 42\n[[key]]"))
+    ignore(
+      @toml.parse(
+        (
+          #|key = 42
+          #|[[key]]
+        ),
+      ),
+    )
     inspect(false, content="true") // Should not reach here
   } catch {
     _ => inspect(true, content="true") // Expected error
@@ -335,7 +353,13 @@ test "negative_number_parsing" {
 ///| Test error handling with invalid characters
 test "invalid_character_error" {
   try {
-    ignore(@toml.parse("key = @invalid"))
+    ignore(
+      @toml.parse(
+        (
+          #|key = @invalid
+        ),
+      ),
+    )
     inspect(false, content="true") // Should not reach here
   } catch {
     _ => inspect(true, content="true") // Expected error
