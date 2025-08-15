@@ -246,10 +246,8 @@ test "empty array" {
         #|empty_array = []
       ),
     ),
-    content=[
-    "TomlTable",
-    { "empty_array": ["TomlArray", []] },
-  ])
+    content=["TomlTable", { "empty_array": ["TomlArray", []] }],
+  )
 }
 
 ///| Test negative numbers (now supported!)
@@ -294,10 +292,8 @@ test "negative numbers in context" {
         #|count = -5
       ),
     ),
-    content=[
-    "TomlTable",
-    { "count": ["TomlInteger", "-5"] },
-  ])
+    content=["TomlTable", { "count": ["TomlInteger", "-5"] }],
+  )
 
   // Single negative float  
   @json.inspect(
@@ -306,10 +302,8 @@ test "negative numbers in context" {
         #|temperature = -15.5
       ),
     ),
-    content=[
-    "TomlTable",
-    { "temperature": ["TomlFloat", -15.5] },
-  ])
+    content=["TomlTable", { "temperature": ["TomlFloat", -15.5] }],
+  )
 
   // Array with mixed positive and negative numbers
   @json.inspect(
@@ -319,19 +313,20 @@ test "negative numbers in context" {
       ),
     ),
     content=[
-    "TomlTable",
-    {
-      "values": [
-        "TomlArray",
-        [
-          ["TomlInteger", "1"],
-          ["TomlInteger", "-2"],
-          ["TomlFloat", 3],
-          ["TomlFloat", -4.5],
+      "TomlTable",
+      {
+        "values": [
+          "TomlArray",
+          [
+            ["TomlInteger", "1"],
+            ["TomlInteger", "-2"],
+            ["TomlFloat", 3],
+            ["TomlFloat", -4.5],
+          ],
         ],
-      ],
-    },
-  ])
+      },
+    ],
+  )
 
   // Inline table with negative values
   let coords_toml =
