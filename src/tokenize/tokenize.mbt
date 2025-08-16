@@ -15,14 +15,12 @@ fn make_loc(start_pos : @lexer.Position, end_pos : @lexer.Position) -> Loc {
 ///| Parse an identifier or keyword
 fn Lexer::read_identifier(self : Lexer) -> String {
   let sb = StringBuilder::new()
-  while true {
-    match self.view() {
-      ['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' as x, .. rest] => {
-        self.update_view(rest)
-        sb.write_char(x)
-      }
-      _ => break
+  loop self.view() {
+    ['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' as x, .. rest] => {
+      sb.write_char(x)
+      continue rest
     }
+    rest => self.update_view(rest)
   }
   sb.to_string()
 }
