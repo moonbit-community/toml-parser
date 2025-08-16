@@ -12,11 +12,6 @@ fn make_loc(start_pos : @lexer.Position, end_pos : @lexer.Position) -> Loc {
   { start: start_pos, end: end_pos }
 }
 
-///| Check if character is hexadecimal digit
-fn is_hex_digit(ch : Char) -> Bool {
-  ch is ('0'..='9' | 'a'..='f' | 'A'..='F')
-}
-
 ///| Parse an identifier or keyword
 fn Lexer::read_identifier(self : Lexer) -> String {
   let sb = StringBuilder::new()
@@ -37,7 +32,7 @@ fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
   let mut code = 0
   for i = 0; i < 4; i = i + 1 {
     match self.peek() {
-      Some(ch) if is_hex_digit(ch) => {
+      Some('0'..='9' | 'a'..='f' | 'A'..='F' as ch) => {
         self.advance()
         let digit = match ch {
           '0'..='9' => ch.to_int() - '0'
@@ -64,7 +59,7 @@ fn Lexer::read_unicode_8_escape(self : Lexer) -> Char raise {
   let mut code = 0
   for i = 0; i < 8; i = i + 1 {
     match self.peek() {
-      Some(ch) if is_hex_digit(ch) => {
+      Some('0'..='9' | 'a'..='f' | 'A'..='F' as ch) => {
         self.advance()
         let digit = match ch {
           '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
