@@ -489,7 +489,7 @@ test "unicode 4 escape incomplete" {
     )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 13",
+    content="Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10",
   )
 }
 

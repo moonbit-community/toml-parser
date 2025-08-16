@@ -12,46 +12,58 @@ fn make_loc(start_pos : @lexer.Position, end_pos : @lexer.Position) -> Loc {
   { start: start_pos, end: end_pos }
 }
 
-///| Check if character is hexadecimal digit
-fn is_hex_digit(ch : Char) -> Bool {
-  ch is ('0'..='9' | 'a'..='f' | 'A'..='F')
-}
-
 ///| Parse an identifier or keyword
 fn Lexer::read_identifier(self : Lexer) -> String {
   let sb = StringBuilder::new()
-  while true {
-    match self.view() {
-      ['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' as x, .. rest] => {
-        self.update_view(rest)
-        sb.write_char(x)
-      }
-      _ => break
+  loop self.view() {
+    ['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' as x, .. rest] => {
+      sb.write_char(x)
+      continue rest
     }
+    rest => self.update_view(rest)
   }
   sb.to_string()
 }
 
 ///| Parse Unicode escape sequence \uXXXX
 fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
-  let mut code = 0
-  for i = 0; i < 4; i = i + 1 {
-    match self.peek() {
-      Some(ch) if is_hex_digit(ch) => {
-        self.advance()
-        let digit = match ch {
+  let code = match self.view() {
+    [
+      // '\\',
+      // 'u',
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a0,
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a1,
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a2,
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a3,
+      .. rest,
+    ] => {
+      self.update_view(rest)
+      // calculate the code point using a0, a1, a2, a3
+      fn hex_digit_to_int(ch : Char) -> Int {
+        match ch {
           '0'..='9' => ch.to_int() - '0'
           'a'..='f' => ch.to_int() - 'a' + 10
           'A'..='F' => ch.to_int() - 'A' + 10
-          _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch)))
+          _ => abort("Internal error: pattern matching inconsistency")
         }
-        code = code * 16 + digit
       }
-      _ =>
-        fail(
-          self.error("Invalid Unicode escape sequence: expected 4 hex digits"),
-        )
+
+      let code = hex_digit_to_int(a0) * 16 * 16 * 16 +
+        hex_digit_to_int(a1) * 16 * 16 +
+        hex_digit_to_int(a2) * 16 +
+        hex_digit_to_int(a3)
+      code
     }
+    _ =>
+      fail(self.error("Invalid Unicode escape sequence: expected 4 hex digits"))
   }
   match code.to_char() {
     Some(ch) => ch
@@ -64,7 +76,7 @@ fn Lexer::read_unicode_8_escape(self : Lexer) -> Char raise {
   let mut code = 0
   for i = 0; i < 8; i = i + 1 {
     match self.peek() {
-      Some(ch) if is_hex_digit(ch) => {
+      Some('0'..='9' | 'a'..='f' | 'A'..='F' as ch) => {
         self.advance()
         let digit = match ch {
           '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
