@@ -350,7 +350,7 @@ test "test invalid escape sequence error" {
   // TODO: ArgsLoc no absolute loc
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content=("Invalid escape sequence: \\z at line 1, column 12"),
+    content="Invalid escape sequence: \\z at line 1, column 12",
   ) // Should fail with invalid escape sequence
 }
 
