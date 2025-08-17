@@ -225,12 +225,11 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
               }
             }
             // Skip whitespace at the beginning of the next line
-            while true {
-              match self.view() {
-                [' ' | '\t', .. rest] => self.update_view(rest)
-                _ => break
-              }
+            let next_view = loop self.view() {
+              [' ' | '\t', .. rest] => continue rest
+              rest => rest
             }
+            self.update_view(next_view)
           }
           _ =>
             fail(
@@ -297,7 +296,7 @@ fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
       }
       [] => fail(self.error("Unterminated multiline literal string"))
     }
-  } // FIXME: special typing rules for `while true`
+  }
   sb.to_string()
 }
 
@@ -580,15 +579,14 @@ fn Lexer::read_datetime_with_loc(
           sb.write_char('.')
 
           // Read fractional digits
-          while true {
-            match self.view() {
-              ['0'..='9' as ch, .. rest] => {
-                self.update_view(rest)
-                sb.write_char(ch)
-              }
-              _ => break
+          let next_view = loop self.view() {
+            ['0'..='9' as ch, .. rest] => {
+              sb.write_char(ch)
+              continue rest
             }
+            rest => rest
           }
+          self.update_view(next_view)
         }
         _ => () // No fractional seconds
       }
@@ -637,15 +635,14 @@ fn Lexer::read_datetime_with_loc(
           sb.write_char('.')
 
           // Read fractional digits
-          while true {
-            match self.view() {
-              ['0'..='9' as ch, .. rest] => {
-                self.update_view(rest)
-                sb.write_char(ch)
-              }
-              _ => break
+          let next_view = loop self.view() {
+            ['0'..='9' as ch, .. rest] => {
+              sb.write_char(ch)
+              continue rest
             }
+            rest => rest
           }
+          self.update_view(next_view)
         }
         _ => () // No fractional seconds
       }
@@ -757,17 +754,16 @@ fn Lexer::read_number_with_loc(
     }
   }
   // Read digits
-  while true {
-    match self.view() {
-      ['0'..='9' | '_' as ch, .. rest] => {
-        self.update_view(rest)
-        if ch != '_' {
-          sb.write_char(ch)
-        }
+  let next_view = loop self.view() {
+    ['0'..='9' | '_' as ch, .. rest] => {
+      if ch != '_' {
+        sb.write_char(ch)
       }
-      _ => break
+      continue rest
     }
+    rest => rest
   }
+  self.update_view(next_view)
 
   // Check for decimal point
   match self.view() {
@@ -775,17 +771,16 @@ fn Lexer::read_number_with_loc(
       is_float = true
       self.update_view(rest)
       sb.write_char('.')
-      while true {
-        match self.view() {
-          ['0'..='9' | '_' as ch, .. rest] => {
-            self.update_view(rest)
-            if ch != '_' {
-              sb.write_char(ch)
-            }
+      let next_view = loop self.view() {
+        ['0'..='9' | '_' as ch, .. rest] => {
+          if ch != '_' {
+            sb.write_char(ch)
           }
-          _ => break
+          continue rest
         }
+        rest => rest
       }
+      self.update_view(next_view)
     }
     _ => ()
   }
