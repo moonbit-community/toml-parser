@@ -545,7 +545,7 @@ test "unicode 8 escape invalid hex" {
     )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 17",
+    content="Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10",
   )
 }
 
@@ -558,7 +558,7 @@ test "unicode 8 escape incomplete" {
     )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 17",
+    content="Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10",
   )
 }
 
