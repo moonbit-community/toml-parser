@@ -240,10 +240,14 @@ test "numerical edge cases" {
 
 ///|
 test "empty array" {
-  @json.inspect(@toml.parse("empty_array = []"), content=[
-    "TomlTable",
-    { "empty_array": ["TomlArray", []] },
-  ])
+  @json.inspect(
+    @toml.parse(
+      (
+        #|empty_array = []
+      ),
+    ),
+    content=["TomlTable", { "empty_array": ["TomlArray", []] }],
+  )
 }
 
 ///| Test negative numbers (now supported!)
@@ -282,32 +286,47 @@ test "negative numbers" {
 ///| Test negative numbers in various contexts
 test "negative numbers in context" {
   // Single negative integer
-  @json.inspect(@toml.parse("count = -5"), content=[
-    "TomlTable",
-    { "count": ["TomlInteger", "-5"] },
-  ])
+  @json.inspect(
+    @toml.parse(
+      (
+        #|count = -5
+      ),
+    ),
+    content=["TomlTable", { "count": ["TomlInteger", "-5"] }],
+  )
 
   // Single negative float  
-  @json.inspect(@toml.parse("temperature = -15.5"), content=[
-    "TomlTable",
-    { "temperature": ["TomlFloat", -15.5] },
-  ])
+  @json.inspect(
+    @toml.parse(
+      (
+        #|temperature = -15.5
+      ),
+    ),
+    content=["TomlTable", { "temperature": ["TomlFloat", -15.5] }],
+  )
 
   // Array with mixed positive and negative numbers
-  @json.inspect(@toml.parse("values = [1, -2, 3.0, -4.5]"), content=[
-    "TomlTable",
-    {
-      "values": [
-        "TomlArray",
-        [
-          ["TomlInteger", "1"],
-          ["TomlInteger", "-2"],
-          ["TomlFloat", 3],
-          ["TomlFloat", -4.5],
+  @json.inspect(
+    @toml.parse(
+      (
+        #|values = [1, -2, 3.0, -4.5]
+      ),
+    ),
+    content=[
+      "TomlTable",
+      {
+        "values": [
+          "TomlArray",
+          [
+            ["TomlInteger", "1"],
+            ["TomlInteger", "-2"],
+            ["TomlFloat", 3],
+            ["TomlFloat", -4.5],
+          ],
         ],
-      ],
-    },
-  ])
+      },
+    ],
+  )
 
   // Inline table with negative values
   let coords_toml =
@@ -491,10 +510,7 @@ test "error handling" {
 
   // Unterminated string
   @json.inspect(try? parse_no_loc("key = \"unterminated"), content={
-    "Err": {
-      "$tag": "Failure",
-      "0": "Unterminated string at line 1, column 20",
-    },
+    "Err": { "$tag": "Failure", "0": "Unterminated string at line 1, column 8" },
   })
 
   // Invalid syntax - incomplete array
@@ -680,7 +696,7 @@ test "inline table error locations" {
   @json.inspect(try? parse_no_loc("table = {= \"value\"}"), content={
     "Err": {
       "$tag": "Failure",
-      "0": "Expected key in inline table at {start: {line: 1, column: 10}, end: {line: 1, column: 11}}",
+      "0": "Expected key at {start: {line: 1, column: 10}, end: {line: 1, column: 11}}",
     },
   })
 
@@ -704,7 +720,7 @@ test "inline table error locations" {
   @json.inspect(try? parse_no_loc("table = {key1 = \"val1\", }"), content={
     "Err": {
       "$tag": "Failure",
-      "0": "Expected key in inline table at {start: {line: 1, column: 25}, end: {line: 1, column: 26}}",
+      "0": "Expected key at {start: {line: 1, column: 25}, end: {line: 1, column: 26}}",
     },
   })
 }
@@ -810,7 +826,7 @@ test "complex error location scenarios" {
   @json.inspect(try? parse_no_loc(deep_nested), content={
     "Err": {
       "$tag": "Failure",
-      "0": "Expected key in inline table at {start: {line: 1, column: 10}, end: {line: 2, column: 1}}",
+      "0": "Expected key at {start: {line: 1, column: 10}, end: {line: 2, column: 1}}",
     },
   })
 
@@ -908,7 +924,14 @@ test "location tracking with special cases" {
 ///| Test edge cases with expect tests
 test "edge cases" {
   // Empty input should result in empty table
-  @json.inspect(@toml.parse(""), content=["TomlTable", {}])
+  @json.inspect(
+    @toml.parse(
+      (
+        #|
+      ),
+    ),
+    content=["TomlTable", {}],
+  )
 
   // Only comments and whitespace should result in empty table
   let comments_only_toml =
@@ -929,10 +952,14 @@ test "edge cases" {
   ])
 
   // Whitespace around equals sign
-  @json.inspect(@toml.parse("spaced   =   \"value\"  "), content=[
-    "TomlTable",
-    { "spaced": ["TomlString", "value"] },
-  ])
+  @json.inspect(
+    @toml.parse(
+      (
+        #|spaced   =   "value"  
+      ),
+    ),
+    content=["TomlTable", { "spaced": ["TomlString", "value"] }],
+  )
 
   // Multiple newlines and comments
   let complex_whitespace =

@@ -2,7 +2,7 @@
 package "bob/toml/tokenize"
 
 import(
-  "bob/toml/lexer"
+  "bob/lexer"
 )
 
 // Values

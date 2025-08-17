@@ -23,6 +23,7 @@ test "test datetime token JSON serialization" {
   @json.inspect(json_result, content=[
     "DateTimeToken",
     ["OffsetDateTime", "1979-05-27T07:32:00+01:00"],
+    { "loc": "1:1-1:1" },
   ])
 }
 

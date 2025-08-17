@@ -5,7 +5,11 @@
 ///| Test EOF handling in parser - covered by creating empty token arrays
 test "parser_eof_handling" {
   // Test empty parse input to exercise EOF conditions
-  let result = @toml.parse("")
+  let result = @toml.parse(
+    (
+      #|
+    ),
+  )
   @json.inspect(result, content=["TomlTable", {}])
 }
 
@@ -86,32 +90,47 @@ test "array_of_tables_path_with_integer_key" {
 
 ///| Test invalid Unicode escape sequences to trigger error paths
 test "invalid_unicode_escapes" {
-  try {
-    ignore(@toml.parse("key = \"\\uZZZZ\""))
-    inspect(false, content="true") // Should not reach here
-  } catch {
-    _ => inspect(true, content="true") // Expected error
-  }
+  let result = try? parse_no_loc(
+      (
+        #|key = "\uZZZZ"
+      ),
+    )
+  @json.inspect(result, content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10",
+    },
+  }) // Expected error
 }
 
 ///| Test invalid 8-byte Unicode escape
 test "invalid_8byte_unicode_escape" {
-  try {
-    ignore(@toml.parse("key = \"\\U00200000\"")) // Invalid code point > 0x10FFFF
-    inspect(false, content="true") // Should not reach here
-  } catch {
-    _ => inspect(true, content="true") // Expected error
-  }
+  let result = try? parse_no_loc(
+      (
+        #|key = "\U00200000"
+      ),
+    ) // Invalid code point > 0x10FFFF
+  @json.inspect(result, content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Invalid Unicode code point: 2097152 at line 1, column 18",
+    },
+  }) // Expected error
 }
 
 ///| Test unterminated multiline string
 test "unterminated_multiline_string" {
-  try {
-    ignore(@toml.parse("key = \"\"\"This is unterminated"))
-    inspect(false, content="true") // Should not reach here
-  } catch {
-    _ => inspect(true, content="true") // Expected error
-  }
+  let result = try? parse_no_loc(
+      (
+        #|key = """This is unterminated
+      ),
+    )
+  @json.inspect(result, content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Unterminated multiline string at line 1, column 30",
+    },
+  }) // Expected error
 }
 
 ///| Test homogeneous array with TomlFloat
@@ -158,22 +177,34 @@ test "nested_validation_failure_in_array" {
 
 ///| Test table path conflict error  
 test "table_path_conflict_error" {
-  try {
-    ignore(@toml.parse("key = 42\n[key]"))
-    inspect(false, content="true") // Should not reach here
-  } catch {
-    _ => inspect(true, content="true") // Expected error
-  }
+  let result = try? parse_no_loc(
+      (
+        #|key = 42
+        #|[key]
+      ),
+    )
+  @json.inspect(result, content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Table path conflicts with existing value: key at {start: {line: 2, column: 6}, end: {line: 2, column: 6}}",
+    },
+  }) // Expected error
 }
 
 ///| Test array of tables path conflict error
 test "array_of_tables_path_conflict_error" {
-  try {
-    ignore(@toml.parse("key = 42\n[[key]]"))
-    inspect(false, content="true") // Should not reach here
-  } catch {
-    _ => inspect(true, content="true") // Expected error
-  }
+  let result = try? parse_no_loc(
+      (
+        #|key = 42
+        #|[[key]]
+      ),
+    )
+  @json.inspect(result, content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Array of tables conflicts with existing non-array value: key at {start: {line: 2, column: 8}, end: {line: 2, column: 8}}",
+    },
+  }) // Expected error
 }
 
 ///| Test empty inline table
@@ -334,12 +365,14 @@ test "negative_number_parsing" {
 
 ///| Test error handling with invalid characters
 test "invalid_character_error" {
-  try {
-    ignore(@toml.parse("key = @invalid"))
-    inspect(false, content="true") // Should not reach here
-  } catch {
-    _ => inspect(true, content="true") // Expected error
-  }
+  let result = try? parse_no_loc(
+      (
+        #|key = @invalid
+      ),
+    )
+  @json.inspect(result, content={
+    "Err": { "$tag": "Failure", "0": "Unexpected character: '@'" },
+  }) // Expected error
 }
 
 ///| Test multiline basic string with line ending backslash

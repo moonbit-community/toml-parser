@@ -12,9 +12,9 @@ This todo file follows a two-level structure where **first-level tasks** should 
 
 ### 1.2 String Processing Enhancements  
 - [ ] Implement multi-line string support (`"""` syntax)
-- [ ] Add escape sequence handling in strings (`\n`, `\t`, `\"`, etc.)
-- [ ] Support literal strings with single quotes
-- [ ] Add Unicode escape sequences (`\uXXXX`, `\UXXXXXXXX`)
+- [x] ~~Add escape sequence handling in strings (`\n`, `\t`, `\"`, etc.)~~ ✅ **Completed**
+- [x] ~~Support literal strings with single quotes~~ ✅ **Completed**
+- [x] ~~Add Unicode escape sequences (`\uXXXX`, `\UXXXXXXXX`)~~ ✅ **Completed**
 
 ### 1.3 Comments System
 - [ ] Implement comment parsing in lexer (ignore `# comment` lines)
@@ -25,10 +25,10 @@ This todo file follows a two-level structure where **first-level tasks** should 
 ## 2. Advanced TOML Features (🟡 Medium Priority)
 
 ### 2.1 Dotted Key Support
-- [ ] Implement dotted key notation parsing (`a.b.c = value`)
-- [ ] Add nested table creation from dotted keys
-- [ ] Handle conflicts between dotted keys and explicit tables
-- [ ] Add validation for duplicate key definitions
+- [x] ~~Implement dotted key notation parsing (`a.b.c = value`)~~ ✅ **Completed**
+- [x] ~~Add nested table creation from dotted keys~~ ✅ **Completed**
+- [x] ~~Handle conflicts between dotted keys and explicit tables~~ ✅ **Completed**
+- [x] ~~Add validation for duplicate key definitions~~ ✅ **Completed**
 
 ### 2.2 Table Processing Improvements
 - [ ] Enhance table header validation and error messages

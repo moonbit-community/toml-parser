@@ -97,22 +97,8 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
     _ => ()
   }
   while true {
-    // Parse key
-    let key = match self.view() {
-      [Identifier(k, ..), .. rest] => {
-        self.update_view(rest)
-        k
-      }
-      [StringToken(k, ..), .. rest] => {
-        self.update_view(rest)
-        k
-      }
-      [IntegerToken(i, ..), .. rest] => {
-        self.update_view(rest)
-        i.to_string()
-      }
-      rest => parse_error(rest, "Expected key in inline table")
-    }
+    // Parse dotted key
+    let key_path = self.parse_dotted_key()
 
     // Expect =
     match self.view() {
@@ -122,7 +108,7 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
 
     // Parse value
     let value = self.parse_value()
-    table[key] = value
+    set_dotted_key_value(table, key_path, value, self.view())
     match self.view() {
       [Comma(..), .. rest] => self.update_view(rest)
       [RightBrace(..), .. rest] => {
@@ -320,10 +306,12 @@ fn[T] parse_error(tokens : ArrayView[@tokenize.Token], msg : String) -> T raise 
   }
 }
 
-///| Parse a key-value pair: key = value
-fn Parser::parse_key_value(self : Parser) -> (String, TomlValue) raise {
-  // Parse key
-  let key = match self.view() {
+///| Parse a dotted key path: key.subkey.subsubkey
+fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
+  let path = Array::new()
+
+  // Parse first key - handle the case where the tokenizer saw a float like "1.2"
+  let first_key = match self.view() {
     [Identifier(k), .. rest] => {
       self.update_view(rest)
       k
@@ -336,8 +324,88 @@ fn Parser::parse_key_value(self : Parser) -> (String, TomlValue) raise {
       self.update_view(rest)
       i.to_string()
     }
+    [FloatToken(f), .. rest] => {
+      // Handle float tokens that represent dotted numeric keys like "1.2"
+      self.update_view(rest)
+      let float_str = f.to_string()
+
+      // Split the float string on the dot to create dotted keys
+      let dot_index = match float_str.find(".") {
+        Some(i) => i
+        None => {
+          // No dot found, treat as single key
+          path.push(float_str)
+          return path
+        }
+      }
+      let first_part = float_str.substring(start=0, end=dot_index)
+      let second_part = float_str.substring(start=dot_index + 1)
+      path.push(first_part)
+      path.push(second_part)
+
+      // Continue parsing for more dots after this float
+      while true {
+        match self.view() {
+          [Dot(..), .. rest] => {
+            self.update_view(rest)
+            let key = match self.view() {
+              [Identifier(name), .. rest2] => {
+                self.update_view(rest2)
+                name
+              }
+              [StringToken(name), .. rest2] => {
+                self.update_view(rest2)
+                name
+              }
+              [IntegerToken(i), .. rest2] => {
+                self.update_view(rest2)
+                i.to_string()
+              }
+              rest2 => parse_error(rest2, "Expected key after dot")
+            }
+            path.push(key)
+          }
+          _ => break
+        }
+      }
+      return path
+    }
     rest => parse_error(rest, "Expected key")
   }
+  path.push(first_key)
+
+  // Parse additional keys separated by dots
+  while true {
+    match self.view() {
+      [Dot(..), .. rest] => {
+        self.update_view(rest)
+        let key = match self.view() {
+          [Identifier(name), .. rest2] => {
+            self.update_view(rest2)
+            name
+          }
+          [StringToken(name), .. rest2] => {
+            self.update_view(rest2)
+            name
+          }
+          [IntegerToken(i), .. rest2] => {
+            self.update_view(rest2)
+            i.to_string()
+          }
+          rest2 => parse_error(rest2, "Expected key after dot")
+        }
+        path.push(key)
+      }
+      _ => break
+    }
+  }
+  path
+}
+
+///| Parse a key-value pair with dotted key support: key.subkey = value
+fn Parser::parse_key_value(self : Parser) -> (Array[String], TomlValue) raise {
+  // Parse dotted key
+  let key_path = self.parse_dotted_key()
 
   // Expect =
   match self.view() {
@@ -347,7 +415,48 @@ fn Parser::parse_key_value(self : Parser) -> (String, TomlValue) raise {
 
   // Parse value
   let value = self.parse_value()
-  (key, value)
+  (key_path, value)
+}
+
+///| Set a value using a dotted key path in a table
+fn set_dotted_key_value(
+  table : Map[String, TomlValue],
+  key_path : Array[String],
+  value : TomlValue,
+  error_tokens : ArrayView[@tokenize.Token],
+) -> Unit raise {
+  if key_path.length() == 0 {
+    parse_error(error_tokens, "Empty key path")
+  }
+  if key_path.length() == 1 {
+    // Simple key assignment
+    table[key_path[0]] = value
+    return
+  }
+
+  // Navigate through the dotted path, creating tables as needed
+  let mut current_table = table
+  for i = 0; i < key_path.length() - 1; i = i + 1 {
+    let key = key_path[i]
+    match current_table.get(key) {
+      Some(TomlTable(existing_table)) => current_table = existing_table
+      Some(_) =>
+        parse_error(
+          error_tokens,
+          "Dotted key path conflicts with existing non-table value: " + key,
+        )
+      None => {
+        // Create new nested table
+        let new_table = Map::new()
+        current_table[key] = TomlTable(new_table)
+        current_table = new_table
+      }
+    }
+  }
+
+  // Set the final value
+  let final_key = key_path[key_path.length() - 1]
+  current_table[final_key] = value
 }
 
 ///| Parse a TOML document with support for tables
@@ -405,8 +514,8 @@ pub fn parse(input : String) -> TomlValue raise {
       }
       _ => {
         // Parse key-value pair
-        let (key, value) = parser.parse_key_value()
-        current_table[key] = value
+        let (key_path, value) = parser.parse_key_value()
+        set_dotted_key_value(current_table, key_path, value, parser.view())
       }
     }
     parser.skip_newlines()

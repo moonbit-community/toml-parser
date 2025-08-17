@@ -12,46 +12,59 @@ fn make_loc(start_pos : @lexer.Position, end_pos : @lexer.Position) -> Loc {
   { start: start_pos, end: end_pos }
 }
 
-///| Check if character is hexadecimal digit
-fn is_hex_digit(ch : Char) -> Bool {
-  ch is ('0'..='9' | 'a'..='f' | 'A'..='F')
-}
-
 ///| Parse an identifier or keyword
 fn Lexer::read_identifier(self : Lexer) -> String {
   let sb = StringBuilder::new()
-  while true {
-    match self.view() {
-      ['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' as x, .. rest] => {
-        self.update_view(rest)
-        sb.write_char(x)
-      }
-      _ => break
+  loop self.view() {
+    ['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' as x, .. rest] => {
+      sb.write_char(x)
+      continue rest
     }
+    rest => self.update_view(rest)
   }
   sb.to_string()
 }
 
+///|
+///  calculate the code point using a0, a1, a2, a3
+fn Char::hex_digit_to_int(ch : Char) -> Int {
+  match ch {
+    '0'..='9' => ch.to_int() - '0'
+    'a'..='f' => ch.to_int() - 'a' + 10
+    'A'..='F' => ch.to_int() - 'A' + 10
+    _ => abort("Internal error: pattern matching inconsistency")
+  }
+}
+
 ///| Parse Unicode escape sequence \uXXXX
 fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
-  let mut code = 0
-  for i = 0; i < 4; i = i + 1 {
-    match self.peek() {
-      Some(ch) if is_hex_digit(ch) => {
-        self.advance()
-        let digit = match ch {
-          '0'..='9' => ch.to_int() - '0'
-          'a'..='f' => ch.to_int() - 'a' + 10
-          'A'..='F' => ch.to_int() - 'A' + 10
-          _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch)))
-        }
-        code = code * 16 + digit
-      }
-      _ =>
-        fail(
-          self.error("Invalid Unicode escape sequence: expected 4 hex digits"),
-        )
+  let code = match self.view() {
+    [
+      // '\\',
+      // 'u',
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a0,
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a1,
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a2,
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a3,
+      .. rest,
+    ] => {
+      self.update_view(rest)
+      let code = a0.hex_digit_to_int() * 16 * 16 * 16 +
+        a1.hex_digit_to_int() * 16 * 16 +
+        a2.hex_digit_to_int() * 16 +
+        a3.hex_digit_to_int()
+      code
     }
+    _ =>
+      fail(self.error("Invalid Unicode escape sequence: expected 4 hex digits"))
   }
   match code.to_char() {
     Some(ch) => ch
@@ -64,7 +77,7 @@ fn Lexer::read_unicode_8_escape(self : Lexer) -> Char raise {
   let mut code = 0
   for i = 0; i < 8; i = i + 1 {
     match self.peek() {
-      Some(ch) if is_hex_digit(ch) => {
+      Some('0'..='9' | 'a'..='f' | 'A'..='F' as ch) => {
         self.advance()
         let digit = match ch {
           '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
@@ -94,41 +107,70 @@ fn Lexer::read_unicode_8_escape(self : Lexer) -> Char raise {
 fn Lexer::read_basic_string(self : Lexer) -> String raise {
   self.advance() // consume opening quote
   let sb = StringBuilder::new()
-  while self.peek() is Some(ch) && ch != '"' {
-    self.advance() // consume character`  
-    if ch == '\\' {
-      // Handle escape sequences
-      match self.peek_charcode() {
-        Some(escaped) => {
-          self.advance() // consume escape character  
-          match escaped {
-            'n' => sb.write_char('\n')
-            't' => sb.write_char('\t')
-            'r' => sb.write_char('\r')
-            '\\' => sb.write_char('\\')
-            '"' => sb.write_char('"')
-            '\'' => sb.write_char('\'')
-            'b' => sb.write_char('\u0008')
-            'f' => sb.write_char('\u000C')
-            'u' => sb.write_char(self.read_unicode_4_escape())
-            'U' => sb.write_char(self.read_unicode_8_escape())
-            _ =>
-              fail(
-                self.error(
-                  "Invalid escape sequence: \\\{escaped.to_char().unwrap_or('?')}",
-                ),
-              )
-            // TODO:refine the error message 
-          }
+  let next_view = loop self.view() {
+    ['"', .. rest] => rest // exit
+    ['\\', peeked, .. rest] as current =>
+      match peeked {
+        'n' => {
+          sb.write_char('\n')
+          continue rest
         }
-        None =>
-          fail(self.error("Unexpected end of input after escape character"))
+        't' => {
+          sb.write_char('\t')
+          continue rest
+        }
+        'r' => {
+          sb.write_char('\r')
+          continue rest
+        }
+        '\\' => {
+          sb.write_char('\\')
+          continue rest
+        }
+        '"' => {
+          sb.write_char('"')
+          continue rest
+        }
+        '\'' => {
+          sb.write_char('\'')
+          continue rest
+        }
+        'b' => {
+          sb.write_char('\u0008')
+          continue rest
+        }
+        'f' => {
+          sb.write_char('\u000C')
+          continue rest
+        }
+        'u' => {
+          self.update_view(rest)
+          sb.write_char(self.read_unicode_4_escape())
+          continue self.view()
+        }
+        'U' => {
+          self.update_view(rest)
+          // this may affect error message about location
+          // we may fix this by storing the beginnning position 
+          // of the string
+          sb.write_char(self.read_unicode_8_escape())
+          continue self.view()
+        }
+        _ => {
+          // fix the error message location
+          self.update_view(current)
+          fail(
+            self.error("Invalid escape sequence: \\" + Char::to_string(peeked)),
+          )
+        }
       }
-    } else {
+    [ch, .. rest] => {
       sb.write_char(ch)
+      continue rest
     }
+    [] => fail(self.error("Unterminated string"))
   }
-  self.expect_char('"', msg="Unterminated string")
+  self.update_view(next_view)
   sb.to_string()
 }
 
@@ -367,7 +409,11 @@ fn Lexer::read_octal_number(self : Lexer) -> Int64 raise {
 
 ///|
 test {
-  let lexer = @lexer.Lexer::new("0o755")
+  let lexer = @lexer.Lexer::new(
+    (
+      #|0o755
+    ),
+  )
   let result = lexer.read_octal_number()
   inspect(result, content="493")
 }
@@ -1050,9 +1096,13 @@ test "binary number parsing" {
 test "datetime tokenization" {
   let tokens = tokenize("date = 1979-05-27T07:32:00Z")
   @json.inspect(tokens, content=[
-    ["Identifier", "date"],
-    "Equals",
-    ["DateTimeToken", ["OffsetDateTime", "1979-05-27T07:32:00Z"]],
-    "EOF",
+    ["Identifier", "date", { "loc": "1:1-1:5" }],
+    ["Equals", { "loc": "1:6-1:7" }],
+    [
+      "DateTimeToken",
+      ["OffsetDateTime", "1979-05-27T07:32:00Z"],
+      { "loc": "1:8-1:28" },
+    ],
+    ["EOF", { "loc": "1:28-1:28" }],
   ])
 }
