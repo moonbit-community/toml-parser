@@ -25,6 +25,17 @@ fn Lexer::read_identifier(self : Lexer) -> String {
   sb.to_string()
 }
 
+///|
+///  calculate the code point using a0, a1, a2, a3
+fn Char::hex_digit_to_int(ch : Char) -> Int {
+  match ch {
+    '0'..='9' => ch.to_int() - '0'
+    'a'..='f' => ch.to_int() - 'a' + 10
+    'A'..='F' => ch.to_int() - 'A' + 10
+    _ => abort("Internal error: pattern matching inconsistency")
+  }
+}
+
 ///| Parse Unicode escape sequence \uXXXX
 fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
   let code = match self.view() {
@@ -46,20 +57,10 @@ fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
       .. rest,
     ] => {
       self.update_view(rest)
-      // calculate the code point using a0, a1, a2, a3
-      fn hex_digit_to_int(ch : Char) -> Int {
-        match ch {
-          '0'..='9' => ch.to_int() - '0'
-          'a'..='f' => ch.to_int() - 'a' + 10
-          'A'..='F' => ch.to_int() - 'A' + 10
-          _ => abort("Internal error: pattern matching inconsistency")
-        }
-      }
-
-      let code = hex_digit_to_int(a0) * 16 * 16 * 16 +
-        hex_digit_to_int(a1) * 16 * 16 +
-        hex_digit_to_int(a2) * 16 +
-        hex_digit_to_int(a3)
+      let code = a0.hex_digit_to_int() * 16 * 16 * 16 +
+        a1.hex_digit_to_int() * 16 * 16 +
+        a2.hex_digit_to_int() * 16 +
+        a3.hex_digit_to_int()
       code
     }
     _ =>
