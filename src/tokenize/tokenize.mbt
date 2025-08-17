@@ -107,41 +107,70 @@ fn Lexer::read_unicode_8_escape(self : Lexer) -> Char raise {
 fn Lexer::read_basic_string(self : Lexer) -> String raise {
   self.advance() // consume opening quote
   let sb = StringBuilder::new()
-  while self.peek() is Some(ch) && ch != '"' {
-    self.advance() // consume character`  
-    if ch == '\\' {
-      // Handle escape sequences
-      match self.peek_charcode() {
-        Some(escaped) => {
-          self.advance() // consume escape character  
-          match escaped {
-            'n' => sb.write_char('\n')
-            't' => sb.write_char('\t')
-            'r' => sb.write_char('\r')
-            '\\' => sb.write_char('\\')
-            '"' => sb.write_char('"')
-            '\'' => sb.write_char('\'')
-            'b' => sb.write_char('\u0008')
-            'f' => sb.write_char('\u000C')
-            'u' => sb.write_char(self.read_unicode_4_escape())
-            'U' => sb.write_char(self.read_unicode_8_escape())
-            _ =>
-              fail(
-                self.error(
-                  "Invalid escape sequence: \\\{escaped.to_char().unwrap_or('?')}",
-                ),
-              )
-            // TODO:refine the error message 
-          }
+  let next_view = loop self.view() {
+    ['"', .. rest] => rest // exit
+    ['\\', peeked, .. rest] as current =>
+      match peeked {
+        'n' => {
+          sb.write_char('\n')
+          continue rest
         }
-        None =>
-          fail(self.error("Unexpected end of input after escape character"))
+        't' => {
+          sb.write_char('\t')
+          continue rest
+        }
+        'r' => {
+          sb.write_char('\r')
+          continue rest
+        }
+        '\\' => {
+          sb.write_char('\\')
+          continue rest
+        }
+        '"' => {
+          sb.write_char('"')
+          continue rest
+        }
+        '\'' => {
+          sb.write_char('\'')
+          continue rest
+        }
+        'b' => {
+          sb.write_char('\u0008')
+          continue rest
+        }
+        'f' => {
+          sb.write_char('\u000C')
+          continue rest
+        }
+        'u' => {
+          self.update_view(rest)
+          sb.write_char(self.read_unicode_4_escape())
+          continue self.view()
+        }
+        'U' => {
+          self.update_view(rest)
+          // this may affect error message about location
+          // we may fix this by storing the beginnning position 
+          // of the string
+          sb.write_char(self.read_unicode_8_escape())
+          continue self.view()
+        }
+        _ => {
+          // fix the error message location
+          self.update_view(current)
+          fail(
+            self.error("Invalid escape sequence: \\" + Char::to_string(peeked)),
+          )
+        }
       }
-    } else {
+    [ch, .. rest] => {
       sb.write_char(ch)
+      continue rest
     }
+    [] => fail(self.error("Unterminated string"))
   }
-  self.expect_char('"', msg="Unterminated string")
+  self.update_view(next_view)
   sb.to_string()
 }
 

@@ -123,12 +123,12 @@ test "unicode or emoji" {
   @json.inspect(tokens, content=[
     ["Identifier", "key1", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
-    ["StringToken", "💩", { "loc": "1:8-1:11" }],
-    ["Newline", { "loc": "1:11-2:1" }],
+    ["StringToken", "💩", { "loc": "1:8-1:12" }],
+    ["Newline", { "loc": "1:12-2:1" }],
     ["Identifier", "key2", { "loc": "2:1-2:5" }],
     ["Equals", { "loc": "2:6-2:7" }],
-    ["StringToken", "💩", { "loc": "2:8-2:11" }],
-    ["EOF", { "loc": "2:11-2:11" }],
+    ["StringToken", "💩", { "loc": "2:8-2:12" }],
+    ["EOF", { "loc": "2:12-2:12" }],
   ])
   // more tests
 
@@ -350,7 +350,7 @@ test "test invalid escape sequence error" {
   // TODO: ArgsLoc no absolute loc
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid escape sequence: \\z at line 1, column 14",
+    content=("Invalid escape sequence: \\z at line 1, column 12"),
   ) // Should fail with invalid escape sequence
 }
 
@@ -364,7 +364,7 @@ test "test unterminated string error" {
   // TODO: ArgsLoc no absolute loc
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Unterminated string at line 1, column 20",
+    content="Unterminated string at line 1, column 8",
   ) // Should fail with unterminated string
 }
 
@@ -378,7 +378,7 @@ test "test unexpected end after escape" {
   // TODO: ArgsLoc no absolute loc
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Unexpected end of input after escape character at line 1, column 13",
+    content="Unterminated string at line 1, column 8",
   ) // Should fail with unexpected end after escape
 }
 
