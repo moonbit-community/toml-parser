@@ -74,29 +74,73 @@ fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
 
 ///| Parse Unicode escape sequence \UXXXXXXXX
 fn Lexer::read_unicode_8_escape(self : Lexer) -> Char raise {
-  let mut code = 0
-  for i = 0; i < 8; i = i + 1 {
-    match self.peek() {
-      Some('0'..='9' | 'a'..='f' | 'A'..='F' as ch) => {
-        self.advance()
-        let digit = match ch {
-          '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
-            ch.to_int() - '0'.to_int()
-          'a' | 'b' | 'c' | 'd' | 'e' | 'f' => ch.to_int() - 'a'.to_int() + 10
-          'A' | 'B' | 'C' | 'D' | 'E' | 'F' => ch.to_int() - 'A'.to_int() + 10
-          _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch)))
-        }
-        code = code * 16 + digit
-      }
-      _ =>
-        fail(
-          self.error("Invalid Unicode escape sequence: expected 8 hex digits"),
-        )
+  let code = match self.view() {
+    [
+      // '\\',
+      // 'U',
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a0,
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a1,
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a2,
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a3,
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a4,
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a5,
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a6,
+      '0'..='9'
+      | 'a'..='f'
+      | 'A'..='F' as a7,
+      .. rest,
+    ] => {
+      self.update_view(rest)
+      let code = a0.hex_digit_to_int() * 16 * 16 * 16 * 16 * 16 * 16 * 16 +
+        a1.hex_digit_to_int() * 16 * 16 * 16 * 16 * 16 * 16 +
+        a2.hex_digit_to_int() * 16 * 16 * 16 * 16 * 16 +
+        a3.hex_digit_to_int() * 16 * 16 * 16 * 16 +
+        a4.hex_digit_to_int() * 16 * 16 * 16 +
+        a5.hex_digit_to_int() * 16 * 16 +
+        a6.hex_digit_to_int() * 16 +
+        a7.hex_digit_to_int()
+      code
     }
+    _ =>
+      fail(self.error("Invalid Unicode escape sequence: expected 8 hex digits"))
   }
-  if code > 0x10FFFF || (code >= 0xD800 && code <= 0xDFFF) {
-    fail(self.error("Invalid Unicode code point: " + code.to_string()))
-  }
+  // let mut code = 0
+  // for i = 0; i < 8; i = i + 1 {
+  //   match self.peek() {
+  //     Some('0'..='9' | 'a'..='f' | 'A'..='F' as ch) => {
+  //       self.advance()
+  //       let digit = match ch {
+  //         '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
+  //           ch.to_int() - '0'.to_int()
+  //         'a' | 'b' | 'c' | 'd' | 'e' | 'f' => ch.to_int() - 'a'.to_int() + 10
+  //         'A' | 'B' | 'C' | 'D' | 'E' | 'F' => ch.to_int() - 'A'.to_int() + 10
+  //         _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch)))
+  //       }
+  //       code = code * 16 + digit
+  //     }
+  //     _ =>
+  //       fail(
+  //         self.error("Invalid Unicode escape sequence: expected 8 hex digits"),
+  //       )
+  //   }
+  // }
+  // if code > 0x10FFFF || (code >= 0xD800 && code <= 0xDFFF) {
+  //   fail(self.error("Invalid Unicode code point: " + code.to_string()))
+  // }
   match code.to_char() {
     Some(ch) => ch
     None => fail(self.error("Invalid Unicode code point: " + code.to_string()))
@@ -1023,7 +1067,7 @@ test "unicode escape sequences" {
   inspect(result1, content="A")
   let lexer2 = Lexer::new("\"\\U00000041\"") // 'A'
   let result2 = lexer2.read_basic_string()
-  inspect(result2, content="A")
+  inspect(result2, content="\u{41}")
 }
 
 ///| Test multiline basic string
