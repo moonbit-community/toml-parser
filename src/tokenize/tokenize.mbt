@@ -27,11 +27,27 @@ fn Lexer::read_identifier(self : Lexer) -> String {
 
 ///|
 ///  calculate the code point using a0, a1, a2, a3
-fn Char::hex_digit_to_int(ch : Char) -> Int? {
+fn Char::is_hex(ch : Char) -> Int? {
   match ch {
     '0'..='9' => Some(ch.to_int() - '0')
     'a'..='f' => Some(ch.to_int() - 'a' + 10)
     'A'..='F' => Some(ch.to_int() - 'A' + 10)
+    _ => None
+  }
+}
+
+///|
+fn Char::is_oct(ch : Char) -> Int? {
+  match ch {
+    '0'..='7' => Some(ch.to_int() - '0')
+    _ => None
+  }
+}
+
+///|
+fn Char::is_bin(ch : Char) -> Int? {
+  match ch {
+    '0' | '1' => Some(ch.to_int() - '0')
     _ => None
   }
 }
@@ -47,10 +63,10 @@ fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
       a2,
       a3,
       .. rest,
-    ] if a0.hex_digit_to_int() is Some(a0) &&
-      a1.hex_digit_to_int() is Some(a1) &&
-      a2.hex_digit_to_int() is Some(a2) &&
-      a3.hex_digit_to_int() is Some(a3) => {
+    ] if a0.is_hex() is Some(a0) &&
+      a1.is_hex() is Some(a1) &&
+      a2.is_hex() is Some(a2) &&
+      a3.is_hex() is Some(a3) => {
       self.update_view(rest)
       let code = a0 * 16 * 16 * 16 + a1 * 16 * 16 + a2 * 16 + a3
       code
@@ -79,14 +95,14 @@ fn Lexer::read_unicode_8_escape(self : Lexer) -> Char raise {
       a6,
       a7,
       .. rest,
-    ] if a0.hex_digit_to_int() is Some(a0) &&
-      a1.hex_digit_to_int() is Some(a1) &&
-      a2.hex_digit_to_int() is Some(a2) &&
-      a3.hex_digit_to_int() is Some(a3) &&
-      a4.hex_digit_to_int() is Some(a4) &&
-      a5.hex_digit_to_int() is Some(a5) &&
-      a6.hex_digit_to_int() is Some(a6) &&
-      a7.hex_digit_to_int() is Some(a7) => {
+    ] if a0.is_hex() is Some(a0) &&
+      a1.is_hex() is Some(a1) &&
+      a2.is_hex() is Some(a2) &&
+      a3.is_hex() is Some(a3) &&
+      a4.is_hex() is Some(a4) &&
+      a5.is_hex() is Some(a5) &&
+      a6.is_hex() is Some(a6) &&
+      a7.is_hex() is Some(a7) => {
       self.update_view(rest)
       let code = a0 * 16 * 16 * 16 * 16 * 16 * 16 * 16 +
         a1 * 16 * 16 * 16 * 16 * 16 * 16 +
@@ -166,9 +182,7 @@ fn Lexer::read_basic_string(self : Lexer) -> String raise {
         _ => {
           // fix the error message location
           self.update_view(current)
-          fail(
-            self.error("Invalid escape sequence: \\\{peeked}"),
-          )
+          fail(self.error("Invalid escape sequence: \\\{peeked}"))
         }
       }
     [ch, .. rest] => {
@@ -237,12 +251,7 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
           }
           self.update_view(next_view)
         }
-        _ =>
-          fail(
-            self.error(
-              "Invalid escape sequence: \\\{escaped}",
-            ),
-          )
+        _ => fail(self.error("Invalid escape sequence: \\\{escaped}"))
       }
       continue self.view()
     }
@@ -308,15 +317,9 @@ fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
 ///| Parse hexadecimal number
 fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
   let mut result = match self.view() {
-    ['0', 'x' | 'X', '0'..='9' | 'a'..='f' | 'A'..='F' as ch, .. rest] => {
+    ['0', 'x' | 'X', ch, .. rest] if ch.is_hex() is Some(ch) => {
       self.update_view(rest)
-      let digit = match ch {
-        '0'..='9' => ch.to_int() - '0'
-        'a'..='f' => ch.to_int() - 'a' + 10
-        'A'..='F' => ch.to_int() - 'A' + 10
-        _ => abort("Internal error: pattern matching inconsistency")
-      }
-      digit.to_int64()
+      ch.to_int64()
     }
     _ =>
       fail(
@@ -324,26 +327,14 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
       )
   }
   loop self.view() {
-    ['0'..='9' | 'a'..='f' | 'A'..='F' as ch, .. rest] => {
+    [ch, .. rest] if ch.is_hex() is Some(ch) => {
       self.update_view(rest)
-      let digit = match ch {
-        '0'..='9' => ch.to_int() - '0'
-        'a'..='f' => ch.to_int() - 'a' + 10
-        'A'..='F' => ch.to_int() - 'A' + 10
-        _ => fail(self.error("Invalid hex digit: \{ch}"))
-      }
-      result = result * 16L + digit.to_int64()
+      result = result * 16L + ch.to_int64()
       continue self.view()
     }
-    ['_', '0'..='9' | 'a'..='f' | 'A'..='F' as ch2, .. rest] => {
+    ['_', ch, .. rest] if ch.is_hex() is Some(ch) => {
       self.update_view(rest)
-      let digit = match ch2 {
-        '0'..='9' => ch2.to_int() - '0'
-        'a'..='f' => ch2.to_int() - 'a' + 10
-        'A'..='F' => ch2.to_int() - 'A' + 10
-        _ => fail(self.error("Invalid hex digit: \{ch2}"))
-      }
-      result = result * 16L + digit.to_int64()
+      result = result * 16L + ch.to_int64()
       continue self.view()
     }
     ['_', '_', ..] => fail(self.error("Invalid hex number, consecutive _"))
@@ -370,24 +361,21 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
 ///| Parse octal number
 fn Lexer::read_octal_number(self : Lexer) -> Int64 raise {
   let mut result = match self.view() {
-    ['0', 'o' | 'O', '0'..='7' as ch, .. rest] => {
+    ['0', 'o' | 'O', ch, .. rest] if ch.is_oct() is Some(ch) => {
       self.update_view(rest)
-      let digit = ch.to_int() - '0'
-      digit.to_int64()
+      ch.to_int64()
     }
     _ => fail(self.error("Invalid octal number, expected 0..=7 after 0o"))
   }
   loop self.view() {
-    ['0'..='7' as ch, .. rest] => {
+    [ch, .. rest] if ch.is_oct() is Some(ch) => {
       self.update_view(rest)
-      let digit = ch.to_int() - '0'
-      result = result * 8L + digit.to_int64()
+      result = result * 8L + ch.to_int64()
       continue self.view()
     }
-    ['_', '0'..='7' as ch2, .. rest] => {
+    ['_', ch, .. rest] if ch.is_oct() is Some(ch) => {
       self.update_view(rest)
-      let digit = ch2.to_int() - '0'
-      result = result * 8L + digit.to_int64()
+      result = result * 8L + ch.to_int64()
       continue self.view()
     }
     ['_', '_', ..] => fail(self.error("Invalid octal number, consecutive _"))
@@ -425,24 +413,21 @@ test {
 ///| Parse binary number
 fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
   let mut result = match self.view() {
-    ['0', 'b' | 'B', '0' | '1' as ch, .. rest] => {
+    ['0', 'b' | 'B', ch, .. rest] if ch.is_bin() is Some(ch) => {
       self.update_view(rest)
-      let digit = ch.to_int() - '0'
-      digit.to_int64()
+      ch.to_int64()
     }
     _ => fail(self.error("Invalid binary number, expected 0 or 1 after 0b"))
   }
   loop self.view() {
-    ['0' | '1' as ch, .. rest] => {
+    [ch, .. rest] if ch.is_bin() is Some(ch) => {
       self.update_view(rest)
-      let digit = ch.to_int() - '0'.to_int()
-      result = result * 2L + digit.to_int64()
+      result = result * 2L + ch.to_int64()
       continue self.view()
     }
-    ['_', '0' | '1' as ch2, .. rest] => {
+    ['_', ch, .. rest] if ch.is_bin() is Some(ch) => {
       self.update_view(rest)
-      let digit = ch2.to_int() - '0'
-      result = result * 2L + digit.to_int64()
+      result = result * 2L + ch.to_int64()
       continue self.view()
     }
     ['_', '_', ..] => fail(self.error("Invalid binary number, consecutive _"))
