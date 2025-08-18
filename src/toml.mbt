@@ -32,7 +32,7 @@ pub fn Parser::update_view(self : Parser, view : ArrayView[Token]) -> Unit {
 ///| Convert TomlValue to string representation
 pub fn TomlValue::to_string(self : TomlValue) -> String {
   match self {
-    TomlString(s) => "\"" + s + "\""
+    TomlString(s) => "\"\{s}\""
     TomlInteger(i) => i.to_string()
     TomlFloat(f) => f.to_string()
     TomlBoolean(b) => if b { "true" } else { "false" }
@@ -52,7 +52,7 @@ pub fn TomlValue::to_string(self : TomlValue) -> String {
     }
     TomlTable(table) => {
       let items = Array::new()
-      table.each(fn(key, value) { items.push(key + " = " + value.to_string()) })
+      table.each(fn(key, value) { items.push("\{key} = \{value.to_string()}") })
       let mut result = "{"
       for i = 0; i < items.length(); i = i + 1 {
         if i > 0 {

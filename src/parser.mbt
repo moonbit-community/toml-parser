@@ -234,7 +234,7 @@ fn create_nested_table(
       Some(_) =>
         parse_error(
           error_tokens,
-          "Table path conflicts with existing value: " + key,
+          "Table path conflicts with existing value: \{key}",
         )
       None => {
         let new_table = Map::new()
@@ -261,7 +261,7 @@ fn create_array_of_tables(
       Some(_) =>
         parse_error(
           error_tokens,
-          "Array of tables path conflicts with existing value: " + key,
+          "Array of tables path conflicts with existing value: \{key}",
         )
       None => {
         let new_table = Map::new()
@@ -283,7 +283,7 @@ fn create_array_of_tables(
     Some(_) =>
       parse_error(
         error_tokens,
-        "Array of tables conflicts with existing non-array value: " + final_key,
+        "Array of tables conflicts with existing non-array value: \{final_key}",
       )
     None => {
       // Create new array with the first table
@@ -298,8 +298,8 @@ fn create_array_of_tables(
 ///|
 fn[T] parse_error(tokens : ArrayView[@tokenize.Token], msg : String) -> T raise {
   match tokens {
-    [token, ..] => fail(msg + " at " + token.loc().to_string())
-    [] => fail(msg + " at the end of input")
+    [token, ..] => fail("\{msg} at \{token.loc()}")
+    [] => fail("\{msg} at the end of input")
   }
 }
 
@@ -440,7 +440,7 @@ fn set_dotted_key_value(
       Some(_) =>
         parse_error(
           error_tokens,
-          "Dotted key path conflicts with existing non-table value: " + key,
+          "Dotted key path conflicts with existing non-table value: \{key}",
         )
       None => {
         // Create new nested table

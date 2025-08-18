@@ -141,7 +141,7 @@ match parse(toml) {
     // Access parsed values
     println(table["title"])  // Output: "My Application"
   }
-  Err(msg) => println("Parse error: " + msg)
+  Err(msg) => println("Parse error: \{msg}")
 }
 ```
 
@@ -152,12 +152,12 @@ let toml = "numbers = [1, 2, 3, 4, 5]"
 match parse(toml) {
   Ok(result) => {
     if result.validate() {
-      println("Valid TOML: " + result.to_string())
+      println("Valid TOML: \{result}")
     } else {
       println("Invalid TOML structure")
     }
   }
-  Err(msg) => println("Error: " + msg)
+  Err(msg) => println("Error: \{msg}")
 }
 ```
 
@@ -188,7 +188,7 @@ match parse(toml) {
     let products = table["products"]
     println("Parsed complex TOML structure")
   }
-  Err(msg) => println("Parse error: " + msg)
+  Err(msg) => println("Parse error: \{msg}")
 }
 ```
 
@@ -206,11 +206,11 @@ match parse(toml) {
   Ok(TomlTable(table)) => {
     match table["created_at"] {
       Some(TomlDateTime(OffsetDateTime(dt))) => 
-        println("Created at: " + dt)
+        println("Created at: \{dt}")
       _ => println("Invalid datetime")
     }
   }
-  Err(msg) => println("Parse error: " + msg)
+  Err(msg) => println("Parse error: \{msg}")
 }
 ```
 
@@ -220,7 +220,7 @@ match parse(toml) {
 let toml = "database = {server = \"localhost\", port = 5432}"
 match parse(toml) {
   Ok(result) => println(result.to_string())
-  Err(msg) => println("Error: " + msg)
+  Err(msg) => println("Error: \{msg}")
 }
 ```
 
@@ -249,7 +249,7 @@ match parse(config) {
       println(result.to_string())
     }
   }
-  Err(msg) => println("Configuration error: " + msg)
+  Err(msg) => println("Configuration error: \{msg}")
 }
 ```
 

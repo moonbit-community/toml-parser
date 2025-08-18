@@ -7,9 +7,9 @@ fn main {
   let str_val = @toml.TomlString("Hello, TOML!")
   let int_val = @toml.TomlInteger(42L)
   let bool_val = @toml.TomlBoolean(true)
-  println("String value: " + str_val.to_string())
-  println("Integer value: " + int_val.to_string())
-  println("Boolean value: " + bool_val.to_string())
+  println("String value: \{str_val}")
+  println("Integer value: \{int_val}")
+  println("Boolean value: \{bool_val}")
 
   // Demo 2: Array example
   println("\n--- Array Example ---")
@@ -18,7 +18,7 @@ fn main {
   arr.push(@toml.TomlInteger(2L))
   arr.push(@toml.TomlInteger(3L))
   let array_val = @toml.TomlArray(arr)
-  println("Array value: " + array_val.to_string())
+  println("Array value: \{array_val}")
 
   // Demo 3: Parse simple TOML
   println("\n--- Parse Simple TOML ---")
@@ -30,7 +30,7 @@ fn main {
     println("\nParsed result:")
     println(result.to_string())
   } catch {
-    msg => println("Parse error: " + msg.to_string())
+    msg => println("Parse error: \{msg}")
   }
 
   // Demo 4: Parse with array
@@ -43,7 +43,7 @@ fn main {
     println("\nParsed result:")
     println(result.to_string())
   } catch {
-    msg => println("Parse error: " + msg.to_string())
+    msg => println("Parse error: \{msg}")
   }
 
   // Demo 5: Parse with inline table
@@ -56,6 +56,6 @@ fn main {
     println("\nParsed result:")
     println(result.to_string())
   } catch {
-    msg => println("Parse error: " + msg.to_string())
+    msg => println("Parse error: \{msg}")
   }
 }

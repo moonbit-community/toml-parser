@@ -60,7 +60,7 @@ fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
   }
   match code.to_char() {
     Some(ch) => ch
-    None => fail(self.error("Invalid Unicode code point: " + code.to_string()))
+    None => fail(self.error("Invalid Unicode code point: \{code}"))
   }
 }
 
@@ -102,11 +102,11 @@ fn Lexer::read_unicode_8_escape(self : Lexer) -> Char raise {
       fail(self.error("Invalid Unicode escape sequence: expected 8 hex digits"))
   }
   if code > 0x10FFFF || (code >= 0xD800 && code <= 0xDFFF) {
-    fail(self.error("Invalid Unicode code point: " + code.to_string()))
+    fail(self.error("Invalid Unicode code point: \{code}"))
   }
   match code.to_char() {
     Some(ch) => ch
-    None => fail(self.error("Invalid Unicode code point: " + code.to_string()))
+    None => fail(self.error("Invalid Unicode code point: \{code}"))
   }
 }
 
@@ -167,7 +167,7 @@ fn Lexer::read_basic_string(self : Lexer) -> String raise {
           // fix the error message location
           self.update_view(current)
           fail(
-            self.error("Invalid escape sequence: \\" + Char::to_string(peeked)),
+            self.error("Invalid escape sequence: \\\{peeked}"),
           )
         }
       }
@@ -241,7 +241,7 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
           _ =>
             fail(
               self.error(
-                "Invalid escape sequence: \\" + Char::to_string(escaped),
+                "Invalid escape sequence: \\\{escaped}",
               ),
             )
         }
@@ -333,7 +333,7 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
           '0'..='9' => ch.to_int() - '0'
           'a'..='f' => ch.to_int() - 'a' + 10
           'A'..='F' => ch.to_int() - 'A' + 10
-          _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch)))
+          _ => fail(self.error("Invalid hex digit: \{ch}"))
         }
         result = result * 16L + digit.to_int64()
       }
@@ -343,7 +343,7 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
           '0'..='9' => ch2.to_int() - '0'
           'a'..='f' => ch2.to_int() - 'a' + 10
           'A'..='F' => ch2.to_int() - 'A' + 10
-          _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch2)))
+          _ => fail(self.error("Invalid hex digit: \{ch2}"))
         }
         result = result * 16L + digit.to_int64()
       }
@@ -796,11 +796,11 @@ fn Lexer::read_number_with_loc(
   let loc = make_loc(start_pos, end_pos)
   if is_float {
     FloatToken(@strconv.parse_double(s), loc~) catch {
-      _ => fail("Invalid float: " + s)
+      _ => fail("Invalid float: \{s}")
     }
   } else {
     IntegerToken(@strconv.parse_int64(s), loc~) catch {
-      _ => fail("Invalid integer: " + s)
+      _ => fail("Invalid integer: \{s}")
     }
   }
 }
