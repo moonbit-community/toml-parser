@@ -534,6 +534,44 @@ test "float special values" {
   ])
 }
 
+test "inf failure" {
+  let inf_failure_toml =
+    #|inf = -infx
+    #|
+  @json.inspect(try? parse_no_loc(inf_failure_toml), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Invalid character 'x' after special value at line 1, column 11",
+    },
+  })
+  let inf_failure_toml2 =
+    #|inf = -infx=2
+    #|
+  @json.inspect(try? parse_no_loc(inf_failure_toml2), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Invalid character 'x' after special value at line 1, column 11",
+    },
+  })
+  
+  // Test that valid inf values still work correctly
+  let valid_inf_toml =
+    #|pos_inf = inf
+    #|neg_inf = -inf
+    #|pos_nan = nan
+    #|neg_nan = -nan
+    #|
+  @json.inspect(@toml.parse(valid_inf_toml), content=[
+    "TomlTable",
+    {
+      "pos_inf": ["TomlFloat", @double.infinity],
+      "neg_inf": ["TomlFloat", @double.neg_infinity],
+      "pos_nan": ["TomlFloat", @double.not_a_number],
+      "neg_nan": ["TomlFloat", @double.not_a_number],
+    },
+  ])
+}
+
 ///| Test for heterogeneous arrays (should be invalid according to TOML spec)
 test "heterogeneous arrays should be invalid" {
   // This test verifies that our parser correctly rejects arrays with mixed types

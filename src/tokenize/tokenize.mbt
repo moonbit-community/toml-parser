@@ -25,6 +25,25 @@ fn Lexer::read_identifier(self : Lexer) -> String {
   sb.to_string()
 }
 
+///| Check if the next character is a valid token separator
+///| Valid separators are: whitespace, newline, EOF, or TOML punctuation
+fn is_valid_separator(ch : Char) -> Bool {
+  match ch {
+    ' ' | '\t' | '\n' | '\r' => true // whitespace
+    '=' | ',' | ']' | '}' | '#' => true // TOML punctuation
+    _ => false
+  }
+}
+
+///| Validate that a special value token (inf, nan) is properly terminated
+fn Lexer::validate_special_value_termination(self : Lexer) -> Unit raise {
+  match self.view() {
+    [] => () // EOF is valid
+    [ch, ..] if is_valid_separator(ch) => () // Valid separator
+    [ch, ..] => fail(self.error("Invalid character '\{ch}' after special value"))
+  }
+}
+
 ///|
 ///  calculate the code point using a0, a1, a2, a3
 fn Char::is_hex(ch : Char) -> Int? {
@@ -918,13 +937,14 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
 
     // Handle negative special float values (-inf, -nan)
     ['-', 'i', 'n', 'f', .. rest] => {
-      // FIXME: rest should begin with whitespace
       self.update_view(rest)
+      self.validate_special_value_termination()
       let end_pos = self.get_loc()
       FloatToken(-1.0 / 0.0, loc=make_loc(start_pos, end_pos)) // negative infinity
     }
     ['-', 'n', 'a', 'n', .. rest] => {
       self.update_view(rest)
+      self.validate_special_value_termination()
       let end_pos = self.get_loc()
       FloatToken(0.0 / 0.0, loc=make_loc(start_pos, end_pos)) // NaN
     }
@@ -932,11 +952,13 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
     // Handle positive special float values (+inf, +nan) 
     ['+', 'i', 'n', 'f', .. rest] => {
       self.update_view(rest)
+      self.validate_special_value_termination()
       let end_pos = self.get_loc()
       FloatToken(1.0 / 0.0, loc=make_loc(start_pos, end_pos)) // positive infinity
     }
     ['+', 'n', 'a', 'n', .. rest] => {
       self.update_view(rest)
+      self.validate_special_value_termination()
       let end_pos = self.get_loc()
       FloatToken(0.0 / 0.0, loc=make_loc(start_pos, end_pos)) // NaN
     }
@@ -949,8 +971,14 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       match identifier {
         "true" => BooleanToken(true, loc~)
         "false" => BooleanToken(false, loc~)
-        "inf" => FloatToken(1.0 / 0.0, loc~) // positive infinity
-        "nan" => FloatToken(0.0 / 0.0, loc~) // NaN
+        "inf" => {
+          self.validate_special_value_termination()
+          FloatToken(1.0 / 0.0, loc~) // positive infinity
+        }
+        "nan" => {
+          self.validate_special_value_termination()
+          FloatToken(0.0 / 0.0, loc~) // NaN
+        }
         _ => Identifier(identifier, loc~)
       }
     }
