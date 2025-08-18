@@ -202,65 +202,64 @@ fn Lexer::read_literal_string(self : Lexer) -> String raise {
 fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
   self.skip_single_newline()
   let sb = StringBuilder::new()
-  while true {
-    match self.view() {
-      [.. "\"\"\"", .. rest] => {
-        // Check for closing triple quotes  
-        self.update_view(rest)
-        return sb.to_string()
-      }
-      ['\\', escaped, .. rest] => {
-        self.update_view(rest) // consume escaped character
-        match escaped {
-          'n' => sb.write_char('\n')
-          't' => sb.write_char('\t')
-          'r' => sb.write_char('\r')
-          '\\' => sb.write_char('\\')
-          '"' => sb.write_char('"')
-          '\'' => sb.write_char('\'')
-          'b' => sb.write_char('\u0008')
-          'f' => sb.write_char('\u000C')
-          'u' => sb.write_char(self.read_unicode_4_escape())
-          'U' => sb.write_char(self.read_unicode_8_escape())
-          // Line ending backslash (trim whitespace at line start)
-          '\r' | '\n' => {
-            self.new_line()
-            if escaped == '\r' {
-              match self.view() {
-                ['\n', .. rest] => self.update_view(rest)
-                _ => ()
-              }
-            }
-            // Skip whitespace at the beginning of the next line
-            let next_view = loop self.view() {
-              [' ' | '\t', .. rest] => continue rest
-              rest => rest
-            }
-            self.update_view(next_view)
-          }
-          _ =>
-            fail(
-              self.error(
-                "Invalid escape sequence: \\\{escaped}",
-              ),
-            )
-        }
-      }
-      ['\\'] => {
-        self.advance()
-        fail(self.error("Unexpected end of input after escape character"))
-      }
-      [ch, .. rest] => {
-        self.update_view(rest)
-        sb.write_char(ch)
-        if ch == '\n' {
-          self.new_line()
-        }
-      }
-      [] => fail(self.error("Unterminated multiline string"))
+  loop self.view() {
+    [.. "\"\"\"", .. rest] => {
+      // Check for closing triple quotes  
+      self.update_view(rest)
+      break sb.to_string()
     }
+    ['\\', escaped, .. rest] => {
+      self.update_view(rest) // consume escaped character
+      match escaped {
+        'n' => sb.write_char('\n')
+        't' => sb.write_char('\t')
+        'r' => sb.write_char('\r')
+        '\\' => sb.write_char('\\')
+        '"' => sb.write_char('"')
+        '\'' => sb.write_char('\'')
+        'b' => sb.write_char('\u0008')
+        'f' => sb.write_char('\u000C')
+        'u' => sb.write_char(self.read_unicode_4_escape())
+        'U' => sb.write_char(self.read_unicode_8_escape())
+        // Line ending backslash (trim whitespace at line start)
+        '\r' | '\n' => {
+          self.new_line()
+          if escaped == '\r' {
+            match self.view() {
+              ['\n', .. rest] => self.update_view(rest)
+              _ => ()
+            }
+          }
+          // Skip whitespace at the beginning of the next line
+          let next_view = loop self.view() {
+            [' ' | '\t', .. rest] => continue rest
+            rest => rest
+          }
+          self.update_view(next_view)
+        }
+        _ =>
+          fail(
+            self.error(
+              "Invalid escape sequence: \\\{escaped}",
+            ),
+          )
+      }
+      continue self.view()
+    }
+    ['\\'] => {
+      self.advance()
+      fail(self.error("Unexpected end of input after escape character"))
+    }
+    [ch, .. rest] => {
+      self.update_view(rest)
+      sb.write_char(ch)
+      if ch == '\n' {
+        self.new_line()
+      }
+      continue self.view()
+    }
+    [] => fail(self.error("Unterminated multiline string"))
   }
-  fail(self.error("Unterminated multiline string"))
 }
 
 ///| Parse a multi-line literal string (triple single quotes) without escape sequences
@@ -279,32 +278,31 @@ fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
     _ => ()
   }
   let sb = StringBuilder::new()
-  while true {
-    match self.view() {
-      [.. "'''", .. rest] => {
-        // finish reading the string
-        self.update_view(rest)
-        break
-      }
-      [.. "\r\n", .. rest] => {
-        sb.write_string("\r\n")
-        self.update_view(rest)
+  loop self.view() {
+    [.. "'''", .. rest] => {
+      // finish reading the string
+      self.update_view(rest)
+      break sb.to_string()
+    }
+    [.. "\r\n", .. rest] => {
+      sb.write_string("\r\n")
+      self.update_view(rest)
+      self.new_line()
+      continue self.view()
+    }
+    // TODO: support .. ("\n"|"\r\n")
+    // CR: zhangyu
+
+    [ch, .. rest] => {
+      if ch is '\n' {
         self.new_line()
       }
-      // TODO: support .. ("\n"|"\r\n")
-      // CR: zhangyu
-
-      [ch, .. rest] => {
-        if ch is '\n' {
-          self.new_line()
-        }
-        self.update_view(rest)
-        sb.write_char(ch)
-      }
-      [] => fail(self.error("Unterminated multiline literal string"))
+      self.update_view(rest)
+      sb.write_char(ch)
+      continue self.view()
     }
+    [] => fail(self.error("Unterminated multiline literal string"))
   }
-  sb.to_string()
 }
 
 ///| Parse hexadecimal number
@@ -325,33 +323,33 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
         self.error("Invalid hex number, expected 0..=9, a..=f, A..=F after 0x"),
       )
   }
-  while true {
-    match self.view() {
-      ['0'..='9' | 'a'..='f' | 'A'..='F' as ch, .. rest] => {
-        self.update_view(rest)
-        let digit = match ch {
-          '0'..='9' => ch.to_int() - '0'
-          'a'..='f' => ch.to_int() - 'a' + 10
-          'A'..='F' => ch.to_int() - 'A' + 10
-          _ => fail(self.error("Invalid hex digit: \{ch}"))
-        }
-        result = result * 16L + digit.to_int64()
+  loop self.view() {
+    ['0'..='9' | 'a'..='f' | 'A'..='F' as ch, .. rest] => {
+      self.update_view(rest)
+      let digit = match ch {
+        '0'..='9' => ch.to_int() - '0'
+        'a'..='f' => ch.to_int() - 'a' + 10
+        'A'..='F' => ch.to_int() - 'A' + 10
+        _ => fail(self.error("Invalid hex digit: \{ch}"))
       }
-      ['_', '0'..='9' | 'a'..='f' | 'A'..='F' as ch2, .. rest] => {
-        self.update_view(rest)
-        let digit = match ch2 {
-          '0'..='9' => ch2.to_int() - '0'
-          'a'..='f' => ch2.to_int() - 'a' + 10
-          'A'..='F' => ch2.to_int() - 'A' + 10
-          _ => fail(self.error("Invalid hex digit: \{ch2}"))
-        }
-        result = result * 16L + digit.to_int64()
-      }
-      ['_', '_', ..] => fail(self.error("Invalid hex number, consecutive _"))
-      ['_', ..] =>
-        fail(self.error("Invalid hex number, no trailing digits after _"))
-      _ => break
+      result = result * 16L + digit.to_int64()
+      continue self.view()
     }
+    ['_', '0'..='9' | 'a'..='f' | 'A'..='F' as ch2, .. rest] => {
+      self.update_view(rest)
+      let digit = match ch2 {
+        '0'..='9' => ch2.to_int() - '0'
+        'a'..='f' => ch2.to_int() - 'a' + 10
+        'A'..='F' => ch2.to_int() - 'A' + 10
+        _ => fail(self.error("Invalid hex digit: \{ch2}"))
+      }
+      result = result * 16L + digit.to_int64()
+      continue self.view()
+    }
+    ['_', '_', ..] => fail(self.error("Invalid hex number, consecutive _"))
+    ['_', ..] =>
+      fail(self.error("Invalid hex number, no trailing digits after _"))
+    _ => break
   }
   // 0-width assertion
   match self.view() {
@@ -379,23 +377,23 @@ fn Lexer::read_octal_number(self : Lexer) -> Int64 raise {
     }
     _ => fail(self.error("Invalid octal number, expected 0..=7 after 0o"))
   }
-  while true {
-    match self.view() {
-      ['0'..='7' as ch, .. rest] => {
-        self.update_view(rest)
-        let digit = ch.to_int() - '0'
-        result = result * 8L + digit.to_int64()
-      }
-      ['_', '0'..='7' as ch2, .. rest] => {
-        self.update_view(rest)
-        let digit = ch2.to_int() - '0'
-        result = result * 8L + digit.to_int64()
-      }
-      ['_', '_', ..] => fail(self.error("Invalid octal number, consecutive _"))
-      ['_', ..] =>
-        fail(self.error("Invalid octal number, no trailing digits after _"))
-      _ => break
+  loop self.view() {
+    ['0'..='7' as ch, .. rest] => {
+      self.update_view(rest)
+      let digit = ch.to_int() - '0'
+      result = result * 8L + digit.to_int64()
+      continue self.view()
     }
+    ['_', '0'..='7' as ch2, .. rest] => {
+      self.update_view(rest)
+      let digit = ch2.to_int() - '0'
+      result = result * 8L + digit.to_int64()
+      continue self.view()
+    }
+    ['_', '_', ..] => fail(self.error("Invalid octal number, consecutive _"))
+    ['_', ..] =>
+      fail(self.error("Invalid octal number, no trailing digits after _"))
+    _ => break
   }
   // 0-width assertion
   match self.view() {
@@ -434,23 +432,23 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
     }
     _ => fail(self.error("Invalid binary number, expected 0 or 1 after 0b"))
   }
-  while true {
-    match self.view() {
-      ['0' | '1' as ch, .. rest] => {
-        self.update_view(rest)
-        let digit = ch.to_int() - '0'.to_int()
-        result = result * 2L + digit.to_int64()
-      }
-      ['_', '0' | '1' as ch2, .. rest] => {
-        self.update_view(rest)
-        let digit = ch2.to_int() - '0'
-        result = result * 2L + digit.to_int64()
-      }
-      ['_', '_', ..] => fail(self.error("Invalid binary number, consecutive _"))
-      ['_', ..] =>
-        fail(self.error("Invalid binary number, no trailing digits after _"))
-      _ => break
+  loop self.view() {
+    ['0' | '1' as ch, .. rest] => {
+      self.update_view(rest)
+      let digit = ch.to_int() - '0'.to_int()
+      result = result * 2L + digit.to_int64()
+      continue self.view()
     }
+    ['_', '0' | '1' as ch2, .. rest] => {
+      self.update_view(rest)
+      let digit = ch2.to_int() - '0'
+      result = result * 2L + digit.to_int64()
+      continue self.view()
+    }
+    ['_', '_', ..] => fail(self.error("Invalid binary number, consecutive _"))
+    ['_', ..] =>
+      fail(self.error("Invalid binary number, no trailing digits after _"))
+    _ => break
   }
   // 0-width assertion
   match self.view() {
@@ -996,16 +994,18 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
 pub fn tokenize(input : String) -> Array[Token] raise {
   let lexer = Lexer::new(input)
   let tokens = Array::new()
-  while true {
-    let token = lexer.next_token()
-    tokens.push(token)
-    match token {
-      EOF(_) => break tokens
-      _ => ()
+  let mut current_token = lexer.next_token()
+  loop current_token {
+    EOF(_) as t => {
+      tokens.push(t)
+      break tokens
     }
-  } else {
-    // This should never be reached, but needed for type checking
-    tokens
+    _ as t => {
+      tokens.push(t)
+      let next_token = lexer.next_token()
+      current_token = next_token
+      continue next_token
+    }
   }
 }
 
