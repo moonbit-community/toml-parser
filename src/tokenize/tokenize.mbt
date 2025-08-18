@@ -917,44 +917,29 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       }
 
     // Handle negative special float values (-inf, -nan)
-    ['-', 'i', 'n', 'f', ..] =>
-      match self.view() {
-        ['-', 'i', 'n', 'f', .. rest] => {
-          self.update_view(rest)
-          let end_pos = self.get_loc()
-          FloatToken(-1.0 / 0.0, loc=make_loc(start_pos, end_pos)) // negative infinity
-        }
-        _ => abort("Internal error: pattern matching inconsistency")
-      }
-    ['-', 'n', 'a', 'n', ..] =>
-      match self.view() {
-        ['-', 'n', 'a', 'n', .. rest] => {
-          self.update_view(rest)
-          let end_pos = self.get_loc()
-          FloatToken(0.0 / 0.0, loc=make_loc(start_pos, end_pos)) // NaN
-        }
-        _ => abort("Internal error: pattern matching inconsistency")
-      }
+    ['-', 'i', 'n', 'f', .. rest] => {
+      // FIXME: rest should begin with whitespace
+      self.update_view(rest)
+      let end_pos = self.get_loc()
+      FloatToken(-1.0 / 0.0, loc=make_loc(start_pos, end_pos)) // negative infinity
+    }
+    ['-', 'n', 'a', 'n', .. rest] => {
+      self.update_view(rest)
+      let end_pos = self.get_loc()
+      FloatToken(0.0 / 0.0, loc=make_loc(start_pos, end_pos)) // NaN
+    }
 
     // Handle positive special float values (+inf, +nan) 
-    ['+', 'i', 'n', 'f', ..] =>
-      match self.view() {
-        ['+', 'i', 'n', 'f', .. rest] => {
-          self.update_view(rest)
-          let end_pos = self.get_loc()
-          FloatToken(1.0 / 0.0, loc=make_loc(start_pos, end_pos)) // positive infinity
-        }
-        _ => abort("Internal error: pattern matching inconsistency")
-      }
-    ['+', 'n', 'a', 'n', ..] =>
-      match self.view() {
-        ['+', 'n', 'a', 'n', .. rest] => {
-          self.update_view(rest)
-          let end_pos = self.get_loc()
-          FloatToken(0.0 / 0.0, loc=make_loc(start_pos, end_pos)) // NaN
-        }
-        _ => abort("Internal error: pattern matching inconsistency")
-      }
+    ['+', 'i', 'n', 'f', .. rest] => {
+      self.update_view(rest)
+      let end_pos = self.get_loc()
+      FloatToken(1.0 / 0.0, loc=make_loc(start_pos, end_pos)) // positive infinity
+    }
+    ['+', 'n', 'a', 'n', .. rest] => {
+      self.update_view(rest)
+      let end_pos = self.get_loc()
+      FloatToken(0.0 / 0.0, loc=make_loc(start_pos, end_pos)) // NaN
+    }
 
     // Identifiers and keywords
     ['a'..='z' | 'A'..='Z' | '_', ..] => {
