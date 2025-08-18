@@ -27,12 +27,12 @@ fn Lexer::read_identifier(self : Lexer) -> String {
 
 ///|
 ///  calculate the code point using a0, a1, a2, a3
-fn Char::hex_digit_to_int(ch : Char) -> Int {
+fn Char::hex_digit_to_int(ch : Char) -> Int? {
   match ch {
-    '0'..='9' => ch.to_int() - '0'
-    'a'..='f' => ch.to_int() - 'a' + 10
-    'A'..='F' => ch.to_int() - 'A' + 10
-    _ => abort("Internal error: pattern matching inconsistency")
+    '0'..='9' => Some(ch.to_int() - '0')
+    'a'..='f' => Some(ch.to_int() - 'a' + 10)
+    'A'..='F' => Some(ch.to_int() - 'A' + 10)
+    _ => None
   }
 }
 
@@ -42,25 +42,17 @@ fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
     [
       // '\\',
       // 'u',
-      '0'..='9'
-      | 'a'..='f'
-      | 'A'..='F' as a0,
-      '0'..='9'
-      | 'a'..='f'
-      | 'A'..='F' as a1,
-      '0'..='9'
-      | 'a'..='f'
-      | 'A'..='F' as a2,
-      '0'..='9'
-      | 'a'..='f'
-      | 'A'..='F' as a3,
+      a0,
+      a1,
+      a2,
+      a3,
       .. rest,
-    ] => {
+    ] if a0.hex_digit_to_int() is Some(a0) &&
+      a1.hex_digit_to_int() is Some(a1) &&
+      a2.hex_digit_to_int() is Some(a2) &&
+      a3.hex_digit_to_int() is Some(a3) => {
       self.update_view(rest)
-      let code = a0.hex_digit_to_int() * 16 * 16 * 16 +
-        a1.hex_digit_to_int() * 16 * 16 +
-        a2.hex_digit_to_int() * 16 +
-        a3.hex_digit_to_int()
+      let code = a0 * 16 * 16 * 16 + a1 * 16 * 16 + a2 * 16 + a3
       code
     }
     _ =>
@@ -74,25 +66,40 @@ fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
 
 ///| Parse Unicode escape sequence \UXXXXXXXX
 fn Lexer::read_unicode_8_escape(self : Lexer) -> Char raise {
-  let mut code = 0
-  for i = 0; i < 8; i = i + 1 {
-    match self.peek() {
-      Some('0'..='9' | 'a'..='f' | 'A'..='F' as ch) => {
-        self.advance()
-        let digit = match ch {
-          '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
-            ch.to_int() - '0'.to_int()
-          'a' | 'b' | 'c' | 'd' | 'e' | 'f' => ch.to_int() - 'a'.to_int() + 10
-          'A' | 'B' | 'C' | 'D' | 'E' | 'F' => ch.to_int() - 'A'.to_int() + 10
-          _ => fail(self.error("Invalid hex digit: " + Char::to_string(ch)))
-        }
-        code = code * 16 + digit
-      }
-      _ =>
-        fail(
-          self.error("Invalid Unicode escape sequence: expected 8 hex digits"),
-        )
+  let code = match self.view() {
+    [
+      // '\\',
+      // 'U',
+      a0,
+      a1,
+      a2,
+      a3,
+      a4,
+      a5,
+      a6,
+      a7,
+      .. rest,
+    ] if a0.hex_digit_to_int() is Some(a0) &&
+      a1.hex_digit_to_int() is Some(a1) &&
+      a2.hex_digit_to_int() is Some(a2) &&
+      a3.hex_digit_to_int() is Some(a3) &&
+      a4.hex_digit_to_int() is Some(a4) &&
+      a5.hex_digit_to_int() is Some(a5) &&
+      a6.hex_digit_to_int() is Some(a6) &&
+      a7.hex_digit_to_int() is Some(a7) => {
+      self.update_view(rest)
+      let code = a0 * 16 * 16 * 16 * 16 * 16 * 16 * 16 +
+        a1 * 16 * 16 * 16 * 16 * 16 * 16 +
+        a2 * 16 * 16 * 16 * 16 * 16 +
+        a3 * 16 * 16 * 16 * 16 +
+        a4 * 16 * 16 * 16 +
+        a5 * 16 * 16 +
+        a6 * 16 +
+        a7
+      code
     }
+    _ =>
+      fail(self.error("Invalid Unicode escape sequence: expected 8 hex digits"))
   }
   if code > 0x10FFFF || (code >= 0xD800 && code <= 0xDFFF) {
     fail(self.error("Invalid Unicode code point: " + code.to_string()))
