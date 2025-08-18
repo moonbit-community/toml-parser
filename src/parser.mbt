@@ -6,12 +6,11 @@ fnalias @tokenize.tokenize
 
 ///| Skip newline tokens
 fn Parser::skip_newlines(self : Parser) -> Unit {
-  while true {
-    match self.view() {
-      [Newline(..), .. rest] => self.update_view(rest)
-      _ => break
-    }
+  let next_view = loop self.view() {
+    [Newline(..), .. rest] => continue rest
+    rest => rest
   }
+  self.update_view(next_view)
 }
 
 ///| Parse a primary value (string, number, boolean)
@@ -144,30 +143,30 @@ fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
   path.push(first_key)
 
   // Parse additional keys separated by dots
-  while true {
-    match self.view() {
-      [Dot(..), .. rest] => {
-        self.update_view(rest)
-        let key = match self.view() {
-          [Identifier(name, ..), .. rest2] => {
-            self.update_view(rest2)
-            name
-          }
-          [StringToken(name, ..), .. rest2] => {
-            self.update_view(rest2)
-            name
-          }
-          [IntegerToken(i, ..), .. rest2] => {
-            self.update_view(rest2)
-            i.to_string()
-          }
-          rest2 => parse_error(rest2, "Expected table name after dot")
+  let next_view = loop self.view() {
+    [Dot(..), .. rest] => {
+      self.update_view(rest)
+      let key = match self.view() {
+        [Identifier(name, ..), .. rest2] => {
+          self.update_view(rest2)
+          name
         }
-        path.push(key)
+        [StringToken(name, ..), .. rest2] => {
+          self.update_view(rest2)
+          name
+        }
+        [IntegerToken(i, ..), .. rest2] => {
+          self.update_view(rest2)
+          i.to_string()
+        }
+        rest2 => parse_error(rest2, "Expected table name after dot")
       }
-      _ => break
+      path.push(key)
+      continue self.view()
     }
+    rest => rest
   }
+  self.update_view(next_view)
   path
 }
 
@@ -194,33 +193,31 @@ fn Parser::parse_array_of_tables_path(self : Parser) -> Array[String] raise {
   path.push(first_key)
 
   // Parse additional keys separated by dots
-  while true {
-    match self.view() {
-      [Dot(..), .. rest] => {
-        self.update_view(rest)
-        let key = match self.view() {
-          [Identifier(name, ..), .. rest2] => {
-            self.update_view(rest2)
-            name
-          }
-          [StringToken(name, ..), .. rest2] => {
-            self.update_view(rest2)
-            name
-          }
-          [IntegerToken(i, ..), .. rest2] => {
-            self.update_view(rest2)
-            i.to_string()
-          }
-          rest2 =>
-            parse_error(
-              rest2, "Expected table name after dot in array of tables",
-            )
+  let next_view = loop self.view() {
+    [Dot(..), .. rest] => {
+      self.update_view(rest)
+      let key = match self.view() {
+        [Identifier(name, ..), .. rest2] => {
+          self.update_view(rest2)
+          name
         }
-        path.push(key)
+        [StringToken(name, ..), .. rest2] => {
+          self.update_view(rest2)
+          name
+        }
+        [IntegerToken(i, ..), .. rest2] => {
+          self.update_view(rest2)
+          i.to_string()
+        }
+        rest2 =>
+          parse_error(rest2, "Expected table name after dot in array of tables")
       }
-      _ => break
+      path.push(key)
+      continue self.view()
     }
+    rest => rest
   }
+  self.update_view(next_view)
   path
 }
 
@@ -344,30 +341,30 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
       path.push(second_part)
 
       // Continue parsing for more dots after this float
-      while true {
-        match self.view() {
-          [Dot(..), .. rest] => {
-            self.update_view(rest)
-            let key = match self.view() {
-              [Identifier(name), .. rest2] => {
-                self.update_view(rest2)
-                name
-              }
-              [StringToken(name), .. rest2] => {
-                self.update_view(rest2)
-                name
-              }
-              [IntegerToken(i), .. rest2] => {
-                self.update_view(rest2)
-                i.to_string()
-              }
-              rest2 => parse_error(rest2, "Expected key after dot")
+      let next_view = loop self.view() {
+        [Dot(..), .. rest] => {
+          self.update_view(rest)
+          let key = match self.view() {
+            [Identifier(name), .. rest2] => {
+              self.update_view(rest2)
+              name
             }
-            path.push(key)
+            [StringToken(name), .. rest2] => {
+              self.update_view(rest2)
+              name
+            }
+            [IntegerToken(i), .. rest2] => {
+              self.update_view(rest2)
+              i.to_string()
+            }
+            rest2 => parse_error(rest2, "Expected key after dot")
           }
-          _ => break
+          path.push(key)
+          continue self.view()
         }
+        rest => rest
       }
+      self.update_view(next_view)
       return path
     }
     rest => parse_error(rest, "Expected key")
@@ -375,30 +372,30 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
   path.push(first_key)
 
   // Parse additional keys separated by dots
-  while true {
-    match self.view() {
-      [Dot(..), .. rest] => {
-        self.update_view(rest)
-        let key = match self.view() {
-          [Identifier(name), .. rest2] => {
-            self.update_view(rest2)
-            name
-          }
-          [StringToken(name), .. rest2] => {
-            self.update_view(rest2)
-            name
-          }
-          [IntegerToken(i), .. rest2] => {
-            self.update_view(rest2)
-            i.to_string()
-          }
-          rest2 => parse_error(rest2, "Expected key after dot")
+  let next_view = loop self.view() {
+    [Dot(..), .. rest] => {
+      self.update_view(rest)
+      let key = match self.view() {
+        [Identifier(name), .. rest2] => {
+          self.update_view(rest2)
+          name
         }
-        path.push(key)
+        [StringToken(name), .. rest2] => {
+          self.update_view(rest2)
+          name
+        }
+        [IntegerToken(i), .. rest2] => {
+          self.update_view(rest2)
+          i.to_string()
+        }
+        rest2 => parse_error(rest2, "Expected key after dot")
       }
-      _ => break
+      path.push(key)
+      continue self.view()
     }
+    rest => rest
   }
+  self.update_view(next_view)
   path
 }
 
