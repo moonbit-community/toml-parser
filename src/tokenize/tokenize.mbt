@@ -26,6 +26,7 @@ fn Lexer::read_identifier(self : Lexer) -> String {
 }
 
 ///| Check if the next character is a valid token separator
+
 ///| Valid separators are: whitespace, newline, EOF, or TOML punctuation
 fn is_valid_separator(ch : Char) -> Bool {
   match ch {
@@ -40,7 +41,8 @@ fn Lexer::validate_special_value_termination(self : Lexer) -> Unit raise {
   match self.view() {
     [] => () // EOF is valid
     [ch, ..] if is_valid_separator(ch) => () // Valid separator
-    [ch, ..] => fail(self.error("Invalid character '\{ch}' after special value"))
+    [ch, ..] =>
+      fail(self.error("Invalid character '\{ch}' after special value"))
   }
 }
 

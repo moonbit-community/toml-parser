@@ -534,6 +534,7 @@ test "float special values" {
   ])
 }
 
+///|
 test "inf failure" {
   let inf_failure_toml =
     #|inf = -infx
@@ -570,8 +571,8 @@ test "inf failure" {
       "$tag": "Failure",
       "0": "Expected newline or end of file after key-value pair at {start: {line: 1, column: 7}, end: {line: 1, column: 8}}",
     },
-    })
-  
+  })
+
   // Test that comments after key-value pairs are handled correctly
   let comment_test =
     #|key1 = "value1" # this is a comment
@@ -579,12 +580,9 @@ test "inf failure" {
     #|
   @json.inspect(@toml.parse(comment_test), content=[
     "TomlTable",
-    {
-      "key1": ["TomlString", "value1"],
-      "key2": ["TomlString", "value2"],
-    },
+    { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
   ])
- 
+
   // Test that valid inf values still work correctly
   let valid_inf_toml =
     #|pos_inf = inf

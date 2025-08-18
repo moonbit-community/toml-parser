@@ -521,12 +521,16 @@ pub fn parse(input : String) -> TomlValue raise {
         // Parse key-value pair
         let (key_path, value) = parser.parse_key_value()
         set_dotted_key_value(current_table, key_path, value, parser.view())
-        
+
         // Validate that key-value pair is properly terminated
         match parser.view() {
           [EOF(..), ..] => () // EOF is valid
           [Newline(..), ..] => () // Newline is valid (comments are already skipped by tokenizer)
-          _ => parse_error(parser.view(), "Expected newline or end of file after key-value pair")
+          _ =>
+            parse_error(
+              parser.view(),
+              "Expected newline or end of file after key-value pair",
+            )
         }
       }
     }
