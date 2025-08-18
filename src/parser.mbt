@@ -44,6 +44,14 @@ fn Parser::parse_value(self : Parser) -> TomlValue raise {
       self.update_view(rest)
       self.parse_inline_table()
     }
+    [Identifier("inf", ..), .. rest] => {
+      self.update_view(rest)
+      TomlFloat(1.0 / 0.0) // positive infinity
+    }
+    [Identifier("nan", ..), .. rest] => {
+      self.update_view(rest)
+      TomlFloat(0.0 / 0.0) // NaN
+    }
     rest => parse_error(rest, "Expected value")
   }
 }
@@ -513,6 +521,13 @@ pub fn parse(input : String) -> TomlValue raise {
         // Parse key-value pair
         let (key_path, value) = parser.parse_key_value()
         set_dotted_key_value(current_table, key_path, value, parser.view())
+        
+        // Validate that key-value pair is properly terminated
+        match parser.view() {
+          [EOF(..), ..] => () // EOF is valid
+          [Newline(..), ..] => () // Newline is valid (comments are already skipped by tokenizer)
+          _ => parse_error(parser.view(), "Expected newline or end of file after key-value pair")
+        }
       }
     }
     parser.skip_newlines()

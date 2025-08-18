@@ -553,7 +553,38 @@ test "inf failure" {
       "0": "Invalid character 'x' after special value at line 1, column 11",
     },
   })
+  let inf_failure_toml2 =
+    #|inf = -inf x=2
+    #|
+  @json.inspect(try? parse_no_loc(inf_failure_toml2), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected newline or end of file after key-value pair at {start: {line: 1, column: 12}, end: {line: 1, column: 13}}",
+    },
+  })
+  let table_failure =
+    #|a = 3 b = 2
+    #|
+  @json.inspect(try? parse_no_loc(table_failure), content={
+    "Err": {
+      "$tag": "Failure",
+      "0": "Expected newline or end of file after key-value pair at {start: {line: 1, column: 7}, end: {line: 1, column: 8}}",
+    },
+    })
   
+  // Test that comments after key-value pairs are handled correctly
+  let comment_test =
+    #|key1 = "value1" # this is a comment
+    #|key2 = "value2"
+    #|
+  @json.inspect(@toml.parse(comment_test), content=[
+    "TomlTable",
+    {
+      "key1": ["TomlString", "value1"],
+      "key2": ["TomlString", "value2"],
+    },
+  ])
+ 
   // Test that valid inf values still work correctly
   let valid_inf_toml =
     #|pos_inf = inf

@@ -780,11 +780,11 @@ test "precise column tracking" {
     },
   })
 
-  // Test 2: Error with mixed spaces and content
+  // Test 2: Error with mixed spaces and content (should fail due to missing newline)
   @json.inspect(try? parse_no_loc("  key1 = \"val\"  key2 = "), content={
     "Err": {
       "$tag": "Failure",
-      "0": "Expected value at {start: {line: 1, column: 24}, end: {line: 1, column: 24}}",
+      "0": "Expected newline or end of file after key-value pair at {start: {line: 1, column: 17}, end: {line: 1, column: 21}}",
     },
   })
 

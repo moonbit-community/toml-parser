@@ -971,14 +971,6 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       match identifier {
         "true" => BooleanToken(true, loc~)
         "false" => BooleanToken(false, loc~)
-        "inf" => {
-          self.validate_special_value_termination()
-          FloatToken(1.0 / 0.0, loc~) // positive infinity
-        }
-        "nan" => {
-          self.validate_special_value_termination()
-          FloatToken(0.0 / 0.0, loc~) // NaN
-        }
         _ => Identifier(identifier, loc~)
       }
     }
