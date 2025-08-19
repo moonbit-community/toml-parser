@@ -58,4 +58,23 @@ fn main {
   } catch {
     msg => println("Parse error: \{msg}")
   }
+
+  // Demo 6: Parse with comments
+  println("\n--- Parse TOML with Comments ---")
+  let toml_with_comments =
+    #|# This is a comment
+    #|name = "John Doe" # This is an inline comment
+    #|age = 30
+    #|# Another comment
+    #|enabled = true
+    #|
+  println("Input TOML with comments:")
+  println(toml_with_comments)
+  try {
+    let result = @toml.parse(toml_with_comments)
+    println("\nParsed result (comments should be ignored):")
+    println(result.to_string())
+  } catch {
+    msg => println("Parse error: " + msg.to_string())
+  }
 }
