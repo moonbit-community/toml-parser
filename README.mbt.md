@@ -17,14 +17,14 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
 - ✅ Recursive descent parser
 - ✅ Error handling with descriptive messages and location tracking
 - ✅ JSON-compatible output format
-- ✅ Comprehensive test suite (270+ tests)
+- ✅ Comprehensive test suite (8000+ lines of test code)
 
 ## Supported TOML Features
 
 ### Data Types
 - **Strings**: `"Hello, World!"` with full escape sequence support
 - **Integers**: `42`, `-17`
-- **Floats**: `3.14`, `-0.01`
+- **Floats**: `3.14`, `-0.01`, `inf`, `-inf`, `nan`
 - **Booleans**: `true`, `false`
 - **Arrays**: `[1, 2, 3]`, `["a", "b", "c"]` (homogeneous types only)
 - **Inline Tables**: `{name = "John", age = 30}`
@@ -42,7 +42,7 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
 ### Basic Syntax
 - Key-value pairs: `key = value`
 - Dotted key notation: `a.b.c = value` (creates nested tables)
-- Comments: `# This is a comment` (planned)
+- Comments: `# This is a comment` (✅ **Supported**)
 - Multi-line support with proper whitespace handling
 - TOML 1.0 specification compliance
 
@@ -65,12 +65,38 @@ Then add it directly to your `moon.mod.json`:
 ```json
 {
   "deps": {
-    "bob/toml": "^0.1.3"
+    "bob/toml": "^0.1.4"
   }
 }
 ```
 
 ## API Reference
+
+### Core Functions
+
+The main parsing function:
+- `parse(input : String) -> TomlValue raise` - Parse TOML string and return TomlValue
+- `TomlValue::validate(self : TomlValue) -> Bool` - Validate parsed TOML structure  
+- `TomlValue::to_string(self : TomlValue) -> String` - Convert TomlValue to string representation
+
+### Data Types
+
+The parser uses the following data types:
+- `TomlString(String)` - String values
+- `TomlInteger(Int64)` - Integer values 
+- `TomlFloat(Double)` - Float values including special values (inf, nan)
+- `TomlBoolean(Bool)` - Boolean values
+- `TomlArray(Array[TomlValue])` - Arrays with homogeneity validation
+- `TomlTable(Map[String, TomlValue])` - Tables and inline tables
+- `TomlDateTime(TomlDateTime)` - All 4 RFC 3339 datetime types
+
+### Special Features
+
+- **Special Float Values**: Support for `inf`, `-inf`, `nan` 
+- **Comments**: Full support for `# comment` syntax
+- **Unicode Keys**: International character support in keys
+- **Escape Sequences**: Complete `\n`, `\t`, `\"`, `\\`, `\uXXXX`, `\UXXXXXXXX` support
+- **Error Location Tracking**: Precise line/column error reporting
 
 
 ## Examples
@@ -79,22 +105,21 @@ Then add it directly to your `moon.mod.json`:
 
 ```moonbit
 test "basic key-value pairs example" {
-  let toml = "title = \"My Application\"\nversion = \"1.0.0\"\ndebug = true\nmax_connections = 100"
-  try {
-    let result = parse(toml)
-    match result {
-      TomlTable(table) => {
-        // Access parsed values
-        match table.get("title") {
-          Some(TomlString(s)) => println("Title: \{s}")
-          _ => println("Title not found")
-        }
-      }
-      _ => println("Expected table")
-    }
-  } catch {
-    msg => println("Parse error: \{msg}")
-  }
+  let toml = 
+    #|title = "My Application"
+    #|version = "1.0.0"
+    #|debug = true
+    #|max_connections = 100
+    #|
+  @json.inspect(parse(toml), content=[
+    "TomlTable",
+    {
+      "title": ["TomlString", "My Application"],
+      "version": ["TomlString", "1.0.0"],
+      "debug": ["TomlBoolean", true],
+      "max_connections": ["TomlInteger", "100"],
+    },
+  ])
 }
 ```
 
@@ -102,17 +127,42 @@ test "basic key-value pairs example" {
 
 ```moonbit
 test "arrays with validation example" {
-  let toml_arrays = "numbers = [1, 2, 3, 4, 5]"
-  try {
-    let result = parse(toml_arrays)
-    if result.validate() {
-      println("Valid TOML: \{result}")
-    } else {
-      println("Invalid TOML structure")
-    }
-  } catch {
-    msg => println("Error: \{msg}")
-  }
+  let toml_arrays = 
+    #|numbers = [1, 2, 3, 4, 5]
+    #|strings = ["red", "green", "blue"]
+    #|booleans = [true, false, true]
+    #|
+  @json.inspect(parse(toml_arrays), content=[
+    "TomlTable",
+    {
+      "numbers": [
+        "TomlArray",
+        [
+          ["TomlInteger", "1"],
+          ["TomlInteger", "2"],
+          ["TomlInteger", "3"],
+          ["TomlInteger", "4"],
+          ["TomlInteger", "5"],
+        ],
+      ],
+      "strings": [
+        "TomlArray",
+        [
+          ["TomlString", "red"],
+          ["TomlString", "green"],
+          ["TomlString", "blue"],
+        ],
+      ],
+      "booleans": [
+        "TomlArray",
+        [
+          ["TomlBoolean", true],
+          ["TomlBoolean", false],
+          ["TomlBoolean", true],
+        ],
+      ],
+    },
+  ])
 }
 ```
 
@@ -120,28 +170,53 @@ test "arrays with validation example" {
 
 ```moonbit
 test "table headers and array of tables example" {
-  let toml_tables = "title = \"Configuration Example\"\n\n[database]\nserver = \"192.168.1.1\"\nport = 5432\n\n[[products]]\nname = \"Hammer\"\nsku = 738594937\n\n[[products]]\nname = \"Nail\"\nsku = 284758393"
-  try {
-    let result = parse(toml_tables)
-    match result {
-      TomlTable(table) => {
-        // Access nested table
-        match table.get("database") {
-          Some(db) => ignore(db)
-          None => ()
-        }
-        // Access array of tables
-        match table.get("products") {
-          Some(products) => ignore(products)
-          None => ()
-        }
-        println("Parsed complex TOML structure")
-      }
-      _ => println("Expected table")
-    }
-  } catch {
-    msg => println("Parse error: \{msg}")
-  }
+  let toml_tables = 
+    #|title = "Configuration Example"
+    #|
+    #|[database]
+    #|server = "192.168.1.1"
+    #|port = 5432
+    #|
+    #|[[products]]
+    #|name = "Hammer"
+    #|sku = 738594937
+    #|
+    #|[[products]]
+    #|name = "Nail"
+    #|sku = 284758393
+    #|
+  @json.inspect(parse(toml_tables), content=[
+    "TomlTable",
+    {
+      "title": ["TomlString", "Configuration Example"],
+      "database": [
+        "TomlTable",
+        {
+          "server": ["TomlString", "192.168.1.1"],
+          "port": ["TomlInteger", "5432"],
+        },
+      ],
+      "products": [
+        "TomlArray",
+        [
+          [
+            "TomlTable",
+            {
+              "name": ["TomlString", "Hammer"],
+              "sku": ["TomlInteger", "738594937"],
+            },
+          ],
+          [
+            "TomlTable",
+            {
+              "name": ["TomlString", "Nail"],
+              "sku": ["TomlInteger", "284758393"],
+            },
+          ],
+        ],
+      ],
+    },
+  ])
 }
 ```
 
@@ -149,22 +224,40 @@ test "table headers and array of tables example" {
 
 ```moonbit
 test "datetime support example" {
-  let toml_datetime = "created_at = 2023-01-01T00:00:00Z\nupdated_at = 2023-01-02T12:30:45\nbirth_date = 1990-05-15\nmeeting_time = 14:30:00"
-  try {
-    let result = parse(toml_datetime)
-    match result {
-      TomlTable(table) => {
-        match table.get("created_at") {
-          Some(TomlDateTime(OffsetDateTime(dt))) => 
-            println("Created at: \{dt}")
-          _ => println("Invalid datetime")
-        }
-      }
-      _ => println("Expected table")
-    }
-  } catch {
-    msg => println("Parse error: \{msg}")
-  }
+  let toml_datetime = 
+    #|created_at = 2023-01-01T00:00:00Z
+    #|updated_at = 2023-01-02T12:30:45
+    #|birth_date = 1990-05-15
+    #|meeting_time = 14:30:00
+    #|
+  @json.inspect(parse(toml_datetime), content=[
+    "TomlTable",
+    {
+      "created_at": [
+        "TomlDateTime",
+        {
+          "$tag": "OffsetDateTime",
+          "0": {
+            "year": 2023,
+            "month": 1,
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "second": 0,
+            "offset_hour": 0,
+            "offset_minute": 0,
+          },
+        },
+      ],
+      "birth_date": [
+        "TomlDateTime",
+        {
+          "$tag": "LocalDate",
+          "0": { "year": 1990, "month": 5, "day": 15 },
+        },
+      ],
+    },
+  ])
 }
 ```
 
@@ -172,13 +265,29 @@ test "datetime support example" {
 
 ```moonbit
 test "inline tables example" {
-  let toml_inline = "database = {server = \"localhost\", port = 5432}"
-  try {
-    let result = parse(toml_inline)
-    println(result.to_string())
-  } catch {
-    msg => println("Error: \{msg}")
-  }
+  let toml_inline = 
+    #|database = {server = "localhost", port = 5432}
+    #|cache = {enabled = true, ttl = 300}
+    #|
+  @json.inspect(parse(toml_inline), content=[
+    "TomlTable",
+    {
+      "database": [
+        "TomlTable",
+        {
+          "server": ["TomlString", "localhost"],
+          "port": ["TomlInteger", "5432"],
+        },
+      ],
+      "cache": [
+        "TomlTable",
+        {
+          "enabled": ["TomlBoolean", true],
+          "ttl": ["TomlInteger", "300"],
+        },
+      ],
+    },
+  ])
 }
 ```
 
@@ -186,16 +295,114 @@ test "inline tables example" {
 
 ```moonbit
 test "complex configuration example" {
-  let config = "service_name = \"user-service\"\nversion = \"2.1.0\"\ndeployed_at = 2023-06-15T14:30:00+00:00\n\nhttp = {port = 8080, host = \"0.0.0.0\", timeout = 30.0}\ndatabase = {url = \"postgresql://localhost:5432/users\", max_connections = 20}\n\nmaintenance_schedule = [\n  2023-06-20T02:00:00,\n  2023-07-20T02:00:00,\n  2023-08-20T02:00:00\n]"
-  try {
-    let result = parse(config)
-    if result.validate() {
-      println("Valid microservice configuration")
-      println(result.to_string())
+  let config = 
+    #|service_name = "user-service"
+    #|version = "2.1.0"
+    #|deployed_at = 2023-06-15T14:30:00+00:00
+    #|
+    #|# Special float values
+    #|timeout = 30.0
+    #|max_retry = inf
+    #|error_rate = nan
+    #|
+    #|http = {port = 8080, host = "0.0.0.0", timeout = 30.0}
+    #|database = {url = "postgresql://localhost:5432/users", max_connections = 20}
+    #|
+    #|maintenance_schedule = [
+    #|  2023-06-20T02:00:00,
+    #|  2023-07-20T02:00:00,
+    #|  2023-08-20T02:00:00
+    #|]
+    #|
+  let result = parse(config)
+  assert_true(result.validate())
+  // Verify the structure contains expected keys
+  match result {
+    TomlTable(table) => {
+      assert_true(table.contains("service_name"))
+      assert_true(table.contains("http"))
+      assert_true(table.contains("database"))
+      assert_true(table.contains("maintenance_schedule"))
     }
-  } catch {
-    msg => println("Configuration error: \{msg}")
+    _ => fail("Expected table")
   }
+}
+```
+
+### Special Values and Advanced Features
+
+```moonbit
+test "special values and advanced features example" {
+  let toml_advanced = 
+    #|# Configuration with comments
+    #|app_name = "TOML Demo"
+    #|version = "1.0.0"
+    #|
+    #|# Special float values
+    #|max_timeout = inf
+    #|min_timeout = -inf
+    #|error_rate = nan
+    #|
+    #|# Unicode keys and values
+    #|"café" = "☕ Coffee shop"
+    #|"数量" = 42
+    #|
+    #|# Complex nested structure
+    #|[server.database]
+    #|host = "localhost"
+    #|port = 5432
+    #|
+    #|[[server.replicas]]
+    #|name = "primary"
+    #|weight = 1.0
+    #|
+    #|[[server.replicas]]
+    #|name = "secondary"
+    #|weight = 0.5
+    #|
+  @json.inspect(parse(toml_advanced), content=[
+    "TomlTable",
+    {
+      "app_name": ["TomlString", "TOML Demo"],
+      "version": ["TomlString", "1.0.0"],
+      "max_timeout": ["TomlFloat", @double.infinity],
+      "min_timeout": ["TomlFloat", @double.neg_infinity],
+      "error_rate": ["TomlFloat", @double.not_a_number],
+      "café": ["TomlString", "☕ Coffee shop"],
+      "数量": ["TomlInteger", "42"],
+      "server": [
+        "TomlTable",
+        {
+          "database": [
+            "TomlTable",
+            {
+              "host": ["TomlString", "localhost"],
+              "port": ["TomlInteger", "5432"],
+            },
+          ],
+          "replicas": [
+            "TomlArray",
+            [
+              [
+                "TomlTable",
+                {
+                  "name": ["TomlString", "primary"],
+                  "weight": ["TomlFloat", 1],
+                },
+              ],
+              [
+                "TomlTable",
+                {
+                  "name": ["TomlString", "secondary"],
+                  "weight": ["TomlFloat", 0.5],
+                },
+              ],
+            ],
+          ],
+        },
+      ],
+    },
+  ])
 }
 ```
 
@@ -219,16 +426,18 @@ src/
 
 ## Development Status
 
-**Current Release**: v0.1.3 (Stable)  
-**Active Development Branch**: `hongbo/fix_mulltipleline_string`  
-**Status**: Actively developed with focus on multi-line string support and enhanced error reporting
+**Current Release**: v0.1.4 (Stable)  
+**Repository**: https://github.com/moonbit-community/toml-parser  
+**Status**: Production-ready with comprehensive TOML 1.0 support
 
 ### Recent Improvements
 - ✅ Enhanced error location tracking in lexer and parser
-- ✅ Comprehensive test suite expansion (260+ tests)  
+- ✅ Comprehensive test suite expansion (8000+ lines)  
 - ✅ Official TOML test suite integration
 - ✅ Unicode key support and complex escape sequences
-- 🚧 Multi-line string parsing (in progress)
+- ✅ Special float values support (inf, -inf, nan)
+- ✅ Advanced string escaping and literal strings
+- ✅ Robust table and array of tables implementation
 
 ### Running Tests
 
@@ -236,7 +445,7 @@ src/
 moon test
 ```
 
-Current test coverage: **260 tests** covering:
+Current test coverage: **8000+ lines of test code** covering:
 - Basic TOML data types
 - DateTime functionality (all 4 types)
 - Array homogeneity validation
@@ -281,8 +490,9 @@ This parser implements the complete TOML 1.0 specification including:
 - [x] ~~Better error messages with line/column information~~ ✅ **Completed**
 - [x] ~~Dotted key notation~~ ✅ **Completed**
 - [x] ~~Escape sequence handling in strings~~ ✅ **Completed**
+- [x] ~~Special float values (inf, nan)~~ ✅ **Completed**
+- [x] ~~Comments handling~~ ✅ **Completed**
 - [ ] Multi-line strings (🚧 **In Progress**)
-- [ ] Comments handling
 
 ## Contributing
 
