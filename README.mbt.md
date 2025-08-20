@@ -409,20 +409,53 @@ test "special values and advanced features example" {
 ## Project Structure
 
 ```
-src/
-├── toml.mbt              # Core types and API
-├── lexer.mbt             # Tokenization logic
-├── parser.mbt            # Parsing logic
-├── toml_test.mbt         # Basic functionality tests
-├── datetime_test.mbt     # Comprehensive datetime tests
-├── parser_test.mbt       # Parser-specific tests
-├── lexer_test.mbt        # Lexer-specific tests
-├── comprehensive_test.mbt # Complex scenarios tests
-├── moon.pkg.json         # Package configuration
-└── main/
-    ├── main.mbt          # Demo application
-    └── moon.pkg.json     # Main package configuration
+toml-parser/
+├── toml.mbt                              # Core TOML types and API
+├── parser.mbt                            # TOML parsing logic
+├── moon.mod.json                         # Project configuration
+├── moon.pkg.json                         # Package configuration
+├── LICENSE                               # Apache-2.0 license
+├── README.mbt.md                         # Documentation with executable examples
+├── todo.md                               # Development roadmap
+│
+├── internal/                             # Internal modules
+│   └── tokenize/                         # Tokenization and lexical analysis
+│       ├── tokenize.mbt                  # Main tokenizer implementation
+│       ├── token.mbt                     # Token definitions
+│       ├── lexer_test.mbt                # Lexer unit tests
+│       ├── lexer_bug_test.mbt            # Lexer regression tests
+│       └── moon.pkg.json                 # Tokenizer package config
+│
+├── cmd/                                  # Command-line tools and demos
+│   └── main/                             # Demo application
+│       ├── main.mbt                      # Interactive TOML parser demo
+│       ├── main_test.mbt                 # Demo tests
+│       └── moon.pkg.json                 # Main package config
+│
+├── Test Suite (8000+ lines of tests)    # Comprehensive testing
+├── ├── toml_test.mbt                     # Basic TOML functionality tests
+├── ├── parser_test.mbt                   # Parser-specific tests
+├── ├── datetime_test.mbt                 # DateTime parsing tests
+├── ├── datetime_extended_test.mbt        # Extended datetime scenarios
+├── ├── comprehensive_test.mbt            # Complex real-world scenarios
+├── ├── coverage_improvement_test.mbt     # Coverage enhancement tests
+├── ├── coverage_improvement_comprehensive_test.mbt # Advanced coverage tests
+├── ├── official_toml_test_suite_test.mbt # Official TOML spec compliance
+├── ├── additional_official_tests_test.mbt # Extended official tests
+├── └── special_value_validation_test.mbt # Special values (inf, nan) tests
+│
+└── target/                               # Build artifacts (generated)
+    ├── wasm-gc/                          # WebAssembly build outputs
+    └── packages.json                     # Package dependency info
 ```
+
+### Key Components
+
+- **Core Parser** (`toml.mbt`, `parser.mbt`) - Main TOML parsing implementation with full TOML 1.0 spec support
+- **Tokenizer** (`internal/tokenize/`) - Lexical analysis and tokenization with special value support
+- **Demo Application** (`cmd/main/`) - Interactive examples showcasing parser capabilities
+- **Comprehensive Test Suite** - 8000+ lines covering all TOML features, edge cases, and official spec compliance
+- **Documentation** (`README.mbt.md`) - Executable documentation with working code examples
 
 ## Development Status
 
