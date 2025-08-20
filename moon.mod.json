@@ -12,6 +12,5 @@
     "parser",
     "config"
   ],
-  "description": "A TOML parser implementation in MoonBit",
-  "source": "src"
+  "description": "A TOML parser implementation in MoonBit"
 }
