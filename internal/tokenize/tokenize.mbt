@@ -467,73 +467,15 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
 ///|
 /// Check if the current input matches a datetime pattern without consuming characters
 fn Lexer::is_datetime_pattern(self : Lexer) -> Bool {
-  // Use pattern matching on the view to look ahead
-
-  // Check for LocalTime pattern: HH:MM:SS[.fff]
-  match self.view() {
-    [
-      '0'..='9',
-      '0'..='9',
-      ':',
-      '0'..='9',
-      '0'..='9',
-      ':',
-      '0'..='9',
-      '0'..='9',
-      ..,
-    ] =>
-      // This looks like time, need to verify it's not part of something else
-      match self.view() {
-        [
-          '0'..='9',
-          '0'..='9',
-          ':',
-          '0'..='9',
-          '0'..='9',
-          ':',
-          '0'..='9',
-          '0'..='9',
-          '.',
-          '0'..='9',
-          .. rest,
-        ] =>
-          // Time with fractional seconds - check what follows
-          check_datetime_terminator(rest)
-        [
-          '0'..='9',
-          '0'..='9',
-          ':',
-          '0'..='9',
-          '0'..='9',
-          ':',
-          '0'..='9',
-          '0'..='9',
-          .. rest,
-        ] =>
-          // Time without fractional seconds - check what follows
-          check_datetime_terminator(rest)
-        _ => false
-      }
-    _ =>
-      // Check for date patterns: YYYY-MM-DD[T...]
-      match self.view() {
-        [
-          '0'..='9',
-          '0'..='9',
-          '0'..='9',
-          '0'..='9',
-          '-',
-          '0'..='9',
-          '0'..='9',
-          '-',
-          '0'..='9',
-          '0'..='9',
-          ..,
-        ] =>
-          // This is a date pattern
-          true
-        _ => false
-      }
+  // Check for datetime patterns using regex
+  match self.view() using longest {
+    // LocalTime pattern: HH:MM:SS[.fff] followed by valid terminator
+    re"[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?(?<rest>.*)" => {
+      check_datetime_terminator_string(rest)
+    }
+    // LocalDate pattern: YYYY-MM-DD (always valid, may continue with T for datetime)
+    re"[0-9]{4}-[0-9]{2}-[0-9]{2}.*" => true
+    _ => false
   }
 }
 
@@ -552,153 +494,59 @@ fn Lexer::read_datetime_with_loc(
   self : Lexer,
   start_pos : @lexer.Position,
 ) -> Token {
-  let sb = StringBuilder::new()
-
-  // Check if this starts with time pattern (LocalTime)
-  match self.view() {
-    [
-      '0'..='9',
-      '0'..='9',
-      ':',
-      '0'..='9',
-      '0'..='9',
-      ':',
-      '0'..='9',
-      '0'..='9',
-      ..,
-    ] => {
-      // Read time: HH:MM:SS
-      for _i = 0; _i < 8; _i = _i + 1 {
-        match self.view() {
-          ['0'..='9' | ':' as ch, .. rest] => {
-            self.update_view(rest)
-            sb.write_char(ch)
-          }
-          _ => break
-        }
-      }
-
-      // Check for fractional seconds
-      match self.view() {
-        ['.', .. rest] => {
-          self.update_view(rest)
-          sb.write_char('.')
-
-          // Read fractional digits
-          let next_view = loop self.view() {
-            ['0'..='9' as ch, .. rest] => {
-              sb.write_char(ch)
-              continue rest
-            }
-            rest => rest
-          }
-          self.update_view(next_view)
-        }
-        _ => () // No fractional seconds
-      }
+  
+  // Use regex to match and capture different datetime patterns
+  match self.view() using longest {
+    // LocalTime: HH:MM:SS[.fff]
+    re"(?<time>[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?)(?<rest>.*)" => {
+      self.update_view(rest)
       let end_pos = self.get_loc()
       return DateTimeToken(
-        LocalTime(sb.to_string()),
+        LocalTime(time.to_string()),
         loc=make_loc(start_pos, end_pos),
       )
     }
-    _ => () // Continue with date-based patterns
-  }
-
-  // Read date part: YYYY-MM-DD  
-  for _i = 0; _i < 10; _i = _i + 1 {
-    match self.view() {
-      ['0'..='9' | '-' as ch, .. rest] => {
-        self.update_view(rest)
-        sb.write_char(ch)
-      }
-      _ => break
-    }
-  }
-
-  // Check what comes after the date
-  match self.view() {
-    ['T', .. rest] => {
-      // This is a datetime with time component
+    // OffsetDateTime with Z: YYYY-MM-DDTHH:MM:SS[.fff]Z
+    re"(?<datetime>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?)Z(?<rest>.*)" => {
       self.update_view(rest)
-      sb.write_char('T')
-
-      // Read time part: HH:MM:SS
-      for _i = 0; _i < 8; _i = _i + 1 {
-        match self.view() {
-          ['0'..='9' | ':' as ch, .. rest] => {
-            self.update_view(rest)
-            sb.write_char(ch)
-          }
-          _ => break
-        }
-      }
-
-      // Check for fractional seconds
-      match self.view() {
-        ['.', .. rest] => {
-          self.update_view(rest)
-          sb.write_char('.')
-
-          // Read fractional digits
-          let next_view = loop self.view() {
-            ['0'..='9' as ch, .. rest] => {
-              sb.write_char(ch)
-              continue rest
-            }
-            rest => rest
-          }
-          self.update_view(next_view)
-        }
-        _ => () // No fractional seconds
-      }
-
-      // Check for timezone
-      match self.view() {
-        ['Z', .. rest] => {
-          self.update_view(rest)
-          sb.write_char('Z')
-          let end_pos = self.get_loc()
-          return DateTimeToken(
-            OffsetDateTime(sb.to_string()),
-            loc=make_loc(start_pos, end_pos),
-          )
-        }
-        ['+' | '-' as sign, .. rest] => {
-          self.update_view(rest)
-          sb.write_char(sign)
-
-          // Read timezone offset: HH:MM
-          for _i = 0; _i < 5; _i = _i + 1 {
-            match self.view() {
-              ['0'..='9' | ':' as ch, .. rest] => {
-                self.update_view(rest)
-                sb.write_char(ch)
-              }
-              _ => break
-            }
-          }
-          let end_pos = self.get_loc()
-          return DateTimeToken(
-            OffsetDateTime(sb.to_string()),
-            loc=make_loc(start_pos, end_pos),
-          )
-        }
-        _ => {
-          // No timezone, this is a LocalDateTime
-          let end_pos = self.get_loc()
-          return DateTimeToken(
-            LocalDateTime(sb.to_string()),
-            loc=make_loc(start_pos, end_pos),
-          )
-        }
-      }
-    }
-    _ => {
-      // This is just a date (LocalDate)
       let end_pos = self.get_loc()
       return DateTimeToken(
-        LocalDate(sb.to_string()),
+        OffsetDateTime(datetime.to_string() + "Z"),
+        loc=make_loc(start_pos, end_pos),
+      )
+    }
+    // OffsetDateTime with offset: YYYY-MM-DDTHH:MM:SS[.fff]±HH:MM
+    re"(?<datetime>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?)(?<offset>[+\-][0-9]{2}:[0-9]{2})(?<rest>.*)" => {
+      self.update_view(rest)
+      let end_pos = self.get_loc()
+      return DateTimeToken(
+        OffsetDateTime(datetime.to_string() + offset.to_string()),
+        loc=make_loc(start_pos, end_pos),
+      )
+    }
+    // LocalDateTime: YYYY-MM-DDTHH:MM:SS[.fff]
+    re"(?<datetime>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?)(?<rest>.*)" => {
+      self.update_view(rest)
+      let end_pos = self.get_loc()
+      return DateTimeToken(
+        LocalDateTime(datetime.to_string()),
+        loc=make_loc(start_pos, end_pos),
+      )
+    }
+    // LocalDate: YYYY-MM-DD
+    re"(?<date>[0-9]{4}-[0-9]{2}-[0-9]{2})(?<rest>.*)" => {
+      self.update_view(rest)
+      let end_pos = self.get_loc()
+      return DateTimeToken(
+        LocalDate(date.to_string()),
+        loc=make_loc(start_pos, end_pos),
+      )
+    }
+    _ => {
+      // This shouldn't happen if is_datetime_pattern was called first
+      let end_pos = self.get_loc()
+      return DateTimeToken(
+        LocalDate(""),
         loc=make_loc(start_pos, end_pos),
       )
     }
