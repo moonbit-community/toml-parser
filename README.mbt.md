@@ -224,7 +224,7 @@ test "table headers and array of tables example" {
 
 ```moonbit
 test "datetime support example" {
-  let toml_datetime = 
+  let toml_datetime =
     #|created_at = 2023-01-01T00:00:00Z
     #|updated_at = 2023-01-02T12:30:45
     #|birth_date = 1990-05-15
@@ -233,33 +233,15 @@ test "datetime support example" {
   @json.inspect(parse(toml_datetime), content=[
     "TomlTable",
     {
-      "created_at": [
-        "TomlDateTime",
-        {
-          "$tag": "OffsetDateTime",
-          "0": {
-            "year": 2023,
-            "month": 1,
-            "day": 1,
-            "hour": 0,
-            "minute": 0,
-            "second": 0,
-            "offset_hour": 0,
-            "offset_minute": 0,
-          },
-        },
-      ],
-      "birth_date": [
-        "TomlDateTime",
-        {
-          "$tag": "LocalDate",
-          "0": { "year": 1990, "month": 5, "day": 15 },
-        },
-      ],
+      "created_at": ["TomlDateTime", ["OffsetDateTime", "2023-01-01T00:00:00Z"]],
+      "updated_at": ["TomlDateTime", ["LocalDateTime", "2023-01-02T12:30:45"]],
+      "birth_date": ["TomlDateTime", ["LocalDate", "1990-05-15"]],
+      "meeting_time": ["TomlDateTime", ["LocalTime", "14:30:00"]],
     },
   ])
 }
 ```
+<!-- TODO(upstream): fmt works for mbt.md -->
 
 ### Inline Tables
 

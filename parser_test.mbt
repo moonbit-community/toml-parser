@@ -1,4 +1,5 @@
-///| Tests for the TOML parser
+///|
+/// Tests for the TOML parser
 test "parse simple key-value string" {
   let result = @toml.parse(
     (
@@ -97,13 +98,13 @@ test "parse inline table" {
   ])
 }
 
-///| Tests for uncovered parser error conditions
+///|
+/// Tests for uncovered parser error conditions
 test "test parser expect method failure" {
   @json.inspect(try? parse_no_loc("key = [missing_bracket"), content={
-    "Err": {
-      "$tag": "Failure",
-      "0": "Expected value at {start: {line: 1, column: 8}, end: {line: 1, column: 23}}",
-    },
+    "Err": [
+      "Failure", "Expected value at {start: {line: 1, column: 8}, end: {line: 1, column: 23}}",
+    ],
   })
 }
 
@@ -115,10 +116,9 @@ test "test parser EOF handling in peek" {
 ///|
 test "test parser EOF handling in advance" {
   @json.inspect(try? parse_no_loc("key ="), content={
-    "Err": {
-      "$tag": "Failure",
-      "0": "Expected value at {start: {line: 1, column: 6}, end: {line: 1, column: 6}}",
-    },
+    "Err": [
+      "Failure", "Expected value at {start: {line: 1, column: 6}, end: {line: 1, column: 6}}",
+    ],
   })
 }
 
@@ -135,20 +135,18 @@ test "test inline table with string keys" {
 ///|
 test "test inline table invalid syntax" {
   @json.inspect(try? parse_no_loc("table = {key value}"), content={
-    "Err": {
-      "$tag": "Failure",
-      "0": "Expected '=' at {start: {line: 1, column: 14}, end: {line: 1, column: 19}}",
-    },
+    "Err": [
+      "Failure", "Expected '=' at {start: {line: 1, column: 14}, end: {line: 1, column: 19}}",
+    ],
   })
 }
 
 ///|
 test "test inline table missing comma or closing brace" {
   @json.inspect(try? parse_no_loc("table = {key = \"value\" invalid}"), content={
-    "Err": {
-      "$tag": "Failure",
-      "0": "Expected ',' or '}' in inline table at {start: {line: 1, column: 24}, end: {line: 1, column: 31}}",
-    },
+    "Err": [
+      "Failure", "Expected ',' or '}' in inline table at {start: {line: 1, column: 24}, end: {line: 1, column: 31}}",
+    ],
   })
 }
 
@@ -209,14 +207,14 @@ test "test table name conflicts with existing value" {
     #|key = "value"
     #|
   @json.inspect(try? parse_no_loc(conflicting_table_toml), content={
-    "Err": {
-      "$tag": "Failure",
-      "0": "Table path conflicts with existing value: table at {start: {line: 2, column: 8}, end: {line: 3, column: 1}}",
-    },
+    "Err": [
+      "Failure", "Table path conflicts with existing value: table at {start: {line: 2, column: 8}, end: {line: 3, column: 1}}",
+    ],
   })
 }
 
-///| Tests for inline table edge cases  
+///|
+/// Tests for inline table edge cases  
 test "test empty inline table" {
   @json.inspect(try? parse_no_loc("empty = {}"), content={
     "Ok": ["TomlTable", { "empty": ["TomlTable", {}] }],
@@ -281,7 +279,8 @@ test "test inline table with array values" {
   )
 }
 
-///| Test dotted key notation - simple case
+///|
+/// Test dotted key notation - simple case
 test "dotted key notation simple" {
   let result = @toml.parse(
     (
@@ -299,7 +298,8 @@ test "dotted key notation simple" {
   ])
 }
 
-///| Test dotted key notation - multiple values
+///|
+/// Test dotted key notation - multiple values
 test "dotted key notation multiple" {
   let dotted_multiple_toml =
     #|a.b.c = "value1"
@@ -325,7 +325,8 @@ test "dotted key notation multiple" {
   ])
 }
 
-///| Test dotted key notation - different data types
+///|
+/// Test dotted key notation - different data types
 test "dotted key notation data types" {
   let dotted_types_toml =
     #|server.host = "localhost"
@@ -351,7 +352,8 @@ test "dotted key notation data types" {
   ])
 }
 
-///| Test dotted key notation - quoted keys
+///|
+/// Test dotted key notation - quoted keys
 test "dotted key notation quoted keys" {
   let result = @toml.parse(
     (
@@ -364,7 +366,8 @@ test "dotted key notation quoted keys" {
   ])
 }
 
-///| Test dotted key notation - integer keys
+///|
+/// Test dotted key notation - integer keys
 test "dotted key notation integer keys" {
   let result = @toml.parse(
     (
@@ -382,7 +385,8 @@ test "dotted key notation integer keys" {
   ])
 }
 
-///| Test dotted key notation - conflict with table headers
+///|
+/// Test dotted key notation - conflict with table headers
 test "dotted key notation table conflict" {
   let conflict_toml =
     #|a.b = "dotted"
@@ -400,7 +404,8 @@ test "dotted key notation table conflict" {
   ])
 }
 
-///| Test dotted key notation - deep nesting
+///|
+/// Test dotted key notation - deep nesting
 test "dotted key notation deep nesting" {
   let result = @toml.parse(
     (

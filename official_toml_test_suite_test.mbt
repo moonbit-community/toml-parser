@@ -4,7 +4,8 @@
 
 ///| Tests are implemented using MoonBit's multiline string syntax (#|...|#)
 
-///| Test basic string values
+///|
+/// Test basic string values
 test "basic string" {
   let basic_string_toml =
     #|basic = "value"
@@ -15,7 +16,8 @@ test "basic string" {
   ])
 }
 
-///| Test string with escape sequences
+///|
+/// Test string with escape sequences
 test "string escape sequences" {
   let escaped_string_toml =
     #|escaped = "I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."
@@ -30,7 +32,8 @@ test "string escape sequences" {
   ])
 }
 
-///| Test basic integer values
+///|
+/// Test basic integer values
 test "basic integer" {
   let integer_toml =
     #|answer = 42
@@ -47,7 +50,8 @@ test "basic integer" {
   ])
 }
 
-///| Test basic float values
+///|
+/// Test basic float values
 test "basic float" {
   let float_toml =
     #|pi = 3.14
@@ -64,7 +68,8 @@ test "basic float" {
   ])
 }
 
-///| Test boolean values
+///|
+/// Test boolean values
 test "basic boolean" {
   let boolean_toml =
     #|enabled = true
@@ -76,7 +81,8 @@ test "basic boolean" {
   ])
 }
 
-///| Test homogeneous arrays
+///|
+/// Test homogeneous arrays
 test "homogeneous arrays" {
   let array_toml =
     #|integers = [1, 2, 3, 4, 5]
@@ -117,7 +123,8 @@ test "homogeneous arrays" {
   ])
 }
 
-///| Test nested arrays  
+///|
+/// Test nested arrays  
 test "nested arrays" {
   let nested_array_toml =
     #|nested = [[1, 2], [3, 4, 5]]
@@ -139,7 +146,8 @@ test "nested arrays" {
   ])
 }
 
-///| Test empty arrays
+///|
+/// Test empty arrays
 test "empty arrays" {
   let empty_array_toml =
     #|empty = []
@@ -150,7 +158,8 @@ test "empty arrays" {
   ])
 }
 
-///| Test inline tables
+///|
+/// Test inline tables
 test "inline tables" {
   let inline_table_toml =
     #|person = {name = "John", age = 30}
@@ -173,7 +182,8 @@ test "inline tables" {
   ])
 }
 
-///| Test complex values combination
+///|
+/// Test complex values combination
 test "complex values combination" {
   let complex_toml =
     #|title = "TOML Example"
@@ -213,7 +223,8 @@ test "complex values combination" {
   ])
 }
 
-///| Test basic table syntax
+///|
+/// Test basic table syntax
 test "basic table" {
   let table_toml =
     #|[owner]
@@ -234,7 +245,8 @@ test "basic table" {
   ])
 }
 
-///| Test nested tables [a.b.c] syntax
+///|
+/// Test nested tables [a.b.c] syntax
 test "nested tables" {
   let nested_table_toml =
     #|[servers.alpha]
@@ -265,7 +277,8 @@ test "nested tables" {
   ])
 }
 
-///| Test array of tables [[array]] syntax
+///|
+/// Test array of tables [[array]] syntax
 test "array of tables" {
   let array_of_tables_toml =
     #|[[products]]
@@ -302,7 +315,8 @@ test "array of tables" {
   ])
 }
 
-///| Test array of tables with nested paths
+///|
+/// Test array of tables with nested paths
 test "nested array of tables" {
   let nested_array_toml =
     #|[[fruit.physical]]
@@ -344,7 +358,8 @@ test "nested array of tables" {
   ])
 }
 
-///| Test mixed regular tables and array of tables
+///|
+/// Test mixed regular tables and array of tables
 test "mixed tables and array of tables" {
   let mixed_toml =
     #|title = "Test Document"
@@ -417,7 +432,8 @@ test "datetime values" {
   ])
 }
 
-///| Test multiline basic strings
+///|
+/// Test multiline basic strings
 test "multiline basic strings" {
   let multiline_basic_toml =
     #|str1 = """
@@ -430,7 +446,8 @@ test "multiline basic strings" {
   ])
 }
 
-///| Test literal strings (single quotes)
+///|
+/// Test literal strings (single quotes)
 test "literal strings" {
   let literal_string_toml =
     #|winpath = 'C:\Users\nodejs\templates'
@@ -471,7 +488,8 @@ test "multiline literal strings" {
   ])
 }
 
-///| Test comments functionality
+///|
+/// Test comments functionality
 test "comments" {
   let comments_toml =
     #|# This is a full-line comment
@@ -487,7 +505,8 @@ test "comments" {
   ])
 }
 
-///| Test integer formats (hex, octal, binary)
+///|
+/// Test integer formats (hex, octal, binary)
 test "integer formats" {
   let integer_formats_toml =
     #|hex1 = 0xDEADBEEF
@@ -540,37 +559,33 @@ test "inf failure" {
     #|inf = -infx
     #|
   @json.inspect(try? parse_no_loc(inf_failure_toml), content={
-    "Err": {
-      "$tag": "Failure",
-      "0": "Invalid character 'x' after special value at line 1, column 11",
-    },
+    "Err": [
+      "Failure", "Invalid character 'x' after special value at line 1, column 11",
+    ],
   })
   let inf_failure_toml2 =
     #|inf = -infx=2
     #|
   @json.inspect(try? parse_no_loc(inf_failure_toml2), content={
-    "Err": {
-      "$tag": "Failure",
-      "0": "Invalid character 'x' after special value at line 1, column 11",
-    },
+    "Err": [
+      "Failure", "Invalid character 'x' after special value at line 1, column 11",
+    ],
   })
   let inf_failure_toml2 =
     #|inf = -inf x=2
     #|
   @json.inspect(try? parse_no_loc(inf_failure_toml2), content={
-    "Err": {
-      "$tag": "Failure",
-      "0": "Expected newline or end of file after key-value pair at {start: {line: 1, column: 12}, end: {line: 1, column: 13}}",
-    },
+    "Err": [
+      "Failure", "Expected newline or end of file after key-value pair at {start: {line: 1, column: 12}, end: {line: 1, column: 13}}",
+    ],
   })
   let table_failure =
     #|a = 3 b = 2
     #|
   @json.inspect(try? parse_no_loc(table_failure), content={
-    "Err": {
-      "$tag": "Failure",
-      "0": "Expected newline or end of file after key-value pair at {start: {line: 1, column: 7}, end: {line: 1, column: 8}}",
-    },
+    "Err": [
+      "Failure", "Expected newline or end of file after key-value pair at {start: {line: 1, column: 7}, end: {line: 1, column: 8}}",
+    ],
   })
 
   // Test that comments after key-value pairs are handled correctly
@@ -601,7 +616,8 @@ test "inf failure" {
   ])
 }
 
-///| Test for heterogeneous arrays (should be invalid according to TOML spec)
+///|
+/// Test for heterogeneous arrays (should be invalid according to TOML spec)
 test "heterogeneous arrays should be invalid" {
   // This test verifies that our parser correctly rejects arrays with mixed types
   // which is required by the TOML specification
@@ -615,7 +631,8 @@ test "heterogeneous arrays should be invalid" {
   inspect(mixed_toml_array.validate(), content="false")
 }
 
-///| Test edge cases with whitespace and formatting
+///|
+/// Test edge cases with whitespace and formatting
 test "whitespace handling" {
   let whitespace_toml =
     #|  key1  =  "value1"  
@@ -634,7 +651,8 @@ test "whitespace handling" {
   ])
 }
 
-///| Test array formatting with newlines and trailing commas
+///|
+/// Test array formatting with newlines and trailing commas
 test "array formatting" {
   let array_formatting_toml =
     #|array1 = [

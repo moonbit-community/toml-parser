@@ -1,10 +1,12 @@
-///| Parser implementation for TOML
+///|
+/// Parser implementation for TOML
 typealias @tokenize.(Token, TomlDateTime)
 
 ///|
 fnalias @tokenize.tokenize
 
-///| Skip newline tokens
+///|
+/// Skip newline tokens
 fn Parser::skip_newlines(self : Parser) -> Unit {
   let next_view = loop self.view() {
     [Newline(..), .. rest] => continue rest
@@ -13,7 +15,8 @@ fn Parser::skip_newlines(self : Parser) -> Unit {
   self.update_view(next_view)
 }
 
-///| Parse a primary value (string, number, boolean)
+///|
+/// Parse a primary value (string, number, boolean)
 fn Parser::parse_value(self : Parser) -> TomlValue raise {
   match self.view() {
     [StringToken(s, ..), .. rest] => {
@@ -56,7 +59,8 @@ fn Parser::parse_value(self : Parser) -> TomlValue raise {
   }
 }
 
-///| Parse an array [1, 2, 3]
+///|
+/// Parse an array [1, 2, 3]
 fn Parser::parse_array(self : Parser) -> TomlValue raise {
   let values = []
   self.skip_newlines()
@@ -93,7 +97,8 @@ fn Parser::parse_array(self : Parser) -> TomlValue raise {
   TomlArray(values)
 }
 
-///| Parse an inline table {key = value, key2 = value2}
+///|
+/// Parse an inline table {key = value, key2 = value2}
 fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
   let table = {}
   match self.view() {
@@ -128,7 +133,8 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
   TomlTable(table)
 }
 
-///| Parse a table path: section.subsection.key
+///|
+/// Parse a table path: section.subsection.key
 fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
   let path = Array::new()
 
@@ -178,7 +184,8 @@ fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
   path
 }
 
-///| Parse an array of tables path: section.subsection.key
+///|
+/// Parse an array of tables path: section.subsection.key
 fn Parser::parse_array_of_tables_path(self : Parser) -> Array[String] raise {
   let path = Array::new()
 
@@ -229,7 +236,8 @@ fn Parser::parse_array_of_tables_path(self : Parser) -> Array[String] raise {
   path
 }
 
-///| Create or get a nested table structure from a path
+///|
+/// Create or get a nested table structure from a path
 fn create_nested_table(
   root_table : Map[String, TomlValue],
   path : Array[String],
@@ -254,7 +262,8 @@ fn create_nested_table(
   current_table
 }
 
-///| Create or append to an array of tables structure from a path
+///|
+/// Create or append to an array of tables structure from a path
 fn create_array_of_tables(
   root_table : Map[String, TomlValue],
   path : Array[String],
@@ -311,7 +320,8 @@ fn[T] parse_error(tokens : ArrayView[@tokenize.Token], msg : String) -> T raise 
   }
 }
 
-///| Parse a dotted key path: key.subkey.subsubkey
+///|
+/// Parse a dotted key path: key.subkey.subsubkey
 fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
   let path = Array::new()
 
@@ -407,7 +417,8 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
   path
 }
 
-///| Parse a key-value pair with dotted key support: key.subkey = value
+///|
+/// Parse a key-value pair with dotted key support: key.subkey = value
 fn Parser::parse_key_value(self : Parser) -> (Array[String], TomlValue) raise {
   // Parse dotted key
   let key_path = self.parse_dotted_key()
@@ -423,7 +434,8 @@ fn Parser::parse_key_value(self : Parser) -> (Array[String], TomlValue) raise {
   (key_path, value)
 }
 
-///| Set a value using a dotted key path in a table
+///|
+/// Set a value using a dotted key path in a table
 fn set_dotted_key_value(
   table : Map[String, TomlValue],
   key_path : Array[String],
@@ -464,7 +476,8 @@ fn set_dotted_key_value(
   current_table[final_key] = value
 }
 
-///| Parse a TOML document with support for tables
+///|
+/// Parse a TOML document with support for tables
 pub fn parse(input : String) -> TomlValue raise {
   let tokens = tokenize(input)
   let parser = Parser::new(tokens)

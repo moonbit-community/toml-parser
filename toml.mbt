@@ -1,4 +1,5 @@
-///| TOML Value types that represent different TOML data types
+///|
+/// TOML Value types that represent different TOML data types
 pub(all) enum TomlValue {
   TomlString(String)
   TomlInteger(Int64)
@@ -9,7 +10,8 @@ pub(all) enum TomlValue {
   TomlDateTime(TomlDateTime)
 } derive(Eq, Show, ToJson(style="flat"))
 
-///| Parser state (will implement methods later)
+///|
+/// Parser state (will implement methods later)
 pub struct Parser {
   tokens : Array[Token]
   mut position : Int
@@ -20,7 +22,8 @@ pub fn Parser::view(self : Parser) -> ArrayView[Token] {
   self.tokens[self.position:]
 }
 
-///| FIXME: expose upstream in the core
+///|
+/// FIXME: expose upstream in the core
 fn[T] ArrayView::start(self : ArrayView[T]) -> Int = "%arrayview.start"
 
 ///|
@@ -29,7 +32,8 @@ pub fn Parser::update_view(self : Parser, view : ArrayView[Token]) -> Unit {
   self.position = new_offset
 }
 
-///| Convert TomlValue to string representation
+///|
+/// Convert TomlValue to string representation
 pub fn TomlValue::to_string(self : TomlValue) -> String {
   match self {
     TomlString(s) => "\"\{s}\""
@@ -72,12 +76,14 @@ pub fn TomlValue::to_string(self : TomlValue) -> String {
   }
 }
 
-///| Create a new parser
+///|
+/// Create a new parser
 pub fn Parser::new(tokens : Array[Token]) -> Parser {
   { tokens, position: 0 }
 }
 
-///| Check if an array contains homogeneous types (TOML spec requirement)
+///|
+/// Check if an array contains homogeneous types (TOML spec requirement)
 pub fn TomlValue::is_homogeneous_array(arr : Array[TomlValue]) -> Bool {
   if arr.length() == 0 {
     return true // Empty arrays are considered homogeneous
@@ -108,7 +114,8 @@ pub fn TomlValue::is_homogeneous_array(arr : Array[TomlValue]) -> Bool {
   true
 }
 
-///| Validate that a TomlValue follows TOML specification rules
+///|
+/// Validate that a TomlValue follows TOML specification rules
 pub fn TomlValue::validate(self : TomlValue) -> Bool {
   match self {
     TomlArray(arr) => {

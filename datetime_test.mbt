@@ -1,6 +1,7 @@
 ///| Comprehensive datetime validation tests for TOML specification compliance
 
-///| Test TOML 1.0 spec examples for Offset Date-Time
+///|
+/// Test TOML 1.0 spec examples for Offset Date-Time
 test "toml spec offset datetime examples" {
   // RFC 3339 examples from TOML spec
   let odt1 = @toml.TomlDateTime(
@@ -17,7 +18,8 @@ test "toml spec offset datetime examples" {
   inspect(odt3.to_string(), content="1979-05-27T00:32:00.999999-07:00")
 }
 
-///| Test TOML 1.0 spec examples for Local Date-Time  
+///|
+/// Test TOML 1.0 spec examples for Local Date-Time  
 test "toml spec local datetime examples" {
   let ldt1 = @toml.TomlDateTime(@tokenize.LocalDateTime("1979-05-27T07:32:00"))
   inspect(ldt1.to_string(), content="1979-05-27T07:32:00")
@@ -27,7 +29,8 @@ test "toml spec local datetime examples" {
   inspect(ldt2.to_string(), content="1979-05-27T00:32:00.999999")
 }
 
-///| Test TOML 1.0 spec examples for Local Date
+///|
+/// Test TOML 1.0 spec examples for Local Date
 test "toml spec local date examples" {
   let ld1 = @toml.TomlDateTime(@tokenize.LocalDate("1979-05-27"))
   inspect(ld1.to_string(), content="1979-05-27")
@@ -37,7 +40,8 @@ test "toml spec local date examples" {
   inspect(ld3.to_string(), content="1900-01-01")
 }
 
-///| Test TOML 1.0 spec examples for Local Time
+///|
+/// Test TOML 1.0 spec examples for Local Time
 test "toml spec local time examples" {
   let lt1 = @toml.TomlDateTime(@tokenize.LocalTime("07:32:00"))
   inspect(lt1.to_string(), content="07:32:00")
@@ -45,7 +49,8 @@ test "toml spec local time examples" {
   inspect(lt2.to_string(), content="00:32:00.999999")
 }
 
-///| Test datetime arrays (homogeneous and mixed)
+///|
+/// Test datetime arrays (homogeneous and mixed)
 test "datetime arrays validation" {
   // Array of same datetime type (should be valid in TOML)
   let offset_array = Array::new()
@@ -76,7 +81,8 @@ test "datetime arrays validation" {
   inspect(date_str.contains("2023-01-03"), content="true")
 }
 
-///| Test datetime in complex nested structures
+///|
+/// Test datetime in complex nested structures
 test "datetime in nested structures" {
   let event_table : Map[String, @toml.TomlValue] = Map::new()
   event_table["name"] = @toml.TomlString("Conference 2023")
@@ -114,7 +120,8 @@ test "datetime in nested structures" {
   inspect(event_str.contains("2023-06-15T14:00:00+00:00"), content="true")
 }
 
-///| Test edge cases for datetime formats
+///|
+/// Test edge cases for datetime formats
 test "datetime format edge cases" {
   // Leap year dates
   let leap_year = @toml.TomlDateTime(@tokenize.LocalDate("2024-02-29"))
@@ -153,7 +160,8 @@ test "datetime format edge cases" {
   inspect(tz_half_hour.to_string(), content="2023-01-01T12:00:00+05:30")
 }
 
-///| Test datetime serialization and deserialization consistency
+///|
+/// Test datetime serialization and deserialization consistency
 test "datetime serialization consistency" {
   let original_offset = @tokenize.OffsetDateTime("1979-05-27T07:32:00Z")
   let toml_value = @toml.TomlDateTime(original_offset)
@@ -170,7 +178,8 @@ test "datetime serialization consistency" {
   ])
 }
 
-///| Test datetime comparison and equality  
+///|
+/// Test datetime comparison and equality  
 test "datetime comparison" {
   // Same datetime different representations should be equal
   let dt1 = @toml.TomlDateTime(@tokenize.OffsetDateTime("2023-01-01T12:00:00Z"))
@@ -191,7 +200,8 @@ test "datetime comparison" {
   inspect(local_dt == offset_dt, content="false")
 }
 
-///| Test historical and future dates
+///|
+/// Test historical and future dates
 test "datetime historical and future dates" {
   // Historical dates
   let unix_epoch = @toml.TomlDateTime(
@@ -210,7 +220,8 @@ test "datetime historical and future dates" {
   inspect(y2k.to_string(), content="2000-01-01T00:00:00")
 }
 
-///| Test timezone boundary cases
+///|
+/// Test timezone boundary cases
 test "timezone boundary cases" {
   // UTC variants
   let utc_z = @toml.TomlDateTime(
@@ -237,7 +248,8 @@ test "timezone boundary cases" {
   inspect(max_negative.to_string(), content="2023-01-01T12:00:00-12:00")
 }
 
-///| Test realistic application scenarios
+///|
+/// Test realistic application scenarios
 test "realistic datetime scenarios" {
   // Application configuration with various datetime needs
   let config : Map[String, @toml.TomlValue] = Map::new()

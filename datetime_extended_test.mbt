@@ -1,4 +1,5 @@
-///| Extended datetime tests for improved coverage
+///|
+/// Extended datetime tests for improved coverage
 test "test TomlDateTime types and equality" {
   let offset_dt1 = @tokenize.OffsetDateTime("1979-05-27T07:32:00Z")
   let offset_dt2 = @tokenize.OffsetDateTime("1979-05-27T07:32:00Z")

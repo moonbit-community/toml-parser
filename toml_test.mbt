@@ -1,4 +1,5 @@
-///| Basic tests for TOML value types
+///|
+/// Basic tests for TOML value types
 test "toml string value" {
   let value = @toml.TomlString("hello world")
   inspect(value.to_string(), content="\"hello world\"")
@@ -46,7 +47,8 @@ test "toml table value" {
   inspect(str_repr.has_prefix("{") && str_repr.has_suffix("}"), content="true")
 }
 
-///| Tests for datetime values - Offset DateTime
+///|
+/// Tests for datetime values - Offset DateTime
 test "toml offset datetime value" {
   let offset_dt = @toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z"))
   inspect(offset_dt.to_string(), content="1979-05-27T07:32:00Z")
@@ -60,7 +62,8 @@ test "toml offset datetime value" {
   inspect(offset_dt_negative.to_string(), content="1979-05-27T07:32:00-05:00")
 }
 
-///| Tests for datetime values - Local DateTime
+///|
+/// Tests for datetime values - Local DateTime
 test "toml local datetime value" {
   let local_dt = @toml.TomlDateTime(LocalDateTime("1979-05-27T07:32:00"))
   inspect(local_dt.to_string(), content="1979-05-27T07:32:00")
@@ -77,7 +80,8 @@ test "toml local datetime value" {
   )
 }
 
-///| Tests for datetime values - Local Date
+///|
+/// Tests for datetime values - Local Date
 test "toml local date value" {
   let local_date = @toml.TomlDateTime(LocalDate("1979-05-27"))
   inspect(local_date.to_string(), content="1979-05-27")
@@ -87,7 +91,8 @@ test "toml local date value" {
   inspect(local_date_past.to_string(), content="1900-01-01")
 }
 
-///| Tests for datetime values - Local Time
+///|
+/// Tests for datetime values - Local Time
 test "toml local time value" {
   let local_time = @toml.TomlDateTime(LocalTime("07:32:00"))
   inspect(local_time.to_string(), content="07:32:00")
@@ -99,7 +104,8 @@ test "toml local time value" {
   inspect(local_time_noon.to_string(), content="12:00:00")
 }
 
-///| Tests for datetime JSON representation
+///|
+/// Tests for datetime JSON representation
 test "toml datetime to_json" {
   let offset_dt = @toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z"))
   @json.inspect(offset_dt.to_json(), content=[
@@ -123,7 +129,8 @@ test "toml datetime to_json" {
   ])
 }
 
-///| Tests for datetime equality
+///|
+/// Tests for datetime equality
 test "toml datetime equality" {
   let dt1 = @toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z"))
   let dt2 = @toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z"))
@@ -135,7 +142,8 @@ test "toml datetime equality" {
   inspect(local_dt1 == local_dt2, content="true")
 }
 
-///| Tests for mixed datetime array
+///|
+/// Tests for mixed datetime array
 test "toml mixed datetime array" {
   let arr = Array::new()
   arr.push(@toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z")))
@@ -152,7 +160,8 @@ test "toml mixed datetime array" {
   inspect(str_repr.contains("07:32:00"), content="true")
 }
 
-///| Tests for datetime in table
+///|
+/// Tests for datetime in table
 test "toml datetime in table" {
   let table : Map[String, @toml.TomlValue] = Map::new()
   table["created_at"] = @toml.TomlDateTime(
@@ -172,7 +181,8 @@ test "toml datetime in table" {
   inspect(str_repr.contains("14:30:00"), content="true")
 }
 
-///| Tests for edge case datetime formats
+///|
+/// Tests for edge case datetime formats
 test "toml datetime edge cases" {
   // Test with fractional seconds
   let dt_with_millis = @toml.TomlDateTime(
@@ -195,7 +205,8 @@ test "toml datetime edge cases" {
   inspect(dt_with_tz_no_colon.to_string(), content="2023-01-01T00:00:00+0530")
 }
 
-///| Tests for parser creation  
+///|
+/// Tests for parser creation  
 test "parser creation" {
   let tokens = Array::new()
   let loc = @tokenize.default_loc()
@@ -207,7 +218,8 @@ test "parser creation" {
   inspect(parser.tokens.length(), content="3")
 }
 
-///| Tests for datetime token creation
+///|
+/// Tests for datetime token creation
 test "datetime token creation" {
   let loc = @tokenize.default_loc()
   let offset_dt_token = @tokenize.DateTimeToken(
@@ -250,7 +262,8 @@ test "datetime token creation" {
   }
 }
 
-///| Tests for array homogeneity validation
+///|
+/// Tests for array homogeneity validation
 test "array homogeneity validation" {
   // Homogeneous arrays (should be valid)
   let int_array = Array::new()
@@ -281,7 +294,8 @@ test "array homogeneity validation" {
   inspect(@toml.TomlValue::is_homogeneous_array(single_array), content="true")
 }
 
-///| Tests for heterogeneous arrays (should be invalid)
+///|
+/// Tests for heterogeneous arrays (should be invalid)
 test "array heterogeneity detection" {
   // Mixed types (should be invalid)
   let mixed_array = Array::new()
@@ -306,7 +320,8 @@ test "array heterogeneity detection" {
   )
 }
 
-///| Tests for TomlValue validation
+///|
+/// Tests for TomlValue validation
 test "toml value validation" {
   // Valid homogeneous array
   let valid_array = Array::new()

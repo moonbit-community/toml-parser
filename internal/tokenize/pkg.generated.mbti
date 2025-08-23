@@ -1,8 +1,8 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bob/toml/tokenize"
+package "bob/toml/internal/tokenize"
 
 import(
-  "bob/toml/lexer"
+  "bob/lexer"
 )
 
 // Values

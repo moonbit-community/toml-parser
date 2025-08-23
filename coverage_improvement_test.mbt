@@ -1,4 +1,5 @@
-///| Tests specifically designed to improve coverage of uncovered lines
+///|
+/// Tests specifically designed to improve coverage of uncovered lines
 test "test complex TOML with all token types" {
   let complex_toml =
     #|string_key = "value with \"quotes\""
@@ -115,10 +116,9 @@ test "test edge case number formats for error paths" {
       "huge = 999999999999999999999999999999999999999",
     )
   @json.inspect(tokens, content={
-    "Err": {
-      "$tag": "Failure",
-      "0": "Invalid integer: 999999999999999999999999999999999999999",
-    },
+    "Err": [
+      "Failure", "Invalid integer: 999999999999999999999999999999999999999",
+    ],
   })
 }
 

@@ -2,7 +2,7 @@
 package "bob/toml"
 
 import(
-  "bob/toml/tokenize"
+  "bob/toml/internal/tokenize"
 )
 
 // Values

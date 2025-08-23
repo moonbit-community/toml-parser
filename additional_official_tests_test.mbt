@@ -2,7 +2,8 @@
 
 ///| These provide additional coverage of edge cases and complex scenarios
 
-///| Test key names with various characters
+///|
+/// Test key names with various characters
 test "key name variations" {
   let key_variations_toml =
     #|bare_key = "value"
@@ -41,7 +42,8 @@ test "numeric keys" {
   // always interpreted as strings.
 }
 
-///| Test complex escape sequences  
+///|
+/// Test complex escape sequences  
 test "complex escape sequences" {
   let escape_sequences_toml =
     #|basic = "I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."
@@ -66,7 +68,8 @@ test "complex escape sequences" {
   ])
 }
 
-///| Test various number formats
+///|
+/// Test various number formats
 test "number formats" {
   let numbers_toml =
     #|positive_int = 42
@@ -95,7 +98,8 @@ test "number formats" {
   ])
 }
 
-///| Test complex nested array structures
+///|
+/// Test complex nested array structures
 test "complex nested arrays" {
   let nested_arrays_toml =
     #|nested_arrays_of_ints = [[1, 2], [3, 4, 5]]
@@ -150,7 +154,8 @@ test "complex nested arrays" {
   ])
 }
 
-///| Test various inline table formats
+///|
+/// Test various inline table formats
 test "inline table variations" {
   let inline_tables_toml =
     #|simple = {name = "value"}
@@ -196,7 +201,8 @@ test "inline table variations" {
   ])
 }
 
-///| Test real-world configuration example
+///|
+/// Test real-world configuration example
 test "config file example" {
   let config_toml =
     #|title = "TOML Example Configuration"
@@ -261,7 +267,8 @@ test "config file example" {
   ])
 }
 
-///| Test edge cases with whitespace
+///|
+/// Test edge cases with whitespace
 test "whitespace edge cases" {
   let whitespace_edge_toml =
     #|   # Comment with leading spaces
@@ -320,7 +327,8 @@ test "whitespace edge cases" {
   ])
 }
 
-///| Test boundary values
+///|
+/// Test boundary values
 test "boundary values" {
   let boundary_toml =
     #|empty_string = ""
@@ -353,7 +361,8 @@ test "boundary values" {
   ])
 }
 
-///| Test validation that heterogeneous arrays are properly detected
+///|
+/// Test validation that heterogeneous arrays are properly detected
 test "validation comprehensive" {
   // Test that our validation correctly identifies invalid structures
 

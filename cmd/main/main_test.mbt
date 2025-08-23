@@ -1,4 +1,5 @@
-///| Tests for main demo functionality
+///|
+/// Tests for main demo functionality
 test "test TomlString to_string" {
   let str_val = @toml.TomlString("Hello, TOML!")
   inspect(str_val.to_string(), content="\"Hello, TOML!\"")

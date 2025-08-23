@@ -1,4 +1,5 @@
-///| Tests for the TOML lexer
+///|
+/// Tests for the TOML lexer
 test "tokenize simple key-value" {
   let tokens = @tokenize.tokenize(
     (
@@ -134,7 +135,8 @@ test "unicode or emoji" {
 
 }
 
-///| Test uncovered Token JSON serialization methods
+///|
+/// Test uncovered Token JSON serialization methods
 test "test DateTimeToken JSON serialization" {
   let dt = @tokenize.OffsetDateTime("1979-05-27T07:32:00Z")
   let token = @tokenize.DateTimeToken(dt, loc=@tokenize.default_loc())
@@ -185,7 +187,8 @@ test "test Dot token JSON serialization" {
   ])
 }
 
-///| Test special number formats
+///|
+/// Test special number formats
 test "tokenize hexadecimal numbers" {
   let tokens = @tokenize.tokenize(
     (
@@ -315,7 +318,8 @@ test "tokenize special hex digits" {
   ])
 }
 
-///| Test uncovered escape sequences and error conditions
+///|
+/// Test uncovered escape sequences and error conditions
 test "test escaped single quote in string" {
   let tokens = @tokenize.tokenize(
     (
@@ -423,7 +427,8 @@ test "test negative sign not followed by number" {
   )
 }
 
-///| Test lexer expect_string error cases
+///|
+/// Test lexer expect_string error cases
 test "lexer expect_string failure" {
   let lexer = @lexer.Lexer::new(
     (
@@ -437,7 +442,8 @@ test "lexer expect_string failure" {
   )
 }
 
-///| Test Unicode 4-digit escape with lowercase hex letters
+///|
+/// Test Unicode 4-digit escape with lowercase hex letters
 test "unicode 4 escape lowercase hex" {
   let tokens = @tokenize.tokenize(
     (
@@ -452,7 +458,8 @@ test "unicode 4 escape lowercase hex" {
   ])
 }
 
-///| Test Unicode 4-digit escape with uppercase hex letters
+///|
+/// Test Unicode 4-digit escape with uppercase hex letters
 test "unicode 4 escape uppercase hex" {
   let tokens = @tokenize.tokenize(
     (
@@ -467,7 +474,8 @@ test "unicode 4 escape uppercase hex" {
   ])
 }
 
-///| Test Unicode 4-digit escape invalid hex digit
+///|
+/// Test Unicode 4-digit escape invalid hex digit
 test "unicode 4 escape invalid hex" {
   let maybe_tokens = try? @tokenize.tokenize(
       (
@@ -480,7 +488,8 @@ test "unicode 4 escape invalid hex" {
   )
 }
 
-///| Test Unicode 4-digit escape incomplete sequence
+///|
+/// Test Unicode 4-digit escape incomplete sequence
 test "unicode 4 escape incomplete" {
   let maybe_tokens = try? @tokenize.tokenize(
       (
@@ -493,7 +502,8 @@ test "unicode 4 escape incomplete" {
   )
 }
 
-///| Test Unicode 4-digit escape invalid code point
+///|
+/// Test Unicode 4-digit escape invalid code point
 test "unicode 4 escape invalid code point" {
   let maybe_tokens = try? @tokenize.tokenize(
       (
@@ -506,7 +516,8 @@ test "unicode 4 escape invalid code point" {
   )
 }
 
-///| Test Unicode 8-digit escape with lowercase hex letters
+///|
+/// Test Unicode 8-digit escape with lowercase hex letters
 test "unicode 8 escape lowercase hex" {
   let tokens = @tokenize.tokenize(
     (
@@ -521,7 +532,8 @@ test "unicode 8 escape lowercase hex" {
   ])
 }
 
-///| Test Unicode 8-digit escape with uppercase hex letters
+///|
+/// Test Unicode 8-digit escape with uppercase hex letters
 test "unicode 8 escape uppercase hex" {
   let tokens = @tokenize.tokenize(
     (
@@ -536,7 +548,8 @@ test "unicode 8 escape uppercase hex" {
   ])
 }
 
-///| Test Unicode 8-digit escape invalid hex digit
+///|
+/// Test Unicode 8-digit escape invalid hex digit
 test "unicode 8 escape invalid hex" {
   let maybe_tokens = try? @tokenize.tokenize(
       (
@@ -549,7 +562,8 @@ test "unicode 8 escape invalid hex" {
   )
 }
 
-///| Test Unicode 8-digit escape incomplete sequence
+///|
+/// Test Unicode 8-digit escape incomplete sequence
 test "unicode 8 escape incomplete" {
   let maybe_tokens = try? @tokenize.tokenize(
       (
@@ -562,7 +576,8 @@ test "unicode 8 escape incomplete" {
   )
 }
 
-///| Test Unicode 8-digit escape invalid code point (too large)
+///|
+/// Test Unicode 8-digit escape invalid code point (too large)
 test "unicode 8 escape invalid code point large" {
   let maybe_tokens = try? @tokenize.tokenize(
       (
@@ -575,7 +590,8 @@ test "unicode 8 escape invalid code point large" {
   )
 }
 
-///| Test Unicode 8-digit escape invalid code point (surrogate range)
+///|
+/// Test Unicode 8-digit escape invalid code point (surrogate range)
 test "unicode 8 escape invalid code point surrogate" {
   let maybe_tokens = try? @tokenize.tokenize(
       (
@@ -588,7 +604,8 @@ test "unicode 8 escape invalid code point surrogate" {
   )
 }
 
-///| Test Unicode 8-digit escape invalid code point conversion
+///|
+/// Test Unicode 8-digit escape invalid code point conversion
 test "unicode 8 escape invalid conversion" {
   let maybe_tokens = try? @tokenize.tokenize(
       (
@@ -601,7 +618,8 @@ test "unicode 8 escape invalid conversion" {
   )
 }
 
-///| Test backspace escape sequence
+///|
+/// Test backspace escape sequence
 test "backspace escape sequence" {
   let tokens = @tokenize.tokenize(
     (
@@ -616,7 +634,8 @@ test "backspace escape sequence" {
   ])
 }
 
-///| Test form feed escape sequence
+///|
+/// Test form feed escape sequence
 test "form feed escape sequence" {
   let tokens = @tokenize.tokenize(
     (
@@ -632,7 +651,8 @@ test "form feed escape sequence" {
   ])
 }
 
-///| Test multiline basic string with escape sequences
+///|
+/// Test multiline basic string with escape sequences
 test "multiline basic string escapes" {
   let tokens = @tokenize.tokenize(
     (
@@ -647,7 +667,8 @@ test "multiline basic string escapes" {
   ])
 }
 
-///| Test multiline basic string with all escape types
+///|
+/// Test multiline basic string with all escape types
 test "multiline basic string all escapes" {
   let tokens = @tokenize.tokenize(
     (
@@ -662,7 +683,8 @@ test "multiline basic string all escapes" {
   ])
 }
 
-///| Test multiline basic string with line ending backslash and CR
+///|
+/// Test multiline basic string with line ending backslash and CR
 test "multiline basic string line ending backslash CR" {
   let tokens = @tokenize.tokenize("key = \"\"\"line1\\\r\n   line2\"\"\"")
   @json.inspect(tokens, content=[
@@ -673,7 +695,8 @@ test "multiline basic string line ending backslash CR" {
   ])
 }
 
-///| Test multiline basic string invalid escape
+///|
+/// Test multiline basic string invalid escape
 test "multiline basic string invalid escape" {
   let maybe_tokens = try? @tokenize.tokenize(
       (
@@ -686,7 +709,8 @@ test "multiline basic string invalid escape" {
   )
 }
 
-///| Test multiline basic string unexpected end after escape
+///|
+/// Test multiline basic string unexpected end after escape
 test "multiline basic string unexpected end after escape" {
   let maybe_tokens = try? @tokenize.tokenize(
       (
@@ -699,7 +723,8 @@ test "multiline basic string unexpected end after escape" {
   )
 }
 
-///| Test multiline basic string unterminated
+///|
+/// Test multiline basic string unterminated
 test "multiline basic string unterminated" {
   let maybe_tokens = try? @tokenize.tokenize(
       (
@@ -712,7 +737,8 @@ test "multiline basic string unterminated" {
   )
 }
 
-///| Test multiline basic string early termination in loop
+///|
+/// Test multiline basic string early termination in loop
 test "multiline basic string early termination" {
   let maybe_tokens = try? @tokenize.tokenize(
       (
@@ -725,7 +751,8 @@ test "multiline basic string early termination" {
   )
 }
 
-///| Test multiline literal string with CR+LF
+///|
+/// Test multiline literal string with CR+LF
 test "multiline literal string CRLF" {
   let tokens = @tokenize.tokenize("key = '''line1\r\nline2'''")
   @json.inspect(tokens, content=[
@@ -736,7 +763,8 @@ test "multiline literal string CRLF" {
   ])
 }
 
-///| Test multiline literal string unterminated
+///|
+/// Test multiline literal string unterminated
 test "multiline literal string unterminated" {
   let maybe_tokens = try? @tokenize.tokenize(
       (
@@ -749,7 +777,8 @@ test "multiline literal string unterminated" {
   )
 }
 
-///| Test hex number with no digits after 0x
+///|
+/// Test hex number with no digits after 0x
 test "hex number invalid digit error path" {
   // This should fail because there are no hex digits after 0x
   let maybe_tokens = try? @tokenize.tokenize(
@@ -763,7 +792,8 @@ test "hex number invalid digit error path" {
   )
 }
 
-///| Test invalid float parsing case
+///|
+/// Test invalid float parsing case
 test "invalid float error" {
   // This should trigger the invalid float error in read_number
   // but the current implementation may parse it differently
@@ -780,7 +810,8 @@ test "invalid float error" {
   ])
 }
 
-///| Test multiline literal string tokenization
+///|
+/// Test multiline literal string tokenization
 test "multiline literal string token" {
   let tokens = @tokenize.tokenize(
     (
@@ -795,7 +826,8 @@ test "multiline literal string token" {
   ])
 }
 
-///| Test tokenize while loop else branch (should never be reached)
+///|
+/// Test tokenize while loop else branch (should never be reached)
 test "tokenize else branch coverage" {
   // This tests the else branch in tokenize function that should never be reached
   // The function returns inside the while loop, so the else is unreachable
@@ -812,7 +844,8 @@ test "tokenize else branch coverage" {
   ])
 }
 
-///| Test multiline basic string with single quote escape
+///|
+/// Test multiline basic string with single quote escape
 test "multiline basic string single quote escape" {
   let tokens = @tokenize.tokenize(
     (
@@ -827,7 +860,8 @@ test "multiline basic string single quote escape" {
   ])
 }
 
-///| Test multiline basic string with CR only (without LF)
+///|
+/// Test multiline basic string with CR only (without LF)
 test "multiline basic string CR only" {
   // CR: '\r' is hard to visualize in the multipline string
   // explicit escaping is better for testing
@@ -840,7 +874,8 @@ test "multiline basic string CR only" {
   ])
 }
 
-///| Test multiline basic string early termination at None peek
+///|
+/// Test multiline basic string early termination at None peek
 test "multiline basic string none peek" {
   // This creates a string that will reach None in the peek() during processing
   let maybe_tokens = try? @tokenize.tokenize(
@@ -854,7 +889,8 @@ test "multiline basic string none peek" {
   )
 }
 
-///| Test Unicode escape sequence that results in None from to_char
+///|
+/// Test Unicode escape sequence that results in None from to_char
 test "unicode escape invalid conversion to char" {
   // This tests an edge case where to_char returns None
   let tokens = @tokenize.tokenize(
@@ -871,7 +907,8 @@ test "unicode escape invalid conversion to char" {
   ])
 }
 
-///| Test hex number with underscore in the middle
+///|
+/// Test hex number with underscore in the middle
 test "hex number with underscores" {
   let tokens = @tokenize.tokenize(
     (
@@ -886,7 +923,8 @@ test "hex number with underscores" {
   ])
 }
 
-///| Test CR followed by LF after multiline string opening
+///|
+/// Test CR followed by LF after multiline string opening
 test "multiline string opening CRLF" {
   let tokens = @tokenize.tokenize(
     (
@@ -902,7 +940,8 @@ test "multiline string opening CRLF" {
   ])
 }
 
-///| Test invalid float that could trigger parse error
+///|
+/// Test invalid float that could trigger parse error
 test "very large invalid float" {
   // Create a huge number that might overflow during parsing
   let huge_number = "999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999"
@@ -920,7 +959,8 @@ test "very large invalid float" {
   }
 }
 
-///| Test edge case for hex digit error handling  
+///|
+/// Test edge case for hex digit error handling  
 test "test hex overflow edge case" {
   // Test a hex number that might cause overflow issues
   let tokens = @tokenize.tokenize(
@@ -936,7 +976,8 @@ test "test hex overflow edge case" {
   ])
 }
 
-///| Test Unicode escape that might fail to_char conversion
+///|
+/// Test Unicode escape that might fail to_char conversion
 test "unicode code point conversion failure" {
   // Try to find a Unicode code that's valid as int but invalid as char
   // Code point 0x110000 is too large for valid Unicode
@@ -952,7 +993,8 @@ test "unicode code point conversion failure" {
   }
 }
 
-///| Test very specific multiline string that could reach None peek
+///|
+/// Test very specific multiline string that could reach None peek
 test "multiline string abrupt end" {
   // Create a multiline string that ends abruptly without proper closing
   let maybe_tokens = try? @tokenize.tokenize(
@@ -970,7 +1012,8 @@ test "multiline string abrupt end" {
   inspect(is_unterminated, content="true")
 }
 
-///| Test edge case: try to reach the Unicode 8 None conversion path
+///|
+/// Test edge case: try to reach the Unicode 8 None conversion path
 test "unicode 8 digit none conversion attempt" {
   // Try an edge case that might trigger the None path in unicode 8 escape
   // Use a very large value that might fail conversion
@@ -989,7 +1032,8 @@ test "unicode 8 digit none conversion attempt" {
   inspect(has_invalid_unicode, content="true")
 }
 
-///| Test edge case: try to reach hex digit error path (likely unreachable)
+///|
+/// Test edge case: try to reach hex digit error path (likely unreachable)
 test "attempt hex digit error path" {
   // This tests the theoretical hex digit error path, though it's likely unreachable
   // due to pattern matching filtering
@@ -1006,7 +1050,8 @@ test "attempt hex digit error path" {
   ])
 }
 
-///| Test multiline string with potential truncation
+///|
+/// Test multiline string with potential truncation
 test "multiline string potential truncation" {
   // Try to create a scenario where multiline string processing might hit None
   let maybe_tokens = try? @tokenize.tokenize(
