@@ -470,9 +470,8 @@ fn Lexer::is_datetime_pattern(self : Lexer) -> Bool {
   // Check for datetime patterns using regex
   match self.view() using longest {
     // LocalTime pattern: HH:MM:SS[.fff] followed by valid terminator
-    re"[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?(?<rest>.*)" => {
+    re"[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?(?<rest>.*)" =>
       check_datetime_terminator_string(rest)
-    }
     // LocalDate pattern: YYYY-MM-DD (always valid, may continue with T for datetime)
     re"[0-9]{4}-[0-9]{2}-[0-9]{2}.*" => true
     _ => false
@@ -481,7 +480,7 @@ fn Lexer::is_datetime_pattern(self : Lexer) -> Bool {
 
 ///|
 /// Check if characters after a potential datetime are valid terminators
-fn check_datetime_terminator(view : @string.View) -> Bool {
+fn check_datetime_terminator_string(view : @string.View) -> Bool {
   match view {
     [] | [' ' | '\t' | '\n' | '\r' | '=' | ',' | ']' | '}', ..] => true
     _ => false
@@ -494,7 +493,7 @@ fn Lexer::read_datetime_with_loc(
   self : Lexer,
   start_pos : @lexer.Position,
 ) -> Token {
-  
+
   // Use regex to match and capture different datetime patterns
   match self.view() using longest {
     // LocalTime: HH:MM:SS[.fff]
@@ -545,10 +544,7 @@ fn Lexer::read_datetime_with_loc(
     _ => {
       // This shouldn't happen if is_datetime_pattern was called first
       let end_pos = self.get_loc()
-      return DateTimeToken(
-        LocalDate(""),
-        loc=make_loc(start_pos, end_pos),
-      )
+      return DateTimeToken(LocalDate(""), loc=make_loc(start_pos, end_pos))
     }
   }
 }
