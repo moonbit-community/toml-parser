@@ -17,15 +17,16 @@ fn make_loc(start_pos : @lexer.Position, end_pos : @lexer.Position) -> Loc {
 ///|
 /// Parse an identifier or keyword
 fn Lexer::read_identifier(self : Lexer) -> String {
-  let sb = StringBuilder::new()
-  loop self.view() {
-    ['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' as x, .. rest] => {
-      sb.write_char(x)
-      continue rest
+
+  // TODO(upstream): error message improved for `longest` with 
+  // empty branches or single branch with _ => ... 
+  match self.view() using longest {
+    re"(?<identifier>[a-zA-Z][a-zA-Z0-9_\-]*)(?<rest>.*)" => {
+      self.update_view(rest)
+      identifier.to_string()
     }
-    rest => self.update_view(rest)
+    _ => "" //  never going to happen
   }
-  sb.to_string()
 }
 
 ///| Check if the next character is a valid token separator
