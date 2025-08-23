@@ -64,22 +64,6 @@ fn Char::is_hex(ch : Char) -> Int? {
 }
 
 ///|
-fn Char::is_oct(ch : Char) -> Int? {
-  match ch {
-    '0'..='7' => Some(ch.to_int() - '0')
-    _ => None
-  }
-}
-
-///|
-fn Char::is_bin(ch : Char) -> Int? {
-  match ch {
-    '0' | '1' => Some(ch.to_int() - '0')
-    _ => None
-  }
-}
-
-///|
 /// Parse Unicode escape sequence \uXXXX
 fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
   let code = match self.view() {
@@ -350,32 +334,31 @@ fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
 ///|
 /// Parse hexadecimal number
 fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
-  let mut result = match self.view() {
-    ['0', 'x' | 'X', ch, .. rest] if ch.is_hex() is Some(ch) => {
+
+  // (?:[0-9a-fA-F][0-9a-fA-F]*)(?:_[0-9a-fA-F][0-9a-fA-F]*)*
+  // TODO(upstream): support non capturing group
+  let mut result = 0L
+  // 0xA__FF_12 is invalid according to spec
+  match self.view() using longest {
+    re"(0[xX])(?<hex_digits>[0-9a-fA-F]+(_[0-9a-fA-F]+)*)(?<rest>.*)" => {
+      for i = 0; i < hex_digits.length(); i = i + 1 {
+        let ch = hex_digits[i]
+        if ch is '_' {
+          continue
+        }
+        let digit_value = match ch {
+          '0'..='9' => (ch - '0').to_int64()
+          'a'..='f' => (ch - 'a').to_int64() + 10L
+          'A'..='F' => (ch - 'A').to_int64() + 10L
+          _ => fail(self.error("Invalid hex digit"))
+        }
+        result = result * 16L + digit_value
+      }
       self.update_view(rest)
-      ch.to_int64()
     }
-    _ =>
-      fail(
-        self.error("Invalid hex number, expected 0..=9, a..=f, A..=F after 0x"),
-      )
+    _ => fail(self.error("Invalid hex number format"))
   }
-  loop self.view() {
-    [ch, .. rest] if ch.is_hex() is Some(ch) => {
-      self.update_view(rest)
-      result = result * 16L + ch.to_int64()
-      continue self.view()
-    }
-    ['_', ch, .. rest] if ch.is_hex() is Some(ch) => {
-      self.update_view(rest)
-      result = result * 16L + ch.to_int64()
-      continue self.view()
-    }
-    ['_', '_', ..] => fail(self.error("Invalid hex number, consecutive _"))
-    ['_', ..] =>
-      fail(self.error("Invalid hex number, no trailing digits after _"))
-    _ => break
-  }
+
   // 0-width assertion
   match self.view() {
     [] => result
@@ -385,7 +368,7 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
       } else {
         fail(
           self.error(
-            "Invalid hex number, expected whitespace, comma, or end of input after 0x",
+            "Invalid char '\{delimited}', expected whitespace, comma, or end of input after 0x...",
           ),
         )
       }
@@ -444,29 +427,27 @@ test {
 ///|
 /// Parse binary number
 fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
-  let mut result = match self.view() {
-    ['0', 'b' | 'B', ch, .. rest] if ch.is_bin() is Some(ch) => {
+
+  // (?:[01][01]*)(?:_[01][01]*)*
+  // TODO(upstream): support non capturing group
+  // TODO(upstream): `self.view()` is not needed
+  // `match self` directly
+  let mut result = 0L
+  // 0b1__00_11 is invalid according to spec
+  match self.view() using longest {
+    re"(0[bB])(?<binary_digits>[01]+(_[01]+)*)(?<rest>.*)" => {
+      for i = 0; i < binary_digits.length(); i = i + 1 {
+        let ch = binary_digits[i]
+        if ch is '_' {
+          continue
+        }
+        result = result * 2L + (ch - '0').to_int64()
+      }
       self.update_view(rest)
-      ch.to_int64()
     }
-    _ => fail(self.error("Invalid binary number, expected 0 or 1 after 0b"))
+    _ => fail(self.error("Invalid binary number format"))
   }
-  loop self.view() {
-    [ch, .. rest] if ch.is_bin() is Some(ch) => {
-      self.update_view(rest)
-      result = result * 2L + ch.to_int64()
-      continue self.view()
-    }
-    ['_', ch, .. rest] if ch.is_bin() is Some(ch) => {
-      self.update_view(rest)
-      result = result * 2L + ch.to_int64()
-      continue self.view()
-    }
-    ['_', '_', ..] => fail(self.error("Invalid binary number, consecutive _"))
-    ['_', ..] =>
-      fail(self.error("Invalid binary number, no trailing digits after _"))
-    _ => break
-  }
+
   // 0-width assertion
   match self.view() {
     [] => result
@@ -476,7 +457,7 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
       } else {
         fail(
           self.error(
-            "Invalid binary number, expected whitespace, comma, or end of input after 0b",
+            "Invalid char '\{delimited}', expected whitespace, comma, or end of input after 0b...",
           ),
         )
       }

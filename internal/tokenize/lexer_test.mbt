@@ -788,7 +788,7 @@ test "hex number invalid digit error path" {
     )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid hex number, expected 0..=9, a..=f, A..=F after 0x at line 1, column 7",
+    content="Invalid hex number format at line 1, column 7",
   )
 }
 
@@ -1074,7 +1074,7 @@ test "trailing _ in binary number" {
     )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid binary number, no trailing digits after _ at line 1, column 14",
+    content="Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 14",
   )
 }
 
@@ -1088,7 +1088,7 @@ test "consequence _ in binary number" {
   // according to spec, this should fail
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid binary number, consecutive _ at line 1, column 11",
+    content="Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 11",
   )
 }
 
@@ -1101,7 +1101,7 @@ test "trailing _ in hex number" {
     )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid hex number, no trailing digits after _ at line 1, column 14",
+    content="Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 14",
   )
 }
 
@@ -1115,7 +1115,7 @@ test "consecutive _ in hex number" {
   // according to spec, this should fail
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid hex number, consecutive _ at line 1, column 11",
+    content="Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 11",
   )
 }
 
@@ -1142,6 +1142,6 @@ test "consecutive _ in octal number" {
   // according to spec, this should fail
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content=("Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 10"),
+    content="Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 10",
   )
 }

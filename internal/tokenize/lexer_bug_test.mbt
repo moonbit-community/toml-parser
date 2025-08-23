@@ -26,7 +26,7 @@ test "test invalid hex digit error" {
     )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid hex number, expected 0..=9, a..=f, A..=F after 0x at line 1, column 7",
+    content="Invalid hex number format at line 1, column 7",
   )
 }
 
@@ -52,7 +52,7 @@ test "test binary without digits" {
     )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid binary number, expected 0 or 1 after 0b at line 1, column 8",
+    content="Invalid binary number format at line 1, column 8",
   )
 }
 
@@ -65,7 +65,7 @@ test "test hex with invalid delimiter" {
     )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid hex number, expected whitespace, comma, or end of input after 0x at line 1, column 12",
+    content="Invalid char 'X', expected whitespace, comma, or end of input after 0x... at line 1, column 12",
   )
 }
 
@@ -166,7 +166,7 @@ test "test binary with invalid digits" {
     )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid binary number, expected whitespace, comma, or end of input after 0b at line 1, column 12",
+    content="Invalid char '2', expected whitespace, comma, or end of input after 0b... at line 1, column 12",
   )
 }
 
