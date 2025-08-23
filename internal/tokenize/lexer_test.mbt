@@ -1128,7 +1128,7 @@ test "trailing _ in octal number" {
     )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid octal number, no trailing digits after _ at line 1, column 12",
+    content="Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 12",
   )
 }
 
@@ -1142,6 +1142,6 @@ test "consecutive _ in octal number" {
   // according to spec, this should fail
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid octal number, consecutive _ at line 1, column 10",
+    content=("Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 10"),
   )
 }

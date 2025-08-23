@@ -39,7 +39,7 @@ test "test octal without digits" {
     )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid octal number, expected 0..=7 after 0o at line 1, column 8",
+    content="Invalid octal number format at line 1, column 8",
   )
 }
 
@@ -123,7 +123,7 @@ test "test octal with invalid digits" {
     )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid octal number, expected whitespace, comma, or end of input after 0o at line 1, column 10",
+    content="Invalid char '8', expected whitespace, comma, or end of input after 0o... at line 1, column 10",
   )
 }
 

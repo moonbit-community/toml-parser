@@ -395,29 +395,25 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
 ///|
 /// Parse octal number
 fn Lexer::read_octal_number(self : Lexer) -> Int64 raise {
-  let mut result = match self.view() {
-    ['0', 'o' | 'O', ch, .. rest] if ch.is_oct() is Some(ch) => {
+
+  // (?:[0-7][0-7]*)(?:_[0-7][0-7]*)*
+  // TODO(upstream): support non capturing group
+  let mut result = 0L
+  // 0o7__55_44 is invalid according to spec
+  match self.view() using longest {
+    re"(0[oO])(?<octal_digits>[0-7]+(_[0-7]+)*)(?<rest>.*)" => {
+      for i = 0; i < octal_digits.length(); i = i + 1 {
+        let ch = octal_digits[i]
+        if ch is '_' {
+          continue
+        }
+        result = result * 8L + (ch - '0').to_int64()
+      }
       self.update_view(rest)
-      ch.to_int64()
     }
-    _ => fail(self.error("Invalid octal number, expected 0..=7 after 0o"))
+    _ => fail(self.error("Invalid octal number format"))
   }
-  loop self.view() {
-    [ch, .. rest] if ch.is_oct() is Some(ch) => {
-      self.update_view(rest)
-      result = result * 8L + ch.to_int64()
-      continue self.view()
-    }
-    ['_', ch, .. rest] if ch.is_oct() is Some(ch) => {
-      self.update_view(rest)
-      result = result * 8L + ch.to_int64()
-      continue self.view()
-    }
-    ['_', '_', ..] => fail(self.error("Invalid octal number, consecutive _"))
-    ['_', ..] =>
-      fail(self.error("Invalid octal number, no trailing digits after _"))
-    _ => break
-  }
+
   // 0-width assertion
   match self.view() {
     [] => result
@@ -427,7 +423,7 @@ fn Lexer::read_octal_number(self : Lexer) -> Int64 raise {
       } else {
         fail(
           self.error(
-            "Invalid octal number, expected whitespace, comma, or end of input after 0o",
+            "Invalid char '\{delimited}', expected whitespace, comma, or end of input after 0o...",
           ),
         )
       }
