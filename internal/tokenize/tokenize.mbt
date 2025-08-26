@@ -519,7 +519,7 @@ fn Lexer::read_datetime_with_loc(
       )
     }
     // OffsetDateTime with offset: YYYY-MM-DDTHH:MM:SS[.fff]±HH:MM
-    // TODO: upstream (re"..." as datetime, re"..." as offset, rest)
+    // TODO: upstream (r"..." as datetime, r"..." as offset, rest)
     (
       re"(?<datetime>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?)(?<offset>[+\-][0-9]{2}:[0-9]{2})",
       rest,
