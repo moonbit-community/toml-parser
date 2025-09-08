@@ -516,15 +516,11 @@ fn Lexer::read_datetime_with_loc(
       )
     }
     // OffsetDateTime with offset: YYYY-MM-DDTHH:MM:SS[.fff]±HH:MM
-    // TODO: upstream (r"..." as datetime, r"..." as offset, rest)
-    (
-      re"(?<datetime>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?)(?<offset>[+\-][0-9]{2}:[0-9]{2})",
-      rest,
-    ) => {
+    "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?[+\-][0-9]{2}:[0-9]{2}" as datetime, rest => {
       self.update_view(rest)
       let end_pos = self.get_loc()
       return DateTimeToken(
-        OffsetDateTime(datetime.to_string() + offset.to_string()),
+        OffsetDateTime(datetime.to_string()),
         loc=make_loc(start_pos, end_pos),
       )
     }
