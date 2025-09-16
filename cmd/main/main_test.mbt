@@ -38,7 +38,7 @@ test "test simple TOML parsing as in main demo" {
     #|
   let result = try? @toml.parse(toml_input)
   // Should parse successfully
-  @json.inspect(result.is_ok(), content=true)
+  @json.inspect(result is Ok(_), content=true)
   match result {
     Ok(parsed_result) => {
       let expected_content = parsed_result.to_string()
@@ -55,7 +55,7 @@ test "test TOML with array parsing as in main demo" {
   let toml_array = "numbers = [1, 2, 3, 4, 5]"
   let result = try? @toml.parse(toml_array)
   // Should parse successfully
-  @json.inspect(result.is_ok(), content=true)
+  @json.inspect(result is Ok(_), content=true)
   match result {
     Ok(parsed_result) => {
       let result_str = parsed_result.to_string()
@@ -73,7 +73,7 @@ test "test TOML with inline table parsing as in main demo" {
     #|
   let result = try? @toml.parse(toml_table)
   // Should parse successfully
-  @json.inspect(result.is_ok(), content=true)
+  @json.inspect(result is Ok(_), content=true)
   match result {
     Ok(parsed_result) => {
       let result_str = parsed_result.to_string()

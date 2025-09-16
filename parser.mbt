@@ -353,8 +353,8 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
           return path
         }
       }
-      let first_part = float_str.substring(start=0, end=dot_index)
-      let second_part = float_str.substring(start=dot_index + 1)
+      let first_part = float_str[:dot_index].to_string()
+      let second_part = float_str[dot_index + 1:].to_string()
       path.push(first_part)
       path.push(second_part)
 
