@@ -8,7 +8,7 @@ pub(all) enum TomlValue {
   TomlArray(Array[TomlValue])
   TomlTable(Map[String, TomlValue])
   TomlDateTime(TomlDateTime)
-} derive(Eq, Show, ToJson(style="flat"))
+} derive(Eq, Show, ToJson)
 
 ///|
 /// Parser state (will implement methods later)
