@@ -81,7 +81,7 @@ fn Parser::parse_array(self : Self) -> TomlValue raise {
         self.update_view(rest)
         break
       }
-      _ => parse_error(self.view(), "Expected ',' or ']' in array")
+      _ => self.error("Expected ',' or ']' in array")
     }
   }
   TomlArray(values)
