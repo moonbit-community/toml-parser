@@ -18,8 +18,18 @@ pub struct Parser {
 }
 
 ///|
-pub fn Parser::view(self : Parser) -> ArrayView[Token] {
-  self.tokens[self.position:]
+pub fn Parser::view(
+  self : Self,
+  skip_newlines? : Bool = false,
+) -> ArrayView[Token] {
+  if skip_newlines {
+    loop self.view() {
+      [Newline(..), .. rest] => continue rest
+      rest => rest
+    }
+  } else {
+    self.tokens[self.position:]
+  }
 }
 
 ///|

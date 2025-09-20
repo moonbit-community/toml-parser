@@ -959,3 +959,16 @@ test "edge cases" {
     { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
   ])
 }
+
+///|
+test "newline significate" {
+  // this should fail  
+  let data =
+    #|key1 = 
+    #|  3
+  @json.inspect(try? parse_no_loc(data), content={
+    "Err": [
+      "Failure", "Expected value at {start: {line: 1, column: 8}, end: {line: 2, column: 1}}",
+    ],
+  })
+}

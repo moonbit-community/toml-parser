@@ -17,8 +17,11 @@ fn Parser::skip_newlines(self : Parser) -> Unit {
 
 ///|
 /// Parse a primary value (string, number, boolean)
-fn Parser::parse_value(self : Self) -> TomlValue raise {
-  match self.view() {
+fn Parser::parse_value(
+  self : Self,
+  skip_newlines? : Bool = false,
+) -> TomlValue raise {
+  match self.view(skip_newlines~) {
     [StringToken(s, ..), .. rest] => {
       self.update_view(rest)
       TomlString(s)
@@ -65,30 +68,15 @@ fn Parser::parse_value(self : Self) -> TomlValue raise {
 /// Parse an array [1, 2, 3]
 fn Parser::parse_array(self : Self) -> TomlValue raise {
   let values = []
-  self.skip_newlines()
-  match self.view() {
-    [RightBracket(..), .. rest] => {
+  while true {
+    if self.view(skip_newlines=true) is [RightBracket(..), .. rest] {
       self.update_view(rest)
       return TomlArray(values)
     }
-    _ => ()
-  }
-  while true {
-    let value = self.parse_value()
-    values.push(value)
-    self.skip_newlines()
-    match self.view() {
-      [Comma(..), .. rest] => {
-        self.update_view(rest)
-        self.skip_newlines()
-        match self.view() {
-          [RightBracket(..), .. rest] => {
-            self.update_view(rest)
-            break
-          }
-          _ => ()
-        }
-      }
+    // self.skip_newlines() // here Newline is allowed
+    values.push(self.parse_value(skip_newlines=true))
+    match self.view(skip_newlines=true) {
+      [Comma(..), .. rest] => self.update_view(rest)
       [RightBracket(..), .. rest] => {
         self.update_view(rest)
         break
