@@ -104,7 +104,7 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
 
     // Expect =
     match self.view() {
-      [Equals(..), .. rest] => self.update_view(rest)
+      [Equals, .. rest] => self.update_view(rest)
       rest => parse_error(rest, "Expected '='")
     }
 
