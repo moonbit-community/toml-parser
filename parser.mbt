@@ -17,7 +17,7 @@ fn Parser::skip_newlines(self : Parser) -> Unit {
 
 ///|
 /// Parse a primary value (string, number, boolean)
-fn Parser::parse_value(self : Parser) -> TomlValue raise {
+fn Parser::parse_value(self : Self) -> TomlValue raise {
   match self.view() {
     [StringToken(s, ..), .. rest] => {
       self.update_view(rest)
@@ -39,10 +39,12 @@ fn Parser::parse_value(self : Parser) -> TomlValue raise {
       self.update_view(rest)
       TomlDateTime(dt)
     }
+    // TOML Array
     [LeftBracket(..), .. rest] => {
       self.update_view(rest)
       self.parse_array()
     }
+    // TOML Inline Table
     [LeftBrace(..), .. rest] => {
       self.update_view(rest)
       self.parse_inline_table()
@@ -61,7 +63,7 @@ fn Parser::parse_value(self : Parser) -> TomlValue raise {
 
 ///|
 /// Parse an array [1, 2, 3]
-fn Parser::parse_array(self : Parser) -> TomlValue raise {
+fn Parser::parse_array(self : Self) -> TomlValue raise {
   let values = []
   self.skip_newlines()
   match self.view() {
