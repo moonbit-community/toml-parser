@@ -43,12 +43,12 @@ fn Parser::parse_value(
       TomlDateTime(dt)
     }
     // TOML Array
-    [LeftBracket(..), .. rest] => {
+    [LeftBracket, .. rest] => {
       self.update_view(rest)
       self.parse_array()
     }
     // TOML Inline Table
-    [LeftBrace(..), .. rest] => {
+    [LeftBrace, .. rest] => {
       self.update_view(rest)
       self.parse_inline_table()
     }
@@ -69,15 +69,15 @@ fn Parser::parse_value(
 fn Parser::parse_array(self : Self) -> TomlValue raise {
   let values = []
   while true {
-    if self.view(skip_newlines=true) is [RightBracket(..), .. rest] {
+    if self.view(skip_newlines=true) is [RightBracket, .. rest] {
       self.update_view(rest)
       return TomlArray(values)
     }
     // self.skip_newlines() // here Newline is allowed
     values.push(self.parse_value(skip_newlines=true))
     match self.view(skip_newlines=true) {
-      [Comma(..), .. rest] => self.update_view(rest)
-      [RightBracket(..), .. rest] => {
+      [Comma, .. rest] => self.update_view(rest)
+      [RightBracket, .. rest] => {
         self.update_view(rest)
         break
       }
@@ -92,7 +92,7 @@ fn Parser::parse_array(self : Self) -> TomlValue raise {
 fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
   let table = {}
   match self.view() {
-    [RightBrace(..), .. rest] => {
+    [RightBrace, .. rest] => {
       self.update_view(rest)
       return TomlTable(table)
     }
@@ -112,8 +112,8 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
     let value = self.parse_value()
     set_dotted_key_value(table, key_path, value, self.view())
     match self.view() {
-      [Comma(..), .. rest] => self.update_view(rest)
-      [RightBrace(..), .. rest] => {
+      [Comma, .. rest] => self.update_view(rest)
+      [RightBrace, .. rest] => {
         self.update_view(rest)
         break
       }
