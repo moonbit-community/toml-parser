@@ -972,9 +972,28 @@ test "newline significate" {
     ],
   })
   // This should fail, inline table does not cross newline according to the spec
-  let data2 = 
+  let data2 =
     #| server = {host =
     #|   "localhost"
     #| }
-  @json.inspect(try? parse_no_loc(data2), content=({"Err":["Failure","Expected value at {start: {line: 1, column: 18}, end: {line: 2, column: 1}}"]}))
+  @json.inspect(try? parse_no_loc(data2), content={
+    "Err": [
+      "Failure", "Expected value at {start: {line: 1, column: 18}, end: {line: 2, column: 1}}",
+    ],
+  })
+
+  // This should pass, array can cross newline according to the spec
+  let data3 =
+    #|  x = [1,
+    #|2
+    #|
+    #|
+    #|]  
+    #|
+  @json.inspect(try? parse_no_loc(data3), content={
+    "Ok": [
+      "TomlTable",
+      { "x": ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"]]] },
+    ],
+  })
 }
