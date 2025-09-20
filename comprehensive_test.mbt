@@ -613,7 +613,7 @@ test "multiline error locations" {
     #|
   @json.inspect(try? parse_no_loc(multiline_test3), content={
     "Err": [
-      "Failure", "Expected value at {start: {line: 3, column: 1}, end: {line: 3, column: 1}}",
+      "Failure", "Expected value at {start: {line: 2, column: 15}, end: {line: 3, column: 1}}",
     ],
   })
 
@@ -674,7 +674,7 @@ test "array error locations" {
     #|
   @json.inspect(try? parse_no_loc(array_multiline), content={
     "Err": [
-      "Failure", "Expected value at {start: {line: 4, column: 3}, end: {line: 4, column: 16}}",
+      "Failure", "Expected value at {start: {line: 3, column: 5}, end: {line: 4, column: 1}}",
     ],
   })
 }

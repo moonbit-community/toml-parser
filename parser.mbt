@@ -60,7 +60,7 @@ fn Parser::parse_value(
       self.update_view(rest)
       TomlFloat(0.0 / 0.0) // NaN
     }
-    rest => parse_error(rest, "Expected value")
+    _ => self.error("Expected value")
   }
 }
 
