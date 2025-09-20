@@ -104,8 +104,9 @@ The parser uses the following data types:
 ### Basic Key-Value Pairs
 
 ```moonbit
+///|
 test "basic key-value pairs example" {
-  let toml = 
+  let toml =
     #|title = "My Application"
     #|version = "1.0.0"
     #|debug = true
@@ -126,8 +127,9 @@ test "basic key-value pairs example" {
 ### Arrays with Validation
 
 ```moonbit
+///|
 test "arrays with validation example" {
-  let toml_arrays = 
+  let toml_arrays =
     #|numbers = [1, 2, 3, 4, 5]
     #|strings = ["red", "green", "blue"]
     #|booleans = [true, false, true]
@@ -147,19 +149,11 @@ test "arrays with validation example" {
       ],
       "strings": [
         "TomlArray",
-        [
-          ["TomlString", "red"],
-          ["TomlString", "green"],
-          ["TomlString", "blue"],
-        ],
+        [["TomlString", "red"], ["TomlString", "green"], ["TomlString", "blue"]],
       ],
       "booleans": [
         "TomlArray",
-        [
-          ["TomlBoolean", true],
-          ["TomlBoolean", false],
-          ["TomlBoolean", true],
-        ],
+        [["TomlBoolean", true], ["TomlBoolean", false], ["TomlBoolean", true]],
       ],
     },
   ])
@@ -169,8 +163,9 @@ test "arrays with validation example" {
 ### Table Headers and Array of Tables
 
 ```moonbit
+///|
 test "table headers and array of tables example" {
-  let toml_tables = 
+  let toml_tables =
     #|title = "Configuration Example"
     #|
     #|[database]
@@ -223,6 +218,7 @@ test "table headers and array of tables example" {
 ### DateTime Support
 
 ```moonbit
+///|
 test "datetime support example" {
   let toml_datetime =
     #|created_at = 2023-01-01T00:00:00Z
@@ -246,8 +242,9 @@ test "datetime support example" {
 ### Inline Tables
 
 ```moonbit
+///|
 test "inline tables example" {
-  let toml_inline = 
+  let toml_inline =
     #|database = {server = "localhost", port = 5432}
     #|cache = {enabled = true, ttl = 300}
     #|
@@ -263,10 +260,7 @@ test "inline tables example" {
       ],
       "cache": [
         "TomlTable",
-        {
-          "enabled": ["TomlBoolean", true],
-          "ttl": ["TomlInteger", "300"],
-        },
+        { "enabled": ["TomlBoolean", true], "ttl": ["TomlInteger", "300"] },
       ],
     },
   ])
@@ -276,8 +270,9 @@ test "inline tables example" {
 ### Complex Configuration
 
 ```moonbit
+///|
 test "complex configuration example" {
-  let config = 
+  let config =
     #|service_name = "user-service"
     #|version = "2.1.0"
     #|deployed_at = 2023-06-15T14:30:00+00:00
@@ -314,8 +309,9 @@ test "complex configuration example" {
 ### Special Values and Advanced Features
 
 ```moonbit
+///|
 test "special values and advanced features example" {
-  let toml_advanced = 
+  let toml_advanced =
     #|# Configuration with comments
     #|app_name = "TOML Demo"
     #|version = "1.0.0"
