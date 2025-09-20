@@ -19,7 +19,13 @@ test "parse simple key-value integer" {
       #|age = 25
     ),
   )
-  @json.inspect(result, content=["TomlTable", { "age": ["TomlInteger", "25"] }])
+  inspect(
+    result,
+    content=(
+      #|age = 25
+      #|
+    ),
+  )
 }
 
 ///|

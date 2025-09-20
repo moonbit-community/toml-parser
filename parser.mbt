@@ -335,17 +335,15 @@ test "create_array_of_tables - first table creation" {
   // Add some data to the new table
   new_table["name"] = TomlString("alpha")
   new_table["ip"] = TomlString("10.0.0.1")
-  @json.inspect(root_table, content={
-    "servers": [
-      "TomlArray",
-      [
-        [
-          "TomlTable",
-          { "name": ["TomlString", "alpha"], "ip": ["TomlString", "10.0.0.1"] },
-        ],
-      ],
-    ],
-  })
+  inspect(
+    TomlTable(root_table),
+    content=(
+      #|[[servers]]
+      #|name = "alpha"
+      #|ip = "10.0.0.1"
+      #|
+    ),
+  )
 }
 
 ///|
@@ -367,34 +365,23 @@ test "create_array_of_tables - append to existing array" {
   let table3 = create_array_of_tables(root_table, ["products"], [])
   table3["name"] = TomlString("Screwdriver")
   table3["sku"] = TomlInteger(987654321)
-  @json.inspect(root_table, content={
-    "products": [
-      "TomlArray",
-      [
-        [
-          "TomlTable",
-          {
-            "name": ["TomlString", "Hammer"],
-            "sku": ["TomlInteger", "738594937"],
-          },
-        ],
-        [
-          "TomlTable",
-          {
-            "name": ["TomlString", "Nail"],
-            "sku": ["TomlInteger", "284758393"],
-          },
-        ],
-        [
-          "TomlTable",
-          {
-            "name": ["TomlString", "Screwdriver"],
-            "sku": ["TomlInteger", "987654321"],
-          },
-        ],
-      ],
-    ],
-  })
+  inspect(
+    TomlTable(root_table),
+    content=(
+      #|[[products]]
+      #|name = "Hammer"
+      #|sku = 738594937
+      #|
+      #|[[products]]
+      #|name = "Nail"
+      #|sku = 284758393
+      #|
+      #|[[products]]
+      #|name = "Screwdriver"
+      #|sku = 987654321
+      #|
+    ),
+  )
 }
 
 ///|

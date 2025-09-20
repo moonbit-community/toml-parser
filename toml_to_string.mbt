@@ -111,6 +111,12 @@ pub fn TomlValue::to_string(self : TomlValue) -> String {
 }
 
 ///|
+/// TODO: the logger interface is good?
+pub impl Show for TomlValue with output(self, logger) {
+  logger.write_string(self.to_string())
+}
+
+///|
 /// Internal helper to write TOML with proper formatting
 fn TomlValue::write_toml(
   self : TomlValue,
