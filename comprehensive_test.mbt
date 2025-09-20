@@ -971,4 +971,10 @@ test "newline significate" {
       "Failure", "Expected value at {start: {line: 1, column: 8}, end: {line: 2, column: 1}}",
     ],
   })
+  // This should fail, inline table does not cross newline according to the spec
+  let data2 = 
+    #| server = {host =
+    #|   "localhost"
+    #| }
+  @json.inspect(try? parse_no_loc(data2), content=({"Err":["Failure","Expected value at {start: {line: 1, column: 18}, end: {line: 2, column: 1}}"]}))
 }
