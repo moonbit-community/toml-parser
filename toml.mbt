@@ -41,33 +41,25 @@ pub fn Parser::new(tokens : Array[Token]) -> Parser {
 ///|
 /// Check if an array contains homogeneous types (TOML spec requirement)
 pub fn TomlValue::is_homogeneous_array(arr : Array[TomlValue]) -> Bool {
-  if arr.length() == 0 {
-    return true // Empty arrays are considered homogeneous
-  }
-  let first_type = match arr[0] {
-    TomlString(_) => "string"
-    TomlInteger(_) => "integer"
-    TomlFloat(_) => "float"
-    TomlBoolean(_) => "boolean"
-    TomlArray(_) => "array"
-    TomlTable(_) => "table"
-    TomlDateTime(_) => "datetime"
-  }
-  for i = 1; i < arr.length(); i = i + 1 {
-    let current_type = match arr[i] {
-      TomlString(_) => "string"
-      TomlInteger(_) => "integer"
-      TomlFloat(_) => "float"
-      TomlBoolean(_) => "boolean"
-      TomlArray(_) => "array"
-      TomlTable(_) => "table"
-      TomlDateTime(_) => "datetime"
-    }
-    if current_type != first_type {
-      return false
+  match arr {
+    [] => true
+    [first, .. rest] => {
+      fn type_id(value : TomlValue) -> Int {
+        match value {
+          TomlString(_) => 0
+          TomlInteger(_) => 1
+          TomlFloat(_) => 2
+          TomlBoolean(_) => 3
+          TomlArray(_) => 4
+          TomlTable(_) => 5
+          TomlDateTime(_) => 6
+        }
+      }
+
+      let first_type = type_id(first)
+      rest.all(x => type_id(x) == first_type)
     }
   }
-  true
 }
 
 ///|
