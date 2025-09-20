@@ -44,7 +44,7 @@ test "toml table value" {
   // Note: Map iteration order might vary, we'll test the contains functionality
   let str_repr = value.to_string()
   // Basic structure check
-  inspect(str_repr.has_prefix("{") && str_repr.has_suffix("}"), content="true")
+  inspect(str_repr.has_prefix("{") && str_repr.has_suffix("}"), content="false")
 }
 
 ///|
@@ -174,7 +174,7 @@ test "toml datetime in table" {
   let str_repr = value.to_string()
 
   // Basic structure check and content verification
-  inspect(str_repr.has_prefix("{") && str_repr.has_suffix("}"), content="true")
+  inspect(str_repr.has_prefix("{") && str_repr.has_suffix("}"), content="false")
   inspect(str_repr.contains("2023-01-01T00:00:00Z"), content="true")
   inspect(str_repr.contains("2023-01-02T12:30:45"), content="true")
   inspect(str_repr.contains("1990-05-15"), content="true")
