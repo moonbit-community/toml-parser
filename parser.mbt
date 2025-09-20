@@ -311,6 +311,14 @@ fn[T] parse_error(tokens : ArrayView[@tokenize.Token], msg : String) -> T raise 
 }
 
 ///|
+fn[A] Parser::error(self : Parser, msg : String) -> A raise {
+  match self.view() {
+    [token, ..] => fail("\{msg} at \{token.loc()}")
+    [] => fail("\{msg} at the end of input")
+  }
+}
+
+///|
 /// Parse a dotted key path: key.subkey.subsubkey
 fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
   let path = Array::new()
@@ -365,7 +373,7 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
               self.update_view(rest2)
               i.to_string()
             }
-            rest2 => parse_error(rest2, "Expected key after dot")
+            _ => self.error("Expected key after dot")
           }
           path.push(key)
           continue self.view()
@@ -375,7 +383,7 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
       self.update_view(next_view)
       return path
     }
-    rest => parse_error(rest, "Expected key")
+    _ => self.error("Expected key")
   }
   path.push(first_key)
 
@@ -396,7 +404,7 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
           self.update_view(rest2)
           i.to_string()
         }
-        rest2 => parse_error(rest2, "Expected key after dot")
+        _ => self.error("Expected key after dot")
       }
       path.push(key)
       continue self.view()
@@ -415,8 +423,8 @@ fn Parser::parse_key_value(self : Parser) -> (Array[String], TomlValue) raise {
 
   // Expect =
   match self.view() {
-    [Equals(..), .. rest] => self.update_view(rest)
-    rest => parse_error(rest, "Expected '='")
+    [Equals, .. rest] => self.update_view(rest)
+    _ => self.error("Expected '='")
   }
 
   // Parse value
@@ -703,13 +711,13 @@ pub fn parse(input : String) -> TomlValue raise {
             let table_path = parser.parse_array_of_tables_path()
             // expect first ]
             match parser.view() {
-              [RightBracket(..), .. rest3] => parser.update_view(rest3)
-              rest3 => parse_error(rest3, "Expected ']'")
+              [RightBracket, .. rest3] => parser.update_view(rest3)
+              _ => parser.error("Expected ']'")
             }
             // expect second ]
             match parser.view() {
-              [RightBracket(..), .. rest4] => parser.update_view(rest4)
-              rest4 => parse_error(rest4, "Expected ']'")
+              [RightBracket, .. rest4] => parser.update_view(rest4)
+              _ => parser.error("Expected ']'")
             }
 
             // Create or append to the array of tables structure
@@ -723,8 +731,8 @@ pub fn parse(input : String) -> TomlValue raise {
             // This is a regular table [...]
             let table_path = parser.parse_table_path()
             match parser.view() {
-              [RightBracket(..), .. rest3] => parser.update_view(rest3)
-              rest3 => parse_error(rest3, "Expected ']'")
+              [RightBracket, .. rest3] => parser.update_view(rest3)
+              _ => parser.error("Expected ']'")
             }
 
             // Create or get the nested table structure
@@ -743,13 +751,10 @@ pub fn parse(input : String) -> TomlValue raise {
 
         // Validate that key-value pair is properly terminated
         match parser.view() {
-          [EOF(..), ..] => () // EOF is valid
-          [Newline(..), ..] => () // Newline is valid (comments are already skipped by tokenizer)
+          [EOF, ..] => () // EOF is valid
+          [Newline, ..] => () // Newline is valid (comments are already skipped by tokenizer)
           _ =>
-            parse_error(
-              parser.view(),
-              "Expected newline or end of file after key-value pair",
-            )
+            parser.error("Expected newline or end of file after key-value pair")
         }
       }
     }
