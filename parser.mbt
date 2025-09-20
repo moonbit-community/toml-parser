@@ -105,7 +105,7 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
     // Expect =
     match self.view() {
       [Equals, .. rest] => self.update_view(rest)
-      rest => parse_error(rest, "Expected '='")
+      _ => self.error("Expected '='")
     }
 
     // Parse value
@@ -117,7 +117,7 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
         self.update_view(rest)
         break
       }
-      _ => parse_error(self.view(), "Expected ',' or '}' in inline table")
+      _ => self.error("Expected ',' or '}' in inline table")
     }
   }
   TomlTable(table)
@@ -142,7 +142,7 @@ fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
       self.update_view(rest)
       i.to_string()
     }
-    rest => parse_error(rest, "Expected table name")
+    _ => self.error("Expected table name")
   }
   path.push(first_key)
 
@@ -163,7 +163,7 @@ fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
           self.update_view(rest2)
           i.to_string()
         }
-        rest2 => parse_error(rest2, "Expected table name after dot")
+        _ => self.error("Expected table name after dot")
       }
       path.push(key)
       continue self.view()
@@ -193,7 +193,7 @@ fn Parser::parse_array_of_tables_path(self : Parser) -> Array[String] raise {
       self.update_view(rest)
       i.to_string()
     }
-    rest => parse_error(rest, "Expected table name in array of tables")
+    _ => self.error("Expected table name in array of tables")
   }
   path.push(first_key)
 
@@ -214,8 +214,7 @@ fn Parser::parse_array_of_tables_path(self : Parser) -> Array[String] raise {
           self.update_view(rest2)
           i.to_string()
         }
-        rest2 =>
-          parse_error(rest2, "Expected table name after dot in array of tables")
+        _ => self.error("Expected table name after dot in array of tables")
       }
       path.push(key)
       continue self.view()
