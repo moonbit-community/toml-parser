@@ -306,44 +306,30 @@ pub fn parse(input : String) -> TomlValue raise {
   while true {
     parser.skip_newlines()
     match parser.view() {
-      [EOF(..), ..] => break
-      [LeftBracket(..), .. rest] => {
+      [EOF, ..] => break
+      [LeftBracket, LeftBracket, .. rest] => {
         parser.update_view(rest)
-        // Look ahead to see if this is [[ (array of tables) or [ (regular table)
+        let table_path = parser.parse_table_path()
         match parser.view() {
-          [LeftBracket(..), .. rest2] => {
-            // This is array of tables [[...]]
-            parser.update_view(rest2)
-            let table_path = parser.parse_table_path()
-            // expect first ]
-            match parser.view() {
-              [RightBracket, .. rest3] => parser.update_view(rest3)
-              _ => parser.error("Expected ']'")
-            }
-            // expect second ]
-            match parser.view() {
-              [RightBracket, .. rest4] => parser.update_view(rest4)
-              _ => parser.error("Expected ']'")
-            }
+          [RightBracket, RightBracket, .. rest] => parser.update_view(rest)
+          _ => parser.error("Expected ']]'")
+        }
+        // Create or append to the array of tables structure
+        current_table = create_array_of_tables(main_table, table_path) catch {
+          error => parser.error(error.to_string())
+        }
+      }
+      [LeftBracket, .. rest] => {
+        parser.update_view(rest)
+        let table_path = parser.parse_table_path()
+        match parser.view() {
+          [RightBracket, .. rest3] => parser.update_view(rest3)
+          _ => parser.error("Expected ']'")
+        }
 
-            // Create or append to the array of tables structure
-            current_table = create_array_of_tables(main_table, table_path) catch {
-              error => parser.error(error.to_string())
-            }
-          }
-          _ => {
-            // This is a regular table [...]
-            let table_path = parser.parse_table_path()
-            match parser.view() {
-              [RightBracket, .. rest3] => parser.update_view(rest3)
-              _ => parser.error("Expected ']'")
-            }
-
-            // Create or get the nested table structure
-            current_table = create_nested_table(main_table, table_path) catch {
-              error => parser.error(error.to_string())
-            }
-          }
+        // Create or get the nested table structure
+        current_table = create_nested_table(main_table, table_path) catch {
+          error => parser.error(error.to_string())
         }
       }
       _ => {
@@ -352,7 +338,6 @@ pub fn parse(input : String) -> TomlValue raise {
         set_dotted_key_value(current_table, key_path, value) catch {
           error => parser.error(error.to_string())
         }
-
         // Validate that key-value pair is properly terminated
         match parser.view() {
           [EOF, ..] => () // EOF is valid

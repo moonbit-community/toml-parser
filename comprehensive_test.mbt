@@ -740,7 +740,7 @@ test "table header error locations" {
   // Test 3: Array of tables missing second bracket
   @json.inspect(try? parse_no_loc("[[table_name]"), content={
     "Err": [
-      "Failure", "Expected ']' at {start: {line: 1, column: 14}, end: {line: 1, column: 14}}",
+      "Failure", "Expected ']]' at {start: {line: 1, column: 13}, end: {line: 1, column: 14}}",
     ],
   })
 
