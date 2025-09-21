@@ -406,37 +406,22 @@ test "create_array_of_tables - nested path creation" {
   )
   color_table2["name"] = TomlString("green")
   color_table2["code"] = TomlString("#00FF00")
-  @json.inspect(root_table, content={
-    "fruit": [
-      "TomlTable",
-      {
-        "physical": [
-          "TomlTable",
-          {
-            "color": [
-              "TomlArray",
-              [
-                [
-                  "TomlTable",
-                  {
-                    "name": ["TomlString", "red"],
-                    "code": ["TomlString", "#FF0000"],
-                  },
-                ],
-                [
-                  "TomlTable",
-                  {
-                    "name": ["TomlString", "green"],
-                    "code": ["TomlString", "#00FF00"],
-                  },
-                ],
-              ],
-            ],
-          },
-        ],
-      },
-    ],
-  })
+  inspect(
+    TomlTable(root_table),
+    content=(
+      #|[fruit]
+      #|[fruit.physical]
+      #|[[fruit.physical.color]]
+      #|name = "red"
+      #|code = "#FF0000"
+      #|
+      #|[[fruit.physical.color]]
+      #|name = "green"
+      #|code = "#00FF00"
+      #|
+
+    ),
+  )
 }
 
 ///|
