@@ -747,7 +747,7 @@ test "table header error locations" {
   // Test 4: Array of tables missing table name
   @json.inspect(try? parse_no_loc("[[]]"), content={
     "Err": [
-      "Failure", "Expected table name in array of tables at {start: {line: 1, column: 3}, end: {line: 1, column: 4}}",
+      "Failure", "Expected path name at {start: {line: 1, column: 3}, end: {line: 1, column: 4}}",
     ],
   })
 

@@ -175,57 +175,6 @@ fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
 }
 
 ///|
-/// Parse an array of tables path: section.subsection.key
-fn Parser::parse_array_of_tables_path(self : Parser) -> Array[String] raise {
-  let path = Array::new()
-
-  // Parse first key
-  let first_key = match self.view() {
-    [Identifier(name), .. rest] => {
-      self.update_view(rest)
-      name
-    }
-    [StringToken(name), .. rest] => {
-      self.update_view(rest)
-      name
-    }
-    [IntegerToken(i), .. rest] => {
-      self.update_view(rest)
-      i.to_string()
-    }
-    _ => self.error("Expected table name in array of tables")
-  }
-  path.push(first_key)
-
-  // Parse additional keys separated by dots
-  let next_view = loop self.view() {
-    [Dot(..), .. rest] => {
-      self.update_view(rest)
-      let key = match self.view() {
-        [Identifier(name, ..), .. rest2] => {
-          self.update_view(rest2)
-          name
-        }
-        [StringToken(name, ..), .. rest2] => {
-          self.update_view(rest2)
-          name
-        }
-        [IntegerToken(i, ..), .. rest2] => {
-          self.update_view(rest2)
-          i.to_string()
-        }
-        _ => self.error("Expected table name after dot in array of tables")
-      }
-      path.push(key)
-      continue self.view()
-    }
-    rest => rest
-  }
-  self.update_view(next_view)
-  path
-}
-
-///|
 fn[A] Parser::error(self : Parser, msg : String) -> A raise {
   match self.view() {
     [token, ..] => fail("\{msg} at \{token.loc()}")
@@ -365,7 +314,7 @@ pub fn parse(input : String) -> TomlValue raise {
           [LeftBracket(..), .. rest2] => {
             // This is array of tables [[...]]
             parser.update_view(rest2)
-            let table_path = parser.parse_array_of_tables_path()
+            let table_path = parser.parse_table_path()
             // expect first ]
             match parser.view() {
               [RightBracket, .. rest3] => parser.update_view(rest3)
