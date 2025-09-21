@@ -110,7 +110,9 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
 
     // Parse value
     let value = self.parse_value()
-    set_dotted_key_value(table, key_path, value, self.view())
+    set_dotted_key_value(table, key_path, value) catch {
+      error => self.error(error.to_string())
+    }
     match self.view() {
       [Comma, .. rest] => self.update_view(rest)
       [RightBrace, .. rest] => {
@@ -422,8 +424,8 @@ test "create_array_of_tables - mixed with regular tables" {
   let root_table : Map[String, TomlValue] = Map::new()
 
   // First create a regular table structure
-  set_dotted_key_value(root_table, ["owner", "name"], TomlString("Tom"), [])
-  set_dotted_key_value(root_table, ["owner", "dob"], TomlString("1979-05-27"), [])
+  set_dotted_key_value(root_table, ["owner", "name"], TomlString("Tom"))
+  set_dotted_key_value(root_table, ["owner", "dob"], TomlString("1979-05-27"))
 
   // Now create array of tables at a different path
   let db1 = create_array_of_tables(root_table, ["database", "servers"])
@@ -495,7 +497,6 @@ test "create_array_of_tables - final key conflicts with non-array" {
     root_table,
     ["servers", "alpha"],
     TomlTable(Map::from_array([("name", TomlString("main"))])),
-    [],
   )
 
   // Try to treat servers.alpha as array of tables
@@ -725,11 +726,8 @@ fn set_dotted_key_value(
   table : Map[String, TomlValue],
   key_path : Array[String],
   value : TomlValue,
-  error_tokens : ArrayView[@tokenize.Token],
-) -> Unit raise {
-  if key_path.length() == 0 {
-    parse_error(error_tokens, "Empty key path")
-  }
+) -> Unit raise TableConflicts {
+  guard key_path.length() != 0
   if key_path.length() == 1 {
     // Simple key assignment
     table[key_path[0]] = value
@@ -742,11 +740,11 @@ fn set_dotted_key_value(
     let key = key_path[i]
     match current_table.get(key) {
       Some(TomlTable(existing_table)) => current_table = existing_table
-      Some(_) =>
-        parse_error(
-          error_tokens,
-          "Dotted key path conflicts with existing non-table value: \{key}",
-        )
+      Some(value) => raise ExpectedTable(key, value)
+      // parse_error(
+      //   error_tokens,
+      //   "Dotted key path conflicts with existing non-table value: \{key}",
+      // )
       None => {
         // Create new nested table
         let new_table = Map::new()
@@ -765,7 +763,7 @@ fn set_dotted_key_value(
 test "set dotted key value - simple key" {
   // Test setting a simple key (path length 1)
   let table : Map[String, TomlValue] = Map::new()
-  set_dotted_key_value(table, ["name"], TomlString("Alice"), [])
+  set_dotted_key_value(table, ["name"], TomlString("Alice"))
   @json.inspect(table, content={ "name": ["TomlString", "Alice"] })
 }
 
@@ -773,8 +771,8 @@ test "set dotted key value - simple key" {
 test "set dotted key value - nested keys creating tables" {
   // Test creating nested tables automatically
   let table : Map[String, TomlValue] = Map::new()
-  set_dotted_key_value(table, ["server", "host"], TomlString("localhost"), [])
-  set_dotted_key_value(table, ["server", "port"], TomlInteger(8080), [])
+  set_dotted_key_value(table, ["server", "host"], TomlString("localhost"))
+  set_dotted_key_value(table, ["server", "port"], TomlInteger(8080))
   @json.inspect(table, content={
     "server": [
       "TomlTable",
@@ -791,7 +789,6 @@ test "set dotted key value - deep nesting" {
     table,
     ["a", "b", "c", "d", "e"],
     TomlString("deep value"),
-    [],
   )
   @json.inspect(table, content={
     "a": [
@@ -817,26 +814,19 @@ test "set dotted key value - multiple values same nested table" {
   let table : Map[String, TomlValue] = Map::new()
 
   // Add multiple values at different levels
-  set_dotted_key_value(table, ["database", "server"], TomlString("postgres"), [])
-  set_dotted_key_value(table, ["database", "port"], TomlInteger(5432), [])
+  set_dotted_key_value(table, ["database", "server"], TomlString("postgres"))
+  set_dotted_key_value(table, ["database", "port"], TomlInteger(5432))
   set_dotted_key_value(
     table,
     ["database", "credentials", "user"],
     TomlString("admin"),
-    [],
   )
   set_dotted_key_value(
     table,
     ["database", "credentials", "password"],
     TomlString("secret"),
-    [],
   )
-  set_dotted_key_value(
-    table,
-    ["database", "options", "ssl"],
-    TomlBoolean(true),
-    [],
-  )
+  set_dotted_key_value(table, ["database", "options", "ssl"], TomlBoolean(true))
   @json.inspect(table, content={
     "database": [
       "TomlTable",
@@ -862,10 +852,10 @@ test "set dotted key value - overwrite existing value" {
   let table : Map[String, TomlValue] = Map::new()
 
   // Set initial value
-  set_dotted_key_value(table, ["config", "timeout"], TomlInteger(30), [])
+  set_dotted_key_value(table, ["config", "timeout"], TomlInteger(30))
 
   // Overwrite with new value
-  set_dotted_key_value(table, ["config", "timeout"], TomlInteger(60), [])
+  set_dotted_key_value(table, ["config", "timeout"], TomlInteger(60))
   @json.inspect(table, content={
     "config": ["TomlTable", { "timeout": ["TomlInteger", "60"] }],
   })
@@ -877,12 +867,12 @@ test "set dotted key value - add to existing table" {
   let table : Map[String, TomlValue] = Map::new()
 
   // Create initial structure
-  set_dotted_key_value(table, ["app", "name"], TomlString("MyApp"), [])
-  set_dotted_key_value(table, ["app", "version"], TomlString("1.0.0"), [])
+  set_dotted_key_value(table, ["app", "name"], TomlString("MyApp"))
+  set_dotted_key_value(table, ["app", "version"], TomlString("1.0.0"))
 
   // Add more values to the same table later
-  set_dotted_key_value(table, ["app", "author"], TomlString("Developer"), [])
-  set_dotted_key_value(table, ["app", "license"], TomlString("MIT"), [])
+  set_dotted_key_value(table, ["app", "author"], TomlString("Developer"))
+  set_dotted_key_value(table, ["app", "license"], TomlString("MIT"))
   @json.inspect(table, content={
     "app": [
       "TomlTable",
@@ -903,14 +893,13 @@ test "set dotted key value - conflict with non-table value" {
   let table : Map[String, TomlValue] = Map::new()
 
   // Set a string value at "config"
-  set_dotted_key_value(table, ["config"], TomlString("simple value"), [])
+  set_dotted_key_value(table, ["config"], TomlString("simple value"))
 
   // Try to treat "config" as a table - this should raise an error
   let result = try? set_dotted_key_value(
       table,
       ["config", "nested"],
       TomlString("value"),
-      [],
     )
   inspect(
     result,
@@ -928,15 +917,13 @@ test "set dotted key value - mixed types in path" {
     table,
     ["root", "array"],
     TomlArray([TomlInteger(1), TomlInteger(2), TomlInteger(3)]),
-    [],
   )
-  set_dotted_key_value(table, ["root", "float"], TomlFloat(3.14), [])
-  set_dotted_key_value(table, ["root", "nested", "bool"], TomlBoolean(false), [])
+  set_dotted_key_value(table, ["root", "float"], TomlFloat(3.14))
+  set_dotted_key_value(table, ["root", "nested", "bool"], TomlBoolean(false))
   set_dotted_key_value(
     table,
     ["root", "nested", "datetime"],
     TomlDateTime(@tokenize.TomlDateTime::OffsetDateTime("2024-01-01T12:00:00Z")),
-    [],
   )
   @json.inspect(table, content={
     "root": [
@@ -969,10 +956,10 @@ test "set dotted key value - empty path edge case" {
   let table : Map[String, TomlValue] = Map::new()
 
   // Set a value first
-  set_dotted_key_value(table, ["key"], TomlString("value"), [])
+  set_dotted_key_value(table, ["key"], TomlString("value"))
 
   // Try with empty path - currently does nothing
-  set_dotted_key_value(table, [], TomlString("should not appear"), [])
+  set_dotted_key_value(table, [], TomlString("should not appear"))
 
   // Table should only have the first key
   @json.inspect(table, content={ "key": ["TomlString", "value"] })
@@ -1033,7 +1020,9 @@ pub fn parse(input : String) -> TomlValue raise {
       _ => {
         // Parse key-value pair
         let (key_path, value) = parser.parse_key_value()
-        set_dotted_key_value(current_table, key_path, value, parser.view())
+        set_dotted_key_value(current_table, key_path, value) catch {
+          error => parser.error(error.to_string())
+        }
 
         // Validate that key-value pair is properly terminated
         match parser.view() {
