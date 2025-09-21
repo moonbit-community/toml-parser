@@ -418,28 +418,33 @@ test "dotted key notation deep nesting" {
       #|a.b.c.d.e.f = "deep"
     ),
   )
-  @json.inspect(result, content=[
-    "TomlTable",
-    {
-      "a": [
-        "TomlTable",
-        {
-          "b": [
-            "TomlTable",
-            {
-              "c": [
-                "TomlTable",
-                {
-                  "d": [
-                    "TomlTable",
-                    { "e": ["TomlTable", { "f": ["TomlString", "deep"] }] },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-  ])
+  // TODO:
+  // TOML::to_string is not really  good, 
+  inspect(
+    result,
+    content=(
+      #|[a]
+      #|[a.b]
+      #|[a.b.c]
+      #|[a.b.c.d]
+      #|[a.b.c.d.e]
+      #|f = "deep"
+      #|
+    ),
+  )
+}
+
+///|
+#skip("this is a bug to be fixed")
+test "complex dotted keys" {
+  let data =
+    #|  [x]
+    #|server."port number".8080.config = 3
+    #|
+  // TODO: fix
+  @json.inspect(try? @toml.parse(data), content={
+    "Err": [
+      "Failure", "/Users/hongbozhang/git/toml-parser/parser.mbt:180:20-180:52 FAILED: Expected key after dot at {start: {line: 2, column: 22}, end: {line: 2, column: 27}}",
+    ],
+  })
 }
