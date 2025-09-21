@@ -301,9 +301,9 @@ fn Parser::parse_key_value(self : Parser) -> (Array[String], TomlValue) raise {
 pub fn parse(input : String) -> TomlValue raise {
   let tokens = tokenize(input)
   let parser = Parser::new(tokens)
-  let main_table = Map::new()
-  let mut current_table = main_table
-  while true {
+  let main_table = {}
+  // let mut current_table = main_table
+  for current_table = main_table {
     parser.skip_newlines()
     match parser.view() {
       [EOF, ..] => break
@@ -315,9 +315,10 @@ pub fn parse(input : String) -> TomlValue raise {
           _ => parser.error("Expected ']]'")
         }
         // Create or append to the array of tables structure
-        current_table = create_array_of_tables(main_table, table_path) catch {
+        let current_table = create_array_of_tables(main_table, table_path) catch {
           error => parser.error(error.to_string())
         }
+        continue current_table
       }
       [LeftBracket, .. rest] => {
         parser.update_view(rest)
@@ -328,9 +329,10 @@ pub fn parse(input : String) -> TomlValue raise {
         }
 
         // Create or get the nested table structure
-        current_table = create_nested_table(main_table, table_path) catch {
+        let current_table = create_nested_table(main_table, table_path) catch {
           error => parser.error(error.to_string())
         }
+        continue current_table
       }
       _ => {
         // Parse key-value pair
