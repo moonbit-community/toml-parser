@@ -252,6 +252,12 @@ fn create_nested_table(
 }
 
 ///|
+priv suberror TableConflicts {
+  ExpectedTable(String, TomlValue)
+  ExpectedArray(String, TomlValue)
+} derive(Show, ToJson)
+
+///|
 /// Create or append to an array of tables structure in TOML.
 /// 
 /// This function handles the `[[table]]` syntax in TOML, which creates an array
@@ -279,19 +285,14 @@ fn create_nested_table(
 fn create_array_of_tables(
   root_table : Map[String, TomlValue],
   path : Array[String],
-  error_tokens : ArrayView[@tokenize.Token],
-) -> Map[String, TomlValue] raise {
+) -> Map[String, TomlValue] raise TableConflicts {
   let mut current_table = root_table
 
   // Navigate to the parent of the final key
   for key in path[:-1] {
     match current_table.get(key) {
       Some(TomlTable(existing_table)) => current_table = existing_table
-      Some(_) =>
-        parse_error(
-          error_tokens,
-          "Array of tables path conflicts with existing value: \{key}",
-        )
+      Some(value) => raise ExpectedTable(key, value)
       None => {
         let new_table = Map::new()
         current_table[key] = TomlTable(new_table)
@@ -309,11 +310,7 @@ fn create_array_of_tables(
       existing_array.push(TomlTable(new_table))
       new_table
     }
-    Some(_) =>
-      parse_error(
-        error_tokens,
-        "Array of tables conflicts with existing non-array value: \{final_key}",
-      )
+    Some(value) => raise ExpectedArray(final_key, value)
     None => {
       // Create new array with the first table
       let array = Array::new()
@@ -330,7 +327,7 @@ test "create_array_of_tables - first table creation" {
   let root_table : Map[String, TomlValue] = {}
 
   // Create first table in array [[servers]]
-  let new_table = create_array_of_tables(root_table, ["servers"], [])
+  let new_table = create_array_of_tables(root_table, ["servers"])
 
   // Add some data to the new table
   new_table["name"] = TomlString("alpha")
@@ -352,17 +349,17 @@ test "create_array_of_tables - append to existing array" {
   let root_table : Map[String, TomlValue] = {}
 
   // Create first table
-  let table1 = create_array_of_tables(root_table, ["products"], [])
+  let table1 = create_array_of_tables(root_table, ["products"])
   table1["name"] = TomlString("Hammer")
   table1["sku"] = TomlInteger(738594937)
 
   // Append second table to same array
-  let table2 = create_array_of_tables(root_table, ["products"], [])
+  let table2 = create_array_of_tables(root_table, ["products"])
   table2["name"] = TomlString("Nail")
   table2["sku"] = TomlInteger(284758393)
 
   // Append third table
-  let table3 = create_array_of_tables(root_table, ["products"], [])
+  let table3 = create_array_of_tables(root_table, ["products"])
   table3["name"] = TomlString("Screwdriver")
   table3["sku"] = TomlInteger(987654321)
   inspect(
@@ -390,20 +387,16 @@ test "create_array_of_tables - nested path creation" {
   let root_table : Map[String, TomlValue] = {}
 
   // Create [[fruit.physical.color]]
-  let color_table1 = create_array_of_tables(
-    root_table,
-    ["fruit", "physical", "color"],
-    [],
-  )
+  let color_table1 = create_array_of_tables(root_table, [
+    "fruit", "physical", "color",
+  ])
   color_table1["name"] = TomlString("red")
   color_table1["code"] = TomlString("#FF0000")
 
   // Add another color
-  let color_table2 = create_array_of_tables(
-    root_table,
-    ["fruit", "physical", "color"],
-    [],
-  )
+  let color_table2 = create_array_of_tables(root_table, [
+    "fruit", "physical", "color",
+  ])
   color_table2["name"] = TomlString("green")
   color_table2["code"] = TomlString("#00FF00")
   inspect(
@@ -419,7 +412,6 @@ test "create_array_of_tables - nested path creation" {
       #|name = "green"
       #|code = "#00FF00"
       #|
-
     ),
   )
 }
@@ -434,10 +426,10 @@ test "create_array_of_tables - mixed with regular tables" {
   set_dotted_key_value(root_table, ["owner", "dob"], TomlString("1979-05-27"), [])
 
   // Now create array of tables at a different path
-  let db1 = create_array_of_tables(root_table, ["database", "servers"], [])
+  let db1 = create_array_of_tables(root_table, ["database", "servers"])
   db1["host"] = TomlString("192.168.1.1")
   db1["port"] = TomlInteger(5432)
-  let db2 = create_array_of_tables(root_table, ["database", "servers"], [])
+  let db2 = create_array_of_tables(root_table, ["database", "servers"])
   db2["host"] = TomlString("192.168.1.2")
   db2["port"] = TomlInteger(5433)
   @json.inspect(root_table, content={
@@ -483,7 +475,7 @@ test "create_array_of_tables - path conflicts with non-table" {
 
   // Try to create array of tables at ["products", "items"]
   // This should fail because "products" is not a table
-  let result = try? create_array_of_tables(root_table, ["products", "items"], [])
+  let result = try? create_array_of_tables(root_table, ["products", "items"])
   inspect(
     result,
     content=(
@@ -507,7 +499,7 @@ test "create_array_of_tables - final key conflicts with non-array" {
   )
 
   // Try to treat servers.alpha as array of tables
-  let result = try? create_array_of_tables(root_table, ["servers", "alpha"], [])
+  let result = try? create_array_of_tables(root_table, ["servers", "alpha"])
   inspect(
     result,
     content=(
@@ -522,18 +514,18 @@ test "create_array_of_tables - multiple nested arrays" {
   let root_table : Map[String, TomlValue] = Map::new()
 
   // Create first [[fruits]]
-  let fruit1 = create_array_of_tables(root_table, ["fruits"], [])
+  let fruit1 = create_array_of_tables(root_table, ["fruits"])
   fruit1["name"] = TomlString("apple")
 
   // Create second [[fruits]]
-  let fruit2 = create_array_of_tables(root_table, ["fruits"], [])
+  let fruit2 = create_array_of_tables(root_table, ["fruits"])
   fruit2["name"] = TomlString("banana")
 
   // Create [[vegetables]]
-  let veg1 = create_array_of_tables(root_table, ["vegetables"], [])
+  let veg1 = create_array_of_tables(root_table, ["vegetables"])
   veg1["name"] = TomlString("carrot")
   veg1["color"] = TomlString("orange")
-  let veg2 = create_array_of_tables(root_table, ["vegetables"], [])
+  let veg2 = create_array_of_tables(root_table, ["vegetables"])
   veg2["name"] = TomlString("lettuce")
   veg2["color"] = TomlString("green")
   @json.inspect(root_table, content={
@@ -572,13 +564,13 @@ test "create_array_of_tables - empty table in array" {
   let root_table : Map[String, TomlValue] = Map::new()
 
   // Create empty table in array
-  let _empty_table1 = create_array_of_tables(root_table, ["empty", "tables"], [])
+  let _empty_table1 = create_array_of_tables(root_table, ["empty", "tables"])
   // Don't add any fields
 
-  let _empty_table2 = create_array_of_tables(root_table, ["empty", "tables"], [])
+  let _empty_table2 = create_array_of_tables(root_table, ["empty", "tables"])
   // Also empty
 
-  let table3 = create_array_of_tables(root_table, ["empty", "tables"], [])
+  let table3 = create_array_of_tables(root_table, ["empty", "tables"])
   table3["has_content"] = TomlBoolean(true)
   @json.inspect(root_table, content={
     "empty": [
@@ -1017,11 +1009,9 @@ pub fn parse(input : String) -> TomlValue raise {
             }
 
             // Create or append to the array of tables structure
-            current_table = create_array_of_tables(
-              main_table,
-              table_path,
-              parser.view(),
-            )
+            current_table = create_array_of_tables(main_table, table_path) catch {
+              error => parser.error(error.to_string())
+            }
           }
           _ => {
             // This is a regular table [...]
