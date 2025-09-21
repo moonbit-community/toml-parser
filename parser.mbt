@@ -327,7 +327,7 @@ fn create_array_of_tables(
 ///|
 test "create_array_of_tables - first table creation" {
   // Test creating the first table in an array of tables
-  let root_table : Map[String, TomlValue] = Map::new()
+  let root_table : Map[String, TomlValue] = {}
 
   // Create first table in array [[servers]]
   let new_table = create_array_of_tables(root_table, ["servers"], [])
@@ -349,7 +349,7 @@ test "create_array_of_tables - first table creation" {
 ///|
 test "create_array_of_tables - append to existing array" {
   // Test appending to an existing array of tables
-  let root_table : Map[String, TomlValue] = Map::new()
+  let root_table : Map[String, TomlValue] = {}
 
   // Create first table
   let table1 = create_array_of_tables(root_table, ["products"], [])
@@ -387,7 +387,7 @@ test "create_array_of_tables - append to existing array" {
 ///|
 test "create_array_of_tables - nested path creation" {
   // Test creating array of tables with nested path
-  let root_table : Map[String, TomlValue] = Map::new()
+  let root_table : Map[String, TomlValue] = {}
 
   // Create [[fruit.physical.color]]
   let color_table1 = create_array_of_tables(
