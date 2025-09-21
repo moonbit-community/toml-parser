@@ -302,7 +302,6 @@ pub fn parse(input : String) -> TomlValue raise {
   let tokens = tokenize(input)
   let parser = Parser::new(tokens)
   let main_table = {}
-  // let mut current_table = main_table
   for current_table = main_table {
     parser.skip_newlines()
     match parser.view() {
