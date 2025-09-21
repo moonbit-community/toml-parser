@@ -195,7 +195,7 @@ test "table_path_conflict_error" {
     )
   @json.inspect(result, content={
     "Err": [
-      "Failure", "Table path conflicts with existing value: key at {start: {line: 2, column: 6}, end: {line: 2, column: 6}}",
+      "Failure", "ExpectedTable(\"key\", 42) at {start: {line: 2, column: 6}, end: {line: 2, column: 6}}",
     ],
   }) // Expected error
 }

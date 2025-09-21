@@ -214,7 +214,7 @@ test "test table name conflicts with existing value" {
     #|
   @json.inspect(try? parse_no_loc(conflicting_table_toml), content={
     "Err": [
-      "Failure", "Table path conflicts with existing value: table at {start: {line: 2, column: 8}, end: {line: 3, column: 1}}",
+      "Failure", "ExpectedTable(\"table\", \"string\") at {start: {line: 2, column: 8}, end: {line: 3, column: 1}}",
     ],
   })
 }

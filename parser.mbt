@@ -232,17 +232,16 @@ fn Parser::parse_array_of_tables_path(self : Parser) -> Array[String] raise {
 fn create_nested_table(
   root_table : Map[String, TomlValue],
   path : Array[String],
-  error_tokens : ArrayView[@tokenize.Token],
-) -> Map[String, TomlValue] raise {
+) -> Map[String, TomlValue] raise TableConflicts {
   let mut current_table = root_table
   for key in path {
     match current_table.get(key) {
       Some(TomlTable(existing_table)) => current_table = existing_table
-      Some(_) =>
-        parse_error(
-          error_tokens,
-          "Table path conflicts with existing value: \{key}",
-        )
+      Some(value) => raise ExpectedTable(key, value)
+      // parse_error(
+      //   error_tokens,
+      //   "Table path conflicts with existing value: \{key}",
+      // )
       None => {
         let new_table = Map::new()
         current_table[key] = TomlTable(new_table)
@@ -588,14 +587,6 @@ test "create_array_of_tables - empty table in array" {
       },
     ],
   })
-}
-
-///|
-fn[T] parse_error(tokens : ArrayView[@tokenize.Token], msg : String) -> T raise {
-  match tokens {
-    [token, ..] => fail("\{msg} at \{token.loc()}")
-    [] => fail("\{msg} at the end of input")
-  }
 }
 
 ///|
@@ -1009,11 +1000,9 @@ pub fn parse(input : String) -> TomlValue raise {
             }
 
             // Create or get the nested table structure
-            current_table = create_nested_table(
-              main_table,
-              table_path,
-              parser.view(),
-            )
+            current_table = create_nested_table(main_table, table_path) catch {
+              error => parser.error(error.to_string())
+            }
           }
         }
       }
