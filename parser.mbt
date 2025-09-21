@@ -89,14 +89,12 @@ fn Parser::parse_array(self : Self) -> TomlValue raise {
 
 ///|
 /// Parse an inline table {key = value, key2 = value2}
+/// No trailing comma allowed unlike Array
 fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
   let table = {}
-  match self.view() {
-    [RightBrace, .. rest] => {
-      self.update_view(rest)
-      return TomlTable(table)
-    }
-    _ => ()
+  if self.view() is [RightBrace, .. rest] {
+    self.update_view(rest)
+    return TomlTable(table)
   }
   while true {
     // Parse dotted key
