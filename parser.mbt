@@ -142,7 +142,7 @@ fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
       self.update_view(rest)
       i.to_string()
     }
-    _ => self.error("Expected table name")
+    _ => self.error("Expected path name")
   }
   path.push(first_key)
 

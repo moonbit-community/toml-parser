@@ -733,7 +733,7 @@ test "table header error locations" {
   // Test 2: Missing table name
   @json.inspect(try? parse_no_loc("[]"), content={
     "Err": [
-      "Failure", "Expected table name at {start: {line: 1, column: 2}, end: {line: 1, column: 3}}",
+      "Failure", "Expected path name at {start: {line: 1, column: 2}, end: {line: 1, column: 3}}",
     ],
   })
 
@@ -754,7 +754,7 @@ test "table header error locations" {
   // Test 5: Invalid character in table name position
   @json.inspect(try? parse_no_loc("[#invalid]"), content={
     "Err": [
-      "Failure", "Expected table name at {start: {line: 1, column: 11}, end: {line: 1, column: 11}}",
+      "Failure", "Expected path name at {start: {line: 1, column: 11}, end: {line: 1, column: 11}}",
     ],
   })
 }
