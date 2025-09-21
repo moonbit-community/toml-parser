@@ -347,7 +347,6 @@ pub fn parse(input : String) -> TomlValue raise {
         }
       }
     }
-    parser.skip_newlines()
   }
   TomlTable(main_table)
 }
