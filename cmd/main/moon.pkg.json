@@ -1,6 +1,6 @@
 {
   "is-main": true,
   "import": [
-    "bob/toml"
+    "bobzhang/toml"
   ]
 }

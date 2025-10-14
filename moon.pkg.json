@@ -1,6 +1,6 @@
 {
   "warn-list": "-21-57",
   "import": [
-    "bob/toml/internal/tokenize"
+    "bobzhang/toml/internal/tokenize"
   ]
 }

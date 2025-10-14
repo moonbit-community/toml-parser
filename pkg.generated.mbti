@@ -1,8 +1,8 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bob/toml"
+package "bobzhang/toml"
 
 import(
-  "bob/toml/internal/tokenize"
+  "bobzhang/toml/internal/tokenize"
 )
 
 // Values

@@ -58,14 +58,14 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
 Add this parser to your MoonBit project:
 
 ```bash
-moon add bob/toml
+moon add bobzhang/toml
 ```
 
 Then add it directly to your `moon.mod.json`:
 ```json
 {
   "deps": {
-    "bob/toml": "^0.1.4"
+    "bobzhang/toml": "^0.1.4"
   }
 }
 ```
