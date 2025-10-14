@@ -22,7 +22,7 @@ fn Lexer::read_identifier(self : Lexer) -> String {
   // empty branches or single branch with _ => ... 
   lexmatch self.view() using longest {
     // TODO(upstream): allow `(` `)`
-    ("[a-zA-Z]" "[a-zA-Z0-9_\-]*") as identifier, rest => {
+    (("[a-zA-Z]" "[a-zA-Z0-9_\-]*") as identifier, rest) => {
       self.update_view(rest)
       identifier.to_string()
     }
@@ -341,7 +341,7 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
   let mut result = 0L
   // 0xA__FF_12 is invalid according to spec
   lexmatch self.view() using longest {
-    "0[xX]" ("[0-9a-fA-F]+(_[0-9a-fA-F]+)*" as hex_digits), rest => {
+    ("0[xX]" ("[0-9a-fA-F]+(_[0-9a-fA-F]+)*" as hex_digits), rest) => {
       for i = 0; i < hex_digits.length(); i = i + 1 {
         let ch = hex_digits[i]
         if ch is '_' {
@@ -385,7 +385,7 @@ fn Lexer::read_octal_number(self : Lexer) -> Int64 raise {
   let mut result = 0L
   // 0o7__55_44 is invalid according to spec
   lexmatch self.view() using longest {
-    "0[oO]" ("[0-7]+(_[0-7]+)*" as octal_digits), rest => {
+    ("0[oO]" ("[0-7]+(_[0-7]+)*" as octal_digits), rest) => {
       for i = 0; i < octal_digits.length(); i = i + 1 {
         let ch = octal_digits[i]
         if ch is '_' {
@@ -436,7 +436,7 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
   let mut result = 0L
   // 0b1__00_11 is invalid according to spec
   lexmatch self.view() using longest {
-    "0[bB]" ("[01]+(_[01]+)*" as binary_digits), rest => {
+    ("0[bB]" ("[01]+(_[01]+)*" as binary_digits), rest) => {
       for i = 0; i < binary_digits.length(); i = i + 1 {
         let ch = binary_digits[i]
         if ch is '_' {
@@ -471,10 +471,10 @@ fn Lexer::is_datetime_pattern(self : Lexer) -> Bool {
   // Check for datetime patterns using regex
   lexmatch self.view() using longest {
     // LocalTime pattern: HH:MM:SS[.fff] followed by valid terminator
-    "[0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?", rest =>
+    ("[0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?", rest) =>
       check_datetime_terminator_string(rest)
     // LocalDate pattern: YYYY-MM-DD (always valid, may continue with T for datetime)
-    "[0-9]{4}-[0-9]{2}-[0-9]{2}", _ => true
+    ("[0-9]{4}-[0-9]{2}-[0-9]{2}", _) => true
     _ => false
   }
 }
@@ -496,9 +496,9 @@ fn Lexer::read_datetime_with_loc(
 ) -> Token {
 
   // Use regex to match and capture different datetime patterns
-  lexmatch self.view() using longest {
+  lexmatch self.view() with longest {
     // LocalTime: HH:MM:SS[.fff]
-    ("[0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?") as time, rest => {
+    (("[0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?") as time, rest) => {
       self.update_view(rest)
       let end_pos = self.get_loc()
       return DateTimeToken(
@@ -507,7 +507,7 @@ fn Lexer::read_datetime_with_loc(
       )
     }
     // OffsetDateTime with Z: YYYY-MM-DDTHH:MM:SS[.fff]Z
-    ("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?Z") as datetime, rest => {
+    (("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?Z") as datetime, rest) => {
       self.update_view(rest)
       let end_pos = self.get_loc()
       return DateTimeToken(
@@ -516,10 +516,10 @@ fn Lexer::read_datetime_with_loc(
       )
     }
     // OffsetDateTime with offset: YYYY-MM-DDTHH:MM:SS[.fff]±HH:MM
-    (
+    ((
       "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
       "(\.[0-9]+)?[+\-][0-9]{2}:[0-9]{2}"
-    ) as datetime, rest => {
+    ) as datetime, rest) => {
       self.update_view(rest)
       let end_pos = self.get_loc()
       return DateTimeToken(
@@ -528,7 +528,7 @@ fn Lexer::read_datetime_with_loc(
       )
     }
     // LocalDateTime: YYYY-MM-DDTHH:MM:SS[.fff]
-    ("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?") as datetime, rest => {
+    (("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?") as datetime, rest) => {
       self.update_view(rest)
       let end_pos = self.get_loc()
       return DateTimeToken(
@@ -537,7 +537,7 @@ fn Lexer::read_datetime_with_loc(
       )
     }
     // LocalDate: YYYY-MM-DD
-    "[0-9]{4}-[0-9]{2}-[0-9]{2}" as date, rest => {
+    ("[0-9]{4}-[0-9]{2}-[0-9]{2}" as date, rest) => {
       self.update_view(rest)
       let end_pos = self.get_loc()
       return DateTimeToken(
