@@ -1,5 +1,5 @@
 ///|
-typealias @lexer.Position
+using @lexer {type Position}
 
 ///|
 pub(all) struct Loc {

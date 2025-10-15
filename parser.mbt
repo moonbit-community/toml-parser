@@ -1,9 +1,5 @@
 ///|
-/// Parser implementation for TOML
-typealias @tokenize.(Token, TomlDateTime)
-
-///|
-fnalias @tokenize.tokenize
+using @tokenize {tokenize, type Token, type TomlDateTime}
 
 ///|
 /// Skip newline tokens
