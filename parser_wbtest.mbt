@@ -118,13 +118,13 @@ test "parse_dotted_key - error cases" {
   // Test error when no key is found
   let tokens = @tokenize.tokenize("=")
   let parser = Parser::new(tokens)
-  let result = try? parser.parse_dotted_key()
-  inspect(
-    result,
-    content=(
-      #|Err(Failure("/Users/hongbozhang/git/toml-parser/parser.mbt:180:20-180:52 FAILED: Expected key at {start: {line: 1, column: 1}, end: {line: 1, column: 2}}"))
-    ),
-  )
+  guard (try? parser.parse_dotted_key()) is Err(err) else {
+    fail("Expected error but got success")
+  }
+  // TODO(upstream): impl[X:ToJson] ToJson for Iter[X]
+  @json.inspect(err.to_string().split("FAILED:").to_array()[1:], content=[
+    " Expected key at {start: {line: 1, column: 1}, end: {line: 1, column: 2}}\")",
+  ])
 }
 
 ///|
@@ -132,13 +132,12 @@ test "parse_dotted_key - error after dot" {
   // Test error when dot is followed by invalid token
   let tokens = @tokenize.tokenize("key.=")
   let parser = Parser::new(tokens)
-  let result = try? parser.parse_dotted_key()
-  inspect(
-    result,
-    content=(
-      #|Err(Failure("/Users/hongbozhang/git/toml-parser/parser.mbt:180:20-180:52 FAILED: Expected key after dot at {start: {line: 1, column: 5}, end: {line: 1, column: 6}}"))
-    ),
-  )
+  guard (try? parser.parse_dotted_key()) is Err(result) else {
+    fail("Expected error but got success")
+  }
+  @json.inspect(result.to_string().split("FAILED:").to_array()[1:], content=[
+    " Expected key after dot at {start: {line: 1, column: 5}, end: {line: 1, column: 6}}\")",
+  ])
 }
 
 ///|
