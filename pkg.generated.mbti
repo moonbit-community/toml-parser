@@ -28,12 +28,7 @@ pub(all) enum TomlValue {
   TomlTable(Map[String, TomlValue])
   TomlDateTime(@tokenize.TomlDateTime)
 }
-fn TomlValue::equal(Self, Self) -> Bool // from trait `Eq`
 fn TomlValue::is_homogeneous_array(Array[Self]) -> Bool
-#deprecated
-fn TomlValue::op_equal(Self, Self) -> Bool // from trait `Eq`
-fn TomlValue::output(Self, &Logger) -> Unit // from trait `Show`
-fn TomlValue::to_json(Self) -> Json // from trait `ToJson`
 fn TomlValue::to_string(Self) -> String
 fn TomlValue::validate(Self) -> Bool
 impl Eq for TomlValue

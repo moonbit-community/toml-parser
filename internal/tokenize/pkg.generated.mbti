@@ -17,12 +17,6 @@ pub(all) struct Loc {
   start : @lexer.Position
   end : @lexer.Position
 }
-fn Loc::equal(Self, Self) -> Bool // from trait `Eq`
-#deprecated
-fn Loc::op_equal(Self, Self) -> Bool // from trait `Eq`
-fn Loc::output(Self, &Logger) -> Unit // from trait `Show`
-fn Loc::to_json(Self) -> Json // from trait `ToJson`
-fn Loc::to_string(Self) -> String // from trait `Show`
 impl Eq for Loc
 impl Show for Loc
 impl ToJson for Loc
@@ -44,13 +38,7 @@ pub(all) enum Token {
   Newline(loc~ : Loc)
   EOF(loc~ : Loc)
 }
-fn Token::equal(Self, Self) -> Bool // from trait `Eq`
 fn Token::loc(Self) -> Loc
-#deprecated
-fn Token::op_equal(Self, Self) -> Bool // from trait `Eq`
-fn Token::output(Self, &Logger) -> Unit // from trait `Show`
-fn Token::to_json(Self) -> Json // from trait `ToJson`
-fn Token::to_string(Self) -> String // from trait `Show`
 impl Eq for Token
 impl Show for Token
 impl ToJson for Token
@@ -61,12 +49,6 @@ pub(all) enum TomlDateTime {
   LocalDate(String)
   LocalTime(String)
 }
-fn TomlDateTime::equal(Self, Self) -> Bool // from trait `Eq`
-#deprecated
-fn TomlDateTime::op_equal(Self, Self) -> Bool // from trait `Eq`
-fn TomlDateTime::output(Self, &Logger) -> Unit // from trait `Show`
-fn TomlDateTime::to_json(Self) -> Json // from trait `ToJson`
-fn TomlDateTime::to_string(Self) -> String // from trait `Show`
 impl Eq for TomlDateTime
 impl Show for TomlDateTime
 impl ToJson for TomlDateTime
