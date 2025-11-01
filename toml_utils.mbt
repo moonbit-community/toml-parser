@@ -527,26 +527,24 @@ test "set dotted key value - add to existing table" {
 }
 
 ///|
-#skip("error message is not correct")
 test "set dotted key value - conflict with non-table value" {
-  // Test error when trying to use a non-table value as a table
-  let table : Map[String, TomlValue] = Map::new()
+  let table : Map[String, TomlValue] = {}
 
   // Set a string value at "config"
   set_dotted_key_value(table, ["config"], TomlString("simple value"))
 
   // Try to treat "config" as a table - this should raise an error
-  let result = try? set_dotted_key_value(
-      table,
-      ["config", "nested"],
-      TomlString("value"),
-    )
-  inspect(
-    result,
-    content=(
-      #|Err(Failure("/Users/hongbozhang/git/toml-parser/parser.mbt:309:11-309:45 FAILED: Dotted key path conflicts with existing non-table value: config at the end of input"))
-    ),
-  )
+  try
+    set_dotted_key_value(table, ["config", "nested"], TomlString("value"))
+  catch {
+    err =>
+      @json.inspect(
+        err.to_string(),
+        content="ExpectedTable(\"config\", \"simple value\")",
+      )
+  } noraise {
+    _ => fail("Expected error but got success")
+  }
 }
 
 ///|
