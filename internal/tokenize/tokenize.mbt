@@ -863,7 +863,7 @@ pub fn tokenize(input : String) -> Array[Token] raise {
 
 ///|
 /// Test read_number
-test "read_number" {
+test "read_number 2" {
   let lexer = Lexer::new("123")
   inspect(
     lexer.read_number(false),
