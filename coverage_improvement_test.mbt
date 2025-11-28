@@ -113,8 +113,8 @@ test "test edge case number formats for error paths" {
   // Try to trigger integer parsing errors
 
   let tokens = try? tokenize_no_loc(
-      "huge = 999999999999999999999999999999999999999",
-    )
+    "huge = 999999999999999999999999999999999999999",
+  )
   @json.inspect(tokens, content={
     "Err": [
       "Failure", "Invalid integer: 999999999999999999999999999999999999999",

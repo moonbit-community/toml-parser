@@ -98,10 +98,10 @@ test "array_of_tables_path_with_integer_key" {
 /// Test invalid Unicode escape sequences to trigger error paths
 test "invalid_unicode_escapes" {
   let result = try? parse_no_loc(
-      (
-        #|key = "\uZZZZ"
-      ),
-    )
+    (
+      #|key = "\uZZZZ"
+    ),
+  )
   @json.inspect(result, content={
     "Err": [
       "Failure", "Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10",
@@ -113,10 +113,10 @@ test "invalid_unicode_escapes" {
 /// Test invalid 8-byte Unicode escape
 test "invalid_8byte_unicode_escape" {
   let result = try? parse_no_loc(
-      (
-        #|key = "\U00200000"
-      ),
-    ) // Invalid code point > 0x10FFFF
+    (
+      #|key = "\U00200000"
+    ),
+  ) // Invalid code point > 0x10FFFF
   @json.inspect(result, content={
     "Err": [
       "Failure", "Invalid Unicode code point: 2097152 at line 1, column 18",
@@ -128,10 +128,10 @@ test "invalid_8byte_unicode_escape" {
 /// Test unterminated multiline string
 test "unterminated_multiline_string" {
   let result = try? parse_no_loc(
-      (
-        #|key = """This is unterminated
-      ),
-    )
+    (
+      #|key = """This is unterminated
+    ),
+  )
   @json.inspect(result, content={
     "Err": ["Failure", "Unterminated multiline string at line 1, column 30"],
   }) // Expected error
@@ -188,11 +188,11 @@ test "nested_validation_failure_in_array" {
 /// Test table path conflict error  
 test "table_path_conflict_error" {
   let result = try? parse_no_loc(
-      (
-        #|key = 42
-        #|[key]
-      ),
-    )
+    (
+      #|key = 42
+      #|[key]
+    ),
+  )
   @json.inspect(result, content={
     "Err": [
       "Failure", "ExpectedTable(\"key\", 42) at {start: {line: 2, column: 6}, end: {line: 2, column: 6}}",
@@ -204,11 +204,11 @@ test "table_path_conflict_error" {
 /// Test array of tables path conflict error
 test "array_of_tables_path_conflict_error" {
   let result = try? parse_no_loc(
-      (
-        #|key = 42
-        #|[[key]]
-      ),
-    )
+    (
+      #|key = 42
+      #|[[key]]
+    ),
+  )
   @json.inspect(result, content={
     "Err": [
       "Failure", "ExpectedArray(\"key\", 42) at {start: {line: 2, column: 8}, end: {line: 2, column: 8}}",
@@ -387,10 +387,10 @@ test "negative_number_parsing" {
 /// Test error handling with invalid characters
 test "invalid_character_error" {
   let result = try? parse_no_loc(
-      (
-        #|key = @invalid
-      ),
-    )
+    (
+      #|key = @invalid
+    ),
+  )
   @json.inspect(result, content={
     "Err": ["Failure", "Unexpected character: '@'"],
   }) // Expected error

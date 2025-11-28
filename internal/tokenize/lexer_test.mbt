@@ -347,10 +347,10 @@ fn Error::failure_message(x : Error) -> String {
 ///|
 test "test invalid escape sequence error" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = "test\z invalid"
-      ),
-    )
+    (
+      #|key = "test\z invalid"
+    ),
+  )
   // TODO: ArgsLoc no absolute loc
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
@@ -361,10 +361,10 @@ test "test invalid escape sequence error" {
 ///|
 test "test unterminated string error" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = "unterminated
-      ),
-    )
+    (
+      #|key = "unterminated
+    ),
+  )
   // TODO: ArgsLoc no absolute loc
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
@@ -375,10 +375,10 @@ test "test unterminated string error" {
 ///|
 test "test unexpected end after escape" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = "test\
-      ),
-    )
+    (
+      #|key = "test\
+    ),
+  )
   // TODO: ArgsLoc no absolute loc
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
@@ -389,10 +389,10 @@ test "test unexpected end after escape" {
 ///|
 test "test invalid characters" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key @ value
-      ),
-    )
+    (
+      #|key @ value
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Unexpected character: '@'",
@@ -417,10 +417,10 @@ test "test binary number with underscores" {
 ///|
 test "test negative sign not followed by number" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = -abc
-      ),
-    )
+    (
+      #|key = -abc
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Unexpected character: '-'",
@@ -478,10 +478,10 @@ test "unicode 4 escape uppercase hex" {
 /// Test Unicode 4-digit escape invalid hex digit
 test "unicode 4 escape invalid hex" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = "\uGHIJ"
-      ),
-    )
+    (
+      #|key = "\uGHIJ"
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10",
@@ -492,10 +492,10 @@ test "unicode 4 escape invalid hex" {
 /// Test Unicode 4-digit escape incomplete sequence
 test "unicode 4 escape incomplete" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = "\u123"
-      ),
-    )
+    (
+      #|key = "\u123"
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10",
@@ -506,10 +506,10 @@ test "unicode 4 escape incomplete" {
 /// Test Unicode 4-digit escape invalid code point
 test "unicode 4 escape invalid code point" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = "\uD800"
-      ),
-    )
+    (
+      #|key = "\uD800"
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Invalid Unicode code point: 55296 at line 1, column 14",
@@ -552,10 +552,10 @@ test "unicode 8 escape uppercase hex" {
 /// Test Unicode 8-digit escape invalid hex digit
 test "unicode 8 escape invalid hex" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = "\U0000000G"
-      ),
-    )
+    (
+      #|key = "\U0000000G"
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10",
@@ -566,10 +566,10 @@ test "unicode 8 escape invalid hex" {
 /// Test Unicode 8-digit escape incomplete sequence
 test "unicode 8 escape incomplete" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = "\U0000001"
-      ),
-    )
+    (
+      #|key = "\U0000001"
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10",
@@ -580,10 +580,10 @@ test "unicode 8 escape incomplete" {
 /// Test Unicode 8-digit escape invalid code point (too large)
 test "unicode 8 escape invalid code point large" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = "\U00110000"
-      ),
-    )
+    (
+      #|key = "\U00110000"
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Invalid Unicode code point: 1114112 at line 1, column 18",
@@ -594,10 +594,10 @@ test "unicode 8 escape invalid code point large" {
 /// Test Unicode 8-digit escape invalid code point (surrogate range)
 test "unicode 8 escape invalid code point surrogate" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = "\U0000D800"
-      ),
-    )
+    (
+      #|key = "\U0000D800"
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Invalid Unicode code point: 55296 at line 1, column 18",
@@ -608,10 +608,10 @@ test "unicode 8 escape invalid code point surrogate" {
 /// Test Unicode 8-digit escape invalid code point conversion
 test "unicode 8 escape invalid conversion" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = "\U7FFFFFFF"
-      ),
-    )
+    (
+      #|key = "\U7FFFFFFF"
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Invalid Unicode code point: 2147483647 at line 1, column 18",
@@ -699,10 +699,10 @@ test "multiline basic string line ending backslash CR" {
 /// Test multiline basic string invalid escape
 test "multiline basic string invalid escape" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = """\z"""
-      ),
-    )
+    (
+      #|key = """\z"""
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Invalid escape sequence: \\z at line 1, column 12",
@@ -713,10 +713,10 @@ test "multiline basic string invalid escape" {
 /// Test multiline basic string unexpected end after escape
 test "multiline basic string unexpected end after escape" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = """\
-      ),
-    )
+    (
+      #|key = """\
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Unexpected end of input after escape character at line 1, column 11",
@@ -727,10 +727,10 @@ test "multiline basic string unexpected end after escape" {
 /// Test multiline basic string unterminated
 test "multiline basic string unterminated" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = """incomplete
-      ),
-    )
+    (
+      #|key = """incomplete
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Unterminated multiline string at line 1, column 20",
@@ -741,10 +741,10 @@ test "multiline basic string unterminated" {
 /// Test multiline basic string early termination in loop
 test "multiline basic string early termination" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = """line
-      ),
-    )
+    (
+      #|key = """line
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Unterminated multiline string at line 1, column 14",
@@ -767,10 +767,10 @@ test "multiline literal string CRLF" {
 /// Test multiline literal string unterminated
 test "multiline literal string unterminated" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = '''incomplete
-      ),
-    )
+    (
+      #|key = '''incomplete
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Unterminated multiline literal string at line 1, column 20",
@@ -782,10 +782,10 @@ test "multiline literal string unterminated" {
 test "hex number invalid digit error path" {
   // This should fail because there are no hex digits after 0x
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = 0x
-      ),
-    )
+    (
+      #|key = 0x
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Invalid hex number format at line 1, column 7",
@@ -879,10 +879,10 @@ test "multiline basic string CR only" {
 test "multiline basic string none peek" {
   // This creates a string that will reach None in the peek() during processing
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = """incomplete string
-      ),
-    )
+    (
+      #|key = """incomplete string
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Unterminated multiline string at line 1, column 27",
@@ -946,11 +946,11 @@ test "very large invalid float" {
   // Create a huge number that might overflow during parsing
   let huge_number = "999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999"
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = 
-      ) +
-      huge_number,
-    )
+    (
+      #|key = 
+    ) +
+    huge_number,
+  )
   // This should trigger the "Invalid float" error, covering that line
   let error_msg = maybe_tokens.unwrap_err().failure_message()
   match error_msg.strip_prefix("Invalid float: ") {
@@ -982,10 +982,10 @@ test "unicode code point conversion failure" {
   // Try to find a Unicode code that's valid as int but invalid as char
   // Code point 0x110000 is too large for valid Unicode
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = "\U00110000"
-      ),
-    )
+    (
+      #|key = "\U00110000"
+    ),
+  )
   let error_msg = maybe_tokens.unwrap_err().failure_message()
   match error_msg.strip_prefix("Invalid Unicode code point: ") {
     Some(_) => inspect(true, content="true") // Expected error
@@ -998,10 +998,10 @@ test "unicode code point conversion failure" {
 test "multiline string abrupt end" {
   // Create a multiline string that ends abruptly without proper closing
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = """content without closing
-      ),
-    )
+    (
+      #|key = """content without closing
+    ),
+  )
   let error_msg = maybe_tokens.unwrap_err().failure_message()
   // This should trigger one of the unterminated multiline string errors
   let is_unterminated = match
@@ -1018,10 +1018,10 @@ test "unicode 8 digit none conversion attempt" {
   // Try an edge case that might trigger the None path in unicode 8 escape
   // Use a very large value that might fail conversion
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = "\U7FFFFFFF"
-      ),
-    )
+    (
+      #|key = "\U7FFFFFFF"
+    ),
+  )
   let error_msg = maybe_tokens.unwrap_err().failure_message()
   // Should get invalid Unicode code point error
   let has_invalid_unicode = match
@@ -1055,10 +1055,10 @@ test "attempt hex digit error path" {
 test "multiline string potential truncation" {
   // Try to create a scenario where multiline string processing might hit None
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = """partial
-      ),
-    )
+    (
+      #|key = """partial
+    ),
+  )
   // Should get unterminated string error
   let error_msg = maybe_tokens.unwrap_err().failure_message()
   let is_unterminated = error_msg.contains("Unterminated")
@@ -1068,10 +1068,10 @@ test "multiline string potential truncation" {
 ///|
 test "trailing _ in binary number" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = 0b10_10_
-      ),
-    )
+    (
+      #|key = 0b10_10_
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 14",
@@ -1081,10 +1081,10 @@ test "trailing _ in binary number" {
 ///|
 test "consequence _ in binary number" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = 0b10__10_10
-      ),
-    )
+    (
+      #|key = 0b10__10_10
+    ),
+  )
   // according to spec, this should fail
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
@@ -1095,10 +1095,10 @@ test "consequence _ in binary number" {
 ///|
 test "trailing _ in hex number" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = 0xAB_CD_
-      ),
-    )
+    (
+      #|key = 0xAB_CD_
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 14",
@@ -1108,10 +1108,10 @@ test "trailing _ in hex number" {
 ///|
 test "consecutive _ in hex number" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = 0xAB__CD_EF
-      ),
-    )
+    (
+      #|key = 0xAB__CD_EF
+    ),
+  )
   // according to spec, this should fail
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
@@ -1122,10 +1122,10 @@ test "consecutive _ in hex number" {
 ///|
 test "trailing _ in octal number" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = 0o755_
-      ),
-    )
+    (
+      #|key = 0o755_
+    ),
+  )
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
     content="Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 12",
@@ -1135,10 +1135,10 @@ test "trailing _ in octal number" {
 ///|
 test "consecutive _ in octal number" {
   let maybe_tokens = try? @tokenize.tokenize(
-      (
-        #|key = 0o7__55_44
-      ),
-    )
+    (
+      #|key = 0o7__55_44
+    ),
+  )
   // according to spec, this should fail
   @json.inspect(
     maybe_tokens.unwrap_err().failure_message(),
