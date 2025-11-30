@@ -6,9 +6,9 @@ import(
 )
 
 // Values
-fn default_loc() -> Loc
+pub fn default_loc() -> Loc
 
-fn tokenize(String) -> Array[Token] raise
+pub fn tokenize(String) -> Array[Token] raise
 
 // Errors
 
@@ -17,9 +17,9 @@ pub(all) struct Loc {
   start : @lexer.Position
   end : @lexer.Position
 }
-impl Eq for Loc
-impl Show for Loc
-impl ToJson for Loc
+pub impl Eq for Loc
+pub impl Show for Loc
+pub impl ToJson for Loc
 
 pub(all) enum Token {
   StringToken(String, loc~ : Loc)
@@ -38,10 +38,10 @@ pub(all) enum Token {
   Newline(loc~ : Loc)
   EOF(loc~ : Loc)
 }
-fn Token::loc(Self) -> Loc
-impl Eq for Token
-impl Show for Token
-impl ToJson for Token
+pub fn Token::loc(Self) -> Loc
+pub impl Eq for Token
+pub impl Show for Token
+pub impl ToJson for Token
 
 pub(all) enum TomlDateTime {
   OffsetDateTime(String)
@@ -49,9 +49,9 @@ pub(all) enum TomlDateTime {
   LocalDate(String)
   LocalTime(String)
 }
-impl Eq for TomlDateTime
-impl Show for TomlDateTime
-impl ToJson for TomlDateTime
+pub impl Eq for TomlDateTime
+pub impl Show for TomlDateTime
+pub impl ToJson for TomlDateTime
 
 // Type aliases
 

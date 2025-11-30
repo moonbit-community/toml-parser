@@ -340,7 +340,7 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
   // TODO(upstream): support non capturing group
   let mut result = 0L
   // 0xA__FF_12 is invalid according to spec
-  lexmatch self.view() with longest {
+  lexmatch self.view() {
     ("0[xX]" ("[0-9a-fA-F]+(_[0-9a-fA-F]+)*" as hex_digits), rest) => {
       for i = 0; i < hex_digits.length(); i = i + 1 {
         let ch = hex_digits[i]
