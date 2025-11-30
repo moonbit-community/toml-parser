@@ -20,14 +20,14 @@ fn Lexer::read_identifier(self : Lexer) -> String {
 
   // TODO(upstream): error message improved for `longest` with 
   // empty branches or single branch with _ => ... 
-  lexmatch self.view() with longest {
+  if self.view()
     // TODO(upstream): allow `(` `)`
-    (("[a-zA-Z]" "[a-zA-Z0-9_\-]*") as identifier, rest) => {
-      self.update_view(rest)
-      identifier.to_string()
-    }
-    _ => "" //  never going to happen
-  }
+    lexmatch? (("[a-zA-Z]" "[a-zA-Z0-9_\-]*") as identifier, rest) {
+    self.update_view(rest)
+    identifier.to_string()
+  } else {
+    ""
+  } //  never going to happen
 }
 
 ///| Check if the next character is a valid token separator
@@ -340,25 +340,24 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
   // TODO(upstream): support non capturing group
   let mut result = 0L
   // 0xA__FF_12 is invalid according to spec
-  lexmatch self.view() {
-    ("0[xX]" ("[0-9a-fA-F]+(_[0-9a-fA-F]+)*" as hex_digits), rest) => {
-      for i = 0; i < hex_digits.length(); i = i + 1 {
-        let ch = hex_digits[i]
-        if ch is '_' {
-          continue
-        }
-        let digit_value = match ch {
-          '0'..='9' => (ch - '0').to_int64()
-          'a'..='f' => (ch - 'a').to_int64() + 10L
-          'A'..='F' => (ch - 'A').to_int64() + 10L
-          _ => fail(self.error("Invalid hex digit"))
-        }
-        result = result * 16L + digit_value
-      }
-      self.update_view(rest)
-    }
-    _ => fail(self.error("Invalid hex number format"))
+  guard self.view()
+    lexmatch? ("0[xX]" ("[0-9a-fA-F]+(_[0-9a-fA-F]+)*" as hex_digits), rest) else {
+    fail(self.error("Invalid hex number format"))
   }
+  for i = 0; i < hex_digits.length(); i = i + 1 {
+    let ch = hex_digits[i]
+    if ch is '_' {
+      continue
+    }
+    let digit_value = match ch {
+      '0'..='9' => (ch - '0').to_int64()
+      'a'..='f' => (ch - 'a').to_int64() + 10L
+      'A'..='F' => (ch - 'A').to_int64() + 10L
+      _ => fail(self.error("Invalid hex digit"))
+    }
+    result = result * 16L + digit_value
+  }
+  self.update_view(rest)
 
   // 0-width assertion
   match self.view() {
@@ -384,19 +383,18 @@ fn Lexer::read_octal_number(self : Lexer) -> Int64 raise {
   // TODO(upstream): support non capturing group
   let mut result = 0L
   // 0o7__55_44 is invalid according to spec
-  lexmatch self.view() with longest {
-    ("0[oO]" ("[0-7]+(_[0-7]+)*" as octal_digits), rest) => {
-      for i = 0; i < octal_digits.length(); i = i + 1 {
-        let ch = octal_digits[i]
-        if ch is '_' {
-          continue
-        }
-        result = result * 8L + (ch - '0').to_int64()
-      }
-      self.update_view(rest)
-    }
-    _ => fail(self.error("Invalid octal number format"))
+  guard self.view()
+    lexmatch? ("0[oO]" ("[0-7]+(_[0-7]+)*" as octal_digits), rest) else {
+    fail(self.error("Invalid octal number format"))
   }
+  for i = 0; i < octal_digits.length(); i = i + 1 {
+    let ch = octal_digits[i]
+    if ch is '_' {
+      continue
+    }
+    result = result * 8L + (ch - '0').to_int64()
+  }
+  self.update_view(rest)
 
   // 0-width assertion
   match self.view() {
@@ -435,19 +433,18 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
   // `match self` directly
   let mut result = 0L
   // 0b1__00_11 is invalid according to spec
-  lexmatch self.view() with longest {
-    ("0[bB]" ("[01]+(_[01]+)*" as binary_digits), rest) => {
-      for i = 0; i < binary_digits.length(); i = i + 1 {
-        let ch = binary_digits[i]
-        if ch is '_' {
-          continue
-        }
-        result = result * 2L + (ch - '0').to_int64()
-      }
-      self.update_view(rest)
-    }
-    _ => fail(self.error("Invalid binary number format"))
+  guard self.view()
+    lexmatch? ("0[bB]" ("[01]+(_[01]+)*" as binary_digits), rest) else {
+    fail(self.error("Invalid binary number format"))
   }
+  for i = 0; i < binary_digits.length(); i = i + 1 {
+    let ch = binary_digits[i]
+    if ch is '_' {
+      continue
+    }
+    result = result * 2L + (ch - '0').to_int64()
+  }
+  self.update_view(rest)
 
   // 0-width assertion
   match self.view() {
@@ -469,7 +466,7 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
 /// Check if the current input matches a datetime pattern without consuming characters
 fn Lexer::is_datetime_pattern(self : Lexer) -> Bool {
   // Check for datetime patterns using regex
-  lexmatch self.view() with longest {
+  lexmatch self.view() {
     (
       "[0-9]{2}:[0-9]{2}:[0-9]{2}"
       "(\.[0-9]+)?",
