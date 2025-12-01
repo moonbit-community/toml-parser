@@ -43,10 +43,10 @@ fn needs_quoting(s : String) -> Bool {
   }
 
   // Check for leading/trailing whitespace
-  if s[0] == ' ' ||
-    s[0] == '\t' ||
-    s[s.length() - 1] == ' ' ||
-    s[s.length() - 1] == '\t' {
+  if s.code_unit_at(0) == ' ' ||
+    s.code_unit_at(0) == '\t' ||
+    s.code_unit_at(s.length() - 1) == ' ' ||
+    s.code_unit_at(s.length() - 1) == '\t' {
     return true
   }
 
