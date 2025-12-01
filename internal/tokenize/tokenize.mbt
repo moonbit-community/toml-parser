@@ -494,70 +494,69 @@ fn Lexer::read_datetime_with_loc(
   self : Lexer,
   start_pos : @lexer.Position,
 ) -> Token {
-
-  // Use regex to match and capture different datetime patterns
-  lexmatch self.view() with longest {
-    // LocalTime: HH:MM:SS[.fff]
+  // Try patterns in order - no need for `with longest` since patterns are
+  // naturally disambiguated by structure:
+  // - LocalTime: HH:MM:SS (starts with 2 digits, has colons)
+  // - Date-based: YYYY-MM-DD (starts with 4 digits)
+  //   - Check what follows T to determine: LocalDate, LocalDateTime, or OffsetDateTime
+  lexmatch self.view() {
+    // LocalTime: HH:MM:SS[.fff] - must check first (2-digit start vs 4-digit)
     (("[0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?") as time, rest) => {
       self.update_view(rest)
       let end_pos = self.get_loc()
-      return DateTimeToken(
+      DateTimeToken(
         LocalTime(time.to_string()),
         loc=make_loc(start_pos, end_pos),
       )
     }
-    // OffsetDateTime with Z: YYYY-MM-DDTHH:MM:SS[.fff]Z
-    (
-      ("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?Z") as datetime,
-      rest
-    ) => {
-      self.update_view(rest)
-      let end_pos = self.get_loc()
-      return DateTimeToken(
-        OffsetDateTime(datetime.to_string()),
-        loc=make_loc(start_pos, end_pos),
-      )
-    }
-    // OffsetDateTime with offset: YYYY-MM-DDTHH:MM:SS[.fff]±HH:MM
-    (
-      (
-        "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
-        "(\.[0-9]+)?[+\-][0-9]{2}:[0-9]{2}"
-      ) as datetime,
-      rest
-    ) => {
-      self.update_view(rest)
-      let end_pos = self.get_loc()
-      return DateTimeToken(
-        OffsetDateTime(datetime.to_string()),
-        loc=make_loc(start_pos, end_pos),
-      )
-    }
-    // LocalDateTime: YYYY-MM-DDTHH:MM:SS[.fff]
-    (
-      ("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?") as datetime,
-      rest
-    ) => {
-      self.update_view(rest)
-      let end_pos = self.get_loc()
-      return DateTimeToken(
-        LocalDateTime(datetime.to_string()),
-        loc=make_loc(start_pos, end_pos),
-      )
-    }
-    // LocalDate: YYYY-MM-DD
+    // Date-based patterns: lex YYYY-MM-DD first, then check continuation
     ("[0-9]{4}-[0-9]{2}-[0-9]{2}" as date, rest) => {
       self.update_view(rest)
-      let end_pos = self.get_loc()
-      return DateTimeToken(
-        LocalDate(date.to_string()),
-        loc=make_loc(start_pos, end_pos),
-      )
+      // Check for time component: THH:MM:SS[.fff]
+      if self.view()
+        lexmatch? (
+          ("T[0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?") as time_with_t,
+          rest2
+        ) {
+        self.update_view(rest2)
+        let datetime_str = "\{date}\{time_with_t}"
+        // Check for timezone: Z or ±HH:MM
+        if self.view() lexmatch? ("Z", rest3) {
+          self.update_view(rest3)
+          let end_pos = self.get_loc()
+          DateTimeToken(
+            OffsetDateTime("\{datetime_str}Z"),
+            loc=make_loc(start_pos, end_pos),
+          )
+        } else if self.view()
+          lexmatch? ("[+\-][0-9]{2}:[0-9]{2}" as offset, rest3) {
+          self.update_view(rest3)
+          let end_pos = self.get_loc()
+          DateTimeToken(
+            OffsetDateTime("\{datetime_str}\{offset}"),
+            loc=make_loc(start_pos, end_pos),
+          )
+        } else {
+          // No timezone - LocalDateTime
+          let end_pos = self.get_loc()
+          DateTimeToken(
+            LocalDateTime(datetime_str),
+            loc=make_loc(start_pos, end_pos),
+          )
+        }
+      } else {
+        // Just date, no time component - LocalDate
+        let end_pos = self.get_loc()
+        DateTimeToken(
+          LocalDate(date.to_string()),
+          loc=make_loc(start_pos, end_pos),
+        )
+      }
     }
     _ => {
       // This shouldn't happen if is_datetime_pattern was called first
       let end_pos = self.get_loc()
-      return DateTimeToken(LocalDate(""), loc=make_loc(start_pos, end_pos))
+      DateTimeToken(LocalDate(""), loc=make_loc(start_pos, end_pos))
     }
   }
 }
