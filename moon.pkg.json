@@ -1,5 +1,5 @@
 {
-  "warn-list": "+test_import_all-missing_pattern_payload-missing_pattern_arguments",
+  "warn-list": "+test_unqualified_package-missing_pattern_payload-missing_pattern_arguments",
   "import": [
     "bobzhang/toml/internal/tokenize"
   ]
