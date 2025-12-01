@@ -345,7 +345,7 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
     fail(self.error("Invalid hex number format"))
   }
   for i = 0; i < hex_digits.length(); i = i + 1 {
-    let ch = hex_digits[i]
+    let ch = hex_digits.code_unit_at(i)
     if ch is '_' {
       continue
     }
@@ -388,7 +388,7 @@ fn Lexer::read_octal_number(self : Lexer) -> Int64 raise {
     fail(self.error("Invalid octal number format"))
   }
   for i = 0; i < octal_digits.length(); i = i + 1 {
-    let ch = octal_digits[i]
+    let ch = octal_digits.code_unit_at(i)
     if ch is '_' {
       continue
     }
@@ -438,7 +438,7 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
     fail(self.error("Invalid binary number format"))
   }
   for i = 0; i < binary_digits.length(); i = i + 1 {
-    let ch = binary_digits[i]
+    let ch = binary_digits.code_unit_at(i)
     if ch is '_' {
       continue
     }
