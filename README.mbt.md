@@ -22,6 +22,7 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
 ## Supported TOML Features
 
 ### Data Types
+
 - **Strings**: `"Hello, World!"` with full escape sequence support
 - **Integers**: `42`, `-17`
 - **Floats**: `3.14`, `-0.01`, `inf`, `-inf`, `nan`
@@ -35,11 +36,13 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
   - **Local Time**: `07:32:00`
 
 ### Tables and Structure
+
 - **Table headers**: `[section]`, `[section.subsection]`
 - **Array of tables**: `[[products]]` for repeated table structures
 - **Nested table access**: Full dotted path support
 
 ### Basic Syntax
+
 - Key-value pairs: `key = value`
 - Dotted key notation: `a.b.c = value` (creates nested tables)
 - Comments: `# This is a comment` (✅ **Supported**)
@@ -47,6 +50,7 @@ A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser impleme
 - TOML 1.0 specification compliance
 
 ### Escape Sequences
+
 - **Basic Escapes**: `\n` (newline), `\t` (tab), `\r` (carriage return)
 - **Quote Escapes**: `\"` (double quote), `\'` (single quote), `\\` (backslash)
 - **Control Characters**: `\b` (backspace), `\f` (form feed)
@@ -62,6 +66,7 @@ moon add bobzhang/toml
 ```
 
 Then add it directly to your `moon.mod.json`:
+
 ```json
 {
   "deps": {
@@ -120,29 +125,84 @@ match config {
 ### Core Functions
 
 **Parsing**:
+
 - `parse(input : String) -> TomlValue raise` - Parse TOML string and return structured data. Raises errors with location information on invalid syntax.
 
 **Validation**:
+
 - `TomlValue::validate(self : TomlValue) -> Bool` - Validate parsed TOML structure for correctness (array homogeneity, etc.)
 
 **Conversion**:
+
 - `TomlValue::to_string(self : TomlValue) -> String` - Convert TomlValue back to a human-readable string representation
 
-### Data Types
+### TomlValue - The Core Data Type
 
-The parser uses an enum `TomlValue` with the following variants:
+`TomlValue` is the central enum type representing all possible TOML values. It is defined as:
 
-- `TomlString(String)` - String values (e.g., `"Hello World"`)
-- `TomlInteger(Int64)` - Integer values (e.g., `42`, `-17`)
-- `TomlFloat(Double)` - Float values including special values (e.g., `3.14`, `inf`, `-inf`, `nan`)
-- `TomlBoolean(Bool)` - Boolean values (`true`, `false`)
-- `TomlArray(Array[TomlValue])` - Homogeneous arrays (e.g., `[1, 2, 3]`)
-- `TomlTable(Map[String, TomlValue])` - Key-value tables and inline tables
-- `TomlDateTime(TomlDateTime)` - All 4 RFC 3339 datetime types:
-  - `OffsetDateTime` - With timezone (e.g., `1979-05-27T07:32:00Z`)
-  - `LocalDateTime` - Without timezone (e.g., `1979-05-27T07:32:00`)
-  - `LocalDate` - Date only (e.g., `1979-05-27`)
-  - `LocalTime` - Time only (e.g., `07:32:00`)
+```moonbit no-check
+pub(all) enum TomlValue {
+  TomlString(String)
+  TomlInteger(Int64)
+  TomlFloat(Double)
+  TomlBoolean(Bool)
+  TomlArray(Array[TomlValue])
+  TomlTable(Map[String, TomlValue])
+  TomlDateTime(TomlDateTime)
+} derive(Eq, ToJson)
+```
+
+You can construct `TomlValue` directly in code:
+
+```mbt test
+// Constructing TomlValue programmatically
+let table : Map[String, @toml.TomlValue] = {
+  "name": @toml.TomlString("Alice"),
+  "age": @toml.TomlInteger(30L),
+  "active": @toml.TomlBoolean(true),
+  "scores": @toml.TomlArray([
+    @toml.TomlInteger(95L),
+    @toml.TomlInteger(87L),
+    @toml.TomlInteger(92L),
+  ]),
+}
+let value = @toml.TomlTable(table)
+
+// Validate and convert back to TOML string
+assert_true(value.validate())
+inspect(
+  value.to_string(),
+  content=(
+    #|name = "Alice"
+    #|age = 30
+    #|active = true
+    #|
+    #|scores = [95, 87, 92]
+    #|
+  ),
+)
+```
+
+#### Variant Summary
+
+| Variant                             | Description            | Example                      |
+| ----------------------------------- | ---------------------- | ---------------------------- |
+| `TomlString(String)`                | String values          | `"Hello World"`              |
+| `TomlInteger(Int64)`                | 64-bit integers        | `42`, `-17`                  |
+| `TomlFloat(Double)`                 | Floating-point numbers | `3.14`, `inf`, `-inf`, `nan` |
+| `TomlBoolean(Bool)`                 | Boolean values         | `true`, `false`              |
+| `TomlArray(Array[TomlValue])`       | Homogeneous arrays     | `[1, 2, 3]`                  |
+| `TomlTable(Map[String, TomlValue])` | Key-value tables       | `{key = value}`              |
+| `TomlDateTime(TomlDateTime)`        | RFC 3339 datetimes     | See below                    |
+
+#### DateTime Variants
+
+The `TomlDateTime` enum supports all 4 RFC 3339 datetime types:
+
+- `OffsetDateTime` - With timezone (e.g., `1979-05-27T07:32:00Z`)
+- `LocalDateTime` - Without timezone (e.g., `1979-05-27T07:32:00`)
+- `LocalDate` - Date only (e.g., `1979-05-27`)
+- `LocalTime` - Time only (e.g., `07:32:00`)
 
 ### Error Handling
 
@@ -181,7 +241,6 @@ Errors include precise location information (line and column numbers) to help di
 - **Unicode Keys**: International character support in keys (e.g., `"café" = "coffee"`)
 - **Escape Sequences**: Complete escape support: `\n`, `\t`, `\"`, `\\`, `\uXXXX`, `\UXXXXXXXX`
 - **Error Location Tracking**: Precise line/column error reporting for debugging
-
 
 ## Examples
 
@@ -313,6 +372,7 @@ let toml_datetime =
   },
 ])
 ```
+
 <!-- TODO(upstream): fmt works for mbt.md -->
 
 ### Inline Tables
@@ -341,7 +401,6 @@ let toml_inline =
 ### Complex Configuration
 
 ```mbt test
-
 // complex configuration example
 let config =
   #|service_name = "user-service"
@@ -593,8 +652,9 @@ let parsed_toml = @toml.parse(
 **Status**: Production-ready with comprehensive TOML 1.0 support
 
 ### Recent Improvements
+
 - ✅ Enhanced error location tracking in lexer and parser
-- ✅ Comprehensive test suite expansion (8000+ lines)  
+- ✅ Comprehensive test suite expansion (8000+ lines)
 - ✅ Official TOML test suite integration
 - ✅ Unicode key support and complex escape sequences
 - ✅ Special float values support (inf, -inf, nan)
@@ -608,6 +668,7 @@ moon test
 ```
 
 Current test coverage: **8000+ lines of test code** covering:
+
 - Basic TOML data types
 - DateTime functionality (all 4 types)
 - Array homogeneity validation
@@ -635,12 +696,14 @@ moon build
 ### ✅ DO:
 
 1. **Always validate after parsing**:
+
    ```moonbit
    let toml = @toml.parse(input)
    assert_true(toml.validate())  // Ensures data integrity
    ```
 
 2. **Use pattern matching for type safety**:
+
    ```moonbit
    match config {
      TomlTable(table) => {
@@ -667,33 +730,36 @@ moon build
 ### ❌ DON'T:
 
 1. **Don't mix types in arrays** - TOML requires homogeneous arrays:
+
    ```toml
    # ❌ Invalid
    mixed = [1, "two", 3.0]
-   
+
    # ✅ Valid
    integers = [1, 2, 3]
    strings = ["one", "two", "three"]
    ```
 
 2. **Don't redefine keys** - Each key must be unique within its scope:
+
    ```toml
    # ❌ Invalid
    name = "foo"
    name = "bar"  # Error: key redefined
-   
+
    # ✅ Valid
    first_name = "foo"
    last_name = "bar"
    ```
 
 3. **Don't confuse table types**:
+
    ```toml
    # ❌ Invalid - can't mix inline and standard tables
    [server]
    host = "localhost"
    server.port = 8080  # Error: server already defined as table
-   
+
    # ✅ Valid - use dotted keys before table header
    server.host = "localhost"
    server.port = 8080
