@@ -401,17 +401,9 @@ test "invalid_character_error" {
 test "multiline_string_line_ending_backslash" {
   let toml_input = "multiline = \"\"\"\nLine 1 \\\n    Line 2\"\"\""
   let result = @toml.parse(toml_input)
-  match result {
-    @toml.TomlTable(table) =>
-      match table.get("multiline") {
-        Some(@toml.TomlString(str)) =>
-          // Should have whitespace trimmed after backslash
-          inspect(
-            str.contains("Line 1") && str.contains("Line 2"),
-            content="true",
-          )
-        _ => inspect(false, content="true")
-      }
-    _ => inspect(false, content="true")
+  guard result is TomlTable({ "multiline": TomlString(str), .. }) else {
+    fail("Expected table with multiline string")
   }
+  // Should have whitespace trimmed after backslash
+  inspect(str.contains("Line 1") && str.contains("Line 2"), content="true")
 }

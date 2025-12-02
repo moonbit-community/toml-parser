@@ -37,16 +37,18 @@ test "test simple TOML parsing as in main demo" {
     #|enabled = true
     #|
   let result = try? @toml.parse(toml_input)
-  // Should parse successfully
-  @json.inspect(result is Ok(_), content=true)
-  match result {
-    Ok(parsed_result) => {
-      let expected_content = parsed_result.to_string()
-      inspect(expected_content.contains("John Doe"), content="true")
-      inspect(expected_content.contains("30"), content="true")
-      inspect(expected_content.contains("true"), content="true")
-    }
-    Err(_) => fail("Should parse successfully")
+  guard result
+    is Ok(
+      TomlTable(
+        {
+          "name": TomlString("John Doe"),
+          "age": TomlInteger(30L),
+          "enabled": TomlBoolean(true),
+          ..
+        },
+      ),
+    ) else {
+    fail("Should parse to table with name, age, enabled")
   }
 }
 
@@ -54,15 +56,24 @@ test "test simple TOML parsing as in main demo" {
 test "test TOML with array parsing as in main demo" {
   let toml_array = "numbers = [1, 2, 3, 4, 5]"
   let result = try? @toml.parse(toml_array)
-  // Should parse successfully
-  @json.inspect(result is Ok(_), content=true)
-  match result {
-    Ok(parsed_result) => {
-      let result_str = parsed_result.to_string()
-      inspect(result_str.contains("numbers"), content="true")
-      inspect(result_str.contains("[1, 2, 3, 4, 5]"), content="true")
-    }
-    Err(_) => fail("Should parse successfully")
+  guard result
+    is Ok(
+      TomlTable(
+        {
+          "numbers": TomlArray(
+            [
+              TomlInteger(1L),
+              TomlInteger(2L),
+              TomlInteger(3L),
+              TomlInteger(4L),
+              TomlInteger(5L),
+            ],
+          ),
+          ..
+        },
+      ),
+    ) else {
+    fail("Should parse to table with numbers array [1,2,3,4,5]")
   }
 }
 
@@ -72,16 +83,18 @@ test "test TOML with inline table parsing as in main demo" {
     #|person = {name = "Alice", age = 25}
     #|
   let result = try? @toml.parse(toml_table)
-  // Should parse successfully
-  @json.inspect(result is Ok(_), content=true)
-  match result {
-    Ok(parsed_result) => {
-      let result_str = parsed_result.to_string()
-      inspect(result_str.contains("person"), content="true")
-      inspect(result_str.contains("Alice"), content="true")
-      inspect(result_str.contains("25"), content="true")
-    }
-    Err(_) => fail("Should parse successfully")
+  guard result
+    is Ok(
+      TomlTable(
+        {
+          "person": TomlTable(
+            { "name": TomlString("Alice"), "age": TomlInteger(25L), .. },
+          ),
+          ..
+        },
+      ),
+    ) else {
+    fail("Should parse to table with person={name=Alice, age=25}")
   }
 }
 

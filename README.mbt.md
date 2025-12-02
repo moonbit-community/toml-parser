@@ -92,31 +92,17 @@ let config = @toml.parse(
   ),
 )
 
-// Access values using pattern matching
-match config {
-  @toml.TomlTable(table) => {
-    // Get top-level values
-    match table.get("title") {
-      Some(@toml.TomlString(s)) => assert_eq(s, "My App")
-      _ => fail("Expected title")
-    }
-
-    // Access nested tables
-    match table.get("database") {
-      Some(@toml.TomlTable(db)) => {
-        match db.get("port") {
-          Some(@toml.TomlInteger(port)) => assert_eq(port, 5432L)
-          _ => fail("Expected port")
-        }
-        match db.get("host") {
-          Some(@toml.TomlString(host)) => assert_eq(host, "localhost")
-          _ => fail("Expected host")
-        }
-      }
-      _ => fail("Expected database table")
-    }
-  }
-  _ => fail("Expected root table")
+// Access values using nested pattern matching with literal values
+guard config
+  is TomlTable(
+    {
+      "title": TomlString("My App"),
+      "version": TomlString("1.0.0"),
+      "database": TomlTable({ "host": TomlString("localhost"), "port": TomlInteger(5432L), .. }),
+      ..
+    },
+  ) else {
+  fail("Expected config with title, version, and database")
 }
 ```
 
@@ -214,17 +200,13 @@ let invalid_toml = "invalid = [unclosed"
 let config = @toml.parse(invalid_toml) catch {
   _ => @toml.TomlTable(Map::new()) // Return default value on error
 }
-match config {
-  @toml.TomlTable(table) => assert_eq(table.length(), 0) // Empty table from error handler
-  _ => fail("Expected table")
-}
+guard config is TomlTable(table) else { fail("Expected table") }
+assert_eq(table.length(), 0) // Empty table from error handler
 
 // Error handling with try? - converts to Result type
-let result : Result[@toml.TomlValue, _] = try? @toml.parse("key = \"value\"")
-match result {
-  Ok(@toml.TomlTable(table)) => assert_true(table.contains("key"))
-  Ok(_) => fail("Expected table")
-  Err(_) => fail("Should have parsed successfully")
+let result = try? @toml.parse("key = \"value\"")
+guard result is Ok(TomlTable({ "key": _, .. })) else {
+  fail("Should have parsed successfully with key")
 }
 
 // Parsing error example
@@ -424,15 +406,13 @@ let config =
 let result = @toml.parse(config)
 assert_true(result.validate())
 // Verify the structure contains expected keys
-match result {
-  TomlTable(table) => {
-    assert_true(table.contains("service_name"))
-    assert_true(table.contains("http"))
-    assert_true(table.contains("database"))
-    assert_true(table.contains("maintenance_schedule"))
-  }
-  _ => fail("Expected table")
+guard result
+  is TomlTable(
+    { "service_name": _, "http": TomlTable({"port" : TomlInteger(_),..}), "database": _, "maintenance_schedule": _,.. }
+  ) else {
+  fail("Expected table")
 }
+
 ```
 
 ### Special Values and Advanced Features
@@ -580,28 +560,17 @@ let parsed_toml = @toml.parse(
   ),
 )
 
-// Pattern match to access table values safely
-match parsed_toml {
-  @toml.TomlTable(table) =>
-    match table.get("database") {
-      Some(@toml.TomlTable(db)) => {
-        // Access nested values
-        match db.get("host") {
-          Some(@toml.TomlString(host)) => assert_eq(host, "localhost")
-          _ => fail("Expected host")
-        }
-        match db.get("port") {
-          Some(@toml.TomlInteger(port)) => assert_eq(port, 5432L)
-          _ => fail("Expected port")
-        }
-        match db.get("enabled") {
-          Some(@toml.TomlBoolean(enabled)) => assert_true(enabled)
-          _ => fail("Expected enabled")
-        }
-      }
-      _ => fail("No database configuration found")
-    }
-  _ => fail("Expected a table at root level")
+// Use guard with nested pattern matching and literal values
+guard parsed_toml
+  is TomlTable(
+    {
+      "database": TomlTable(
+        { "host": TomlString("localhost"), "port": TomlInteger(5432L), "enabled": TomlBoolean(true), .. },
+      ),
+      ..
+    },
+  ) else {
+  fail("Expected database configuration with host=localhost, port=5432, enabled=true")
 }
 ```
 
