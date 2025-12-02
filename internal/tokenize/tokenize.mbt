@@ -344,15 +344,14 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
     lexmatch? ("0[xX]" ("[0-9a-fA-F]+(_[0-9a-fA-F]+)*" as hex_digits), rest) else {
     fail(self.error("Invalid hex number format"))
   }
-  for i = 0; i < hex_digits.length(); i = i + 1 {
-    let ch = hex_digits.code_unit_at(i)
+  for ch in hex_digits {
     if ch is '_' {
       continue
     }
     let digit_value = match ch {
-      '0'..='9' => (ch - '0').to_int64()
-      'a'..='f' => (ch - 'a').to_int64() + 10L
-      'A'..='F' => (ch - 'A').to_int64() + 10L
+      '0'..='9' => (ch.to_int() - '0'.to_int()).to_int64()
+      'a'..='f' => (ch.to_int() - 'a'.to_int()).to_int64() + 10L
+      'A'..='F' => (ch.to_int() - 'A'.to_int()).to_int64() + 10L
       _ => fail(self.error("Invalid hex digit"))
     }
     result = result * 16L + digit_value
@@ -387,12 +386,11 @@ fn Lexer::read_octal_number(self : Lexer) -> Int64 raise {
     lexmatch? ("0[oO]" ("[0-7]+(_[0-7]+)*" as octal_digits), rest) else {
     fail(self.error("Invalid octal number format"))
   }
-  for i = 0; i < octal_digits.length(); i = i + 1 {
-    let ch = octal_digits.code_unit_at(i)
+  for ch in octal_digits {
     if ch is '_' {
       continue
     }
-    result = result * 8L + (ch - '0').to_int64()
+    result = result * 8L + (ch.to_int() - '0').to_int64()
   }
   self.update_view(rest)
 
@@ -437,12 +435,11 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
     lexmatch? ("0[bB]" ("[01]+(_[01]+)*" as binary_digits), rest) else {
     fail(self.error("Invalid binary number format"))
   }
-  for i = 0; i < binary_digits.length(); i = i + 1 {
-    let ch = binary_digits.code_unit_at(i)
+  for ch in binary_digits {
     if ch is '_' {
       continue
     }
-    result = result * 2L + (ch - '0').to_int64()
+    result = result * 2L + (ch.to_int() - '0').to_int64()
   }
   self.update_view(rest)
 

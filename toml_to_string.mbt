@@ -43,13 +43,12 @@ fn needs_quoting(s : String) -> Bool {
   }
 
   // Check for leading/trailing whitespace
-  if s.code_unit_at(0) == ' ' ||
-    s.code_unit_at(0) == '\t' ||
-    s.code_unit_at(s.length() - 1) == ' ' ||
-    s.code_unit_at(s.length() - 1) == '\t' {
+  if s is [' ' | '\t', ..] || s is [.., ' ' | '\t'] {
     return true
   }
-
+  // if s lexmatch? ("([ \t].*|.*[ \t])") {
+  //   return true
+  // }
   // Check for special characters
   for char in s {
     match char {
@@ -71,6 +70,17 @@ fn needs_quoting(s : String) -> Bool {
     }
   }
   false
+}
+
+///|
+test "needs_quoting tests" {
+  inspect(needs_quoting("simplekey"), content="false")
+  inspect(needs_quoting("key with spaces"), content="false")
+  inspect(needs_quoting("key\nwith\nnewlines"), content="true")
+  inspect(needs_quoting(" key"), content="true")
+  inspect(needs_quoting("key "), content="true")
+  inspect(needs_quoting(""), content="true")
+  inspect(needs_quoting("key=with=equals"), content="true")
 }
 
 ///|
