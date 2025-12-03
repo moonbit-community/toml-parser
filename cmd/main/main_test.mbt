@@ -45,8 +45,8 @@ test "test simple TOML parsing as in main demo" {
           "age": TomlInteger(30L),
           "enabled": TomlBoolean(true),
           ..
-        },
-      ),
+        }
+      )
     ) else {
     fail("Should parse to table with name, age, enabled")
   }
@@ -67,11 +67,11 @@ test "test TOML with array parsing as in main demo" {
               TomlInteger(3L),
               TomlInteger(4L),
               TomlInteger(5L),
-            ],
+            ]
           ),
           ..
-        },
-      ),
+        }
+      )
     ) else {
     fail("Should parse to table with numbers array [1,2,3,4,5]")
   }
@@ -88,11 +88,11 @@ test "test TOML with inline table parsing as in main demo" {
       TomlTable(
         {
           "person": TomlTable(
-            { "name": TomlString("Alice"), "age": TomlInteger(25L), .. },
+            { "name": TomlString("Alice"), "age": TomlInteger(25L), .. }
           ),
           ..
-        },
-      ),
+        }
+      )
     ) else {
     fail("Should parse to table with person={name=Alice, age=25}")
   }
