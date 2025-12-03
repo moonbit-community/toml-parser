@@ -98,9 +98,11 @@ guard config
     {
       "title": TomlString("My App"),
       "version": TomlString("1.0.0"),
-      "database": TomlTable({ "host": TomlString("localhost"), "port": TomlInteger(5432L), .. }),
+      "database": TomlTable(
+        { "host": TomlString("localhost"), "port": TomlInteger(5432L), .. }
+      ),
       ..
-    },
+    }
   ) else {
   fail("Expected config with title, version, and database")
 }
@@ -127,6 +129,7 @@ guard config
 `TomlValue` is the central enum type representing all possible TOML values. It is defined as:
 
 ```moonbit no-check
+///|
 pub(all) enum TomlValue {
   TomlString(String)
   TomlInteger(Int64)
@@ -408,11 +411,16 @@ assert_true(result.validate())
 // Verify the structure contains expected keys
 guard result
   is TomlTable(
-    { "service_name": _, "http": TomlTable({"port" : TomlInteger(_),..}), "database": _, "maintenance_schedule": _,.. }
+    {
+      "service_name": _,
+      "http": TomlTable({ "port": TomlInteger(_), .. }),
+      "database": _,
+      "maintenance_schedule": _,
+      ..
+    }
   ) else {
   fail("Expected table")
 }
-
 ```
 
 ### Special Values and Advanced Features
@@ -565,12 +573,19 @@ guard parsed_toml
   is TomlTable(
     {
       "database": TomlTable(
-        { "host": TomlString("localhost"), "port": TomlInteger(5432L), "enabled": TomlBoolean(true), .. },
+        {
+          "host": TomlString("localhost"),
+          "port": TomlInteger(5432L),
+          "enabled": TomlBoolean(true),
+          ..
+        }
       ),
       ..
-    },
+    }
   ) else {
-  fail("Expected database configuration with host=localhost, port=5432, enabled=true")
+  fail(
+    "Expected database configuration with host=localhost, port=5432, enabled=true",
+  )
 }
 ```
 

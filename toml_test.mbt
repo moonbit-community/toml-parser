@@ -244,8 +244,10 @@ test "datetime token creation" {
     is @tokenize.DateTimeToken(@tokenize.OffsetDateTime("1979-05-27T07:32:00Z"))
   guard local_dt_token
     is @tokenize.DateTimeToken(@tokenize.LocalDateTime("1979-05-27T07:32:00"))
-  guard local_date_token is @tokenize.DateTimeToken(@tokenize.LocalDate("1979-05-27"))
-  guard local_time_token is @tokenize.DateTimeToken(@tokenize.LocalTime("07:32:00"))
+  guard local_date_token
+    is @tokenize.DateTimeToken(@tokenize.LocalDate("1979-05-27"))
+  guard local_time_token
+    is @tokenize.DateTimeToken(@tokenize.LocalTime("07:32:00"))
 }
 
 ///|
