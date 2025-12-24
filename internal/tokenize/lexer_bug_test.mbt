@@ -199,3 +199,34 @@ test "test binary with valid delimiters" {
     ["EOF", { "loc": "1:21-1:21" }],
   ])
 }
+
+///|
+test "test identifier starting with underscore" {
+  // This test case was causing an infinite loop before the fix
+  let tokens = @tokenize.tokenize(
+    (
+      #|leading-us-bin = _0b1
+    ),
+  )
+  @json.inspect(tokens, content=[
+    ["Identifier", "leading-us-bin", { "loc": "1:1-1:15" }],
+    ["Equals", { "loc": "1:16-1:17" }],
+    ["Identifier", "_0b1", { "loc": "1:18-1:22" }],
+    ["EOF", { "loc": "1:22-1:22" }],
+  ])
+}
+
+///|
+test "test identifier with all valid characters" {
+  let tokens = @tokenize.tokenize(
+    (
+      #|key = abc_123-XYZ
+    ),
+  )
+  @json.inspect(tokens, content=[
+    ["Identifier", "key", { "loc": "1:1-1:4" }],
+    ["Equals", { "loc": "1:5-1:6" }],
+    ["Identifier", "abc_123-XYZ", { "loc": "1:7-1:18" }],
+    ["EOF", { "loc": "1:18-1:18" }],
+  ])
+}

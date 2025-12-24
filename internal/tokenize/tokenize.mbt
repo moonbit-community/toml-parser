@@ -20,9 +20,10 @@ fn Lexer::read_identifier(self : Lexer) -> String {
 
   // TODO(upstream): error message improved for `longest` with 
   // empty branches or single branch with _ => ... 
+  // TOML spec: bare keys may only contain ASCII letters, ASCII digits, underscores, and dashes (A-Za-z0-9_-)
   if self.view()
     // TODO(upstream): allow `(` `)`
-    lexmatch? (("[a-zA-Z]" "[a-zA-Z0-9_\-]*") as identifier, rest) {
+    lexmatch? ("[a-zA-Z0-9_\-]+" as identifier, rest) {
     self.update_view(rest)
     identifier.to_string()
   } else {
