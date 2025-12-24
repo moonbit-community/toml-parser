@@ -18,12 +18,12 @@ fn make_loc(start_pos : @lexer.Position, end_pos : @lexer.Position) -> Loc {
 /// Parse an identifier or keyword
 fn Lexer::read_identifier(self : Lexer) -> String {
 
-  // TODO(upstream): error message improved for `longest` with 
-  // empty branches or single branch with _ => ... 
+  // TODO(upstream): error message improved for `longest` with
+  // empty branches or single branch with _ => ...
   // TOML spec: bare keys may only contain ASCII letters, ASCII digits, underscores, and dashes (A-Za-z0-9_-)
   if self.view()
     // TODO(upstream): allow `(` `)`
-    lexmatch? ("[a-zA-Z0-9_-]+" as identifier, rest) {
+    lexmatch? ("[a-zA-Z0-9_\-]+" as identifier, rest) {
     self.update_view(rest)
     identifier.to_string()
   } else {
@@ -190,7 +190,7 @@ fn Lexer::read_basic_string(self : Lexer) -> String raise {
         'U' => {
           self.update_view(rest)
           // this may affect error message about location
-          // we may fix this by storing the beginnning position 
+          // we may fix this by storing the beginnning position
           // of the string
           sb.write_char(self.read_unicode_8_escape())
           continue self.view()
@@ -236,7 +236,7 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
   let sb = StringBuilder::new()
   loop self.view() {
     [.. "\"\"\"", .. rest] => {
-      // Check for closing triple quotes  
+      // Check for closing triple quotes
       self.update_view(rest)
       break sb.to_string()
     }
@@ -804,7 +804,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       FloatToken(0.0 / 0.0, loc=make_loc(start_pos, end_pos)) // NaN
     }
 
-    // Handle positive special float values (+inf, +nan) 
+    // Handle positive special float values (+inf, +nan)
     ['+', 'i', 'n', 'f', .. rest] => {
       self.update_view(rest)
       self.validate_special_value_termination()
@@ -912,7 +912,7 @@ test "basic string parsing" {
 }
 
 ///|
-/// Test literal string parsing  
+/// Test literal string parsing
 test "literal string parsing" {
   let lexer = Lexer::new("'Hello, world!'")
   let result = lexer.read_literal_string()
@@ -936,7 +936,7 @@ test "hex number parsing" {
 }
 
 ///|
-/// Test octal number parsing  
+/// Test octal number parsing
 test "octal number parsing" {
   let lexer = Lexer::new("0o755")
   let result = lexer.read_octal_number()
