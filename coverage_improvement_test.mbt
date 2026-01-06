@@ -100,24 +100,15 @@ test "test tokenizer unreachable path coverage" {
 }
 
 ///|
-fn tokenize_no_loc(s : String) -> Array[@tokenize.Token] raise {
-  @tokenize.tokenize(s) catch {
-    Failure(err) =>
-      raise Failure([..err.split(" ")[2:].map(x => x.to_string()).join(" ")])
-    err => raise err
-  }
-}
-
-///|
 test "test edge case number formats for error paths" {
   // Try to trigger integer parsing errors
 
-  let tokens = try? tokenize_no_loc(
+  let tokens = try? @tokenize.tokenize(
     "huge = 999999999999999999999999999999999999999",
   )
   @json.inspect(tokens, content={
     "Err": [
-      "Failure", "Invalid integer: 999999999999999999999999999999999999999",
+      "Failure", "internal/tokenize/tokenize.mbt:656:12-656:41@bobzhang/toml FAILED: Invalid integer: 999999999999999999999999999999999999999",
     ],
   })
 }
