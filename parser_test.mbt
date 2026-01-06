@@ -107,30 +107,30 @@ test "parse inline table" {
 ///|
 /// Tests for uncovered parser error conditions
 test "test parser expect method failure" {
-  @json.inspect(try? parse_no_loc("key = [missing_bracket"), content={
+  @json.inspect(try? @toml.parse("key = [missing_bracket"), content={
     "Err": [
-      "Failure", "Expected value at {start: {line: 1, column: 8}, end: {line: 1, column: 23}}",
+      "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 8}, end: {line: 1, column: 23}}",
     ],
   })
 }
 
 ///|
 test "test parser EOF handling in peek" {
-  @json.inspect(try? parse_no_loc(""), content={ "Ok": ["TomlTable", {}] })
+  @json.inspect(try? @toml.parse(""), content={ "Ok": ["TomlTable", {}] })
 }
 
 ///|
 test "test parser EOF handling in advance" {
-  @json.inspect(try? parse_no_loc("key ="), content={
+  @json.inspect(try? @toml.parse("key ="), content={
     "Err": [
-      "Failure", "Expected value at {start: {line: 1, column: 6}, end: {line: 1, column: 6}}",
+      "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 6}, end: {line: 1, column: 6}}",
     ],
   })
 }
 
 ///|
 test "test inline table with string keys" {
-  @json.inspect(try? parse_no_loc("table = {\"string key\" = \"value\"}"), content={
+  @json.inspect(try? @toml.parse("table = {\"string key\" = \"value\"}"), content={
     "Ok": [
       "TomlTable",
       { "table": ["TomlTable", { "string key": ["TomlString", "value"] }] },
@@ -140,18 +140,18 @@ test "test inline table with string keys" {
 
 ///|
 test "test inline table invalid syntax" {
-  @json.inspect(try? parse_no_loc("table = {key value}"), content={
+  @json.inspect(try? @toml.parse("table = {key value}"), content={
     "Err": [
-      "Failure", "Expected '=' at {start: {line: 1, column: 14}, end: {line: 1, column: 19}}",
+      "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected '=' at {start: {line: 1, column: 14}, end: {line: 1, column: 19}}",
     ],
   })
 }
 
 ///|
 test "test inline table missing comma or closing brace" {
-  @json.inspect(try? parse_no_loc("table = {key = \"value\" invalid}"), content={
+  @json.inspect(try? @toml.parse("table = {key = \"value\" invalid}"), content={
     "Err": [
-      "Failure", "Expected ',' or '}' in inline table at {start: {line: 1, column: 24}, end: {line: 1, column: 31}}",
+      "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected ',' or '}' in inline table at {start: {line: 1, column: 24}, end: {line: 1, column: 31}}",
     ],
   })
 }
@@ -162,7 +162,7 @@ test "test table header with string name" {
     #|["table name"]
     #|key = "value"
     #|
-  @json.inspect(try? parse_no_loc(string_table_name_toml), content={
+  @json.inspect(try? @toml.parse(string_table_name_toml), content={
     "Ok": [
       "TomlTable",
       { "table name": ["TomlTable", { "key": ["TomlString", "value"] }] },
@@ -176,7 +176,7 @@ test "test table header numeric name" {
     #|[123]
     #|key = "value"
     #|
-  @json.inspect(try? parse_no_loc(numeric_table_name_toml), content={
+  @json.inspect(try? @toml.parse(numeric_table_name_toml), content={
     "Ok": [
       "TomlTable",
       { "123": ["TomlTable", { "key": ["TomlString", "value"] }] },
@@ -192,7 +192,7 @@ test "test duplicate table redefinition" {
     #|[table]
     #|key2 = "value2"
     #|
-  @json.inspect(try? parse_no_loc(duplicate_table_toml), content={
+  @json.inspect(try? @toml.parse(duplicate_table_toml), content={
     "Ok": [
       "TomlTable",
       {
@@ -212,9 +212,9 @@ test "test table name conflicts with existing value" {
     #|[table]
     #|key = "value"
     #|
-  @json.inspect(try? parse_no_loc(conflicting_table_toml), content={
+  @json.inspect(try? @toml.parse(conflicting_table_toml), content={
     "Err": [
-      "Failure", "ExpectedTable(\"table\", \"string\") at {start: {line: 2, column: 8}, end: {line: 3, column: 1}}",
+      "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: ExpectedTable(\"table\", \"string\") at {start: {line: 2, column: 8}, end: {line: 3, column: 1}}",
     ],
   })
 }
@@ -222,14 +222,14 @@ test "test table name conflicts with existing value" {
 ///|
 /// Tests for inline table edge cases  
 test "test empty inline table" {
-  @json.inspect(try? parse_no_loc("empty = {}"), content={
+  @json.inspect(try? @toml.parse("empty = {}"), content={
     "Ok": ["TomlTable", { "empty": ["TomlTable", {}] }],
   })
 }
 
 ///|
 test "test nested inline tables" {
-  @json.inspect(try? parse_no_loc("table = {inner = {key = \"value\"}}"), content={
+  @json.inspect(try? @toml.parse("table = {inner = {key = \"value\"}}"), content={
     "Ok": [
       "TomlTable",
       {
@@ -244,7 +244,7 @@ test "test nested inline tables" {
 
 ///|
 test "test inline table with multiple key types" {
-  @json.inspect(try? parse_no_loc("mixed = {\"quoted\" = 1, unquoted = 2}"), content={
+  @json.inspect(try? @toml.parse("mixed = {\"quoted\" = 1, unquoted = 2}"), content={
     "Ok": [
       "TomlTable",
       {
@@ -259,30 +259,23 @@ test "test inline table with multiple key types" {
 
 ///|
 test "test inline table with array values" {
-  @json.inspect(
-    try? parse_no_loc("table = {arr = [1, 2, 3], str = \"test\"}"),
-    content={
-      "Ok": [
-        "TomlTable",
-        {
-          "table": [
-            "TomlTable",
-            {
-              "arr": [
-                "TomlArray",
-                [
-                  ["TomlInteger", "1"],
-                  ["TomlInteger", "2"],
-                  ["TomlInteger", "3"],
-                ],
-              ],
-              "str": ["TomlString", "test"],
-            },
-          ],
-        },
-      ],
-    },
-  )
+  @json.inspect(try? @toml.parse("table = {arr = [1, 2, 3], str = \"test\"}"), content={
+    "Ok": [
+      "TomlTable",
+      {
+        "table": [
+          "TomlTable",
+          {
+            "arr": [
+              "TomlArray",
+              [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
+            ],
+            "str": ["TomlString", "test"],
+          },
+        ],
+      },
+    ],
+  })
 }
 
 ///|
