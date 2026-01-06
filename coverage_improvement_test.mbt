@@ -102,8 +102,8 @@ test "test tokenizer unreachable path coverage" {
 ///|
 fn tokenize_no_loc(s : String) -> Array[@tokenize.Token] raise {
   @tokenize.tokenize(s) catch {
-    Failure(err) =>
-      raise Failure([..err.split(" ")[2:].map(x => x.to_string()).join(" ")])
+    @builtin.Failure(err) =>
+      raise @builtin.Failure([..err.split(" ")[2:].map(x => x.to_string()).join(" ")])
     err => raise err
   }
 }

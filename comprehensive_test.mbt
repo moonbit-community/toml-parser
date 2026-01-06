@@ -460,10 +460,10 @@ test "microservice configuration" {
 /// reraise the error without location to make it stable
 fn parse_no_loc(s : String) -> @toml.TomlValue raise {
   @toml.parse(s) catch {
-    Failure(err) => {
+    @builtin.Failure(err) => {
       // Handle MoonBit compiler error format: "FAILED: /path/to/file:line:col message"
       let msg = err.split("FAILED: ")[1:].to_array().join("")
-      raise Failure(msg)
+      raise @builtin.Failure(msg)
       // match msg.strip_prefix("FAILED: ") {
       //   Some(_rest) => {
       //     // Extract the actual message after the file location
