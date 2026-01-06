@@ -25,8 +25,8 @@ test "test invalid hex digit error" {
     ),
   )
   @json.inspect(
-    maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid hex number format at line 1, column 7",
+    maybe_tokens.unwrap_err().to_string(),
+    content=("Failure(\"internal/tokenize/tokenize.mbt:345:5-345:50@bobzhang/toml FAILED: Invalid hex number format at line 1, column 7\")"),
   )
 }
 
@@ -38,8 +38,8 @@ test "test octal without digits" {
     ),
   )
   @json.inspect(
-    maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid octal number format at line 1, column 8",
+    maybe_tokens.unwrap_err().to_string(),
+    content=("Failure(\"internal/tokenize/tokenize.mbt:387:5-387:52@bobzhang/toml FAILED: Invalid octal number format at line 1, column 8\")"),
   )
 }
 
@@ -51,8 +51,8 @@ test "test binary without digits" {
     ),
   )
   @json.inspect(
-    maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid binary number format at line 1, column 8",
+    maybe_tokens.unwrap_err().to_string(),
+    content=("Failure(\"internal/tokenize/tokenize.mbt:436:5-436:53@bobzhang/toml FAILED: Invalid binary number format at line 1, column 8\")"),
   )
 }
 
@@ -64,8 +64,8 @@ test "test hex with invalid delimiter" {
     ),
   )
   @json.inspect(
-    maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid char 'X', expected whitespace, comma, or end of input after 0x... at line 1, column 12",
+    maybe_tokens.unwrap_err().to_string(),
+    content=("Failure(\"internal/tokenize/tokenize.mbt:368:9-372:10@bobzhang/toml FAILED: Invalid char 'X', expected whitespace, comma, or end of input after 0x... at line 1, column 12\")"),
   )
 }
 
@@ -122,8 +122,8 @@ test "test octal with invalid digits" {
     ),
   )
   @json.inspect(
-    maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid char '8', expected whitespace, comma, or end of input after 0o... at line 1, column 10",
+    maybe_tokens.unwrap_err().to_string(),
+    content=("Failure(\"internal/tokenize/tokenize.mbt:404:9-408:10@bobzhang/toml FAILED: Invalid char '8', expected whitespace, comma, or end of input after 0o... at line 1, column 10\")"),
   )
 }
 
@@ -165,8 +165,8 @@ test "test binary with invalid digits" {
     ),
   )
   @json.inspect(
-    maybe_tokens.unwrap_err().failure_message(),
-    content="Invalid char '2', expected whitespace, comma, or end of input after 0b... at line 1, column 12",
+    maybe_tokens.unwrap_err().to_string(),
+    content=("Failure(\"internal/tokenize/tokenize.mbt:453:9-457:10@bobzhang/toml FAILED: Invalid char '2', expected whitespace, comma, or end of input after 0b... at line 1, column 12\")"),
   )
 }
 
