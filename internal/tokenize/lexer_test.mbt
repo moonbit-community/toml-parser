@@ -337,7 +337,8 @@ test "test escaped single quote in string" {
 ///|
 fn Error::failure_message(x : Error) -> String {
   match x {
-    @builtin.Failure(msg) => msg.split(" ")[2:].map(x => x.to_string()).join(" ")
+    @builtin.Failure(msg) =>
+      msg.split(" ")[2:].map(x => x.to_string()).join(" ")
     // TODO: Array[Show]::join?
     // msg.split(":")[1:].map(x=>x.to_string()).join("")
     _ => "Unexpected error".to_string()
