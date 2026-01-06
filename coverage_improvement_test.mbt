@@ -21,7 +21,7 @@ test "test complex TOML with all token types" {
     #|dc = "eqdc10"
     #|
   // This now successfully parses with nested tables support
-  @json.inspect(try? parse_no_loc(complex_toml), content={
+  @json.inspect(try? @toml.parse(complex_toml), content={
     "Ok": [
       "TomlTable",
       {
@@ -146,7 +146,7 @@ test "test various escape sequences coverage" {
     #|backslash = "path\\to\\file"
     #|quote = "say \"hello\""
     #|
-  @json.inspect(try? parse_no_loc(toml_with_escapes), content={
+  @json.inspect(try? @toml.parse(toml_with_escapes), content={
     "Ok": [
       "TomlTable",
       {
@@ -168,7 +168,7 @@ test "test whitespace and comment skipping" {
     #|
     #|key2 = "value2"
     #|
-  @json.inspect(try? parse_no_loc(toml_with_whitespace), content={
+  @json.inspect(try? @toml.parse(toml_with_whitespace), content={
     "Ok": [
       "TomlTable",
       { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },

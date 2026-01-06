@@ -97,14 +97,14 @@ test "array_of_tables_path_with_integer_key" {
 ///|
 /// Test invalid Unicode escape sequences to trigger error paths
 test "invalid_unicode_escapes" {
-  let result = try? parse_no_loc(
+  let result = try? @toml.parse(
     (
       #|key = "\uZZZZ"
     ),
   )
   @json.inspect(result, content={
     "Err": [
-      "Failure", "Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10",
+      "Failure", "internal/tokenize/tokenize.mbt:88:7-88:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10",
     ],
   }) // Expected error
 }
@@ -112,14 +112,14 @@ test "invalid_unicode_escapes" {
 ///|
 /// Test invalid 8-byte Unicode escape
 test "invalid_8byte_unicode_escape" {
-  let result = try? parse_no_loc(
+  let result = try? @toml.parse(
     (
       #|key = "\U00200000"
     ),
   ) // Invalid code point > 0x10FFFF
   @json.inspect(result, content={
     "Err": [
-      "Failure", "Invalid Unicode code point: 2097152 at line 1, column 18",
+      "Failure", "internal/tokenize/tokenize.mbt:135:5-135:60@bobzhang/toml FAILED: Invalid Unicode code point: 2097152 at line 1, column 18",
     ],
   }) // Expected error
 }
@@ -127,13 +127,15 @@ test "invalid_8byte_unicode_escape" {
 ///|
 /// Test unterminated multiline string
 test "unterminated_multiline_string" {
-  let result = try? parse_no_loc(
+  let result = try? @toml.parse(
     (
       #|key = """This is unterminated
     ),
   )
   @json.inspect(result, content={
-    "Err": ["Failure", "Unterminated multiline string at line 1, column 30"],
+    "Err": [
+      "Failure", "internal/tokenize/tokenize.mbt:287:11-287:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 30",
+    ],
   }) // Expected error
 }
 
@@ -187,7 +189,7 @@ test "nested_validation_failure_in_array" {
 ///|
 /// Test table path conflict error  
 test "table_path_conflict_error" {
-  let result = try? parse_no_loc(
+  let result = try? @toml.parse(
     (
       #|key = 42
       #|[key]
@@ -195,7 +197,7 @@ test "table_path_conflict_error" {
   )
   @json.inspect(result, content={
     "Err": [
-      "Failure", "ExpectedTable(\"key\", 42) at {start: {line: 2, column: 6}, end: {line: 2, column: 6}}",
+      "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: ExpectedTable(\"key\", 42) at {start: {line: 2, column: 6}, end: {line: 2, column: 6}}",
     ],
   }) // Expected error
 }
@@ -203,7 +205,7 @@ test "table_path_conflict_error" {
 ///|
 /// Test array of tables path conflict error
 test "array_of_tables_path_conflict_error" {
-  let result = try? parse_no_loc(
+  let result = try? @toml.parse(
     (
       #|key = 42
       #|[[key]]
@@ -211,7 +213,7 @@ test "array_of_tables_path_conflict_error" {
   )
   @json.inspect(result, content={
     "Err": [
-      "Failure", "ExpectedArray(\"key\", 42) at {start: {line: 2, column: 8}, end: {line: 2, column: 8}}",
+      "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: ExpectedArray(\"key\", 42) at {start: {line: 2, column: 8}, end: {line: 2, column: 8}}",
     ],
   }) // Expected error
 }
@@ -386,13 +388,15 @@ test "negative_number_parsing" {
 ///|
 /// Test error handling with invalid characters
 test "invalid_character_error" {
-  let result = try? parse_no_loc(
+  let result = try? @toml.parse(
     (
       #|key = @invalid
     ),
   )
   @json.inspect(result, content={
-    "Err": ["Failure", "Unexpected character: '@'"],
+    "Err": [
+      "Failure", "internal/tokenize/tokenize.mbt:833:17-833:54@bobzhang/toml FAILED: Unexpected character: '@'",
+    ],
   }) // Expected error
 }
 

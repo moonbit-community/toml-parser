@@ -79,32 +79,35 @@ Then add it directly to your `moon.mod.json`:
 
 Parse a simple TOML string:
 
-```mbt test
-// Quick start example - parsing and accessing values
-let config = @toml.parse(
-  (
-    #|title = "My App"
-    #|version = "1.0.0"
-    #|[database]
-    #|host = "localhost"
-    #|port = 5432
-    #|
-  ),
-)
+```mbt check
+///|
+test {
+  // Quick start example - parsing and accessing values
+  let config = @toml.parse(
+    (
+      #|title = "My App"
+      #|version = "1.0.0"
+      #|[database]
+      #|host = "localhost"
+      #|port = 5432
+      #|
+    ),
+  )
 
-// Access values using nested pattern matching with literal values
-guard config
-  is TomlTable(
-    {
-      "title": TomlString("My App"),
-      "version": TomlString("1.0.0"),
-      "database": TomlTable(
-        { "host": TomlString("localhost"), "port": TomlInteger(5432L), .. }
-      ),
-      ..
-    }
-  ) else {
-  fail("Expected config with title, version, and database")
+  // Access values using nested pattern matching with literal values
+  guard config
+    is TomlTable(
+      {
+        "title": TomlString("My App"),
+        "version": TomlString("1.0.0"),
+        "database": TomlTable(
+          { "host": TomlString("localhost"), "port": TomlInteger(5432L), .. }
+        ),
+        ..
+      }
+    ) else {
+    fail("Expected config with title, version, and database")
+  }
 }
 ```
 
@@ -143,33 +146,36 @@ pub(all) enum TomlValue {
 
 You can construct `TomlValue` directly in code:
 
-```mbt test
-// Constructing TomlValue programmatically
-let table : Map[String, @toml.TomlValue] = {
-  "name": @toml.TomlString("Alice"),
-  "age": @toml.TomlInteger(30L),
-  "active": @toml.TomlBoolean(true),
-  "scores": @toml.TomlArray([
-    @toml.TomlInteger(95L),
-    @toml.TomlInteger(87L),
-    @toml.TomlInteger(92L),
-  ]),
-}
-let value = @toml.TomlTable(table)
+```mbt check
+///|
+test {
+  // Constructing TomlValue programmatically
+  let table : Map[String, @toml.TomlValue] = {
+    "name": @toml.TomlString("Alice"),
+    "age": @toml.TomlInteger(30L),
+    "active": @toml.TomlBoolean(true),
+    "scores": @toml.TomlArray([
+      @toml.TomlInteger(95L),
+      @toml.TomlInteger(87L),
+      @toml.TomlInteger(92L),
+    ]),
+  }
+  let value = @toml.TomlTable(table)
 
-// Validate and convert back to TOML string
-assert_true(value.validate())
-inspect(
-  value.to_string(),
-  content=(
-    #|name = "Alice"
-    #|age = 30
-    #|active = true
-    #|
-    #|scores = [95, 87, 92]
-    #|
-  ),
-)
+  // Validate and convert back to TOML string
+  assert_true(value.validate())
+  inspect(
+    value.to_string(),
+    content=(
+      #|name = "Alice"
+      #|age = 30
+      #|active = true
+      #|
+      #|scores = [95, 87, 92]
+      #|
+    ),
+  )
+}
 ```
 
 #### Variant Summary
@@ -197,24 +203,27 @@ The `TomlDateTime` enum supports all 4 RFC 3339 datetime types:
 
 The `parse` function uses MoonBit's checked exceptions. Handle errors using `try-catch` or `try?`:
 
-```mbt test
-// Error handling with try-catch
-let invalid_toml = "invalid = [unclosed"
-let config = @toml.parse(invalid_toml) catch {
-  _ => @toml.TomlTable(Map::new()) // Return default value on error
-}
-guard config is TomlTable(table) else { fail("Expected table") }
-assert_eq(table.length(), 0) // Empty table from error handler
+```mbt check
+///|
+test {
+  // Error handling with try-catch
+  let invalid_toml = "invalid = [unclosed"
+  let config = @toml.parse(invalid_toml) catch {
+    _ => @toml.TomlTable(Map::new()) // Return default value on error
+  }
+  guard config is TomlTable(table) else { fail("Expected table") }
+  assert_eq(table.length(), 0) // Empty table from error handler
 
-// Error handling with try? - converts to Result type
-let result = try? @toml.parse("key = \"value\"")
-guard result is Ok(TomlTable({ "key": _, .. })) else {
-  fail("Should have parsed successfully with key")
-}
+  // Error handling with try? - converts to Result type
+  let result = try? @toml.parse("key = \"value\"")
+  guard result is Ok(TomlTable({ "key": _, .. })) else {
+    fail("Should have parsed successfully with key")
+  }
 
-// Parsing error example
-let bad_result = try? @toml.parse("bad syntax here")
-assert_true(bad_result is Err(_))
+  // Parsing error example
+  let bad_result = try? @toml.parse("bad syntax here")
+  assert_true(bad_result is Err(_))
+}
 ```
 
 Errors include precise location information (line and column numbers) to help diagnose issues.
@@ -231,269 +240,296 @@ Errors include precise location information (line and column numbers) to help di
 
 ### Basic Key-Value Pairs
 
-```mbt test
-// basic key-value pairs example
-let toml =
-  #|title = "My Application"
-  #|version = "1.0.0"
-  #|debug = true
-  #|max_connections = 100
-  #|
-@json.inspect(@toml.parse(toml), content=[
-  "TomlTable",
-  {
-    "title": ["TomlString", "My Application"],
-    "version": ["TomlString", "1.0.0"],
-    "debug": ["TomlBoolean", true],
-    "max_connections": ["TomlInteger", "100"],
-  },
-])
+```mbt check
+///|
+test {
+  // basic key-value pairs example
+  let toml =
+    #|title = "My Application"
+    #|version = "1.0.0"
+    #|debug = true
+    #|max_connections = 100
+    #|
+  @json.inspect(@toml.parse(toml), content=[
+    "TomlTable",
+    {
+      "title": ["TomlString", "My Application"],
+      "version": ["TomlString", "1.0.0"],
+      "debug": ["TomlBoolean", true],
+      "max_connections": ["TomlInteger", "100"],
+    },
+  ])
+}
 ```
 
 ### Arrays with Validation
 
-```mbt test
-// arrays with validation example
-let toml_arrays =
-  #|numbers = [1, 2, 3, 4, 5]
-  #|strings = ["red", "green", "blue"]
-  #|booleans = [true, false, true]
-  #|
-@json.inspect(@toml.parse(toml_arrays), content=[
-  "TomlTable",
-  {
-    "numbers": [
-      "TomlArray",
-      [
-        ["TomlInteger", "1"],
-        ["TomlInteger", "2"],
-        ["TomlInteger", "3"],
-        ["TomlInteger", "4"],
-        ["TomlInteger", "5"],
+```mbt check
+///|
+test {
+  // arrays with validation example
+  let toml_arrays =
+    #|numbers = [1, 2, 3, 4, 5]
+    #|strings = ["red", "green", "blue"]
+    #|booleans = [true, false, true]
+    #|
+  @json.inspect(@toml.parse(toml_arrays), content=[
+    "TomlTable",
+    {
+      "numbers": [
+        "TomlArray",
+        [
+          ["TomlInteger", "1"],
+          ["TomlInteger", "2"],
+          ["TomlInteger", "3"],
+          ["TomlInteger", "4"],
+          ["TomlInteger", "5"],
+        ],
       ],
-    ],
-    "strings": [
-      "TomlArray",
-      [["TomlString", "red"], ["TomlString", "green"], ["TomlString", "blue"]],
-    ],
-    "booleans": [
-      "TomlArray",
-      [["TomlBoolean", true], ["TomlBoolean", false], ["TomlBoolean", true]],
-    ],
-  },
-])
+      "strings": [
+        "TomlArray",
+        [["TomlString", "red"], ["TomlString", "green"], ["TomlString", "blue"]],
+      ],
+      "booleans": [
+        "TomlArray",
+        [["TomlBoolean", true], ["TomlBoolean", false], ["TomlBoolean", true]],
+      ],
+    },
+  ])
+}
 ```
 
 ### Table Headers and Array of Tables
 
-```mbt test
-// table headers and array of tables example
-let toml_tables =
-  #|title = "Configuration Example"
-  #|
-  #|[database]
-  #|server = "192.168.1.1"
-  #|port = 5432
-  #|
-  #|[[products]]
-  #|name = "Hammer"
-  #|sku = 738594937
-  #|
-  #|[[products]]
-  #|name = "Nail"
-  #|sku = 284758393
-  #|
-@json.inspect(@toml.parse(toml_tables), content=[
-  "TomlTable",
-  {
-    "title": ["TomlString", "Configuration Example"],
-    "database": [
-      "TomlTable",
-      {
-        "server": ["TomlString", "192.168.1.1"],
-        "port": ["TomlInteger", "5432"],
-      },
-    ],
-    "products": [
-      "TomlArray",
-      [
+```mbt check
+///|
+test {
+  // table headers and array of tables example
+  let toml_tables =
+    #|title = "Configuration Example"
+    #|
+    #|[database]
+    #|server = "192.168.1.1"
+    #|port = 5432
+    #|
+    #|[[products]]
+    #|name = "Hammer"
+    #|sku = 738594937
+    #|
+    #|[[products]]
+    #|name = "Nail"
+    #|sku = 284758393
+    #|
+  @json.inspect(@toml.parse(toml_tables), content=[
+    "TomlTable",
+    {
+      "title": ["TomlString", "Configuration Example"],
+      "database": [
+        "TomlTable",
+        {
+          "server": ["TomlString", "192.168.1.1"],
+          "port": ["TomlInteger", "5432"],
+        },
+      ],
+      "products": [
+        "TomlArray",
         [
-          "TomlTable",
-          {
-            "name": ["TomlString", "Hammer"],
-            "sku": ["TomlInteger", "738594937"],
-          },
-        ],
-        [
-          "TomlTable",
-          {
-            "name": ["TomlString", "Nail"],
-            "sku": ["TomlInteger", "284758393"],
-          },
+          [
+            "TomlTable",
+            {
+              "name": ["TomlString", "Hammer"],
+              "sku": ["TomlInteger", "738594937"],
+            },
+          ],
+          [
+            "TomlTable",
+            {
+              "name": ["TomlString", "Nail"],
+              "sku": ["TomlInteger", "284758393"],
+            },
+          ],
         ],
       ],
-    ],
-  },
-])
+    },
+  ])
+}
 ```
 
 ### DateTime Support
 
-```mbt test
-// datetime support example
-let toml_datetime =
-  #|created_at = 2023-01-01T00:00:00Z
-  #|updated_at = 2023-01-02T12:30:45
-  #|birth_date = 1990-05-15
-  #|meeting_time = 14:30:00
-  #|
-@json.inspect(@toml.parse(toml_datetime), content=[
-  "TomlTable",
-  {
-    "created_at": ["TomlDateTime", ["OffsetDateTime", "2023-01-01T00:00:00Z"]],
-    "updated_at": ["TomlDateTime", ["LocalDateTime", "2023-01-02T12:30:45"]],
-    "birth_date": ["TomlDateTime", ["LocalDate", "1990-05-15"]],
-    "meeting_time": ["TomlDateTime", ["LocalTime", "14:30:00"]],
-  },
-])
+```mbt check
+///|
+test {
+  // datetime support example
+  let toml_datetime =
+    #|created_at = 2023-01-01T00:00:00Z
+    #|updated_at = 2023-01-02T12:30:45
+    #|birth_date = 1990-05-15
+    #|meeting_time = 14:30:00
+    #|
+  @json.inspect(@toml.parse(toml_datetime), content=[
+    "TomlTable",
+    {
+      "created_at": ["TomlDateTime", ["OffsetDateTime", "2023-01-01T00:00:00Z"]],
+      "updated_at": ["TomlDateTime", ["LocalDateTime", "2023-01-02T12:30:45"]],
+      "birth_date": ["TomlDateTime", ["LocalDate", "1990-05-15"]],
+      "meeting_time": ["TomlDateTime", ["LocalTime", "14:30:00"]],
+    },
+  ])
+}
 ```
 
 <!-- TODO(upstream): fmt works for mbt.md -->
 
 ### Inline Tables
 
-```mbt test
-// inline tables example
-let toml_inline =
-  #|database = {server = "localhost", port = 5432}
-  #|cache = {enabled = true, ttl = 300}
-  #|
-@json.inspect(@toml.parse(toml_inline), content=[
-  "TomlTable",
-  {
-    "database": [
-      "TomlTable",
-      { "server": ["TomlString", "localhost"], "port": ["TomlInteger", "5432"] },
-    ],
-    "cache": [
-      "TomlTable",
-      { "enabled": ["TomlBoolean", true], "ttl": ["TomlInteger", "300"] },
-    ],
-  },
-])
+```mbt check
+///|
+test {
+  // inline tables example
+  let toml_inline =
+    #|database = {server = "localhost", port = 5432}
+    #|cache = {enabled = true, ttl = 300}
+    #|
+  @json.inspect(@toml.parse(toml_inline), content=[
+    "TomlTable",
+    {
+      "database": [
+        "TomlTable",
+        {
+          "server": ["TomlString", "localhost"],
+          "port": ["TomlInteger", "5432"],
+        },
+      ],
+      "cache": [
+        "TomlTable",
+        { "enabled": ["TomlBoolean", true], "ttl": ["TomlInteger", "300"] },
+      ],
+    },
+  ])
+}
 ```
 
 ### Complex Configuration
 
-```mbt test
-// complex configuration example
-let config =
-  #|service_name = "user-service"
-  #|version = "2.1.0"
-  #|deployed_at = 2023-06-15T14:30:00+00:00
-  #|
-  #|# Special float values
-  #|timeout = 30.0
-  #|max_retry = inf
-  #|error_rate = nan
-  #|
-  #|http = {port = 8080, host = "0.0.0.0", timeout = 30.0}
-  #|database = {url = "postgresql://localhost:5432/users", max_connections = 20}
-  #|
-  #|maintenance_schedule = [
-  #|  2023-06-20T02:00:00,
-  #|  2023-07-20T02:00:00,
-  #|  2023-08-20T02:00:00
-  #|]
-  #|
-let result = @toml.parse(config)
-assert_true(result.validate())
-// Verify the structure contains expected keys
-guard result
-  is TomlTable(
-    {
-      "service_name": _,
-      "http": TomlTable({ "port": TomlInteger(_), .. }),
-      "database": _,
-      "maintenance_schedule": _,
-      ..
-    }
-  ) else {
-  fail("Expected table")
+```mbt check
+///|
+test {
+  // complex configuration example
+  let config =
+    #|service_name = "user-service"
+    #|version = "2.1.0"
+    #|deployed_at = 2023-06-15T14:30:00+00:00
+    #|
+    #|# Special float values
+    #|timeout = 30.0
+    #|max_retry = inf
+    #|error_rate = nan
+    #|
+    #|http = {port = 8080, host = "0.0.0.0", timeout = 30.0}
+    #|database = {url = "postgresql://localhost:5432/users", max_connections = 20}
+    #|
+    #|maintenance_schedule = [
+    #|  2023-06-20T02:00:00,
+    #|  2023-07-20T02:00:00,
+    #|  2023-08-20T02:00:00
+    #|]
+    #|
+  let result = @toml.parse(config)
+  assert_true(result.validate())
+  // Verify the structure contains expected keys
+  guard result
+    is TomlTable(
+      {
+        "service_name": _,
+        "http": TomlTable({ "port": TomlInteger(_), .. }),
+        "database": _,
+        "maintenance_schedule": _,
+        ..
+      }
+    ) else {
+    fail("Expected table")
+  }
 }
 ```
 
 ### Special Values and Advanced Features
 
-```mbt test
-// special values and advanced features example
-let toml_advanced =
-  #|# Configuration with comments
-  #|app_name = "TOML Demo"
-  #|version = "1.0.0"
-  #|
-  #|# Special float values
-  #|max_timeout = inf
-  #|min_timeout = -inf
-  #|error_rate = nan
-  #|
-  #|# Unicode keys and values
-  #|"café" = "☕ Coffee shop"
-  #|"数量" = 42
-  #|
-  #|# Complex nested structure
-  #|[server.database]
-  #|host = "localhost"
-  #|port = 5432
-  #|
-  #|[[server.replicas]]
-  #|name = "primary"
-  #|weight = 1.0
-  #|
-  #|[[server.replicas]]
-  #|name = "secondary"
-  #|weight = 0.5
-  #|
-@json.inspect(@toml.parse(toml_advanced), content=[
-  "TomlTable",
-  {
-    "app_name": ["TomlString", "TOML Demo"],
-    "version": ["TomlString", "1.0.0"],
-    "max_timeout": ["TomlFloat", @double.infinity],
-    "min_timeout": ["TomlFloat", @double.neg_infinity],
-    "error_rate": ["TomlFloat", @double.not_a_number],
-    "café": ["TomlString", "☕ Coffee shop"],
-    "数量": ["TomlInteger", "42"],
-    "server": [
-      "TomlTable",
-      {
-        "database": [
-          "TomlTable",
-          {
-            "host": ["TomlString", "localhost"],
-            "port": ["TomlInteger", "5432"],
-          },
-        ],
-        "replicas": [
-          "TomlArray",
-          [
+```mbt check
+///|
+test {
+  // special values and advanced features example
+  let toml_advanced =
+    #|# Configuration with comments
+    #|app_name = "TOML Demo"
+    #|version = "1.0.0"
+    #|
+    #|# Special float values
+    #|max_timeout = inf
+    #|min_timeout = -inf
+    #|error_rate = nan
+    #|
+    #|# Unicode keys and values
+    #|"café" = "☕ Coffee shop"
+    #|"数量" = 42
+    #|
+    #|# Complex nested structure
+    #|[server.database]
+    #|host = "localhost"
+    #|port = 5432
+    #|
+    #|[[server.replicas]]
+    #|name = "primary"
+    #|weight = 1.0
+    #|
+    #|[[server.replicas]]
+    #|name = "secondary"
+    #|weight = 0.5
+    #|
+  @json.inspect(@toml.parse(toml_advanced), content=[
+    "TomlTable",
+    {
+      "app_name": ["TomlString", "TOML Demo"],
+      "version": ["TomlString", "1.0.0"],
+      "max_timeout": ["TomlFloat", @double.infinity],
+      "min_timeout": ["TomlFloat", @double.neg_infinity],
+      "error_rate": ["TomlFloat", @double.not_a_number],
+      "café": ["TomlString", "☕ Coffee shop"],
+      "数量": ["TomlInteger", "42"],
+      "server": [
+        "TomlTable",
+        {
+          "database": [
+            "TomlTable",
+            {
+              "host": ["TomlString", "localhost"],
+              "port": ["TomlInteger", "5432"],
+            },
+          ],
+          "replicas": [
+            "TomlArray",
             [
-              "TomlTable",
-              { "name": ["TomlString", "primary"], "weight": ["TomlFloat", 1] },
-            ],
-            [
-              "TomlTable",
-              {
-                "name": ["TomlString", "secondary"],
-                "weight": ["TomlFloat", 0.5],
-              },
+              [
+                "TomlTable",
+                {
+                  "name": ["TomlString", "primary"],
+                  "weight": ["TomlFloat", 1],
+                },
+              ],
+              [
+                "TomlTable",
+                {
+                  "name": ["TomlString", "secondary"],
+                  "weight": ["TomlFloat", 0.5],
+                },
+              ],
             ],
           ],
-        ],
-      },
-    ],
-  },
-])
+        },
+      ],
+    },
+  ])
+}
 ```
 
 ## Project Structure
@@ -556,36 +592,39 @@ toml-parser/
 
 ### Working with Tables
 
-```mbt test
-// Working with nested tables
-let parsed_toml = @toml.parse(
-  (
-    #|[database]
-    #|host = "localhost"
-    #|port = 5432
-    #|enabled = true
-    #|
-  ),
-)
-
-// Use guard with nested pattern matching and literal values
-guard parsed_toml
-  is TomlTable(
-    {
-      "database": TomlTable(
-        {
-          "host": TomlString("localhost"),
-          "port": TomlInteger(5432L),
-          "enabled": TomlBoolean(true),
-          ..
-        }
-      ),
-      ..
-    }
-  ) else {
-  fail(
-    "Expected database configuration with host=localhost, port=5432, enabled=true",
+```mbt check
+///|
+test {
+  // Working with nested tables
+  let parsed_toml = @toml.parse(
+    (
+      #|[database]
+      #|host = "localhost"
+      #|port = 5432
+      #|enabled = true
+      #|
+    ),
   )
+
+  // Use guard with nested pattern matching and literal values
+  guard parsed_toml
+    is TomlTable(
+      {
+        "database": TomlTable(
+          {
+            "host": TomlString("localhost"),
+            "port": TomlInteger(5432L),
+            "enabled": TomlBoolean(true),
+            ..
+          }
+        ),
+        ..
+      }
+    ) else {
+    fail(
+      "Expected database configuration with host=localhost, port=5432, enabled=true",
+    )
+  }
 }
 ```
 
@@ -593,40 +632,46 @@ guard parsed_toml
 
 TOML requires arrays to be homogeneous (all elements same type). The parser validates this automatically:
 
-```mbt test
-// Valid: all integers
-let valid = @toml.parse("numbers = [1, 2, 3]")
-assert_true(valid.validate())
+```mbt check
+///|
+test {
+  // Valid: all integers
+  let valid = @toml.parse("numbers = [1, 2, 3]")
+  assert_true(valid.validate())
 
-// Mixed types are allowed during parsing but fail validation
-let mixed = @toml.parse("mixed = [1, \"two\", 3.0]")
-assert_false(mixed.validate()) // Validation catches the type mismatch
+  // Mixed types are allowed during parsing but fail validation
+  let mixed = @toml.parse("mixed = [1, \"two\", 3.0]")
+  assert_false(mixed.validate()) // Validation catches the type mismatch
+}
 ```
 
 ### Working with DateTime Values
 
-```mbt test
-// Working with all 4 datetime types
-let parsed_toml = @toml.parse(
-  (
-    #|offset_dt = 2023-01-15T10:30:00Z
-    #|local_dt = 2023-01-15T10:30:00
-    #|local_date = 2023-01-15
-    #|local_time = 10:30:00
-    #|
-  ),
-)
+```mbt check
+///|
+test {
+  // Working with all 4 datetime types
+  let parsed_toml = @toml.parse(
+    (
+      #|offset_dt = 2023-01-15T10:30:00Z
+      #|local_dt = 2023-01-15T10:30:00
+      #|local_date = 2023-01-15
+      #|local_time = 10:30:00
+      #|
+    ),
+  )
 
-// Verify all datetime types are parsed correctly
-@json.inspect(parsed_toml, content=[
-  "TomlTable",
-  {
-    "offset_dt": ["TomlDateTime", ["OffsetDateTime", "2023-01-15T10:30:00Z"]],
-    "local_dt": ["TomlDateTime", ["LocalDateTime", "2023-01-15T10:30:00"]],
-    "local_date": ["TomlDateTime", ["LocalDate", "2023-01-15"]],
-    "local_time": ["TomlDateTime", ["LocalTime", "10:30:00"]],
-  },
-])
+  // Verify all datetime types are parsed correctly
+  @json.inspect(parsed_toml, content=[
+    "TomlTable",
+    {
+      "offset_dt": ["TomlDateTime", ["OffsetDateTime", "2023-01-15T10:30:00Z"]],
+      "local_dt": ["TomlDateTime", ["LocalDateTime", "2023-01-15T10:30:00"]],
+      "local_date": ["TomlDateTime", ["LocalDate", "2023-01-15"]],
+      "local_time": ["TomlDateTime", ["LocalTime", "10:30:00"]],
+    },
+  ])
+}
 ```
 
 ## Development Status

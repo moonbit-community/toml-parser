@@ -558,33 +558,33 @@ test "inf failure" {
   let inf_failure_toml =
     #|inf = -infx
     #|
-  @json.inspect(try? parse_no_loc(inf_failure_toml), content={
+  @json.inspect(try? @toml.parse(inf_failure_toml), content={
     "Err": [
-      "Failure", "Invalid character 'x' after special value at line 1, column 11",
+      "Failure", "internal/tokenize/tokenize.mbt:52:7-52:72@bobzhang/toml FAILED: Invalid character 'x' after special value at line 1, column 11",
     ],
   })
   let inf_failure_toml2 =
     #|inf = -infx=2
     #|
-  @json.inspect(try? parse_no_loc(inf_failure_toml2), content={
+  @json.inspect(try? @toml.parse(inf_failure_toml2), content={
     "Err": [
-      "Failure", "Invalid character 'x' after special value at line 1, column 11",
+      "Failure", "internal/tokenize/tokenize.mbt:52:7-52:72@bobzhang/toml FAILED: Invalid character 'x' after special value at line 1, column 11",
     ],
   })
   let inf_failure_toml2 =
     #|inf = -inf x=2
     #|
-  @json.inspect(try? parse_no_loc(inf_failure_toml2), content={
+  @json.inspect(try? @toml.parse(inf_failure_toml2), content={
     "Err": [
-      "Failure", "Expected newline or end of file after key-value pair at {start: {line: 1, column: 12}, end: {line: 1, column: 13}}",
+      "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at {start: {line: 1, column: 12}, end: {line: 1, column: 13}}",
     ],
   })
   let table_failure =
     #|a = 3 b = 2
     #|
-  @json.inspect(try? parse_no_loc(table_failure), content={
+  @json.inspect(try? @toml.parse(table_failure), content={
     "Err": [
-      "Failure", "Expected newline or end of file after key-value pair at {start: {line: 1, column: 7}, end: {line: 1, column: 8}}",
+      "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at {start: {line: 1, column: 7}, end: {line: 1, column: 8}}",
     ],
   })
 
