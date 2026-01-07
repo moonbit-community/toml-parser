@@ -1,3 +1,0 @@
-{"name" : "bobzhang/toml/tokenize", 
- "warn-list": "-21",
-"import" : ["bobzhang/lexer"]}

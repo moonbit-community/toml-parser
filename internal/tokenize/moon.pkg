@@ -1,0 +1,6 @@
+import { "bobzhang/lexer" }
+
+options(
+  name: "bobzhang/toml/tokenize",
+  "warn-list": "-21",
+)
