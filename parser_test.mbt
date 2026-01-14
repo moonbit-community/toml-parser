@@ -6,7 +6,7 @@ test "parse simple key-value string" {
       #|name = "John"
     ),
   )
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     { "name": ["TomlString", "John"] },
   ])
@@ -35,7 +35,7 @@ test "parse simple key-value boolean" {
       #|enabled = true
     ),
   )
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     { "enabled": ["TomlBoolean", true] },
   ])
@@ -48,7 +48,7 @@ test "parse simple key-value float" {
       #|pi = 3.14
     ),
   )
-  @json.inspect(result, content=["TomlTable", { "pi": ["TomlFloat", 3.14] }])
+  json_inspect(result, content=["TomlTable", { "pi": ["TomlFloat", 3.14] }])
 }
 
 ///|
@@ -59,7 +59,7 @@ test "parse multiple key-value pairs" {
     #|enabled = false
     #|
   let result = @toml.parse(multiple_kvp_toml)
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     {
       "name": ["TomlString", "Alice"],
@@ -76,7 +76,7 @@ test "parse array" {
       #|numbers = [1, 2, 3]
     ),
   )
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     {
       "numbers": [
@@ -93,7 +93,7 @@ test "parse inline table" {
     #|person = {name = "Bob", age = 25}
     #|
   let result = @toml.parse(inline_table_toml)
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     {
       "person": [
@@ -107,7 +107,7 @@ test "parse inline table" {
 ///|
 /// Tests for uncovered parser error conditions
 test "test parser expect method failure" {
-  @json.inspect(try? @toml.parse("key = [missing_bracket"), content={
+  json_inspect(try? @toml.parse("key = [missing_bracket"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 8}, end: {line: 1, column: 23}}",
     ],
@@ -116,12 +116,12 @@ test "test parser expect method failure" {
 
 ///|
 test "test parser EOF handling in peek" {
-  @json.inspect(try? @toml.parse(""), content={ "Ok": ["TomlTable", {}] })
+  json_inspect(try? @toml.parse(""), content={ "Ok": ["TomlTable", {}] })
 }
 
 ///|
 test "test parser EOF handling in advance" {
-  @json.inspect(try? @toml.parse("key ="), content={
+  json_inspect(try? @toml.parse("key ="), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 6}, end: {line: 1, column: 6}}",
     ],
@@ -130,7 +130,7 @@ test "test parser EOF handling in advance" {
 
 ///|
 test "test inline table with string keys" {
-  @json.inspect(try? @toml.parse("table = {\"string key\" = \"value\"}"), content={
+  json_inspect(try? @toml.parse("table = {\"string key\" = \"value\"}"), content={
     "Ok": [
       "TomlTable",
       { "table": ["TomlTable", { "string key": ["TomlString", "value"] }] },
@@ -140,7 +140,7 @@ test "test inline table with string keys" {
 
 ///|
 test "test inline table invalid syntax" {
-  @json.inspect(try? @toml.parse("table = {key value}"), content={
+  json_inspect(try? @toml.parse("table = {key value}"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected '=' at {start: {line: 1, column: 14}, end: {line: 1, column: 19}}",
     ],
@@ -149,7 +149,7 @@ test "test inline table invalid syntax" {
 
 ///|
 test "test inline table missing comma or closing brace" {
-  @json.inspect(try? @toml.parse("table = {key = \"value\" invalid}"), content={
+  json_inspect(try? @toml.parse("table = {key = \"value\" invalid}"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected ',' or '}' in inline table at {start: {line: 1, column: 24}, end: {line: 1, column: 31}}",
     ],
@@ -162,7 +162,7 @@ test "test table header with string name" {
     #|["table name"]
     #|key = "value"
     #|
-  @json.inspect(try? @toml.parse(string_table_name_toml), content={
+  json_inspect(try? @toml.parse(string_table_name_toml), content={
     "Ok": [
       "TomlTable",
       { "table name": ["TomlTable", { "key": ["TomlString", "value"] }] },
@@ -176,7 +176,7 @@ test "test table header numeric name" {
     #|[123]
     #|key = "value"
     #|
-  @json.inspect(try? @toml.parse(numeric_table_name_toml), content={
+  json_inspect(try? @toml.parse(numeric_table_name_toml), content={
     "Ok": [
       "TomlTable",
       { "123": ["TomlTable", { "key": ["TomlString", "value"] }] },
@@ -192,7 +192,7 @@ test "test duplicate table redefinition" {
     #|[table]
     #|key2 = "value2"
     #|
-  @json.inspect(try? @toml.parse(duplicate_table_toml), content={
+  json_inspect(try? @toml.parse(duplicate_table_toml), content={
     "Ok": [
       "TomlTable",
       {
@@ -212,7 +212,7 @@ test "test table name conflicts with existing value" {
     #|[table]
     #|key = "value"
     #|
-  @json.inspect(try? @toml.parse(conflicting_table_toml), content={
+  json_inspect(try? @toml.parse(conflicting_table_toml), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: ExpectedTable(\"table\", \"string\") at {start: {line: 2, column: 8}, end: {line: 3, column: 1}}",
     ],
@@ -222,14 +222,14 @@ test "test table name conflicts with existing value" {
 ///|
 /// Tests for inline table edge cases  
 test "test empty inline table" {
-  @json.inspect(try? @toml.parse("empty = {}"), content={
+  json_inspect(try? @toml.parse("empty = {}"), content={
     "Ok": ["TomlTable", { "empty": ["TomlTable", {}] }],
   })
 }
 
 ///|
 test "test nested inline tables" {
-  @json.inspect(try? @toml.parse("table = {inner = {key = \"value\"}}"), content={
+  json_inspect(try? @toml.parse("table = {inner = {key = \"value\"}}"), content={
     "Ok": [
       "TomlTable",
       {
@@ -244,7 +244,7 @@ test "test nested inline tables" {
 
 ///|
 test "test inline table with multiple key types" {
-  @json.inspect(try? @toml.parse("mixed = {\"quoted\" = 1, unquoted = 2}"), content={
+  json_inspect(try? @toml.parse("mixed = {\"quoted\" = 1, unquoted = 2}"), content={
     "Ok": [
       "TomlTable",
       {
@@ -259,7 +259,7 @@ test "test inline table with multiple key types" {
 
 ///|
 test "test inline table with array values" {
-  @json.inspect(try? @toml.parse("table = {arr = [1, 2, 3], str = \"test\"}"), content={
+  json_inspect(try? @toml.parse("table = {arr = [1, 2, 3], str = \"test\"}"), content={
     "Ok": [
       "TomlTable",
       {
@@ -286,7 +286,7 @@ test "dotted key notation simple" {
       #|a.b.c = "value"
     ),
   )
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     {
       "a": [
@@ -306,7 +306,7 @@ test "dotted key notation multiple" {
     #|a.e = "value3"
     #|f = "value4"
     #|
-  @json.inspect(@toml.parse(dotted_multiple_toml), content=[
+  json_inspect(@toml.parse(dotted_multiple_toml), content=[
     "TomlTable",
     {
       "a": [
@@ -334,7 +334,7 @@ test "dotted key notation data types" {
     #|server.timeout = 30.5
     #|server.tags = ["web", "api"]
     #|
-  @json.inspect(@toml.parse(dotted_types_toml), content=[
+  json_inspect(@toml.parse(dotted_types_toml), content=[
     "TomlTable",
     {
       "server": [
@@ -359,7 +359,7 @@ test "dotted key notation quoted keys" {
       #|"first.part"."second.part" = "value"
     ),
   )
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     { "first.part": ["TomlTable", { "second.part": ["TomlString", "value"] }] },
   ])
@@ -373,7 +373,7 @@ test "dotted key notation integer keys" {
       #|1.2.3 = "numeric path"
     ),
   )
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     {
       "1": [
@@ -392,7 +392,7 @@ test "dotted key notation table conflict" {
     #|[a]
     #|c = "table"
     #|
-  @json.inspect(@toml.parse(conflict_toml), content=[
+  json_inspect(@toml.parse(conflict_toml), content=[
     "TomlTable",
     {
       "a": [
@@ -435,7 +435,7 @@ test "complex dotted keys" {
     #|server."port number".8080.config = 3
     #|
   // TODO: fix
-  @json.inspect(try? @toml.parse(data), content={
+  json_inspect(try? @toml.parse(data), content={
     "Err": [
       "Failure", "/Users/hongbozhang/git/toml-parser/parser.mbt:180:20-180:52 FAILED: Expected key after dot at {start: {line: 2, column: 22}, end: {line: 2, column: 27}}",
     ],

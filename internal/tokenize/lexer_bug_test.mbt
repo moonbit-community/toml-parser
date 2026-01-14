@@ -5,7 +5,7 @@ test "test invalid float parsing" {
       #|invalid = 1.2.3
     ),
   )
-  @json.inspect(maybe_tokens, content={
+  json_inspect(maybe_tokens, content={
     "Ok": [
       ["Identifier", "invalid", { "loc": "1:1-1:8" }],
       ["Equals", { "loc": "1:9-1:10" }],
@@ -24,7 +24,7 @@ test "test invalid hex digit error" {
       #|hex = 0xGHI
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:345:5-345:50@bobzhang/toml FAILED: Invalid hex number format at line 1, column 7\")",
   )
@@ -37,7 +37,7 @@ test "test octal without digits" {
       #|test = 0o
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:387:5-387:52@bobzhang/toml FAILED: Invalid octal number format at line 1, column 8\")",
   )
@@ -50,7 +50,7 @@ test "test binary without digits" {
       #|test = 0b
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:436:5-436:53@bobzhang/toml FAILED: Invalid binary number format at line 1, column 8\")",
   )
@@ -63,7 +63,7 @@ test "test hex with invalid delimiter" {
       #|hex = 0x123XYZ
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:368:9-372:10@bobzhang/toml FAILED: Invalid char 'X', expected whitespace, comma, or end of input after 0x... at line 1, column 12\")",
   )
@@ -76,7 +76,7 @@ test "test hex with valid delimiters" {
       #|hex = 0x123A
     ),
   )
-  @json.inspect(tokens1, content=[
+  json_inspect(tokens1, content=[
     ["Identifier", "hex", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["IntegerToken", "4666", { "loc": "1:7-1:13" }],
@@ -87,7 +87,7 @@ test "test hex with valid delimiters" {
       #|arr = [0x123A, 0xB]
     ),
   )
-  @json.inspect(tokens2, content=[
+  json_inspect(tokens2, content=[
     ["Identifier", "arr", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["LeftBracket", { "loc": "1:7-1:8" }],
@@ -106,7 +106,7 @@ test "test hex case variations" {
       #|hex = 0xaBcDeF
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "hex", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["IntegerToken", "11259375", { "loc": "1:7-1:15" }],
@@ -121,7 +121,7 @@ test "test octal with invalid digits" {
       #|oct = 0o789
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:404:9-408:10@bobzhang/toml FAILED: Invalid char '8', expected whitespace, comma, or end of input after 0o... at line 1, column 10\")",
   )
@@ -134,7 +134,7 @@ test "test octal with valid delimiters" {
       #|oct = 0o755
     ),
   )
-  @json.inspect(tokens1, content=[
+  json_inspect(tokens1, content=[
     ["Identifier", "oct", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["IntegerToken", "493", { "loc": "1:7-1:12" }],
@@ -145,7 +145,7 @@ test "test octal with valid delimiters" {
       #|arr = [0o644, 0o755]
     ),
   )
-  @json.inspect(tokens2, content=[
+  json_inspect(tokens2, content=[
     ["Identifier", "arr", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["LeftBracket", { "loc": "1:7-1:8" }],
@@ -164,7 +164,7 @@ test "test binary with invalid digits" {
       #|bin = 0b1012
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:453:9-457:10@bobzhang/toml FAILED: Invalid char '2', expected whitespace, comma, or end of input after 0b... at line 1, column 12\")",
   )
@@ -177,7 +177,7 @@ test "test binary with valid delimiters" {
       #|bin = 0b1010
     ),
   )
-  @json.inspect(tokens1, content=[
+  json_inspect(tokens1, content=[
     ["Identifier", "bin", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["IntegerToken", "10", { "loc": "1:7-1:13" }],
@@ -188,7 +188,7 @@ test "test binary with valid delimiters" {
       #|arr = [0b101, 0b110]
     ),
   )
-  @json.inspect(tokens2, content=[
+  json_inspect(tokens2, content=[
     ["Identifier", "arr", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["LeftBracket", { "loc": "1:7-1:8" }],

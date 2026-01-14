@@ -172,7 +172,7 @@ test "datetime serialization consistency" {
 
   // Test with JSON conversion
   let json_repr = toml_value.to_json()
-  @json.inspect(json_repr, content=[
+  json_inspect(json_repr, content=[
     "TomlDateTime",
     ["OffsetDateTime", "1979-05-27T07:32:00Z"],
   ])

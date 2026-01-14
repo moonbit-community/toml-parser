@@ -11,7 +11,7 @@ test "parser_eof_handling" {
       #|
     ),
   )
-  @json.inspect(result, content=["TomlTable", {}])
+  json_inspect(result, content=["TomlTable", {}])
 }
 
 ///|
@@ -19,7 +19,7 @@ test "parser_eof_handling" {
 test "inline_table_with_integer_key" {
   let toml_input = "table = {123 = \"value\"}"
   let result = @toml.parse(toml_input)
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     { "table": ["TomlTable", { "123": ["TomlString", "value"] }] },
   ])
@@ -30,7 +30,7 @@ test "inline_table_with_integer_key" {
 test "table_path_with_string_key" {
   let toml_input = "[\"section\".\"subsection\"]\nkey = \"value\""
   let result = @toml.parse(toml_input)
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     {
       "section": [
@@ -46,7 +46,7 @@ test "table_path_with_string_key" {
 test "table_path_with_integer_key" {
   let toml_input = "[section.123]\nkey = \"value\""
   let result = @toml.parse(toml_input)
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     {
       "section": [
@@ -62,7 +62,7 @@ test "table_path_with_integer_key" {
 test "array_of_tables_path_with_string_key" {
   let toml_input = "[[\"products\"]]\nname = \"Hammer\""
   let result = @toml.parse(toml_input)
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     {
       "products": [
@@ -78,7 +78,7 @@ test "array_of_tables_path_with_string_key" {
 test "array_of_tables_path_with_integer_key" {
   let toml_input = "[[section.123]]\nvalue = 42"
   let result = @toml.parse(toml_input)
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     {
       "section": [
@@ -102,7 +102,7 @@ test "invalid_unicode_escapes" {
       #|key = "\uZZZZ"
     ),
   )
-  @json.inspect(result, content={
+  json_inspect(result, content={
     "Err": [
       "Failure", "internal/tokenize/tokenize.mbt:88:7-88:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10",
     ],
@@ -117,7 +117,7 @@ test "invalid_8byte_unicode_escape" {
       #|key = "\U00200000"
     ),
   ) // Invalid code point > 0x10FFFF
-  @json.inspect(result, content={
+  json_inspect(result, content={
     "Err": [
       "Failure", "internal/tokenize/tokenize.mbt:135:5-135:60@bobzhang/toml FAILED: Invalid Unicode code point: 2097152 at line 1, column 18",
     ],
@@ -132,7 +132,7 @@ test "unterminated_multiline_string" {
       #|key = """This is unterminated
     ),
   )
-  @json.inspect(result, content={
+  json_inspect(result, content={
     "Err": [
       "Failure", "internal/tokenize/tokenize.mbt:287:11-287:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 30",
     ],
@@ -195,7 +195,7 @@ test "table_path_conflict_error" {
       #|[key]
     ),
   )
-  @json.inspect(result, content={
+  json_inspect(result, content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: ExpectedTable(\"key\", 42) at {start: {line: 2, column: 6}, end: {line: 2, column: 6}}",
     ],
@@ -211,7 +211,7 @@ test "array_of_tables_path_conflict_error" {
       #|[[key]]
     ),
   )
-  @json.inspect(result, content={
+  json_inspect(result, content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: ExpectedArray(\"key\", 42) at {start: {line: 2, column: 8}, end: {line: 2, column: 8}}",
     ],
@@ -223,7 +223,7 @@ test "array_of_tables_path_conflict_error" {
 test "empty_inline_table" {
   let toml_input = "table = {}"
   let result = @toml.parse(toml_input)
-  @json.inspect(result, content=["TomlTable", { "table": ["TomlTable", {}] }])
+  json_inspect(result, content=["TomlTable", { "table": ["TomlTable", {}] }])
 }
 
 ///|
@@ -231,7 +231,7 @@ test "empty_inline_table" {
 test "empty_array" {
   let toml_input = "arr = []"
   let result = @toml.parse(toml_input)
-  @json.inspect(result, content=["TomlTable", { "arr": ["TomlArray", []] }])
+  json_inspect(result, content=["TomlTable", { "arr": ["TomlArray", []] }])
 }
 
 ///|
@@ -266,7 +266,7 @@ test "toml_value_to_string_coverage" {
 test "float_token_parsing" {
   let toml_input = "pi = 3.14159"
   let result = @toml.parse(toml_input)
-  @json.inspect(result, content=["TomlTable", { "pi": ["TomlFloat", 3.14159] }])
+  json_inspect(result, content=["TomlTable", { "pi": ["TomlFloat", 3.14159] }])
 }
 
 ///|
@@ -274,7 +274,7 @@ test "float_token_parsing" {
 test "array_with_trailing_comma" {
   let toml_input = "numbers = [1, 2, 3,]"
   let result = @toml.parse(toml_input)
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     {
       "numbers": [
@@ -327,7 +327,7 @@ test "main_function_components_coverage" {
 test "hex_number_parsing_coverage" {
   let toml_input = "hex_num = 0xDEADBEEF"
   let result = @toml.parse(toml_input)
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     { "hex_num": ["TomlInteger", "3735928559"] },
   ])
@@ -338,7 +338,7 @@ test "hex_number_parsing_coverage" {
 test "octal_number_parsing_coverage" {
   let toml_input = "octal_num = 0o755"
   let result = @toml.parse(toml_input)
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     { "octal_num": ["TomlInteger", "493"] },
   ])
@@ -349,7 +349,7 @@ test "octal_number_parsing_coverage" {
 test "binary_number_parsing_coverage" {
   let toml_input = "binary_num = 0b1010"
   let result = @toml.parse(toml_input)
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     { "binary_num": ["TomlInteger", "10"] },
   ])
@@ -360,7 +360,7 @@ test "binary_number_parsing_coverage" {
 test "multiple_array_of_tables" {
   let toml_input = "[[products]]\nname = \"Hammer\"\n\n[[products]]\nname = \"Nail\""
   let result = @toml.parse(toml_input)
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     {
       "products": [
@@ -379,7 +379,7 @@ test "multiple_array_of_tables" {
 test "negative_number_parsing" {
   let toml_input = "negative = -42"
   let result = @toml.parse(toml_input)
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "TomlTable",
     { "negative": ["TomlInteger", "-42"] },
   ])
@@ -393,7 +393,7 @@ test "invalid_character_error" {
       #|key = @invalid
     ),
   )
-  @json.inspect(result, content={
+  json_inspect(result, content={
     "Err": [
       "Failure", "internal/tokenize/tokenize.mbt:833:17-833:54@bobzhang/toml FAILED: Unexpected character: '@'",
     ],

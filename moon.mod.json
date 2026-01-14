@@ -2,7 +2,7 @@
   "name": "bobzhang/toml",
   "version": "0.1.6",
   "deps": {
-    "bobzhang/lexer": "0.1.1"
+    "bobzhang/lexer": "0.1.2"
   },
   "readme": "README.md",
   "repository": "https://github.com/moonbit-community/toml-parser",

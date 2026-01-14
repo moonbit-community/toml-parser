@@ -8,7 +8,7 @@ test "lexer datetime LocalTime basic" {
       #|time = 07:32:00
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "time", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalTime", "07:32:00"], { "loc": "1:8-1:16" }],
@@ -24,7 +24,7 @@ test "lexer datetime LocalTime with fractional seconds" {
       #|time = 07:32:00.999999
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "time", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalTime", "07:32:00.999999"], { "loc": "1:8-1:23" }],
@@ -40,7 +40,7 @@ test "lexer datetime LocalTime edge times" {
       #|time = 00:00:00
     ),
   )
-  @json.inspect(tokens1, content=[
+  json_inspect(tokens1, content=[
     ["Identifier", "time", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalTime", "00:00:00"], { "loc": "1:8-1:16" }],
@@ -51,7 +51,7 @@ test "lexer datetime LocalTime edge times" {
       #|time = 23:59:59
     ),
   )
-  @json.inspect(tokens2, content=[
+  json_inspect(tokens2, content=[
     ["Identifier", "time", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalTime", "23:59:59"], { "loc": "1:8-1:16" }],
@@ -67,7 +67,7 @@ test "lexer datetime LocalDate basic" {
       #|date = 1979-05-27
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "date", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalDate", "1979-05-27"], { "loc": "1:8-1:18" }],
@@ -84,7 +84,7 @@ test "lexer datetime LocalDate various years" {
       #|date = 1900-01-01
     ),
   )
-  @json.inspect(tokens1, content=[
+  json_inspect(tokens1, content=[
     ["Identifier", "date", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalDate", "1900-01-01"], { "loc": "1:8-1:18" }],
@@ -96,7 +96,7 @@ test "lexer datetime LocalDate various years" {
       #|date = 9999-12-31
     ),
   )
-  @json.inspect(tokens2, content=[
+  json_inspect(tokens2, content=[
     ["Identifier", "date", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalDate", "9999-12-31"], { "loc": "1:8-1:18" }],
@@ -108,7 +108,7 @@ test "lexer datetime LocalDate various years" {
       #|date = 2024-02-29
     ),
   )
-  @json.inspect(tokens3, content=[
+  json_inspect(tokens3, content=[
     ["Identifier", "date", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalDate", "2024-02-29"], { "loc": "1:8-1:18" }],
@@ -124,7 +124,7 @@ test "lexer datetime LocalDateTime basic" {
       #|datetime = 1979-05-27T07:32:00
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "datetime", { "loc": "1:1-1:9" }],
     ["Equals", { "loc": "1:10-1:11" }],
     [
@@ -144,7 +144,7 @@ test "lexer datetime LocalDateTime with fractional seconds" {
       #|datetime = 1979-05-27T00:32:00.999999
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "datetime", { "loc": "1:1-1:9" }],
     ["Equals", { "loc": "1:10-1:11" }],
     [
@@ -164,7 +164,7 @@ test "lexer datetime OffsetDateTime with Z" {
       #|datetime = 1979-05-27T07:32:00Z
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "datetime", { "loc": "1:1-1:9" }],
     ["Equals", { "loc": "1:10-1:11" }],
     [
@@ -184,7 +184,7 @@ test "lexer datetime OffsetDateTime Z with fractional" {
       #|datetime = 1979-05-27T07:32:00.123456Z
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "datetime", { "loc": "1:1-1:9" }],
     ["Equals", { "loc": "1:10-1:11" }],
     [
@@ -204,7 +204,7 @@ test "lexer datetime OffsetDateTime positive offset" {
       #|datetime = 1979-05-27T00:32:00+07:00
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "datetime", { "loc": "1:1-1:9" }],
     ["Equals", { "loc": "1:10-1:11" }],
     [
@@ -224,7 +224,7 @@ test "lexer datetime OffsetDateTime negative offset" {
       #|datetime = 1979-05-27T00:32:00-07:00
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "datetime", { "loc": "1:1-1:9" }],
     ["Equals", { "loc": "1:10-1:11" }],
     [
@@ -244,7 +244,7 @@ test "lexer datetime OffsetDateTime offset with fractional" {
       #|datetime = 1979-05-27T00:32:00.999999-07:00
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "datetime", { "loc": "1:1-1:9" }],
     ["Equals", { "loc": "1:10-1:11" }],
     [
@@ -265,7 +265,7 @@ test "lexer datetime OffsetDateTime various offsets" {
       #|dt = 2023-01-01T12:00:00+00:00
     ),
   )
-  @json.inspect(tokens1, content=[
+  json_inspect(tokens1, content=[
     ["Identifier", "dt", { "loc": "1:1-1:3" }],
     ["Equals", { "loc": "1:4-1:5" }],
     [
@@ -281,7 +281,7 @@ test "lexer datetime OffsetDateTime various offsets" {
       #|dt = 2023-01-01T12:00:00-00:00
     ),
   )
-  @json.inspect(tokens2, content=[
+  json_inspect(tokens2, content=[
     ["Identifier", "dt", { "loc": "1:1-1:3" }],
     ["Equals", { "loc": "1:4-1:5" }],
     [
@@ -297,7 +297,7 @@ test "lexer datetime OffsetDateTime various offsets" {
       #|dt = 2023-01-01T12:00:00+14:00
     ),
   )
-  @json.inspect(tokens3, content=[
+  json_inspect(tokens3, content=[
     ["Identifier", "dt", { "loc": "1:1-1:3" }],
     ["Equals", { "loc": "1:4-1:5" }],
     [
@@ -313,7 +313,7 @@ test "lexer datetime OffsetDateTime various offsets" {
       #|dt = 2023-01-01T12:00:00-12:00
     ),
   )
-  @json.inspect(tokens4, content=[
+  json_inspect(tokens4, content=[
     ["Identifier", "dt", { "loc": "1:1-1:3" }],
     ["Equals", { "loc": "1:4-1:5" }],
     [
@@ -329,7 +329,7 @@ test "lexer datetime OffsetDateTime various offsets" {
       #|dt = 2023-01-01T12:00:00+05:30
     ),
   )
-  @json.inspect(tokens5, content=[
+  json_inspect(tokens5, content=[
     ["Identifier", "dt", { "loc": "1:1-1:3" }],
     ["Equals", { "loc": "1:4-1:5" }],
     [
@@ -353,7 +353,7 @@ test "lexer datetime multiple datetimes" {
     ),
   )
   // Just verify token types are correct for each
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "time", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalTime", "12:30:00"], { "loc": "1:8-1:16" }],
@@ -389,7 +389,7 @@ test "lexer datetime in array" {
       #|dates = [2023-01-01, 2023-06-15, 2023-12-31]
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "dates", { "loc": "1:1-1:6" }],
     ["Equals", { "loc": "1:7-1:8" }],
     ["LeftBracket", { "loc": "1:9-1:10" }],
@@ -411,7 +411,7 @@ test "lexer datetime with comment" {
       #|date = 2023-06-15 # deployment date
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "date", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalDate", "2023-06-15"], { "loc": "1:8-1:18" }],
@@ -428,7 +428,7 @@ test "lexer datetime LocalTime fractional precision" {
       #|time = 12:30:45.1
     ),
   )
-  @json.inspect(tokens1, content=[
+  json_inspect(tokens1, content=[
     ["Identifier", "time", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalTime", "12:30:45.1"], { "loc": "1:8-1:18" }],
@@ -440,7 +440,7 @@ test "lexer datetime LocalTime fractional precision" {
       #|time = 12:30:45.123
     ),
   )
-  @json.inspect(tokens2, content=[
+  json_inspect(tokens2, content=[
     ["Identifier", "time", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalTime", "12:30:45.123"], { "loc": "1:8-1:20" }],
@@ -452,7 +452,7 @@ test "lexer datetime LocalTime fractional precision" {
       #|time = 12:30:45.123456
     ),
   )
-  @json.inspect(tokens3, content=[
+  json_inspect(tokens3, content=[
     ["Identifier", "time", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalTime", "12:30:45.123456"], { "loc": "1:8-1:23" }],
@@ -464,7 +464,7 @@ test "lexer datetime LocalTime fractional precision" {
       #|time = 12:30:45.123456789
     ),
   )
-  @json.inspect(tokens4, content=[
+  json_inspect(tokens4, content=[
     ["Identifier", "time", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     [
@@ -484,7 +484,7 @@ test "lexer datetime in inline table" {
       #|event = { date = 2023-06-15, time = 09:00:00 }
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "event", { "loc": "1:1-1:6" }],
     ["Equals", { "loc": "1:7-1:8" }],
     ["LeftBrace", { "loc": "1:9-1:10" }],
@@ -511,7 +511,7 @@ test "lexer datetime disambiguation" {
       #|other = 123
     ),
   )
-  @json.inspect(tokens1, content=[
+  json_inspect(tokens1, content=[
     ["Identifier", "date", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalDate", "2023-06-15"], { "loc": "1:8-1:18" }],
@@ -532,7 +532,7 @@ test "lexer datetime RFC 3339 spec examples" {
       #|odt1 = 1979-05-27T07:32:00Z
     ),
   )
-  @json.inspect(tokens1, content=[
+  json_inspect(tokens1, content=[
     ["Identifier", "odt1", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     [
@@ -547,7 +547,7 @@ test "lexer datetime RFC 3339 spec examples" {
       #|odt2 = 1979-05-27T00:32:00-07:00
     ),
   )
-  @json.inspect(tokens2, content=[
+  json_inspect(tokens2, content=[
     ["Identifier", "odt2", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     [
@@ -562,7 +562,7 @@ test "lexer datetime RFC 3339 spec examples" {
       #|odt3 = 1979-05-27T00:32:00.999999-07:00
     ),
   )
-  @json.inspect(tokens3, content=[
+  json_inspect(tokens3, content=[
     ["Identifier", "odt3", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     [
@@ -577,7 +577,7 @@ test "lexer datetime RFC 3339 spec examples" {
       #|ldt1 = 1979-05-27T07:32:00
     ),
   )
-  @json.inspect(tokens4, content=[
+  json_inspect(tokens4, content=[
     ["Identifier", "ldt1", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     [
@@ -592,7 +592,7 @@ test "lexer datetime RFC 3339 spec examples" {
       #|ldt2 = 1979-05-27T00:32:00.999999
     ),
   )
-  @json.inspect(tokens5, content=[
+  json_inspect(tokens5, content=[
     ["Identifier", "ldt2", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     [
@@ -607,7 +607,7 @@ test "lexer datetime RFC 3339 spec examples" {
       #|ld1 = 1979-05-27
     ),
   )
-  @json.inspect(tokens6, content=[
+  json_inspect(tokens6, content=[
     ["Identifier", "ld1", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["DateTimeToken", ["LocalDate", "1979-05-27"], { "loc": "1:7-1:17" }],
@@ -618,7 +618,7 @@ test "lexer datetime RFC 3339 spec examples" {
       #|lt1 = 07:32:00
     ),
   )
-  @json.inspect(tokens7, content=[
+  json_inspect(tokens7, content=[
     ["Identifier", "lt1", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["DateTimeToken", ["LocalTime", "07:32:00"], { "loc": "1:7-1:15" }],
@@ -629,7 +629,7 @@ test "lexer datetime RFC 3339 spec examples" {
       #|lt2 = 00:32:00.999999
     ),
   )
-  @json.inspect(tokens8, content=[
+  json_inspect(tokens8, content=[
     ["Identifier", "lt2", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["DateTimeToken", ["LocalTime", "00:32:00.999999"], { "loc": "1:7-1:22" }],
@@ -646,7 +646,7 @@ test "lexer datetime year boundaries" {
       #|date = 2023-01-01
     ),
   )
-  @json.inspect(tokens1, content=[
+  json_inspect(tokens1, content=[
     ["Identifier", "date", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalDate", "2023-01-01"], { "loc": "1:8-1:18" }],
@@ -658,7 +658,7 @@ test "lexer datetime year boundaries" {
       #|date = 2023-12-31
     ),
   )
-  @json.inspect(tokens2, content=[
+  json_inspect(tokens2, content=[
     ["Identifier", "date", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["DateTimeToken", ["LocalDate", "2023-12-31"], { "loc": "1:8-1:18" }],
@@ -670,7 +670,7 @@ test "lexer datetime year boundaries" {
       #|dt = 2023-12-31T23:59:59
     ),
   )
-  @json.inspect(tokens3, content=[
+  json_inspect(tokens3, content=[
     ["Identifier", "dt", { "loc": "1:1-1:3" }],
     ["Equals", { "loc": "1:4-1:5" }],
     [
@@ -686,7 +686,7 @@ test "lexer datetime year boundaries" {
       #|dt = 2024-01-01T00:00:00Z
     ),
   )
-  @json.inspect(tokens4, content=[
+  json_inspect(tokens4, content=[
     ["Identifier", "dt", { "loc": "1:1-1:3" }],
     ["Equals", { "loc": "1:4-1:5" }],
     [

@@ -108,22 +108,22 @@ test "toml local time value" {
 /// Tests for datetime JSON representation
 test "toml datetime to_json" {
   let offset_dt = @toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z"))
-  @json.inspect(offset_dt.to_json(), content=[
+  json_inspect(offset_dt.to_json(), content=[
     "TomlDateTime",
     ["OffsetDateTime", "1979-05-27T07:32:00Z"],
   ])
   let local_dt = @toml.TomlDateTime(LocalDateTime("1979-05-27T07:32:00"))
-  @json.inspect(local_dt.to_json(), content=[
+  json_inspect(local_dt.to_json(), content=[
     "TomlDateTime",
     ["LocalDateTime", "1979-05-27T07:32:00"],
   ])
   let local_date = @toml.TomlDateTime(LocalDate("1979-05-27"))
-  @json.inspect(local_date.to_json(), content=[
+  json_inspect(local_date.to_json(), content=[
     "TomlDateTime",
     ["LocalDate", "1979-05-27"],
   ])
   let local_time = @toml.TomlDateTime(LocalTime("07:32:00"))
-  @json.inspect(local_time.to_json(), content=[
+  json_inspect(local_time.to_json(), content=[
     "TomlDateTime",
     ["LocalTime", "07:32:00"],
   ])

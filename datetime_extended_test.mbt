@@ -21,7 +21,7 @@ test "test datetime token JSON serialization" {
 
   // Test that datetime token can be serialized to JSON
   let json_result = token.to_json()
-  @json.inspect(json_result, content=[
+  json_inspect(json_result, content=[
     "DateTimeToken",
     ["OffsetDateTime", "1979-05-27T07:32:00+01:00"],
     { "loc": "1:1-1:1" },

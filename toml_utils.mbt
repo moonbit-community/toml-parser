@@ -204,7 +204,7 @@ test "create_array_of_tables - mixed with regular tables" {
   let db2 = create_array_of_tables(root_table, ["database", "servers"])
   db2["host"] = TomlString("192.168.1.2")
   db2["port"] = TomlInteger(5433)
-  @json.inspect(root_table, content={
+  json_inspect(root_table, content={
     "owner": [
       "TomlTable",
       { "name": ["TomlString", "Tom"], "dob": ["TomlString", "1979-05-27"] },
@@ -299,7 +299,7 @@ test "create_array_of_tables - multiple nested arrays" {
   let veg2 = create_array_of_tables(root_table, ["vegetables"])
   veg2["name"] = TomlString("lettuce")
   veg2["color"] = TomlString("green")
-  @json.inspect(root_table, content={
+  json_inspect(root_table, content={
     "fruits": [
       "TomlArray",
       [
@@ -343,7 +343,7 @@ test "create_array_of_tables - empty table in array" {
 
   let table3 = create_array_of_tables(root_table, ["empty", "tables"])
   table3["has_content"] = TomlBoolean(true)
-  @json.inspect(root_table, content={
+  json_inspect(root_table, content={
     "empty": [
       "TomlTable",
       {
@@ -404,7 +404,7 @@ test "set dotted key value - simple key" {
   // Test setting a simple key (path length 1)
   let table : Map[String, TomlValue] = Map::new()
   set_dotted_key_value(table, ["name"], TomlString("Alice"))
-  @json.inspect(table, content={ "name": ["TomlString", "Alice"] })
+  json_inspect(table, content={ "name": ["TomlString", "Alice"] })
 }
 
 ///|
@@ -413,7 +413,7 @@ test "set dotted key value - nested keys creating tables" {
   let table : Map[String, TomlValue] = Map::new()
   set_dotted_key_value(table, ["server", "host"], TomlString("localhost"))
   set_dotted_key_value(table, ["server", "port"], TomlInteger(8080))
-  @json.inspect(table, content={
+  json_inspect(table, content={
     "server": [
       "TomlTable",
       { "host": ["TomlString", "localhost"], "port": ["TomlInteger", "8080"] },
@@ -430,7 +430,7 @@ test "set dotted key value - deep nesting" {
     ["a", "b", "c", "d", "e"],
     TomlString("deep value"),
   )
-  @json.inspect(table, content={
+  json_inspect(table, content={
     "a": [
       "TomlTable",
       {
@@ -467,7 +467,7 @@ test "set dotted key value - multiple values same nested table" {
     TomlString("secret"),
   )
   set_dotted_key_value(table, ["database", "options", "ssl"], TomlBoolean(true))
-  @json.inspect(table, content={
+  json_inspect(table, content={
     "database": [
       "TomlTable",
       {
@@ -496,7 +496,7 @@ test "set dotted key value - overwrite existing value" {
 
   // Overwrite with new value
   set_dotted_key_value(table, ["config", "timeout"], TomlInteger(60))
-  @json.inspect(table, content={
+  json_inspect(table, content={
     "config": ["TomlTable", { "timeout": ["TomlInteger", "60"] }],
   })
 }
@@ -513,7 +513,7 @@ test "set dotted key value - add to existing table" {
   // Add more values to the same table later
   set_dotted_key_value(table, ["app", "author"], TomlString("Developer"))
   set_dotted_key_value(table, ["app", "license"], TomlString("MIT"))
-  @json.inspect(table, content={
+  json_inspect(table, content={
     "app": [
       "TomlTable",
       {
@@ -538,7 +538,7 @@ test "set dotted key value - conflict with non-table value" {
     set_dotted_key_value(table, ["config", "nested"], TomlString("value"))
   catch {
     err =>
-      @json.inspect(
+      json_inspect(
         err.to_string(),
         content="ExpectedTable(\"config\", \"simple value\")",
       )
@@ -563,7 +563,7 @@ test "set dotted key value - mixed types in path" {
     ["root", "nested", "datetime"],
     TomlDateTime(@tokenize.TomlDateTime::OffsetDateTime("2024-01-01T12:00:00Z")),
   )
-  @json.inspect(table, content={
+  json_inspect(table, content={
     "root": [
       "TomlTable",
       {
@@ -600,5 +600,5 @@ test "set dotted key value - empty path edge case" {
   set_dotted_key_value(table, [], TomlString("should not appear"))
 
   // Table should only have the first key
-  @json.inspect(table, content={ "key": ["TomlString", "value"] })
+  json_inspect(table, content={ "key": ["TomlString", "value"] })
 }

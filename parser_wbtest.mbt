@@ -7,7 +7,7 @@ test "parse_dotted_key - simple identifier" {
   let tokens = @tokenize.tokenize("simple")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  @json.inspect(result, content=["simple"])
+  json_inspect(result, content=["simple"])
 }
 
 ///|
@@ -16,7 +16,7 @@ test "parse_dotted_key - dotted identifiers" {
   let tokens = @tokenize.tokenize("server.host.name")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  @json.inspect(result, content=["server", "host", "name"])
+  json_inspect(result, content=["server", "host", "name"])
 }
 
 ///|
@@ -25,7 +25,7 @@ test "parse_dotted_key - string keys" {
   let tokens = @tokenize.tokenize("\"quoted key\".\"another quoted\"")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  @json.inspect(result, content=["quoted key", "another quoted"])
+  json_inspect(result, content=["quoted key", "another quoted"])
 }
 
 ///|
@@ -34,7 +34,7 @@ test "parse_dotted_key - integer keys" {
   let tokens = @tokenize.tokenize("123.456.789")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  @json.inspect(result, content=["123", "456", "789"])
+  json_inspect(result, content=["123", "456", "789"])
 }
 
 ///|
@@ -43,7 +43,7 @@ test "parse_dotted_key - string and integer mixed" {
   let tokens = @tokenize.tokenize("\"key\".123")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  @json.inspect(result, content=["key", "123"])
+  json_inspect(result, content=["key", "123"])
 }
 
 ///|
@@ -52,7 +52,7 @@ test "parse_dotted_key - mixed key types" {
   let tokens = @tokenize.tokenize("server.\"port number\".config")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  @json.inspect(result, content=["server", "port number", "config"])
+  json_inspect(result, content=["server", "port number", "config"])
 }
 
 ///|
@@ -62,7 +62,7 @@ test "parse_dotted_key - float token as dotted keys" {
   let tokens = @tokenize.tokenize("1.2")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  @json.inspect(result, content=["1", "2"])
+  json_inspect(result, content=["1", "2"])
 }
 
 ///|
@@ -71,7 +71,7 @@ test "parse_dotted_key - float token with additional dots" {
   let tokens = @tokenize.tokenize("1.2.config.value")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  @json.inspect(result, content=["1", "2", "config", "value"])
+  json_inspect(result, content=["1", "2", "config", "value"])
 }
 
 ///|
@@ -81,7 +81,7 @@ test "parse_dotted_key - float token without dot" {
   let tokens = @tokenize.tokenize("42.0")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  @json.inspect(result, content=["42"])
+  json_inspect(result, content=["42"])
 }
 
 ///|
@@ -90,7 +90,7 @@ test "parse_dotted_key - complex nested structure" {
   let tokens = @tokenize.tokenize("database.connections.\"primary-db\".host")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  @json.inspect(result, content=[
+  json_inspect(result, content=[
     "database", "connections", "primary-db", "host",
   ])
 }
@@ -101,7 +101,7 @@ test "parse_dotted_key - single quoted string" {
   let tokens = @tokenize.tokenize("\"key\"")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  @json.inspect(result, content=["key"])
+  json_inspect(result, content=["key"])
 }
 
 ///|
@@ -110,7 +110,7 @@ test "parse_dotted_key - single integer" {
   let tokens = @tokenize.tokenize("42")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  @json.inspect(result, content=["42"])
+  json_inspect(result, content=["42"])
 }
 
 ///|
@@ -122,7 +122,7 @@ test "parse_dotted_key - error cases" {
     fail("Expected error but got success")
   }
   // TODO(upstream): impl[X:ToJson] ToJson for Iter[X]
-  @json.inspect(err.to_string().split("FAILED:").to_array()[1:], content=[
+  json_inspect(err.to_string().split("FAILED:").to_array()[1:], content=[
     " Expected key at {start: {line: 1, column: 1}, end: {line: 1, column: 2}}\")",
   ])
 }
@@ -135,7 +135,7 @@ test "parse_dotted_key - error after dot" {
   guard (try? parser.parse_dotted_key()) is Err(result) else {
     fail("Expected error but got success")
   }
-  @json.inspect(result.to_string().split("FAILED:").to_array()[1:], content=[
+  json_inspect(result.to_string().split("FAILED:").to_array()[1:], content=[
     " Expected key after dot at {start: {line: 1, column: 5}, end: {line: 1, column: 6}}\")",
   ])
 }
@@ -146,7 +146,7 @@ test "parse_dotted_key - numeric float with continuation" {
   let tokens = @tokenize.tokenize("3.14.config")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  @json.inspect(result, content=["3", "14", "config"])
+  json_inspect(result, content=["3", "14", "config"])
 }
 
 ///|
@@ -155,5 +155,5 @@ test "parse_dotted_key - zero values" {
   let tokens = @tokenize.tokenize("0.0.config")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  @json.inspect(result, content=["0"])
+  json_inspect(result, content=["0"])
 }

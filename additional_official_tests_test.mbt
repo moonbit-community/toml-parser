@@ -13,7 +13,7 @@ test "key name variations" {
     #|"character encoding" = "value"
     #|"ʎǝʞ" = "value"
     #|
-  @json.inspect(@toml.parse(key_variations_toml), content=[
+  json_inspect(@toml.parse(key_variations_toml), content=[
     "TomlTable",
     {
       "bare_key": ["TomlString", "value"],
@@ -32,7 +32,7 @@ test "numeric keys" {
     #|1234 = "value"
     #|0 = "zero"
     #|
-  @json.inspect(@toml.parse(numeric_keys_toml), content=[
+  json_inspect(@toml.parse(numeric_keys_toml), content=[
     "TomlTable",
     { "1234": ["TomlString", "value"], "0": ["TomlString", "zero"] },
   ])
@@ -53,7 +53,7 @@ test "complex escape sequences" {
     #|backslash = "This is a backslash: \\"
     #|quote = "This has a quote: \""
     #|
-  @json.inspect(@toml.parse(escape_sequences_toml), content=[
+  json_inspect(@toml.parse(escape_sequences_toml), content=[
     "TomlTable",
     {
       "basic": [
@@ -82,7 +82,7 @@ test "number formats" {
     #|small_float = 0.00001
     #|large_number = 9223372036854775807
     #|
-  @json.inspect(@toml.parse(numbers_toml), content=[
+  json_inspect(@toml.parse(numbers_toml), content=[
     "TomlTable",
     {
       "positive_int": ["TomlInteger", "42"],
@@ -107,7 +107,7 @@ test "complex nested arrays" {
     #|deep_nested = [[[1, 2]], [[3, 4], [5, 6]]]
     #|array_with_spaces = [ [ 1 , 2 ] , [ 3 , 4 ] ]
     #|
-  @json.inspect(@toml.parse(nested_arrays_toml), content=[
+  json_inspect(@toml.parse(nested_arrays_toml), content=[
     "TomlTable",
     {
       "nested_arrays_of_ints": [
@@ -165,7 +165,7 @@ test "inline table variations" {
     #|with_arrays = {numbers = [1, 2, 3], strings = ["a", "b"]}
     #|spaces = { key1 = "value1" , key2 = "value2" }
     #|
-  @json.inspect(@toml.parse(inline_tables_toml), content=[
+  json_inspect(@toml.parse(inline_tables_toml), content=[
     "TomlTable",
     {
       "simple": ["TomlTable", { "name": ["TomlString", "value"] }],
@@ -227,7 +227,7 @@ test "config file example" {
     #|# Feature flags
     #|features = {new_ui = true, beta_api = false, experimental = true}
     #|
-  @json.inspect(@toml.parse(config_toml), content=[
+  json_inspect(@toml.parse(config_toml), content=[
     "TomlTable",
     {
       "title": ["TomlString", "TOML Example Configuration"],
@@ -288,7 +288,7 @@ test "whitespace edge cases" {
     #|table2 = {a = 1, b = 2}
     #|table3= { a=1 , b=2 }
     #|
-  @json.inspect(@toml.parse(whitespace_edge_toml), content=[
+  json_inspect(@toml.parse(whitespace_edge_toml), content=[
     "TomlTable",
     {
       "key1": ["TomlInteger", "42"],
@@ -343,7 +343,7 @@ test "boundary values" {
     #|empty_table = {}
     #|single_key_table = {key = "value"}
     #|
-  @json.inspect(@toml.parse(boundary_toml), content=[
+  json_inspect(@toml.parse(boundary_toml), content=[
     "TomlTable",
     {
       "empty_string": ["TomlString", ""],

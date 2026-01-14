@@ -250,7 +250,7 @@ test {
     #|debug = true
     #|max_connections = 100
     #|
-  @json.inspect(@toml.parse(toml), content=[
+  json_inspect(@toml.parse(toml), content=[
     "TomlTable",
     {
       "title": ["TomlString", "My Application"],
@@ -273,7 +273,7 @@ test {
     #|strings = ["red", "green", "blue"]
     #|booleans = [true, false, true]
     #|
-  @json.inspect(@toml.parse(toml_arrays), content=[
+  json_inspect(@toml.parse(toml_arrays), content=[
     "TomlTable",
     {
       "numbers": [
@@ -320,7 +320,7 @@ test {
     #|name = "Nail"
     #|sku = 284758393
     #|
-  @json.inspect(@toml.parse(toml_tables), content=[
+  json_inspect(@toml.parse(toml_tables), content=[
     "TomlTable",
     {
       "title": ["TomlString", "Configuration Example"],
@@ -367,7 +367,7 @@ test {
     #|birth_date = 1990-05-15
     #|meeting_time = 14:30:00
     #|
-  @json.inspect(@toml.parse(toml_datetime), content=[
+  json_inspect(@toml.parse(toml_datetime), content=[
     "TomlTable",
     {
       "created_at": ["TomlDateTime", ["OffsetDateTime", "2023-01-01T00:00:00Z"]],
@@ -391,7 +391,7 @@ test {
     #|database = {server = "localhost", port = 5432}
     #|cache = {enabled = true, ttl = 300}
     #|
-  @json.inspect(@toml.parse(toml_inline), content=[
+  json_inspect(@toml.parse(toml_inline), content=[
     "TomlTable",
     {
       "database": [
@@ -486,7 +486,7 @@ test {
     #|name = "secondary"
     #|weight = 0.5
     #|
-  @json.inspect(@toml.parse(toml_advanced), content=[
+  json_inspect(@toml.parse(toml_advanced), content=[
     "TomlTable",
     {
       "app_name": ["TomlString", "TOML Demo"],
@@ -662,7 +662,7 @@ test {
   )
 
   // Verify all datetime types are parsed correctly
-  @json.inspect(parsed_toml, content=[
+  json_inspect(parsed_toml, content=[
     "TomlTable",
     {
       "offset_dt": ["TomlDateTime", ["OffsetDateTime", "2023-01-15T10:30:00Z"]],

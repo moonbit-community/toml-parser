@@ -6,7 +6,7 @@ test "tokenize simple key-value" {
       #|key = "value"
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "value", { "loc": "1:7-1:14" }],
@@ -21,7 +21,7 @@ test "tokenize integer" {
       #|number = 42
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "number", { "loc": "1:1-1:7" }],
     ["Equals", { "loc": "1:8-1:9" }],
     ["IntegerToken", "42", { "loc": "1:10-1:12" }],
@@ -36,7 +36,7 @@ test "tokenize float" {
       #|pi = 3.14
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "pi", { "loc": "1:1-1:3" }],
     ["Equals", { "loc": "1:4-1:5" }],
     ["FloatToken", 3.14, { "loc": "1:6-1:10" }],
@@ -51,7 +51,7 @@ test "tokenize boolean" {
       #|enabled = true
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "enabled", { "loc": "1:1-1:8" }],
     ["Equals", { "loc": "1:9-1:10" }],
     ["BooleanToken", true, { "loc": "1:11-1:15" }],
@@ -66,7 +66,7 @@ test "tokenize array syntax" {
       #|[1, 2, 3]
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["LeftBracket", { "loc": "1:1-1:2" }],
     ["IntegerToken", "1", { "loc": "1:2-1:3" }],
     ["Comma", { "loc": "1:3-1:4" }],
@@ -85,7 +85,7 @@ test "tokenize with comments" {
       #|key = "value" # this is a comment
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "value", { "loc": "1:7-1:14" }],
@@ -101,7 +101,7 @@ test "tokenize multiline" {
       #|key2 = 42
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key1", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["StringToken", "value1", { "loc": "1:8-1:16" }],
@@ -121,7 +121,7 @@ test "unicode or emoji" {
       #|key2 = "💩"
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key1", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["StringToken", "💩", { "loc": "1:8-1:12" }],
@@ -140,7 +140,7 @@ test "unicode or emoji" {
 test "test DateTimeToken JSON serialization" {
   let dt = @tokenize.OffsetDateTime("1979-05-27T07:32:00Z")
   let token = @tokenize.DateTimeToken(dt, loc=@tokenize.default_loc())
-  @json.inspect(token, content=[
+  json_inspect(token, content=[
     "DateTimeToken",
     ["OffsetDateTime", "1979-05-27T07:32:00Z"],
     { "loc": "1:1-1:1" },
@@ -154,7 +154,7 @@ test "test LeftBrace token JSON serialization" {
       #|{}
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["LeftBrace", { "loc": "1:1-1:2" }],
     ["RightBrace", { "loc": "1:2-1:3" }],
     ["EOF", { "loc": "1:3-1:3" }],
@@ -168,7 +168,7 @@ test "test RightBrace token JSON serialization" {
       #|}
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["RightBrace", { "loc": "1:1-1:2" }],
     ["EOF", { "loc": "1:2-1:2" }],
   ])
@@ -181,7 +181,7 @@ test "test Dot token JSON serialization" {
       #|.
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Dot", { "loc": "1:1-1:2" }],
     ["EOF", { "loc": "1:2-1:2" }],
   ])
@@ -195,7 +195,7 @@ test "tokenize hexadecimal numbers" {
       #|hex = 0xDEAD
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "hex", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["IntegerToken", "57005", { "loc": "1:7-1:13" }],
@@ -206,7 +206,7 @@ test "tokenize hexadecimal numbers" {
       #|hex2 = 0X1F
     ),
   )
-  @json.inspect(tokens2, content=[
+  json_inspect(tokens2, content=[
     ["Identifier", "hex2", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["IntegerToken", "31", { "loc": "1:8-1:12" }],
@@ -221,7 +221,7 @@ test "tokenize octal numbers" {
       #|oct = 0o755
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "oct", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["IntegerToken", "493", { "loc": "1:7-1:12" }],
@@ -232,7 +232,7 @@ test "tokenize octal numbers" {
       #|oct2 = 0O123
     ),
   )
-  @json.inspect(tokens2, content=[
+  json_inspect(tokens2, content=[
     ["Identifier", "oct2", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["IntegerToken", "83", { "loc": "1:8-1:13" }],
@@ -247,7 +247,7 @@ test "tokenize binary numbers" {
       #|bin = 0b1101
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "bin", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["IntegerToken", "13", { "loc": "1:7-1:13" }],
@@ -258,7 +258,7 @@ test "tokenize binary numbers" {
       #|bin2 = 0B101010
     ),
   )
-  @json.inspect(tokens2, content=[
+  json_inspect(tokens2, content=[
     ["Identifier", "bin2", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
     ["IntegerToken", "42", { "loc": "1:8-1:16" }],
@@ -273,7 +273,7 @@ test "tokenize numbers with underscores" {
       #|num = 1_000_000
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "num", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["IntegerToken", "1000000", { "loc": "1:7-1:16" }],
@@ -284,7 +284,7 @@ test "tokenize numbers with underscores" {
       #|float_val = 3.14_159
     ),
   )
-  @json.inspect(tokens2, content=[
+  json_inspect(tokens2, content=[
     ["Identifier", "float_val", { "loc": "1:1-1:10" }],
     ["Equals", { "loc": "1:11-1:12" }],
     ["FloatToken", 3.14159, { "loc": "1:13-1:21" }],
@@ -295,7 +295,7 @@ test "tokenize numbers with underscores" {
       #|hex_under = 0xFF_FF
     ),
   )
-  @json.inspect(tokens3, content=[
+  json_inspect(tokens3, content=[
     ["Identifier", "hex_under", { "loc": "1:1-1:10" }],
     ["Equals", { "loc": "1:11-1:12" }],
     ["IntegerToken", "65535", { "loc": "1:13-1:20" }],
@@ -310,7 +310,7 @@ test "tokenize special hex digits" {
       #|hex_digits = 0x0123456789ABCDEF
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "hex_digits", { "loc": "1:1-1:11" }],
     ["Equals", { "loc": "1:12-1:13" }],
     ["IntegerToken", "81985529216486895", { "loc": "1:14-1:32" }],
@@ -326,7 +326,7 @@ test "test escaped single quote in string" {
       #|key = "test\' quote"
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "test' quote", { "loc": "1:7-1:21" }],
@@ -342,7 +342,7 @@ test "test invalid escape sequence error" {
     ),
   )
   // TODO: ArgsLoc no absolute loc
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:200:11-200:67@bobzhang/toml FAILED: Invalid escape sequence: \\\\z at line 1, column 12\")",
   ) // Should fail with invalid escape sequence
@@ -356,7 +356,7 @@ test "test unterminated string error" {
     ),
   )
   // TODO: ArgsLoc no absolute loc
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:207:11-207:50@bobzhang/toml FAILED: Unterminated string at line 1, column 8\")",
   ) // Should fail with unterminated string
@@ -370,7 +370,7 @@ test "test unexpected end after escape" {
     ),
   )
   // TODO: ArgsLoc no absolute loc
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:207:11-207:50@bobzhang/toml FAILED: Unterminated string at line 1, column 8\")",
   ) // Should fail with unexpected end after escape
@@ -383,7 +383,7 @@ test "test invalid characters" {
       #|key @ value
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:833:17-833:54@bobzhang/toml FAILED: Unexpected character: '@'\")",
   ) // Should fail with unexpected character
@@ -396,7 +396,7 @@ test "test binary number with underscores" {
       #|bin = 0b1010_1100
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "bin", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["IntegerToken", "172", { "loc": "1:7-1:18" }],
@@ -411,7 +411,7 @@ test "test negative sign not followed by number" {
       #|key = -abc
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:833:17-833:54@bobzhang/toml FAILED: Unexpected character: '-'\")",
   )
@@ -426,7 +426,7 @@ test "lexer expect_string failure" {
     ),
   )
   let maybe_result = try? lexer.expect_string("goodbye")
-  @json.inspect(
+  json_inspect(
     maybe_result.unwrap_err().to_string(),
     content="Failure(\"lexer.mbt:172:7-172:65@bobzhang/lexer FAILED: Expected string: goodbye at line 1, column 1\")",
   )
@@ -440,7 +440,7 @@ test "unicode 4 escape lowercase hex" {
       #|key = "\uabcd"
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "ꯍ", { "loc": "1:7-1:15" }],
@@ -456,7 +456,7 @@ test "unicode 4 escape uppercase hex" {
       #|key = "\uABCD"
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "ꯍ", { "loc": "1:7-1:15" }],
@@ -472,7 +472,7 @@ test "unicode 4 escape invalid hex" {
       #|key = "\uGHIJ"
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:88:7-88:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10\")",
   )
@@ -486,7 +486,7 @@ test "unicode 4 escape incomplete" {
       #|key = "\u123"
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:88:7-88:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10\")",
   )
@@ -500,7 +500,7 @@ test "unicode 4 escape invalid code point" {
       #|key = "\uD800"
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:92:13-92:68@bobzhang/toml FAILED: Invalid Unicode code point: 55296 at line 1, column 14\")",
   )
@@ -514,7 +514,7 @@ test "unicode 8 escape lowercase hex" {
       #|key = "\U000000ab"
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "«", { "loc": "1:7-1:19" }],
@@ -530,7 +530,7 @@ test "unicode 8 escape uppercase hex" {
       #|key = "\U000000AB"
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "«", { "loc": "1:7-1:19" }],
@@ -546,7 +546,7 @@ test "unicode 8 escape invalid hex" {
       #|key = "\U0000000G"
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:132:7-132:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10\")",
   )
@@ -560,7 +560,7 @@ test "unicode 8 escape incomplete" {
       #|key = "\U0000001"
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:132:7-132:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10\")",
   )
@@ -574,7 +574,7 @@ test "unicode 8 escape invalid code point large" {
       #|key = "\U00110000"
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:135:5-135:60@bobzhang/toml FAILED: Invalid Unicode code point: 1114112 at line 1, column 18\")",
   )
@@ -588,7 +588,7 @@ test "unicode 8 escape invalid code point surrogate" {
       #|key = "\U0000D800"
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:135:5-135:60@bobzhang/toml FAILED: Invalid Unicode code point: 55296 at line 1, column 18\")",
   )
@@ -602,7 +602,7 @@ test "unicode 8 escape invalid conversion" {
       #|key = "\U7FFFFFFF"
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:135:5-135:60@bobzhang/toml FAILED: Invalid Unicode code point: 2147483647 at line 1, column 18\")",
   )
@@ -616,7 +616,7 @@ test "backspace escape sequence" {
       #|key = "test\b"
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "test\b", { "loc": "1:7-1:15" }],
@@ -633,7 +633,7 @@ test "form feed escape sequence" {
     ),
   )
   // FIXME(upstream): inspect test generate '\f' instead of '\u000C'
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "test\u000C", { "loc": "1:7-1:15" }],
@@ -649,7 +649,7 @@ test "multiline basic string escapes" {
       #|key = """line1\nline2\tindented"""
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "line1\nline2\tindented", { "loc": "1:7-1:35" }],
@@ -665,7 +665,7 @@ test "multiline basic string all escapes" {
       #|key = """\n\t\r\\\"\b\f\u0041\U00000042"""
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "\n\t\r\\\"\b\u000CAB", { "loc": "1:7-1:43" }],
@@ -677,7 +677,7 @@ test "multiline basic string all escapes" {
 /// Test multiline basic string with line ending backslash and CR
 test "multiline basic string line ending backslash CR" {
   let tokens = @tokenize.tokenize("key = \"\"\"line1\\\r\n   line2\"\"\"")
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "line1line2", { "loc": "1:7-2:13" }],
@@ -693,7 +693,7 @@ test "multiline basic string invalid escape" {
       #|key = """\z"""
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:271:14-271:71@bobzhang/toml FAILED: Invalid escape sequence: \\\\z at line 1, column 12\")",
   )
@@ -707,7 +707,7 @@ test "multiline basic string unexpected end after escape" {
       #|key = """\
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:277:7-277:73@bobzhang/toml FAILED: Unexpected end of input after escape character at line 1, column 11\")",
   )
@@ -721,7 +721,7 @@ test "multiline basic string unterminated" {
       #|key = """incomplete
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:287:11-287:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 20\")",
   )
@@ -735,7 +735,7 @@ test "multiline basic string early termination" {
       #|key = """line
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:287:11-287:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 14\")",
   )
@@ -745,7 +745,7 @@ test "multiline basic string early termination" {
 /// Test multiline literal string with CR+LF
 test "multiline literal string CRLF" {
   let tokens = @tokenize.tokenize("key = '''line1\r\nline2'''")
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "line1\r\nline2", { "loc": "1:7-2:9" }],
@@ -761,7 +761,7 @@ test "multiline literal string unterminated" {
       #|key = '''incomplete
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:331:11-331:68@bobzhang/toml FAILED: Unterminated multiline literal string at line 1, column 20\")",
   )
@@ -776,7 +776,7 @@ test "hex number invalid digit error path" {
       #|key = 0x
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:345:5-345:50@bobzhang/toml FAILED: Invalid hex number format at line 1, column 7\")",
   )
@@ -792,7 +792,7 @@ test "invalid float error" {
       #|key = 3.14
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["FloatToken", 3.14, { "loc": "1:7-1:11" }],
@@ -808,7 +808,7 @@ test "multiline literal string token" {
       #|key = '''hello world'''
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "hello world", { "loc": "1:7-1:24" }],
@@ -826,7 +826,7 @@ test "tokenize else branch coverage" {
       #|key = "value"
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "value", { "loc": "1:7-1:14" }],
@@ -842,7 +842,7 @@ test "multiline basic string single quote escape" {
       #|key = """line with \' quote"""
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "line with ' quote", { "loc": "1:7-1:31" }],
@@ -856,7 +856,7 @@ test "multiline basic string CR only" {
   // CR: '\r' is hard to visualize in the multipline string
   // explicit escaping is better for testing
   let tokens = @tokenize.tokenize("key = \"\"\"line1\\\rline2\"\"\"")
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "line1line2", { "loc": "1:7-2:9" }],
@@ -873,7 +873,7 @@ test "multiline basic string none peek" {
       #|key = """incomplete string
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:287:11-287:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 27\")",
   )
@@ -889,7 +889,7 @@ test "unicode escape invalid conversion to char" {
     ),
   )
   // This should work for valid Unicode, but test the error path
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "￿", { "loc": "1:7-1:15" }],
@@ -905,7 +905,7 @@ test "hex number with underscores" {
       #|hex = 0xDE_AD_BE_EF
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "hex", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["IntegerToken", "3735928559", { "loc": "1:7-1:20" }],
@@ -922,7 +922,7 @@ test "multiline string opening CRLF" {
       #|content"""
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["StringToken", "content", { "loc": "1:7-2:11" }],
@@ -958,7 +958,7 @@ test "test hex overflow edge case" {
       #|hex = 0xFFFFFFFFFFFFFFFF
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "hex", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["IntegerToken", "-1", { "loc": "1:7-1:25" }],
@@ -1032,7 +1032,7 @@ test "attempt hex digit error path" {
       #|hex = 0xABCDEF123456
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "hex", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
     ["IntegerToken", "188900967593046", { "loc": "1:7-1:21" }],
@@ -1062,7 +1062,7 @@ test "trailing _ in binary number" {
       #|key = 0b10_10_
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:453:9-457:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 14\")",
   )
@@ -1076,7 +1076,7 @@ test "consequence _ in binary number" {
     ),
   )
   // according to spec, this should fail
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:453:9-457:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 11\")",
   )
@@ -1089,7 +1089,7 @@ test "trailing _ in hex number" {
       #|key = 0xAB_CD_
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:368:9-372:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 14\")",
   )
@@ -1103,7 +1103,7 @@ test "consecutive _ in hex number" {
     ),
   )
   // according to spec, this should fail
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:368:9-372:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 11\")",
   )
@@ -1116,7 +1116,7 @@ test "trailing _ in octal number" {
       #|key = 0o755_
     ),
   )
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:404:9-408:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 12\")",
   )
@@ -1130,7 +1130,7 @@ test "consecutive _ in octal number" {
     ),
   )
   // according to spec, this should fail
-  @json.inspect(
+  json_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content="Failure(\"internal/tokenize/tokenize.mbt:404:9-408:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 10\")",
   )

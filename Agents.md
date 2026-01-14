@@ -169,8 +169,8 @@ test "inspect test" {
   inspect(result, content="3")
   // The `content` can be auto-corrected by running `moon test --update`  
   let point = Point::{ x: 10, y: 20 }
-  // For complex structures, use @json.inspect for better readability:
-  @json.inspect(point, content={ "x": 10, "y": 20 })
+  // For complex structures, use json_inspect for better readability:
+  json_inspect(point, content={ "x": 10, "y": 20 })
 }
 ```
 
@@ -1169,8 +1169,8 @@ Practical testing guidance for MoonBit. Keep tests black-box by default and rely
 - Black-box by default: Call only public APIs via `@package.fn`. Use white-box tests only when private members matter.
 - Snapshots: Prefer `inspect(value, content="...")`. If unknown, write `inspect(value)` and run `moon test --update` (or `moon test -u`).
   - Use regular `inspect()` for simple values (uses `Show` trait)
-  - Use `@json.inspect()` for complex nested structures (uses `ToJson` trait, produces more readable output)
-  - It is encouraged to `inspect` or `@json.inspect` the whole return value of a function if 
+  - Use `json_inspect()` for complex nested structures (uses `ToJson` trait, produces more readable output)
+  - It is encouraged to `inspect` or `json_inspect` the whole return value of a function if 
   the whole return value is not huge, this makes test simple. You need `impl (Show|ToJson) for YourType` or `derive (Show, ToJson)`.
 - Grouping: Combine related checks in one `test { ... }` block for speed and clarity.
 - Panics: Name test with prefix `test "panic ..." {...}`; if the call returns a value, wrap it with `ignore(...)` to silence warnings.

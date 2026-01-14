@@ -10,7 +10,7 @@ test "basic string" {
   let basic_string_toml =
     #|basic = "value"
     #|
-  @json.inspect(@toml.parse(basic_string_toml), content=[
+  json_inspect(@toml.parse(basic_string_toml), content=[
     "TomlTable",
     { "basic": ["TomlString", "value"] },
   ])
@@ -22,7 +22,7 @@ test "string escape sequences" {
   let escaped_string_toml =
     #|escaped = "I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."
     #|
-  @json.inspect(@toml.parse(escaped_string_toml), content=[
+  json_inspect(@toml.parse(escaped_string_toml), content=[
     "TomlTable",
     {
       "escaped": [
@@ -40,7 +40,7 @@ test "basic integer" {
     #|negative = -17
     #|zero = 0
     #|
-  @json.inspect(@toml.parse(integer_toml), content=[
+  json_inspect(@toml.parse(integer_toml), content=[
     "TomlTable",
     {
       "answer": ["TomlInteger", "42"],
@@ -58,7 +58,7 @@ test "basic float" {
     #|negative = -0.01
     #|positive = 5.0
     #|
-  @json.inspect(@toml.parse(float_toml), content=[
+  json_inspect(@toml.parse(float_toml), content=[
     "TomlTable",
     {
       "pi": ["TomlFloat", 3.14],
@@ -75,7 +75,7 @@ test "basic boolean" {
     #|enabled = true
     #|disabled = false
     #|
-  @json.inspect(@toml.parse(boolean_toml), content=[
+  json_inspect(@toml.parse(boolean_toml), content=[
     "TomlTable",
     { "enabled": ["TomlBoolean", true], "disabled": ["TomlBoolean", false] },
   ])
@@ -90,7 +90,7 @@ test "homogeneous arrays" {
     #|booleans = [true, false, true]
     #|floats = [1.1, 2.2, 3.3]
     #|
-  @json.inspect(@toml.parse(array_toml), content=[
+  json_inspect(@toml.parse(array_toml), content=[
     "TomlTable",
     {
       "integers": [
@@ -129,7 +129,7 @@ test "nested arrays" {
   let nested_array_toml =
     #|nested = [[1, 2], [3, 4, 5]]
     #|
-  @json.inspect(@toml.parse(nested_array_toml), content=[
+  json_inspect(@toml.parse(nested_array_toml), content=[
     "TomlTable",
     {
       "nested": [
@@ -152,7 +152,7 @@ test "empty arrays" {
   let empty_array_toml =
     #|empty = []
     #|
-  @json.inspect(@toml.parse(empty_array_toml), content=[
+  json_inspect(@toml.parse(empty_array_toml), content=[
     "TomlTable",
     { "empty": ["TomlArray", []] },
   ])
@@ -166,7 +166,7 @@ test "inline tables" {
     #|point = {x = 1, y = 2}
     #|empty = {}
     #|
-  @json.inspect(@toml.parse(inline_table_toml), content=[
+  json_inspect(@toml.parse(inline_table_toml), content=[
     "TomlTable",
     {
       "person": [
@@ -193,7 +193,7 @@ test "complex values combination" {
     #|database = {server = "192.168.1.1", port = 5432, enabled = true}
     #|tags = ["production", "web"]
     #|
-  @json.inspect(@toml.parse(complex_toml), content=[
+  json_inspect(@toml.parse(complex_toml), content=[
     "TomlTable",
     {
       "title": ["TomlString", "TOML Example"],
@@ -231,7 +231,7 @@ test "basic table" {
     #|name = "Tom Preston-Werner"
     #|organization = "GitHub"
     #|
-  @json.inspect(@toml.parse(table_toml), content=[
+  json_inspect(@toml.parse(table_toml), content=[
     "TomlTable",
     {
       "owner": [
@@ -257,7 +257,7 @@ test "nested tables" {
     #|ip = "10.0.0.2"
     #|dc = "eqdc10"
     #|
-  @json.inspect(@toml.parse(nested_table_toml), content=[
+  json_inspect(@toml.parse(nested_table_toml), content=[
     "TomlTable",
     {
       "servers": [
@@ -289,7 +289,7 @@ test "array of tables" {
     #|name = "Nail"
     #|sku = 284758393
     #|
-  @json.inspect(@toml.parse(array_of_tables_toml), content=[
+  json_inspect(@toml.parse(array_of_tables_toml), content=[
     "TomlTable",
     {
       "products": [
@@ -327,7 +327,7 @@ test "nested array of tables" {
     #|color = "yellow"
     #|shape = "banana"
     #|
-  @json.inspect(@toml.parse(nested_array_toml), content=[
+  json_inspect(@toml.parse(nested_array_toml), content=[
     "TomlTable",
     {
       "fruit": [
@@ -379,7 +379,7 @@ test "mixed tables and array of tables" {
     #|server = "192.168.1.1"
     #|port = 5432
     #|
-  @json.inspect(@toml.parse(mixed_toml), content=[
+  json_inspect(@toml.parse(mixed_toml), content=[
     "TomlTable",
     {
       "title": ["TomlString", "Test Document"],
@@ -417,7 +417,7 @@ test "datetime values" {
     #|local_time = 07:32:00
     #|local_datetime = 1979-05-27T07:32:00
     #|
-  @json.inspect(@toml.parse(datetime_toml), content=[
+  json_inspect(@toml.parse(datetime_toml), content=[
     "TomlTable",
     {
       "date1": ["TomlDateTime", ["OffsetDateTime", "1979-05-27T07:32:00Z"]],
@@ -440,7 +440,7 @@ test "multiline basic strings" {
     #|Roses are red
     #|Violets are blue"""
     #|
-  @json.inspect(@toml.parse(multiline_basic_toml), content=[
+  json_inspect(@toml.parse(multiline_basic_toml), content=[
     "TomlTable",
     { "str1": ["TomlString", "Roses are red\nViolets are blue"] },
   ])
@@ -454,7 +454,7 @@ test "literal strings" {
     #|quoted = 'Tom "Dubs" Preston-Werner'
     #|regex = '<\i\c*\s*>'
     #|
-  @json.inspect(@toml.parse(literal_string_toml), content=[
+  json_inspect(@toml.parse(literal_string_toml), content=[
     "TomlTable",
     {
       "winpath": ["TomlString", "C:\\Users\\nodejs\\templates"],
@@ -477,7 +477,7 @@ test "multiline literal strings" {
     #|   is preserved.
     #|'''
     #|
-  @json.inspect(@toml.parse(multiline_literal_toml), content=[
+  json_inspect(@toml.parse(multiline_literal_toml), content=[
     "TomlTable",
     {
       "regex2": ["TomlString", "I [dw]on't need \\d{2} apples"],
@@ -496,7 +496,7 @@ test "comments" {
     #|key = "value"  # This is a comment at the end of a line
     #|another = "# This is not a comment"
     #|
-  @json.inspect(@toml.parse(comments_toml), content=[
+  json_inspect(@toml.parse(comments_toml), content=[
     "TomlTable",
     {
       "key": ["TomlString", "value"],
@@ -516,7 +516,7 @@ test "integer formats" {
     #|oct2 = 0o755
     #|bin1 = 0b11010110
     #|
-  @json.inspect(@toml.parse(integer_formats_toml), content=[
+  json_inspect(@toml.parse(integer_formats_toml), content=[
     "TomlTable",
     {
       "hex1": ["TomlInteger", "3735928559"],
@@ -540,7 +540,7 @@ test "float special values" {
     #|not_a_number3 = -nan
     #|
   // FIXME: json.inspect get null
-  @json.inspect(@toml.parse(float_special_toml), content=[
+  json_inspect(@toml.parse(float_special_toml), content=[
     "TomlTable",
     {
       "infinity1": ["TomlFloat", @double.infinity],
@@ -558,7 +558,7 @@ test "inf failure" {
   let inf_failure_toml =
     #|inf = -infx
     #|
-  @json.inspect(try? @toml.parse(inf_failure_toml), content={
+  json_inspect(try? @toml.parse(inf_failure_toml), content={
     "Err": [
       "Failure", "internal/tokenize/tokenize.mbt:52:7-52:72@bobzhang/toml FAILED: Invalid character 'x' after special value at line 1, column 11",
     ],
@@ -566,7 +566,7 @@ test "inf failure" {
   let inf_failure_toml2 =
     #|inf = -infx=2
     #|
-  @json.inspect(try? @toml.parse(inf_failure_toml2), content={
+  json_inspect(try? @toml.parse(inf_failure_toml2), content={
     "Err": [
       "Failure", "internal/tokenize/tokenize.mbt:52:7-52:72@bobzhang/toml FAILED: Invalid character 'x' after special value at line 1, column 11",
     ],
@@ -574,7 +574,7 @@ test "inf failure" {
   let inf_failure_toml2 =
     #|inf = -inf x=2
     #|
-  @json.inspect(try? @toml.parse(inf_failure_toml2), content={
+  json_inspect(try? @toml.parse(inf_failure_toml2), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at {start: {line: 1, column: 12}, end: {line: 1, column: 13}}",
     ],
@@ -582,7 +582,7 @@ test "inf failure" {
   let table_failure =
     #|a = 3 b = 2
     #|
-  @json.inspect(try? @toml.parse(table_failure), content={
+  json_inspect(try? @toml.parse(table_failure), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at {start: {line: 1, column: 7}, end: {line: 1, column: 8}}",
     ],
@@ -593,7 +593,7 @@ test "inf failure" {
     #|key1 = "value1" # this is a comment
     #|key2 = "value2"
     #|
-  @json.inspect(@toml.parse(comment_test), content=[
+  json_inspect(@toml.parse(comment_test), content=[
     "TomlTable",
     { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
   ])
@@ -605,7 +605,7 @@ test "inf failure" {
     #|pos_nan = nan
     #|neg_nan = -nan
     #|
-  @json.inspect(@toml.parse(valid_inf_toml), content=[
+  json_inspect(@toml.parse(valid_inf_toml), content=[
     "TomlTable",
     {
       "pos_inf": ["TomlFloat", @double.infinity],
@@ -640,7 +640,7 @@ test "whitespace handling" {
     #|key3 ="value3"
     #|key4="value4"
     #|
-  @json.inspect(@toml.parse(whitespace_toml), content=[
+  json_inspect(@toml.parse(whitespace_toml), content=[
     "TomlTable",
     {
       "key1": ["TomlString", "value1"],
@@ -662,7 +662,7 @@ test "array formatting" {
     #|]
     #|array2 = [1, 2, 3,]
     #|
-  @json.inspect(@toml.parse(array_formatting_toml), content=[
+  json_inspect(@toml.parse(array_formatting_toml), content=[
     "TomlTable",
     {
       "array1": [

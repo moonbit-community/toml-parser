@@ -9,7 +9,7 @@ test "complex TOML document" {
     #|enabled = true
     #|ports = [8000, 8001, 8002]
     #|
-  @json.inspect(@toml.parse(simple_toml), content=[
+  json_inspect(@toml.parse(simple_toml), content=[
     "TomlTable",
     {
       "title": ["TomlString", "TOML Example"],
@@ -38,7 +38,7 @@ test "nested arrays and mixed types" {
     #|booleans = [true, false, true]
     #|floats = [1.1, 2.2, 3.3]
     #|
-  @json.inspect(@toml.parse(complex_toml), content=[
+  json_inspect(@toml.parse(complex_toml), content=[
     "TomlTable",
     {
       "mixed_array": [
@@ -96,7 +96,7 @@ test "inline tables and nesting" {
     #|database = {name = "mydb", user = "admin", settings = {timeout = 30, pool_size = 10}}
     #|endpoints = ["/api/v1", "/api/v2", "/health"]
     #|
-  @json.inspect(@toml.parse(inline_toml), content=[
+  json_inspect(@toml.parse(inline_toml), content=[
     "TomlTable",
     {
       "server": [
@@ -145,7 +145,7 @@ test "application configuration" {
     #|allowed_hosts = ["127.0.0.1", "localhost", "example.com"]
     #|features = {logging = true, metrics = false, caching = {enabled = true, ttl = 300}}
     #|
-  @json.inspect(@toml.parse(app_config), content=[
+  json_inspect(@toml.parse(app_config), content=[
     "TomlTable",
     {
       "app_name": ["TomlString", "WebServer"],
@@ -189,7 +189,7 @@ test "advanced string handling" {
     #|single_quotes = 'Single quoted string'
     #|mixed = ["double", 'single', "escaped\"quote"]
     #|
-  @json.inspect(@toml.parse(string_tests), content=[
+  json_inspect(@toml.parse(string_tests), content=[
     "TomlTable",
     {
       "basic": ["TomlString", "simple string"],
@@ -222,7 +222,7 @@ test "numerical edge cases" {
     #|large_float = 1000000.999999
     #|mixed_numbers = [0, 1, 42, 3.14, 2.5, 0.0]
     #|
-  @json.inspect(@toml.parse(number_tests), content=[
+  json_inspect(@toml.parse(number_tests), content=[
     "TomlTable",
     {
       "zero": ["TomlInteger", "0"],
@@ -246,7 +246,7 @@ test "numerical edge cases" {
 
 ///|
 test "empty array" {
-  @json.inspect(
+  json_inspect(
     @toml.parse(
       (
         #|empty_array = []
@@ -268,7 +268,7 @@ test "negative numbers" {
     #|extreme_negative = -9223372036854775807
     #|small_negative = -0.001
     #|
-  @json.inspect(@toml.parse(negative_toml), content=[
+  json_inspect(@toml.parse(negative_toml), content=[
     "TomlTable",
     {
       "negative_int": ["TomlInteger", "-42"],
@@ -294,7 +294,7 @@ test "negative numbers" {
 /// Test negative numbers in various contexts
 test "negative numbers in context" {
   // Single negative integer
-  @json.inspect(
+  json_inspect(
     @toml.parse(
       (
         #|count = -5
@@ -304,7 +304,7 @@ test "negative numbers in context" {
   )
 
   // Single negative float  
-  @json.inspect(
+  json_inspect(
     @toml.parse(
       (
         #|temperature = -15.5
@@ -314,7 +314,7 @@ test "negative numbers in context" {
   )
 
   // Array with mixed positive and negative numbers
-  @json.inspect(
+  json_inspect(
     @toml.parse(
       (
         #|values = [1, -2, 3.0, -4.5]
@@ -340,7 +340,7 @@ test "negative numbers in context" {
   let coords_toml =
     #|coords = {x = -10, y = 20, z = -5.5}
     #|
-  @json.inspect(@toml.parse(coords_toml), content=[
+  json_inspect(@toml.parse(coords_toml), content=[
     "TomlTable",
     {
       "coords": [
@@ -360,7 +360,7 @@ test "negative numbers in context" {
     #|max_debt = -1000.50
     #|adjustment = -0.1
     #|
-  @json.inspect(@toml.parse(multi_negative), content=[
+  json_inspect(@toml.parse(multi_negative), content=[
     "TomlTable",
     {
       "min_temp": ["TomlInteger", "-40"],
@@ -385,7 +385,7 @@ test "microservice configuration" {
     #|health_check = {endpoint = "/health", interval = 10, timeout = 5.0}
     #|rate_limiting = {enabled = true, requests_per_minute = 1000, burst = 50}
     #|
-  @json.inspect(@toml.parse(microservice_config), content=[
+  json_inspect(@toml.parse(microservice_config), content=[
     "TomlTable",
     {
       "service_name": ["TomlString", "user-service"],
@@ -460,34 +460,34 @@ test "microservice configuration" {
 test "error handling" {
 
   // Missing value
-  @json.inspect(try? @toml.parse("key ="), content={
+  json_inspect(try? @toml.parse("key ="), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 6}, end: {line: 1, column: 6}}",
     ],
   })
   // Missing key
-  @json.inspect(try? @toml.parse("= \"value\""), content={
+  json_inspect(try? @toml.parse("= \"value\""), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected key at {start: {line: 1, column: 1}, end: {line: 1, column: 2}}",
     ],
   })
 
   // Unterminated string
-  @json.inspect(try? @toml.parse("key = \"unterminated"), content={
+  json_inspect(try? @toml.parse("key = \"unterminated"), content={
     "Err": [
       "Failure", "internal/tokenize/tokenize.mbt:207:11-207:50@bobzhang/toml FAILED: Unterminated string at line 1, column 8",
     ],
   })
 
   // Invalid syntax - incomplete array
-  @json.inspect(try? @toml.parse("key = [1, 2"), content={
+  json_inspect(try? @toml.parse("key = [1, 2"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected ',' or ']' in array at {start: {line: 1, column: 12}, end: {line: 1, column: 12}}",
     ],
   })
 
   // Empty key
-  @json.inspect(try? @toml.parse(" = \"value\""), content={
+  json_inspect(try? @toml.parse(" = \"value\""), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected key at {start: {line: 1, column: 2}, end: {line: 1, column: 3}}",
     ],
@@ -499,35 +499,35 @@ test "error handling" {
 test "error location tracking" {
 
   // Test 1: Error at beginning of line
-  @json.inspect(try? @toml.parse("=missing_key"), content={
+  json_inspect(try? @toml.parse("=missing_key"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected key at {start: {line: 1, column: 1}, end: {line: 1, column: 2}}",
     ],
   })
 
   // Test 2: Error in the middle of a line
-  @json.inspect(try? @toml.parse("valid_key = "), content={
+  json_inspect(try? @toml.parse("valid_key = "), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 13}, end: {line: 1, column: 13}}",
     ],
   })
 
   // Test 3: Error with spaces before it
-  @json.inspect(try? @toml.parse("   key = "), content={
+  json_inspect(try? @toml.parse("   key = "), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 10}, end: {line: 1, column: 10}}",
     ],
   })
 
   // Test 4: Missing equals sign
-  @json.inspect(try? @toml.parse("key \"value\""), content={
+  json_inspect(try? @toml.parse("key \"value\""), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected '=' at {start: {line: 1, column: 5}, end: {line: 1, column: 12}}",
     ],
   })
 
   // Test 5: Invalid value type
-  @json.inspect(try? @toml.parse("key = invalid_unquoted"), content={
+  json_inspect(try? @toml.parse("key = invalid_unquoted"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 7}, end: {line: 1, column: 23}}",
     ],
@@ -543,7 +543,7 @@ test "multiline error locations" {
     #|key1 = "valid"
     #|key2 = 
     #|
-  @json.inspect(try? @toml.parse(multiline_test1), content={
+  json_inspect(try? @toml.parse(multiline_test1), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 2, column: 8}, end: {line: 3, column: 1}}",
     ],
@@ -555,7 +555,7 @@ test "multiline error locations" {
     #|key2 = "also_valid"
     #|= missing_key
     #|
-  @json.inspect(try? @toml.parse(multiline_test2), content={
+  json_inspect(try? @toml.parse(multiline_test2), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected key at {start: {line: 3, column: 1}, end: {line: 3, column: 2}}",
     ],
@@ -566,7 +566,7 @@ test "multiline error locations" {
     #|key1 = "valid"
     #|key2 = [1, 2, 
     #|
-  @json.inspect(try? @toml.parse(multiline_test3), content={
+  json_inspect(try? @toml.parse(multiline_test3), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 2, column: 15}, end: {line: 3, column: 1}}",
     ],
@@ -580,7 +580,7 @@ test "multiline error locations" {
     #|   
     #|= error_here
     #|
-  @json.inspect(try? @toml.parse(multiline_test4), content={
+  json_inspect(try? @toml.parse(multiline_test4), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected key at {start: {line: 5, column: 1}, end: {line: 5, column: 2}}",
     ],
@@ -592,28 +592,28 @@ test "multiline error locations" {
 test "array error locations" {
 
   // Test 1: Missing closing bracket at specific position
-  @json.inspect(try? @toml.parse("arr = [1, 2, 3"), content={
+  json_inspect(try? @toml.parse("arr = [1, 2, 3"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected ',' or ']' in array at {start: {line: 1, column: 15}, end: {line: 1, column: 15}}",
     ],
   })
 
   // Test 2: Missing comma between elements
-  @json.inspect(try? @toml.parse("arr = [1 2]"), content={
+  json_inspect(try? @toml.parse("arr = [1 2]"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected ',' or ']' in array at {start: {line: 1, column: 10}, end: {line: 1, column: 11}}",
     ],
   })
 
   // Test 3: Invalid value in array
-  @json.inspect(try? @toml.parse("arr = [1, invalid, 3]"), content={
+  json_inspect(try? @toml.parse("arr = [1, invalid, 3]"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 11}, end: {line: 1, column: 18}}",
     ],
   })
 
   // Test 4: Nested array error
-  @json.inspect(try? @toml.parse("arr = [[1, 2], [3, ]"), content={
+  json_inspect(try? @toml.parse("arr = [[1, 2], [3, ]"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected ',' or ']' in array at {start: {line: 1, column: 21}, end: {line: 1, column: 21}}",
     ],
@@ -627,7 +627,7 @@ test "array error locations" {
     #|  invalid_value
     #|]
     #|
-  @json.inspect(try? @toml.parse(array_multiline), content={
+  json_inspect(try? @toml.parse(array_multiline), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 3, column: 5}, end: {line: 4, column: 1}}",
     ],
@@ -639,35 +639,35 @@ test "array error locations" {
 test "inline table error locations" {
 
   // Test 1: Missing closing brace
-  @json.inspect(try? @toml.parse("table = {key = \"value\""), content={
+  json_inspect(try? @toml.parse("table = {key = \"value\""), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected ',' or '}' in inline table at {start: {line: 1, column: 23}, end: {line: 1, column: 23}}",
     ],
   })
 
   // Test 2: Missing key in inline table
-  @json.inspect(try? @toml.parse("table = {= \"value\"}"), content={
+  json_inspect(try? @toml.parse("table = {= \"value\"}"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected key at {start: {line: 1, column: 10}, end: {line: 1, column: 11}}",
     ],
   })
 
   // Test 3: Missing value in inline table  
-  @json.inspect(try? @toml.parse("table = {key = }"), content={
+  json_inspect(try? @toml.parse("table = {key = }"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 16}, end: {line: 1, column: 17}}",
     ],
   })
 
   // Test 4: Missing equals in inline table
-  @json.inspect(try? @toml.parse("table = {key \"value\"}"), content={
+  json_inspect(try? @toml.parse("table = {key \"value\"}"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected '=' at {start: {line: 1, column: 14}, end: {line: 1, column: 21}}",
     ],
   })
 
   // Test 5: Invalid syntax after comma
-  @json.inspect(try? @toml.parse("table = {key1 = \"val1\", }"), content={
+  json_inspect(try? @toml.parse("table = {key1 = \"val1\", }"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected key at {start: {line: 1, column: 25}, end: {line: 1, column: 26}}",
     ],
@@ -679,35 +679,35 @@ test "inline table error locations" {
 test "table header error locations" {
 
   // Test 1: Missing closing bracket in table header
-  @json.inspect(try? @toml.parse("[table_name"), content={
+  json_inspect(try? @toml.parse("[table_name"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected ']' at {start: {line: 1, column: 12}, end: {line: 1, column: 12}}",
     ],
   })
 
   // Test 2: Missing table name
-  @json.inspect(try? @toml.parse("[]"), content={
+  json_inspect(try? @toml.parse("[]"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected path name at {start: {line: 1, column: 2}, end: {line: 1, column: 3}}",
     ],
   })
 
   // Test 3: Array of tables missing second bracket
-  @json.inspect(try? @toml.parse("[[table_name]"), content={
+  json_inspect(try? @toml.parse("[[table_name]"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected ']]' at {start: {line: 1, column: 13}, end: {line: 1, column: 14}}",
     ],
   })
 
   // Test 4: Array of tables missing table name
-  @json.inspect(try? @toml.parse("[[]]"), content={
+  json_inspect(try? @toml.parse("[[]]"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected path name at {start: {line: 1, column: 3}, end: {line: 1, column: 4}}",
     ],
   })
 
   // Test 5: Invalid character in table name position
-  @json.inspect(try? @toml.parse("[#invalid]"), content={
+  json_inspect(try? @toml.parse("[#invalid]"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected path name at {start: {line: 1, column: 11}, end: {line: 1, column: 11}}",
     ],
@@ -719,35 +719,35 @@ test "table header error locations" {
 test "precise column tracking" {
 
   // Test 1: Error at specific column with tabs (assuming tab = 1 column)
-  @json.inspect(try? @toml.parse("\tkey ="), content={
+  json_inspect(try? @toml.parse("\tkey ="), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 7}, end: {line: 1, column: 7}}",
     ],
   })
 
   // Test 2: Error with mixed spaces and content (should fail due to missing newline)
-  @json.inspect(try? @toml.parse("  key1 = \"val\"  key2 = "), content={
+  json_inspect(try? @toml.parse("  key1 = \"val\"  key2 = "), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at {start: {line: 1, column: 17}, end: {line: 1, column: 21}}",
     ],
   })
 
   // Test 3: Long key name error position
-  @json.inspect(try? @toml.parse("very_long_key_name_here = "), content={
+  json_inspect(try? @toml.parse("very_long_key_name_here = "), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 27}, end: {line: 1, column: 27}}",
     ],
   })
 
   // Test 4: Error position after unicode characters
-  @json.inspect(try? @toml.parse("café = "), content={
+  json_inspect(try? @toml.parse("café = "), content={
     "Err": [
       "Failure", "internal/tokenize/tokenize.mbt:833:17-833:54@bobzhang/toml FAILED: Unexpected character: 'é'",
     ],
   })
 
   // Test 5: Multiple equals signs - error on second one
-  @json.inspect(try? @toml.parse("key = = \"value\""), content={
+  json_inspect(try? @toml.parse("key = = \"value\""), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 7}, end: {line: 1, column: 8}}",
     ],
@@ -768,21 +768,21 @@ test "complex error location scenarios" {
     #|  }
     #|}
     #|
-  @json.inspect(try? @toml.parse(deep_nested), content={
+  json_inspect(try? @toml.parse(deep_nested), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected key at {start: {line: 1, column: 10}, end: {line: 2, column: 1}}",
     ],
   })
 
   // Test 2: Error at end of file
-  @json.inspect(try? @toml.parse("key = [1, 2, 3"), content={
+  json_inspect(try? @toml.parse("key = [1, 2, 3"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected ',' or ']' in array at {start: {line: 1, column: 15}, end: {line: 1, column: 15}}",
     ],
   })
 
   // Test 3: Error with different quote types
-  @json.inspect(try? @toml.parse("key = 'unterminated"), content={
+  json_inspect(try? @toml.parse("key = 'unterminated"), content={
     "Err": [
       "Failure", "internal/tokenize/tokenize.mbt:224:11-224:50@bobzhang/toml FAILED: Unterminated string at line 1, column 8",
     ],
@@ -796,7 +796,7 @@ test "complex error location scenarios" {
     #|[[servers]]
     #|name = 
     #|
-  @json.inspect(try? @toml.parse(aot_error), content={
+  json_inspect(try? @toml.parse(aot_error), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 5, column: 8}, end: {line: 6, column: 1}}",
     ],
@@ -808,7 +808,7 @@ test "complex error location scenarios" {
     #|key2 =    
     #|   
     #|
-  @json.inspect(try? @toml.parse(trailing_ws), content={
+  json_inspect(try? @toml.parse(trailing_ws), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 2, column: 11}, end: {line: 3, column: 1}}",
     ],
@@ -820,21 +820,21 @@ test "complex error location scenarios" {
 test "location tracking with special cases" {
 
   // Test 1: Error after comment on same line (should fail since comments aren't implemented)
-  @json.inspect(try? @toml.parse("key = # comment"), content={
+  json_inspect(try? @toml.parse("key = # comment"), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 16}, end: {line: 1, column: 16}}",
     ],
   })
 
   // Test 2: Error with windows-style line endings (if supported)
-  @json.inspect(try? @toml.parse("key1 = \"value\"\r\nkey2 = "), content={
+  json_inspect(try? @toml.parse("key1 = \"value\"\r\nkey2 = "), content={
     "Err": [
       "Failure", "internal/tokenize/tokenize.mbt:833:17-833:54@bobzhang/toml FAILED: Unexpected character: '\r'",
     ],
   })
 
   // Test 3: Error with just spaces as a key
-  @json.inspect(try? @toml.parse("   = \"value\""), content={
+  json_inspect(try? @toml.parse("   = \"value\""), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected key at {start: {line: 1, column: 4}, end: {line: 1, column: 5}}",
     ],
@@ -848,7 +848,7 @@ test "location tracking with special cases" {
     #|  [true, false, invalid_token]
     #|]
     #|
-  @json.inspect(try? @toml.parse(complex_array), content={
+  json_inspect(try? @toml.parse(complex_array), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 4, column: 17}, end: {line: 4, column: 30}}",
     ],
@@ -856,7 +856,7 @@ test "location tracking with special cases" {
 
   // Test 5: Very long line with error at the end
   let long_line = "very_long_key_name_that_goes_on_and_on_and_on_and_on_and_on = "
-  @json.inspect(try? @toml.parse(long_line), content={
+  json_inspect(try? @toml.parse(long_line), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 63}, end: {line: 1, column: 63}}",
     ],
@@ -867,7 +867,7 @@ test "location tracking with special cases" {
 /// Test edge cases with expect tests
 test "edge cases" {
   // Empty input should result in empty table
-  @json.inspect(
+  json_inspect(
     @toml.parse(
       (
         #|
@@ -882,20 +882,20 @@ test "edge cases" {
     #|  
     #|# Another comment
     #|
-  @json.inspect(@toml.parse(comments_only_toml), content=["TomlTable", {}])
+  json_inspect(@toml.parse(comments_only_toml), content=["TomlTable", {}])
 
   // Mixed single and double quotes should parse correctly
   let mixed_quotes_toml =
     #|single = 'value'
     #|double = "value"
     #|
-  @json.inspect(@toml.parse(mixed_quotes_toml), content=[
+  json_inspect(@toml.parse(mixed_quotes_toml), content=[
     "TomlTable",
     { "single": ["TomlString", "value"], "double": ["TomlString", "value"] },
   ])
 
   // Whitespace around equals sign
-  @json.inspect(
+  json_inspect(
     @toml.parse(
       (
         #|spaced   =   "value"  
@@ -915,7 +915,7 @@ test "edge cases" {
     #|key2 = "value2"
     #|# End comment
     #|
-  @json.inspect(@toml.parse(complex_whitespace), content=[
+  json_inspect(@toml.parse(complex_whitespace), content=[
     "TomlTable",
     { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
   ])
@@ -927,7 +927,7 @@ test "newline significate" {
   let data =
     #|key1 = 
     #|  3
-  @json.inspect(try? @toml.parse(data), content={
+  json_inspect(try? @toml.parse(data), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 8}, end: {line: 2, column: 1}}",
     ],
@@ -937,7 +937,7 @@ test "newline significate" {
     #| server = {host =
     #|   "localhost"
     #| }
-  @json.inspect(try? @toml.parse(data2), content={
+  json_inspect(try? @toml.parse(data2), content={
     "Err": [
       "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: Expected value at {start: {line: 1, column: 18}, end: {line: 2, column: 1}}",
     ],
@@ -951,7 +951,7 @@ test "newline significate" {
     #|
     #|]  
     #|
-  @json.inspect(try? @toml.parse(data3), content={
+  json_inspect(try? @toml.parse(data3), content={
     "Ok": [
       "TomlTable",
       { "x": ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"]]] },

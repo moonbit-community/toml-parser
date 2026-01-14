@@ -12,7 +12,7 @@ pub(all) struct Loc {
 /// # Example
 /// ```
 /// let loc = Loc::{start: {line:1, column:1}, end: {line:1, column:10}}
-/// @json.inspect(loc, content = "1:1-1:10")
+/// json_inspect(loc, content = "1:1-1:10")
 /// ```
 ///
 pub impl ToJson for Loc with to_json(self) {

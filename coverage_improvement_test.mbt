@@ -21,7 +21,7 @@ test "test complex TOML with all token types" {
     #|dc = "eqdc10"
     #|
   // This now successfully parses with nested tables support
-  @json.inspect(try? @toml.parse(complex_toml), content={
+  json_inspect(try? @toml.parse(complex_toml), content={
     "Ok": [
       "TomlTable",
       {
@@ -91,7 +91,7 @@ test "test tokenizer unreachable path coverage" {
       #|simple = true
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "simple", { "loc": "1:1-1:7" }],
     ["Equals", { "loc": "1:8-1:9" }],
     ["BooleanToken", true, { "loc": "1:10-1:14" }],
@@ -106,7 +106,7 @@ test "test edge case number formats for error paths" {
   let tokens = try? @tokenize.tokenize(
     "huge = 999999999999999999999999999999999999999",
   )
-  @json.inspect(tokens, content={
+  json_inspect(tokens, content={
     "Err": [
       "Failure", "internal/tokenize/tokenize.mbt:656:12-656:41@bobzhang/toml FAILED: Invalid integer: 999999999999999999999999999999999999999",
     ],
@@ -120,7 +120,7 @@ test "test literal string handling" {
       #|literal = 'this is a literal string'
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "literal", { "loc": "1:1-1:8" }],
     ["Equals", { "loc": "1:9-1:10" }],
     ["StringToken", "this is a literal string", { "loc": "1:11-1:37" }],
@@ -137,7 +137,7 @@ test "test various escape sequences coverage" {
     #|backslash = "path\\to\\file"
     #|quote = "say \"hello\""
     #|
-  @json.inspect(try? @toml.parse(toml_with_escapes), content={
+  json_inspect(try? @toml.parse(toml_with_escapes), content={
     "Ok": [
       "TomlTable",
       {
@@ -159,7 +159,7 @@ test "test whitespace and comment skipping" {
     #|
     #|key2 = "value2"
     #|
-  @json.inspect(try? @toml.parse(toml_with_whitespace), content={
+  json_inspect(try? @toml.parse(toml_with_whitespace), content={
     "Ok": [
       "TomlTable",
       { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
@@ -174,7 +174,7 @@ test "test mixed case hex digits" {
       #|mixed_hex = 0xaBcDeF
     ),
   )
-  @json.inspect(tokens, content=[
+  json_inspect(tokens, content=[
     ["Identifier", "mixed_hex", { "loc": "1:1-1:10" }],
     ["Equals", { "loc": "1:11-1:12" }],
     ["IntegerToken", "11259375", { "loc": "1:13-1:21" }],
