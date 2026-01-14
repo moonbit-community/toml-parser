@@ -1,4 +1,4 @@
-import { "bobzhang/toml/internal/tokenize" }
+import { "bobzhang/toml/internal/tokenize", "moonbitlang/core/double" }
 
 options(
   "warn-list": "+test_unqualified_package-missing_pattern_payload-missing_pattern_arguments",

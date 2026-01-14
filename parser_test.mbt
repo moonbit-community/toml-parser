@@ -6,10 +6,7 @@ test "parse simple key-value string" {
       #|name = "John"
     ),
   )
-  json_inspect(result, content=[
-    "TomlTable",
-    { "name": ["TomlString", "John"] },
-  ])
+  json_inspect(result, content=["TomlTable", { "name": ["TomlString", "John"] }])
 }
 
 ///|

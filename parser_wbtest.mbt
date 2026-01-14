@@ -90,9 +90,7 @@ test "parse_dotted_key - complex nested structure" {
   let tokens = @tokenize.tokenize("database.connections.\"primary-db\".host")
   let parser = Parser::new(tokens)
   let result = parser.parse_dotted_key()
-  json_inspect(result, content=[
-    "database", "connections", "primary-db", "host",
-  ])
+  json_inspect(result, content=["database", "connections", "primary-db", "host"])
 }
 
 ///|
