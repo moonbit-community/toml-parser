@@ -27,7 +27,7 @@ fn create_nested_table(
 priv suberror TableConflicts {
   ExpectedTable(String, TomlValue)
   ExpectedArray(String, TomlValue)
-} derive(Show, ToJson)
+} derive(ToJson, Debug, Show)
 
 ///|
 /// Create or append to an array of tables structure in TOML.
@@ -248,7 +248,7 @@ test "create_array_of_tables - path conflicts with non-table" {
   // Try to create array of tables at ["products", "items"]
   // This should fail because "products" is not a table
   let result = try? create_array_of_tables(root_table, ["products", "items"])
-  inspect(
+  debug_inspect(
     result,
     content=(
       #|Err(Failure("/Users/hongbozhang/git/toml-parser/parser.mbt:1038:11-1038:45 FAILED: Array of tables path conflicts with existing value: products at the end of input"))
@@ -271,7 +271,7 @@ test "create_array_of_tables - final key conflicts with non-array" {
 
   // Try to treat servers.alpha as array of tables
   let result = try? create_array_of_tables(root_table, ["servers", "alpha"])
-  inspect(
+  debug_inspect(
     result,
     content=(
       #|Err(Failure("/Users/hongbozhang/git/toml-parser/parser.mbt:1049:11-1049:45 FAILED: Array of tables conflicts with existing non-array value: alpha at the end of input"))
@@ -538,9 +538,14 @@ test "set dotted key value - conflict with non-table value" {
     set_dotted_key_value(table, ["config", "nested"], TomlString("value"))
   catch {
     err =>
-      json_inspect(
-        err.to_string(),
-        content="ExpectedTable(\"config\", \"simple value\")",
+      debug_inspect(
+        err,
+        content=(
+          #|ExpectedTable(
+          #|  "config",
+          #|  TomlString("simple value"),
+          #|)
+        ),
       )
   } noraise {
     _ => fail("Expected error but got success")

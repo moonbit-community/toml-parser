@@ -56,7 +56,7 @@ pub(all) enum TomlDateTime {
   LocalDateTime(String) // e.g., "1979-05-27T07:32:00"
   LocalDate(String) // e.g., "1979-05-27"
   LocalTime(String) // e.g., "07:32:00"
-} derive(Eq, Show, ToJson)
+} derive(Eq, Show, ToJson, Debug)
 
 ///|
 pub fn Token::loc(self : Self) -> Loc {
