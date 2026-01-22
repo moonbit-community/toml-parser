@@ -431,3 +431,18 @@ test "complex dotted keys" {
     ],
   })
 }
+
+///|
+test "parse identifier starting with underscore - issue regression" {
+  // This was causing an infinite loop before the fix
+  // Now it should properly error out because identifiers are not valid values (except inf/nan)
+  let result = try? @toml.parse(
+    (
+      #|leading-us-bin = _0b1
+    ),
+  )
+  match result {
+    Err(e) => assert_true(e.to_string().contains("Expected value"))
+    Ok(_) => abort("Expected error, but got success")
+  }
+}
