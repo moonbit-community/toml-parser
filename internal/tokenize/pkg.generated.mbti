@@ -19,7 +19,6 @@ pub(all) struct Loc {
   end : @lexer.Position
 }
 pub impl Eq for Loc
-pub impl Show for Loc
 pub impl ToJson for Loc
 pub impl @debug.Debug for Loc
 

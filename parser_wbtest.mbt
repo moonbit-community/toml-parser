@@ -121,7 +121,7 @@ test "parse_dotted_key - error cases" {
   }
   // TODO(upstream): impl[X:ToJson] ToJson for Iter[X]
   json_inspect(err.to_string().split("FAILED:").to_array()[1:], content=[
-    " Expected key at {start: {line: 1, column: 1}, end: {line: 1, column: 2}}\")",
+    " Expected key at {\\n  start: { line: 1, column: 1 },\\n  end: { line: 1, column: 2 },\\n}\")",
   ])
 }
 
@@ -134,7 +134,7 @@ test "parse_dotted_key - error after dot" {
     fail("Expected error but got success")
   }
   json_inspect(result.to_string().split("FAILED:").to_array()[1:], content=[
-    " Expected key after dot at {start: {line: 1, column: 5}, end: {line: 1, column: 6}}\")",
+    " Expected key after dot at {\\n  start: { line: 1, column: 5 },\\n  end: { line: 1, column: 6 },\\n}\")",
   ])
 }
 

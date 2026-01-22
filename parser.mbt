@@ -173,7 +173,7 @@ fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
 ///|
 fn[A] Parser::error(self : Parser, msg : String) -> A raise {
   match self.view() {
-    [token, ..] => fail("\{msg} at \{token.loc()}")
+    [token, ..] => fail("\{msg} at \{@debug.to_string(token.loc())}")
     [] => fail("\{msg} at the end of input")
   }
 }

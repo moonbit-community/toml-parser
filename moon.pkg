@@ -1,5 +1,6 @@
 import {
   "bobzhang/toml/internal/tokenize",
+  "moonbitlang/core/debug",
 }
 
 import "test" {

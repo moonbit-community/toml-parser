@@ -19,15 +19,6 @@ pub impl ToJson for Loc with to_json(self) {
   "\{self.start.line}:\{self.start.column}-\{self.end.line}:\{self.end.column}"
 }
 
-///|
-/// Show impl for error messages
-pub impl Show for Loc with output(self, logger) {
-  logger.write_string("{start: ")
-  logger.write_string(self.start.to_string())
-  logger.write_string(", end: ")
-  logger.write_string(self.end.to_string())
-  logger.write_string("}")
-}
 // impl ToJson for Loc with to_json(self) {
 //   ["Loc", self.start, self.end]
 // }
