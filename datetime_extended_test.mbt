@@ -4,14 +4,14 @@ test "test TomlDateTime types and equality" {
   let offset_dt1 = @tokenize.OffsetDateTime("1979-05-27T07:32:00Z")
   let offset_dt2 = @tokenize.OffsetDateTime("1979-05-27T07:32:00Z")
   let offset_dt3 = @tokenize.OffsetDateTime("1980-05-27T07:32:00Z")
-  inspect(offset_dt1 == offset_dt2, content="true")
-  inspect(offset_dt1 == offset_dt3, content="false")
+  debug_inspect(offset_dt1 == offset_dt2, content="true")
+  debug_inspect(offset_dt1 == offset_dt3, content="false")
   let local_dt = @tokenize.LocalDateTime("1979-05-27T07:32:00")
   let local_date = @tokenize.LocalDate("1979-05-27")
   let local_time = @tokenize.LocalTime("07:32:00")
-  inspect(offset_dt1 == local_dt, content="false")
-  inspect(local_dt == local_date, content="false")
-  inspect(local_date == local_time, content="false")
+  debug_inspect(offset_dt1 == local_dt, content="false")
+  debug_inspect(local_dt == local_date, content="false")
+  debug_inspect(local_date == local_time, content="false")
 }
 
 ///|
@@ -37,11 +37,17 @@ test "test different datetime formats" {
   let offset_dt_plus = @tokenize.OffsetDateTime("1979-05-27T07:32:00+01:00")
 
   // Test Show implementation
-  inspect(local_dt.to_string().contains("LocalDateTime"), content="true")
-  inspect(local_date.to_string().contains("LocalDate"), content="true")
-  inspect(local_time.to_string().contains("LocalTime"), content="true")
-  inspect(offset_dt_z.to_string().contains("OffsetDateTime"), content="true")
-  inspect(offset_dt_plus.to_string().contains("OffsetDateTime"), content="true")
+  debug_inspect(local_dt.to_string().contains("LocalDateTime"), content="true")
+  debug_inspect(local_date.to_string().contains("LocalDate"), content="true")
+  debug_inspect(local_time.to_string().contains("LocalTime"), content="true")
+  debug_inspect(
+    offset_dt_z.to_string().contains("OffsetDateTime"),
+    content="true",
+  )
+  debug_inspect(
+    offset_dt_plus.to_string().contains("OffsetDateTime"),
+    content="true",
+  )
 }
 
 ///|
@@ -59,6 +65,6 @@ test "test datetime token creation and usage" {
     @tokenize.OffsetDateTime("2023-12-26T00:00:00Z"),
     loc~,
   )
-  inspect(token == same_token, content="true")
-  inspect(token == diff_token, content="false")
+  debug_inspect(token == same_token, content="true")
+  debug_inspect(token == diff_token, content="false")
 }

@@ -27,7 +27,28 @@ fn create_nested_table(
 priv suberror TableConflicts {
   ExpectedTable(String, TomlValue)
   ExpectedArray(String, TomlValue)
-} derive(ToJson, Debug, Show)
+} derive(ToJson, Debug)
+
+///|
+/// Show impl for error messages
+impl Show for TableConflicts with output(self, logger) {
+  match self {
+    ExpectedTable(key, value) => {
+      logger.write_string("ExpectedTable(\"")
+      logger.write_string(key)
+      logger.write_string("\", \"")
+      logger.write_string(value.type_name())
+      logger.write_string("\")")
+    }
+    ExpectedArray(key, value) => {
+      logger.write_string("ExpectedArray(\"")
+      logger.write_string(key)
+      logger.write_string("\", \"")
+      logger.write_string(value.type_name())
+      logger.write_string("\")")
+    }
+  }
+}
 
 ///|
 /// Create or append to an array of tables structure in TOML.

@@ -626,9 +626,12 @@ test "heterogeneous arrays should be invalid" {
     @toml.TomlString("hello"),
     @toml.TomlBoolean(true),
   ]
-  inspect(@toml.TomlValue::is_homogeneous_array(mixed_array), content="false")
+  debug_inspect(
+    @toml.TomlValue::is_homogeneous_array(mixed_array),
+    content="false",
+  )
   let mixed_toml_array = @toml.TomlArray(mixed_array)
-  inspect(mixed_toml_array.validate(), content="false")
+  debug_inspect(mixed_toml_array.validate(), content="false")
 }
 
 ///|

@@ -1,4 +1,7 @@
-import { "bobzhang/lexer", "moonbitlang/core/strconv" }
+import {
+  "bobzhang/lexer",
+  "moonbitlang/core/strconv",
+}
 
 options(
   name: "bobzhang/toml/tokenize",

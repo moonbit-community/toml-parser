@@ -742,7 +742,7 @@ test "precise column tracking" {
   // Test 4: Error position after unicode characters
   json_inspect(try? @toml.parse("café = "), content={
     "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:833:17-833:54@bobzhang/toml FAILED: Unexpected character: 'é'",
+      "Failure", "internal/tokenize/tokenize.mbt:841:17-841:54@bobzhang/toml FAILED: Unexpected character: 'é'",
     ],
   })
 
@@ -829,7 +829,7 @@ test "location tracking with special cases" {
   // Test 2: Error with windows-style line endings (if supported)
   json_inspect(try? @toml.parse("key1 = \"value\"\r\nkey2 = "), content={
     "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:833:17-833:54@bobzhang/toml FAILED: Unexpected character: '\r'",
+      "Failure", "internal/tokenize/tokenize.mbt:841:17-841:54@bobzhang/toml FAILED: Unexpected character: '\r'",
     ],
   })
 

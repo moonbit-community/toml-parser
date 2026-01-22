@@ -2,21 +2,41 @@
 /// Tests for main demo functionality
 test "test TomlString to_string" {
   let str_val = @toml.TomlString("Hello, TOML!")
-  inspect(str_val.to_string(), content="\"Hello, TOML!\"")
+  debug_inspect(
+    str_val.to_string(),
+    content=(
+      #|"\"Hello, TOML!\""
+    ),
+  )
 }
 
 ///|
 test "test TomlInteger to_string" {
   let int_val = @toml.TomlInteger(42L)
-  inspect(int_val.to_string(), content="42")
+  debug_inspect(
+    int_val.to_string(),
+    content=(
+      #|"42"
+    ),
+  )
 }
 
 ///|
 test "test TomlBoolean to_string" {
   let bool_val = @toml.TomlBoolean(true)
-  inspect(bool_val.to_string(), content="true")
+  debug_inspect(
+    bool_val.to_string(),
+    content=(
+      #|"true"
+    ),
+  )
   let bool_val_false = @toml.TomlBoolean(false)
-  inspect(bool_val_false.to_string(), content="false")
+  debug_inspect(
+    bool_val_false.to_string(),
+    content=(
+      #|"false"
+    ),
+  )
 }
 
 ///|
@@ -26,7 +46,12 @@ test "test TomlArray to_string" {
   arr.push(@toml.TomlInteger(2L))
   arr.push(@toml.TomlInteger(3L))
   let array_val = @toml.TomlArray(arr)
-  inspect(array_val.to_string(), content="[1, 2, 3]")
+  debug_inspect(
+    array_val.to_string(),
+    content=(
+      #|"[1, 2, 3]"
+    ),
+  )
 }
 
 ///|
@@ -106,6 +131,6 @@ test "test error handling in parsing" {
     ignore(result)
     fail("Should fail to parse invalid TOML")
   } catch {
-    _ => inspect(true, content="true") // Expected to catch error
+    _ => debug_inspect(true, content="true") // Expected to catch error
   }
 }

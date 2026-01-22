@@ -1,4 +1,6 @@
-import { "bobzhang/toml" }
+import {
+  "bobzhang/toml",
+}
 
 options(
   "is-main": true,

@@ -1,9 +1,10 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "bobzhang/toml/internal/tokenize"
 
-import(
-  "bobzhang/lexer"
-)
+import {
+  "bobzhang/lexer",
+  "moonbitlang/core/debug",
+}
 
 // Values
 pub fn default_loc() -> Loc
@@ -20,6 +21,7 @@ pub(all) struct Loc {
 pub impl Eq for Loc
 pub impl Show for Loc
 pub impl ToJson for Loc
+pub impl @debug.Debug for Loc
 
 pub(all) enum Token {
   StringToken(String, loc~ : Loc)
@@ -40,8 +42,8 @@ pub(all) enum Token {
 }
 pub fn Token::loc(Self) -> Loc
 pub impl Eq for Token
-pub impl Show for Token
 pub impl ToJson for Token
+pub impl @debug.Debug for Token
 
 pub(all) enum TomlDateTime {
   OffsetDateTime(String)
@@ -52,6 +54,7 @@ pub(all) enum TomlDateTime {
 pub impl Eq for TomlDateTime
 pub impl Show for TomlDateTime
 pub impl ToJson for TomlDateTime
+pub impl @debug.Debug for TomlDateTime
 
 // Type aliases
 

@@ -5,7 +5,7 @@ using @lexer {type Position}
 pub(all) struct Loc {
   start : Position
   end : Position
-} derive(Eq, Show)
+} derive(Eq, Debug)
 
 ///|
 /// minimal format for visual debugging
@@ -17,6 +17,16 @@ pub(all) struct Loc {
 ///
 pub impl ToJson for Loc with to_json(self) {
   "\{self.start.line}:\{self.start.column}-\{self.end.line}:\{self.end.column}"
+}
+
+///|
+/// Show impl for error messages
+pub impl Show for Loc with output(self, logger) {
+  logger.write_string("{start: ")
+  logger.write_string(self.start.to_string())
+  logger.write_string(", end: ")
+  logger.write_string(self.end.to_string())
+  logger.write_string("}")
 }
 // impl ToJson for Loc with to_json(self) {
 //   ["Loc", self.start, self.end]
@@ -47,7 +57,7 @@ pub(all) enum Token {
   // Special
   Newline(loc~ : Loc)
   EOF(loc~ : Loc)
-} derive(Eq, Show, ToJson)
+} derive(Eq, ToJson, Debug)
 
 ///|
 /// DateTime type for TOML datetime values
@@ -56,7 +66,34 @@ pub(all) enum TomlDateTime {
   LocalDateTime(String) // e.g., "1979-05-27T07:32:00"
   LocalDate(String) // e.g., "1979-05-27"
   LocalTime(String) // e.g., "07:32:00"
-} derive(Eq, Show, ToJson, Debug)
+} derive(Eq, ToJson, Debug)
+
+///|
+/// Show impl for TomlDateTime - provides human-readable format
+pub impl Show for TomlDateTime with output(self, logger) {
+  match self {
+    OffsetDateTime(s) => {
+      logger.write_string("OffsetDateTime(\"")
+      logger.write_string(s)
+      logger.write_string("\")")
+    }
+    LocalDateTime(s) => {
+      logger.write_string("LocalDateTime(\"")
+      logger.write_string(s)
+      logger.write_string("\")")
+    }
+    LocalDate(s) => {
+      logger.write_string("LocalDate(\"")
+      logger.write_string(s)
+      logger.write_string("\")")
+    }
+    LocalTime(s) => {
+      logger.write_string("LocalTime(\"")
+      logger.write_string(s)
+      logger.write_string("\")")
+    }
+  }
+}
 
 ///|
 pub fn Token::loc(self : Self) -> Loc {

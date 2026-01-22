@@ -371,7 +371,7 @@ test "validation comprehensive" {
     @toml.TomlArray([@toml.TomlInteger(1L), @toml.TomlInteger(2L)]),
     @toml.TomlArray([@toml.TomlInteger(3L), @toml.TomlInteger(4L)]),
   ]
-  inspect(
+  debug_inspect(
     @toml.TomlValue::is_homogeneous_array(valid_nested_array),
     content="true",
   )
@@ -381,12 +381,12 @@ test "validation comprehensive" {
     @toml.TomlArray([@toml.TomlInteger(1L), @toml.TomlInteger(2L)]),
     @toml.TomlArray([@toml.TomlString("hello"), @toml.TomlString("world")]),
   ]
-  inspect(
+  debug_inspect(
     @toml.TomlValue::is_homogeneous_array(invalid_nested_array),
     content="true",
   ) // Outer level is homogeneous (all arrays)
 
   // But the validation should still pass since each inner array is homogeneous
   let valid_mixed_nested = @toml.TomlArray(invalid_nested_array)
-  inspect(valid_mixed_nested.validate(), content="true")
+  debug_inspect(valid_mixed_nested.validate(), content="true")
 }

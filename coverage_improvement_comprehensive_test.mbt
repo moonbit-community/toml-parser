@@ -144,7 +144,7 @@ test "unterminated_multiline_string" {
 test "homogeneous_array_with_floats" {
   let arr = [@toml.TomlFloat(1.0), @toml.TomlFloat(2.0)]
   let result = @toml.TomlValue::is_homogeneous_array(arr)
-  inspect(result, content="true")
+  debug_inspect(result, content="true")
 }
 
 ///|
@@ -154,7 +154,7 @@ test "homogeneous_array_with_tables" {
   let table2 = Map::new()
   let arr = [@toml.TomlTable(table1), @toml.TomlTable(table2)]
   let result = @toml.TomlValue::is_homogeneous_array(arr)
-  inspect(result, content="true")
+  debug_inspect(result, content="true")
 }
 
 ///|
@@ -162,7 +162,7 @@ test "homogeneous_array_with_tables" {
 test "homogeneous_array_type_check_boolean" {
   let arr = [@toml.TomlBoolean(true), @toml.TomlInteger(42L)]
   let result = @toml.TomlValue::is_homogeneous_array(arr)
-  inspect(result, content="false")
+  debug_inspect(result, content="false")
 }
 
 ///|
@@ -171,7 +171,7 @@ test "homogeneous_array_type_check_table_vs_other" {
   let table = Map::new()
   let arr = [@toml.TomlTable(table), @toml.TomlInteger(42L)]
   let result = @toml.TomlValue::is_homogeneous_array(arr)
-  inspect(result, content="false")
+  debug_inspect(result, content="false")
 }
 
 ///|
@@ -183,7 +183,7 @@ test "nested_validation_failure_in_array" {
   let outer_arr = [invalid_nested]
   let outer_array_value = @toml.TomlArray(outer_arr)
   let result = outer_array_value.validate()
-  inspect(result, content="false")
+  debug_inspect(result, content="false")
 }
 
 ///|
@@ -197,7 +197,7 @@ test "table_path_conflict_error" {
   )
   json_inspect(result, content={
     "Err": [
-      "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: ExpectedTable(\"key\", 42) at {start: {line: 2, column: 6}, end: {line: 2, column: 6}}",
+      "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: ExpectedTable(\"key\", \"integer\") at {start: {line: 2, column: 6}, end: {line: 2, column: 6}}",
     ],
   }) // Expected error
 }
@@ -213,7 +213,7 @@ test "array_of_tables_path_conflict_error" {
   )
   json_inspect(result, content={
     "Err": [
-      "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: ExpectedArray(\"key\", 42) at {start: {line: 2, column: 8}, end: {line: 2, column: 8}}",
+      "Failure", "parser.mbt:176:20-176:52@bobzhang/toml FAILED: ExpectedArray(\"key\", \"integer\") at {start: {line: 2, column: 8}, end: {line: 2, column: 8}}",
     ],
   }) // Expected error
 }
@@ -240,25 +240,45 @@ test "toml_value_to_string_coverage" {
   // Test float to_string
   let float_val = @toml.TomlFloat(3.14)
   let float_str = float_val.to_string()
-  inspect(float_str.contains("3.14"), content="true")
+  debug_inspect(float_str.contains("3.14"), content="true")
 
   // Test datetime to_string variants
   let offset_dt = @toml.TomlDateTime(
     @tokenize.OffsetDateTime("2023-05-15T10:30:00Z"),
   )
   let offset_str = offset_dt.to_string()
-  inspect(offset_str, content="2023-05-15T10:30:00Z")
+  debug_inspect(
+    offset_str,
+    content=(
+      #|"2023-05-15T10:30:00Z"
+    ),
+  )
   let local_dt = @toml.TomlDateTime(
     @tokenize.LocalDateTime("2023-05-15T10:30:00"),
   )
   let local_str = local_dt.to_string()
-  inspect(local_str, content="2023-05-15T10:30:00")
+  debug_inspect(
+    local_str,
+    content=(
+      #|"2023-05-15T10:30:00"
+    ),
+  )
   let local_date = @toml.TomlDateTime(@tokenize.LocalDate("2023-05-15"))
   let date_str = local_date.to_string()
-  inspect(date_str, content="2023-05-15")
+  debug_inspect(
+    date_str,
+    content=(
+      #|"2023-05-15"
+    ),
+  )
   let local_time = @toml.TomlDateTime(@tokenize.LocalTime("10:30:00"))
   let time_str = local_time.to_string()
-  inspect(time_str, content="10:30:00")
+  debug_inspect(
+    time_str,
+    content=(
+      #|"10:30:00"
+    ),
+  )
 }
 
 ///|
@@ -294,9 +314,24 @@ test "main_function_components_coverage" {
   let bool_val = @toml.TomlBoolean(true)
 
   // Call to_string methods to match main function behavior
-  inspect(str_val.to_string(), content="\"Hello, TOML!\"")
-  inspect(int_val.to_string(), content="42")
-  inspect(bool_val.to_string(), content="true")
+  debug_inspect(
+    str_val.to_string(),
+    content=(
+      #|"\"Hello, TOML!\""
+    ),
+  )
+  debug_inspect(
+    int_val.to_string(),
+    content=(
+      #|"42"
+    ),
+  )
+  debug_inspect(
+    bool_val.to_string(),
+    content=(
+      #|"true"
+    ),
+  )
 
   // Create and manipulate arrays like in main
   let arr = Array::new()
@@ -304,22 +339,27 @@ test "main_function_components_coverage" {
   arr.push(@toml.TomlInteger(2L))
   arr.push(@toml.TomlInteger(3L))
   let array_val = @toml.TomlArray(arr)
-  inspect(array_val.to_string(), content="[1, 2, 3]")
+  debug_inspect(
+    array_val.to_string(),
+    content=(
+      #|"[1, 2, 3]"
+    ),
+  )
 
   // Test parsing like in main function
   let toml_input = "name = \"John Doe\"\nage = 30\nenabled = true"
   let result1 = @toml.parse(toml_input)
-  inspect(result1.to_string().contains("John Doe"), content="true")
+  debug_inspect(result1.to_string().contains("John Doe"), content="true")
 
   // Test array parsing
   let toml_array = "numbers = [1, 2, 3, 4, 5]"
   let result2 = @toml.parse(toml_array)
-  inspect(result2.to_string().contains("[1, 2, 3, 4, 5]"), content="true")
+  debug_inspect(result2.to_string().contains("[1, 2, 3, 4, 5]"), content="true")
 
   // Test inline table parsing
   let toml_table = "person = {name = \"Alice\", age = 25}"
   let result3 = @toml.parse(toml_table)
-  inspect(result3.to_string().contains("Alice"), content="true")
+  debug_inspect(result3.to_string().contains("Alice"), content="true")
 }
 
 ///|
@@ -395,7 +435,7 @@ test "invalid_character_error" {
   )
   json_inspect(result, content={
     "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:833:17-833:54@bobzhang/toml FAILED: Unexpected character: '@'",
+      "Failure", "internal/tokenize/tokenize.mbt:841:17-841:54@bobzhang/toml FAILED: Unexpected character: '@'",
     ],
   }) // Expected error
 }
@@ -409,5 +449,8 @@ test "multiline_string_line_ending_backslash" {
     fail("Expected table with multiline string")
   }
   // Should have whitespace trimmed after backslash
-  inspect(str.contains("Line 1") && str.contains("Line 2"), content="true")
+  debug_inspect(
+    str.contains("Line 1") && str.contains("Line 2"),
+    content="true",
+  )
 }

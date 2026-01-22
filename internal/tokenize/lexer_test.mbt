@@ -385,7 +385,7 @@ test "test invalid characters" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:833:17-833:54@bobzhang/toml FAILED: Unexpected character: '@'\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:841:17-841:54@bobzhang/toml FAILED: Unexpected character: '@'\")",
   ) // Should fail with unexpected character
 }
 
@@ -413,7 +413,7 @@ test "test negative sign not followed by number" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:833:17-833:54@bobzhang/toml FAILED: Unexpected character: '-'\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:841:17-841:54@bobzhang/toml FAILED: Unexpected character: '-'\")",
   )
 }
 
@@ -944,8 +944,8 @@ test "very large invalid float" {
   // This should trigger the "Invalid float" error, covering that line
   let error_msg = maybe_tokens.unwrap_err().to_string()
   match error_msg.strip_prefix("Invalid float: ") {
-    Some(_) => inspect(true, content="true") // Error message started with "Invalid float: "
-    None => inspect(false, content="false") // Unexpected error message
+    Some(_) => debug_inspect(true, content="true") // Error message started with "Invalid float: "
+    None => debug_inspect(false, content="false") // Unexpected error message
   }
 }
 
@@ -978,8 +978,8 @@ test "unicode code point conversion failure" {
   )
   let error_msg = maybe_tokens.unwrap_err().to_string()
   match error_msg.strip_prefix("Invalid Unicode code point: ") {
-    Some(_) => inspect(true, content="true") // Expected error
-    None => inspect(false, content="false") // Unexpected error
+    Some(_) => debug_inspect(true, content="true") // Expected error
+    None => debug_inspect(false, content="false") // Unexpected error
   }
 }
 
@@ -999,7 +999,7 @@ test "multiline string abrupt end" {
     Some(_) => true
     None => false
   }
-  inspect(is_unterminated, content="false")
+  debug_inspect(is_unterminated, content="false")
 }
 
 ///|
@@ -1019,7 +1019,7 @@ test "unicode 8 digit none conversion attempt" {
     Some(_) => true
     None => false
   }
-  inspect(has_invalid_unicode, content="false")
+  debug_inspect(has_invalid_unicode, content="false")
 }
 
 ///|
@@ -1052,7 +1052,7 @@ test "multiline string potential truncation" {
   // Should get unterminated string error
   let error_msg = maybe_tokens.unwrap_err().to_string()
   let is_unterminated = error_msg.contains("Unterminated")
-  inspect(is_unterminated, content="true")
+  debug_inspect(is_unterminated, content="true")
 }
 
 ///|

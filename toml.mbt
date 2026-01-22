@@ -73,6 +73,20 @@ pub fn TomlValue::is_homogeneous_array(arr : Array[TomlValue]) -> Bool {
 }
 
 ///|
+/// Get the type name of a TomlValue for error messages
+pub fn TomlValue::type_name(self : TomlValue) -> String {
+  match self {
+    TomlString(_) => "string"
+    TomlInteger(_) => "integer"
+    TomlFloat(_) => "float"
+    TomlBoolean(_) => "boolean"
+    TomlArray(_) => "array"
+    TomlTable(_) => "table"
+    TomlDateTime(_) => "datetime"
+  }
+}
+
+///|
 /// Validate that a TomlValue follows TOML specification rules
 pub fn TomlValue::validate(self : TomlValue) -> Bool {
   match self {

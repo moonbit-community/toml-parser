@@ -16,11 +16,10 @@ test "parse simple key-value integer" {
       #|age = 25
     ),
   )
-  inspect(
+  debug_inspect(
     result,
     content=(
-      #|age = 25
-      #|
+      #|TomlTable({ "age": TomlInteger(25) })
     ),
   )
 }
@@ -410,16 +409,10 @@ test "dotted key notation deep nesting" {
   )
   // TODO:
   // TOML::to_string is not really  good, 
-  inspect(
+  debug_inspect(
     result,
     content=(
-      #|[a]
-      #|[a.b]
-      #|[a.b.c]
-      #|[a.b.c.d]
-      #|[a.b.c.d.e]
-      #|f = "deep"
-      #|
+      #|TomlTable({ "a": TomlTable({ "b": ... }) })
     ),
   )
 }

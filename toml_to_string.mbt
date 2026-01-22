@@ -74,13 +74,13 @@ fn needs_quoting(s : String) -> Bool {
 
 ///|
 test "needs_quoting tests" {
-  inspect(needs_quoting("simplekey"), content="false")
-  inspect(needs_quoting("key with spaces"), content="false")
-  inspect(needs_quoting("key\nwith\nnewlines"), content="true")
-  inspect(needs_quoting(" key"), content="true")
-  inspect(needs_quoting("key "), content="true")
-  inspect(needs_quoting(""), content="true")
-  inspect(needs_quoting("key=with=equals"), content="true")
+  debug_inspect(needs_quoting("simplekey"), content="false")
+  debug_inspect(needs_quoting("key with spaces"), content="false")
+  debug_inspect(needs_quoting("key\nwith\nnewlines"), content="true")
+  debug_inspect(needs_quoting(" key"), content="true")
+  debug_inspect(needs_quoting("key "), content="true")
+  debug_inspect(needs_quoting(""), content="true")
+  debug_inspect(needs_quoting("key=with=equals"), content="true")
 }
 
 ///|
