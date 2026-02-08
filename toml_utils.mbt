@@ -562,10 +562,7 @@ test "set dotted key value - conflict with non-table value" {
       debug_inspect(
         err,
         content=(
-          #|ExpectedTable(
-          #|  "config",
-          #|  TomlString("simple value"),
-          #|)
+          #|ExpectedTable("config", TomlString("simple value"))
         ),
       )
   } noraise {

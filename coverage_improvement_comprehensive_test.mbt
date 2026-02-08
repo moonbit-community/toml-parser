@@ -197,7 +197,7 @@ test "table_path_conflict_error" {
   )
   json_inspect(result, content={
     "Err": [
-      "Failure", "parser.mbt:176:20-176:70@bobzhang/toml FAILED: ExpectedTable(\"key\", \"integer\") at {\n  start: { line: 2, column: 6 },\n  end: { line: 2, column: 6 },\n}",
+      "Failure", "parser.mbt:176:20-176:70@bobzhang/toml FAILED: ExpectedTable(\"key\", \"integer\") at { start: { line: 2, column: 6 }, end: { line: 2, column: 6 } }",
     ],
   }) // Expected error
 }
@@ -213,7 +213,7 @@ test "array_of_tables_path_conflict_error" {
   )
   json_inspect(result, content={
     "Err": [
-      "Failure", "parser.mbt:176:20-176:70@bobzhang/toml FAILED: ExpectedArray(\"key\", \"integer\") at {\n  start: { line: 2, column: 8 },\n  end: { line: 2, column: 8 },\n}",
+      "Failure", "parser.mbt:176:20-176:70@bobzhang/toml FAILED: ExpectedArray(\"key\", \"integer\") at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }",
     ],
   }) // Expected error
 }
@@ -435,7 +435,7 @@ test "invalid_character_error" {
   )
   json_inspect(result, content={
     "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:841:17-841:54@bobzhang/toml FAILED: Unexpected character: '@'",
+      "Failure", "internal/tokenize/tokenize.mbt:838:17-838:54@bobzhang/toml FAILED: Unexpected character: '@'",
     ],
   }) // Expected error
 }

@@ -576,7 +576,7 @@ test "inf failure" {
     #|
   json_inspect(try? @toml.parse(inf_failure_toml2), content={
     "Err": [
-      "Failure", "parser.mbt:176:20-176:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at {\n  start: { line: 1, column: 12 },\n  end: { line: 1, column: 13 },\n}",
+      "Failure", "parser.mbt:176:20-176:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 12 }, end: { line: 1, column: 13 } }",
     ],
   })
   let table_failure =
@@ -584,7 +584,7 @@ test "inf failure" {
     #|
   json_inspect(try? @toml.parse(table_failure), content={
     "Err": [
-      "Failure", "parser.mbt:176:20-176:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at {\n  start: { line: 1, column: 7 },\n  end: { line: 1, column: 8 },\n}",
+      "Failure", "parser.mbt:176:20-176:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }",
     ],
   })
 

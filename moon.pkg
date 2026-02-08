@@ -3,10 +3,8 @@ import {
   "moonbitlang/core/debug",
 }
 
-import "test" {
+import {
   "moonbitlang/core/double",
-}
+} for "test"
 
-options(
-  "warn-list": "+test_unqualified_package-missing_pattern_payload-missing_pattern_arguments",
-)
+warnings = "+test_unqualified_package-missing_pattern_payload-missing_pattern_arguments"

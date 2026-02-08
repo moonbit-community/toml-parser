@@ -726,14 +726,14 @@ moon build
 
 1. **Always validate after parsing**:
 
-   ```moonbit
+   ```moonbit nocheck
    let toml = @toml.parse(input)
    assert_true(toml.validate())  // Ensures data integrity
    ```
 
 2. **Use pattern matching for type safety**:
 
-   ```moonbit
+   ```moonbit nocheck
    match config {
      TomlTable(table) => {
        match table.get("port") {
@@ -746,7 +746,7 @@ moon build
    ```
 
 3. **Handle errors appropriately**:
-   ```moonbit
+   ```moonbit nocheck
    ///|
    let config = @toml.parse(file_content) catch {
      err => {

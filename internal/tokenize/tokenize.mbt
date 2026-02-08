@@ -673,10 +673,7 @@ test "read_number" {
     content=(
       #|IntegerToken(
       #|  123,
-      #|  loc={
-      #|    start: { line: 1, column: 1 },
-      #|    end: { line: 1, column: 4 },
-      #|  },
+      #|  loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
       #|)
     ),
   )
@@ -871,10 +868,7 @@ test "read_number 2" {
     content=(
       #|IntegerToken(
       #|  123,
-      #|  loc={
-      #|    start: { line: 1, column: 1 },
-      #|    end: { line: 1, column: 4 },
-      #|  },
+      #|  loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
       #|)
     ),
   )

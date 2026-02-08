@@ -385,7 +385,7 @@ test "test invalid characters" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:841:17-841:54@bobzhang/toml FAILED: Unexpected character: '@'\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:838:17-838:54@bobzhang/toml FAILED: Unexpected character: '@'\")",
   ) // Should fail with unexpected character
 }
 
@@ -413,7 +413,7 @@ test "test negative sign not followed by number" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:841:17-841:54@bobzhang/toml FAILED: Unexpected character: '-'\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:838:17-838:54@bobzhang/toml FAILED: Unexpected character: '-'\")",
   )
 }
 
