@@ -5,7 +5,7 @@ using @lexer {type Position}
 pub(all) struct Loc {
   start : Position
   end : Position
-} derive(Eq, Debug)
+} derive(Eq)
 
 ///|
 /// minimal format for visual debugging
@@ -17,6 +17,13 @@ pub(all) struct Loc {
 ///
 pub impl ToJson for Loc with to_json(self) {
   "\{self.start.line}:\{self.start.column}-\{self.end.line}:\{self.end.column}"
+}
+
+///|
+pub impl Debug for Loc with to_repr(self) {
+  Repr::literal(
+    "{ start: { line: \{self.start.line}, column: \{self.start.column} }, end: { line: \{self.end.line}, column: \{self.end.column} } }",
+  )
 }
 
 // impl ToJson for Loc with to_json(self) {
