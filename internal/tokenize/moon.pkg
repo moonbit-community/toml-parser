@@ -3,8 +3,3 @@ import {
   "moonbitlang/core/strconv",
 }
 
-warnings = "-21"
-
-options(
-  name: "bobzhang/toml/tokenize",
-)
