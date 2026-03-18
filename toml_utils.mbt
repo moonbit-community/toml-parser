@@ -7,7 +7,12 @@ fn create_nested_table(
   let mut current_table = root_table
   for key in path {
     match current_table.get(key) {
-      Some(TomlTable(existing_table)) => current_table = existing_table
+      Some(TomlTable(existing_table)) => {
+        if existing_table.contains("\u0000__inline__") {
+          raise InlineTableImmutable(key)
+        }
+        current_table = existing_table
+      }
       Some(TomlArray(arr)) if arr.length() > 0 => {
         // Navigate into the last element of an array of tables
         match arr[arr.length() - 1] {
@@ -31,6 +36,7 @@ priv suberror TableConflicts {
   ExpectedTable(String, TomlValue)
   ExpectedArray(String, TomlValue)
   DuplicateKey(String)
+  InlineTableImmutable(String)
 } derive(ToJson, Debug)
 
 ///|
@@ -53,6 +59,11 @@ impl Show for TableConflicts with output(self, logger) {
     }
     DuplicateKey(key) => {
       logger.write_string("DuplicateKey(\"")
+      logger.write_string(key)
+      logger.write_string("\")")
+    }
+    InlineTableImmutable(key) => {
+      logger.write_string("InlineTableImmutable(\"")
       logger.write_string(key)
       logger.write_string("\")")
     }
@@ -386,14 +397,16 @@ fn set_dotted_key_value(
     return
   }
 
-  // Navigate through the dotted path, creating tables as needed.
-  // Mark intermediate tables as "dotted-key defined" so they can't be
-  // explicitly redefined with [table] headers.
+  // Navigate through the dotted path, creating tables as needed
   let mut current_table = table
   for i = 0; i < key_path.length() - 1; i = i + 1 {
     let key = key_path[i]
     match current_table.get(key) {
       Some(TomlTable(existing_table)) => {
+        // Reject extending inline tables
+        if existing_table.contains("\u0000__inline__") {
+          raise InlineTableImmutable(key)
+        }
         current_table = existing_table
       }
       Some(value) => raise ExpectedTable(key, value)

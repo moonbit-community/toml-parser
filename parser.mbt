@@ -142,6 +142,7 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
   self.skip_newlines() // TOML 1.1: allow newlines in inline tables
   if self.view() is [RightBrace, .. rest] {
     self.update_view(rest)
+    table[inline_table_marker] = TomlBoolean(true)
     return TomlTable(table)
   }
   while true {
@@ -178,6 +179,7 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
       _ => self.error("Expected ',' or '}' in inline table")
     }
   }
+  table[inline_table_marker] = TomlBoolean(true)
   TomlTable(table)
 }
 
@@ -282,6 +284,10 @@ fn Parser::parse_key_value(self : Parser) -> (Array[String], TomlValue) raise {
 /// This is removed before returning the final result.
 let table_defined_marker : String = "\u0000__defined__"
 
+///|
+/// Marker key for inline tables (immutable after definition).
+let inline_table_marker : String = "\u0000__inline__"
+
 pub fn parse(input : String) -> TomlValue raise {
   let tokens = tokenize(input)
   let parser = Parser::new(tokens)
@@ -358,17 +364,20 @@ pub fn parse(input : String) -> TomlValue raise {
 /// Remove internal marker keys from all tables recursively.
 fn cleanup_markers(table : Map[String, TomlValue]) -> Unit {
   table.remove(table_defined_marker)
+  table.remove(inline_table_marker)
   for _, value in table {
-    match value {
-      TomlTable(sub) => cleanup_markers(sub)
-      TomlArray(arr) =>
-        for item in arr {
-          match item {
-            TomlTable(sub) => cleanup_markers(sub)
-            _ => ()
-          }
-        }
-      _ => ()
-    }
+    cleanup_value_markers(value)
+  }
+}
+
+///|
+fn cleanup_value_markers(value : TomlValue) -> Unit {
+  match value {
+    TomlTable(sub) => cleanup_markers(sub)
+    TomlArray(arr) =>
+      for item in arr {
+        cleanup_value_markers(item)
+      }
+    _ => ()
   }
 }
