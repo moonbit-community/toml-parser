@@ -171,30 +171,7 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
 ///|
 /// Parse a table path: section.subsection.key
 fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
-  let path = Array::new()
-
-  // Parse first key
-  let first_key = match self.try_parse_single_key() {
-    Some(k) => k
-    None => self.error("Expected path name")
-  }
-  path.push(first_key)
-
-  // Parse additional keys separated by dots
-  let next_view = loop self.view() {
-    [Dot(..), .. rest] => {
-      self.update_view(rest)
-      let key = match self.try_parse_single_key() {
-        Some(k) => k
-        None => self.error("Expected table name after dot")
-      }
-      path.push(key)
-      continue self.view()
-    }
-    rest => rest
-  }
-  self.update_view(next_view)
-  path
+  self.parse_dotted_key()
 }
 
 ///|
@@ -242,11 +219,25 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
   let next_view = loop self.view() {
     [Dot(..), .. rest] => {
       self.update_view(rest)
-      let key = match self.try_parse_single_key() {
-        Some(k) => k
-        None => self.error("Expected key after dot")
+      // Check for float token (e.g. 1.2 → keys "1" and "2")
+      match self.view() {
+        [FloatToken(f, ..), .. rest2] if !f.is_inf() && !f.is_nan() => {
+          self.update_view(rest2)
+          let float_str = f.to_string()
+          match float_str.find(".") {
+            Some(i) => {
+              path.push(float_str[:i].to_string())
+              path.push(float_str[i + 1:].to_string())
+            }
+            None => path.push(float_str)
+          }
+        }
+        _ =>
+          match self.try_parse_single_key() {
+            Some(k) => path.push(k)
+            None => self.error("Expected key after dot")
+          }
       }
-      path.push(key)
       continue self.view()
     }
     rest => rest
