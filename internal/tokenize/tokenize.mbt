@@ -707,8 +707,8 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       EOF(loc=make_loc(start_pos, end_pos))
     }
 
-    // Newline
-    ['\n', .. rest] => {
+    // Newline (LF or CRLF)
+    ['\r', '\n', .. rest] | ['\n', .. rest] => {
       self.update_view(rest)
       self.new_line()
       let end_pos = self.get_loc()
