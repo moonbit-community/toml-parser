@@ -18,12 +18,21 @@ fn create_nested_table(
         // Navigate into the last element of an array of tables
         // (only for intermediate path segments, not the final key)
         match arr[arr.length() - 1] {
-          TomlTable(last_table) => current_table = last_table
+          TomlTable(last_table) => {
+            if last_table.contains("\u0000__inline__") {
+              raise InlineTableImmutable(key)
+            }
+            current_table = last_table
+          }
           _ => raise ExpectedTable(key, TomlArray(arr))
         }
       }
       Some(value) => raise ExpectedTable(key, value)
       None => {
+        // Reject adding new keys to inline tables
+        if current_table.contains("\u0000__inline__") {
+          raise InlineTableImmutable(key)
+        }
         let new_table = Map::new()
         current_table[key] = TomlTable(new_table)
         current_table = new_table
@@ -128,7 +137,14 @@ fn create_array_of_tables(
   let new_table = {}
   match current_table.get(final_key) {
     Some(TomlArray(existing_array)) => {
-      // Append a new table to the existing array
+      // Verify this is an array-of-tables (created by [[ ]]), not a static array (= [...])
+      // Static arrays are either empty or contain non-table values
+      let is_array_of_tables = existing_array.length() > 0 && existing_array.iter().all(
+        fn(v) { v is TomlTable(_) },
+      )
+      if !is_array_of_tables {
+        raise ExpectedArray(final_key, TomlArray(existing_array))
+      }
       existing_array.push(TomlTable(new_table))
       new_table
     }
