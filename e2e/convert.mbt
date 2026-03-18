@@ -174,18 +174,7 @@ fn format_test_float(f : Double) -> String {
     return "0"
   }
   let s = f.to_string()
-  // If MoonBit already uses exponential notation, it matches Go's %g
-  if s.contains("e") || s.contains("E") {
-    return s
-  }
-  // Go's %g uses exponential notation when exponent >= precision (default ~15)
-  // or exponent < -4. For toml-test matching, detect when we should switch.
-  // Check the absolute magnitude: if very large or very small, use scientific.
-  let abs_f = f.abs()
-  if abs_f >= 1000000.0 || (abs_f > 0.0 && abs_f < 0.0001) {
-    return format_scientific(f)
-  }
-  // Remove trailing .0 for integer-like floats to match toml-test format
+  // Remove trailing .0 for integer-like floats
   if s.has_suffix(".0") {
     return s[:s.length() - 2].to_string()
   }
