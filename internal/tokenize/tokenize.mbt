@@ -234,8 +234,20 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
   self.skip_single_newline()
   let sb = StringBuilder::new()
   loop self.view() {
+    [.. "\"\"\"\"\"", .. rest] => {
+      // 5 quotes: 2 content quotes + closing triple quotes
+      sb.write_string("\"\"")
+      self.update_view(rest)
+      break sb.to_string()
+    }
+    [.. "\"\"\"\"", .. rest] => {
+      // 4 quotes: 1 content quote + closing triple quotes
+      sb.write_char('"')
+      self.update_view(rest)
+      break sb.to_string()
+    }
     [.. "\"\"\"", .. rest] => {
-      // Check for closing triple quotes  
+      // Closing triple quotes
       self.update_view(rest)
       break sb.to_string()
     }
@@ -316,6 +328,18 @@ fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
   }
   let sb = StringBuilder::new()
   loop self.view() {
+    [.. "'''''", .. rest] => {
+      // 5 quotes: 2 content quotes + closing triple quotes
+      sb.write_string("''")
+      self.update_view(rest)
+      break sb.to_string()
+    }
+    [.. "''''", .. rest] => {
+      // 4 quotes: 1 content quote + closing triple quotes
+      sb.write_char('\'')
+      self.update_view(rest)
+      break sb.to_string()
+    }
     [.. "'''", .. rest] => {
       // finish reading the string
       self.update_view(rest)
