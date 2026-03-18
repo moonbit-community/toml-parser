@@ -27,7 +27,7 @@ pub impl ToJson for Loc with to_json(self) {
 /// Token types for the lexer
 pub(all) enum Token {
   // Literals
-  StringToken(String, loc~ : Loc)
+  StringToken(String, loc~ : Loc, multiline~ : Bool)
   IntegerToken(Int64, loc~ : Loc)
   FloatToken(Double, loc~ : Loc)
   BooleanToken(Bool, loc~ : Loc)

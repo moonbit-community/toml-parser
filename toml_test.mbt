@@ -330,7 +330,7 @@ test "parser creation" {
   let loc = @tokenize.default_loc()
   tokens.push(@tokenize.Identifier("key", loc~))
   tokens.push(@tokenize.Equals(loc~))
-  tokens.push(@tokenize.StringToken("value", loc~))
+  tokens.push(@tokenize.StringToken("value", loc~, multiline=false))
   let parser = @toml.Parser::new(tokens)
   debug_inspect(parser.position, content="0")
   debug_inspect(parser.tokens.length(), content="3")

@@ -21,6 +21,8 @@ fn Parser::try_parse_single_key(self : Parser) -> String? {
       self.update_view(rest)
       Some(name)
     }
+    [StringToken(_, multiline=true, ..), ..] =>
+      None // multiline strings not allowed as keys
     [StringToken(name, ..), .. rest] => {
       self.update_view(rest)
       Some(name)

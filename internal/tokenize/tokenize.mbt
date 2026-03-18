@@ -677,9 +677,11 @@ fn Lexer::read_datetime_with_loc(
         } else if self.view()
           lexmatch? ("[+\-][0-9]{2}:[0-9]{2}" as offset, rest3) {
           self.update_view(rest3)
+          let offset_str = offset.to_string()
+          validate_timezone_offset(offset_str)
           let end_pos = self.get_loc()
           DateTimeToken(
-            OffsetDateTime("\{datetime_str}\{offset}"),
+            OffsetDateTime("\{datetime_str}\{offset_str}"),
             loc=make_loc(start_pos, end_pos),
           )
         } else {
@@ -976,6 +978,20 @@ fn days_in_month(year : Int, month : Int) -> Int {
 }
 
 ///|
+/// Validate timezone offset ±HH:MM (hour 0-23, minute 0-59).
+fn validate_timezone_offset(s : String) -> Unit raise {
+  // s is like "+25:00" or "-12:60" (6 chars)
+  let hour = parse_int_substr(s, 1, 3)
+  let minute = parse_int_substr(s, 4, 6)
+  if hour > 23 {
+    raise Failure("Invalid timezone offset: hour \{hour} out of range")
+  }
+  if minute > 59 {
+    raise Failure("Invalid timezone offset: minute \{minute} out of range")
+  }
+}
+
+///|
 fn is_leap_year(year : Int) -> Bool {
   (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
 }
@@ -1117,23 +1133,23 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       self.update_view(rest)
       let value = self.read_multiline_basic_string()
       let end_pos = self.get_loc()
-      StringToken(value, loc=make_loc(start_pos, end_pos))
+      StringToken(value, loc=make_loc(start_pos, end_pos), multiline=true)
     }
     ['"', ..] => {
       let value = self.read_basic_string()
       let end_pos = self.get_loc()
-      StringToken(value, loc=make_loc(start_pos, end_pos))
+      StringToken(value, loc=make_loc(start_pos, end_pos), multiline=false)
     }
     [.. "'''", .. rest] => {
       self.update_view(rest)
       let value = self.read_multiline_literal_string()
       let end_pos = self.get_loc()
-      StringToken(value, loc=make_loc(start_pos, end_pos))
+      StringToken(value, loc=make_loc(start_pos, end_pos), multiline=true)
     }
     ['\'', ..] => {
       let value = self.read_literal_string()
       let end_pos = self.get_loc()
-      StringToken(value, loc=make_loc(start_pos, end_pos))
+      StringToken(value, loc=make_loc(start_pos, end_pos), multiline=false)
     }
 
     // DateTime patterns (check before numbers)
