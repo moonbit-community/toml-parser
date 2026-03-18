@@ -30,7 +30,13 @@ fn Lexer::read_identifier(self : Lexer) -> String {
   } //  never going to happen
 }
 
-///| Check if the next character is a valid token separator
+///|
+/// Check if a character is a disallowed control character in TOML strings.
+/// Control chars U+0000-U+001F (except \t = U+0009) and U+007F (DEL) are banned.
+fn is_control_char(ch : Char) -> Bool {
+  let code : Int = ch.to_int()
+  (code >= 0 && code <= 0x1F && code != 0x09) || code == 0x7F
+}
 
 ///|
 /// Valid separators are: whitespace, newline, EOF, or TOML punctuation
@@ -233,6 +239,14 @@ fn Lexer::read_basic_string(self : Lexer) -> String raise {
         }
       }
     [ch, .. rest] => {
+      if is_control_char(ch) {
+        self.update_view(rest)
+        fail(
+          self.error(
+            "Invalid control character in basic string: U+\{ch.to_int().to_string().pad_start(4, '0')}",
+          ),
+        )
+      }
       sb.write_char(ch)
       continue rest
     }
@@ -250,6 +264,14 @@ fn Lexer::read_literal_string(self : Lexer) -> String raise {
   let next = loop self.view() {
     ['\'', .. rest] => rest
     [ch, .. rest] => {
+      if is_control_char(ch) {
+        self.update_view(rest)
+        fail(
+          self.error(
+            "Invalid control character in literal string: U+\{ch.to_int().to_string().pad_start(4, '0')}",
+          ),
+        )
+      }
       sb.write_char(ch)
       continue rest
     }
@@ -333,6 +355,15 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
       fail(self.error("Unexpected end of input after escape character"))
     }
     [ch, .. rest] => {
+      // Allow \n and \r in multiline strings, reject other control chars
+      if ch != '\n' && ch != '\r' && is_control_char(ch) {
+        self.update_view(rest)
+        fail(
+          self.error(
+            "Invalid control character in multiline string: U+\{ch.to_int().to_string().pad_start(4, '0')}",
+          ),
+        )
+      }
       self.update_view(rest)
       sb.write_char(ch)
       if ch == '\n' {
@@ -389,6 +420,15 @@ fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
     // CR: zhangyu
 
     [ch, .. rest] => {
+      // Allow \n and \r in multiline literal strings, reject other control chars
+      if ch != '\n' && ch != '\r' && is_control_char(ch) {
+        self.update_view(rest)
+        fail(
+          self.error(
+            "Invalid control character in multiline literal string: U+\{ch.to_int().to_string().pad_start(4, '0')}",
+          ),
+        )
+      }
       if ch is '\n' {
         self.new_line()
       }
@@ -814,14 +854,24 @@ test "read_number" {
 
 ///|
 /// Skip comments and whitespace but not newline characters
-fn Lexer::skip_comments_or_whitespace(self : Lexer) -> Unit {
+fn Lexer::skip_comments_or_whitespace(self : Lexer) -> Unit raise {
   let next = loop self.view() {
     ['\r', '\n', ..] | ['\n', ..] | [] as rest => rest
     [' ' | '\t' | '\r', .. rest] => continue rest
     ['#', .. next] =>
       loop next {
         ['\r', '\n', ..] | ['\n', ..] | [] as rest => rest
-        [_, .. rest] => continue rest
+        [ch, .. rest] => {
+          if is_control_char(ch) {
+            self.update_view(rest)
+            fail(
+              self.error(
+                "Invalid control character in comment: U+\{ch.to_int().to_string().pad_start(4, '0')}",
+              ),
+            )
+          }
+          continue rest
+        }
       }
     rest => rest
   }
