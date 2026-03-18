@@ -849,11 +849,12 @@ fn Lexer::read_number_with_loc(
   }
   // If followed by identifier chars (a-z, A-Z, _, -), this is a bare key
   // like "1key" or "2000-datetime", not a number value.
+  // Use raw string (preserves underscores) for the identifier.
   match self.view() {
     ['a'..='z' | 'A'..='Z' | '_' | '-', ..] if !is_negative => {
       let next_view = loop self.view() {
         ['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' as ch, .. rest] => {
-          sb.write_char(ch)
+          raw.write_char(ch)
           continue rest
         }
         rest => rest
@@ -861,12 +862,28 @@ fn Lexer::read_number_with_loc(
       self.update_view(next_view)
       let end_pos = self.get_loc()
       let loc = make_loc(start_pos, end_pos)
-      return Identifier(sb.to_string(), loc~)
+      return Identifier(raw.to_string(), loc~)
     }
     _ => ()
   }
   let s = sb.to_string()
   let raw_s = raw.to_string()
+  // If the number is in key position (followed by = after whitespace),
+  // and the raw string contains characters that would be lost in numeric conversion
+  // (underscores, exponent notation), produce an Identifier to preserve the text.
+  let has_lossy_chars = raw_s != s || (is_float && !raw_s.contains("."))
+  if !is_negative && has_lossy_chars {
+    let is_key = loop self.view() {
+      [' ' | '\t', .. rest] => continue rest
+      ['=' | ']' | '.', ..] => true // key = value, [table], or dotted.key
+      _ => false
+    }
+    if is_key {
+      let end_pos = self.get_loc()
+      let loc = make_loc(start_pos, end_pos)
+      return Identifier(raw_s, loc~)
+    }
+  }
   if is_float {
     validate_float_string(s, raw_s) catch {
       e => fail(self.error(e.to_string()))
