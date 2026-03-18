@@ -1,0 +1,36 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bobzhang/lexer"
+
+// Values
+
+// Errors
+
+// Types and methods
+type Lexer
+pub fn Lexer::advance(Self) -> Unit
+pub fn Lexer::error(Self, String) -> String
+pub fn Lexer::expect_char(Self, Char, msg? : String) -> Unit raise
+pub fn Lexer::expect_string(Self, String, msg? : String) -> Unit raise
+pub fn Lexer::get_loc(Self) -> Position
+pub fn Lexer::get_position(Self) -> Int
+pub fn Lexer::new(String) -> Self
+pub fn Lexer::new_line(Self) -> Unit
+pub fn Lexer::peek(Self) -> Char?
+pub fn Lexer::peek_charcode(Self) -> UInt16?
+pub fn Lexer::skip_single_newline(Self) -> Unit
+pub fn Lexer::skip_whitespace(Self) -> Unit
+pub fn Lexer::update_view(Self, StringView) -> Unit
+pub fn Lexer::view(Self) -> StringView
+
+pub(all) struct Position {
+  line : Int
+  column : Int
+}
+pub impl Eq for Position
+pub impl Show for Position
+pub impl ToJson for Position
+
+// Type aliases
+
+// Traits
+

@@ -1,0 +1,57 @@
+name: misc-check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  merge_group:
+
+jobs:
+  misc-check:
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: 1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: install moonbit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+      - name: format diff
+        run: moon fmt && git diff --exit-code
+
+      - name: lint
+        run: moon check --deny-warn
+      
+      - name: moon info
+        run: |
+          moon info --target wasm,wasm-gc,js,native
+          git diff --exit-code
+      
+      - name: moon test          
+        run: moon test
+        
+      # - name: moon test
+      #   run: moon test --enable-coverage
+
+      # - name: coverage report
+      #   run: |
+      #     moon coverage report -f summary > coverage_summary.txt
+      #     # Put the coverage report in the pipeline output
+      #     cat coverage_summary.txt >> "$GITHUB_STEP_SUMMARY"
+      #     # We don't use the official coveralls upload tool because it takes >1min to build itself
+      #     moon coverage report \
+      #       -f coveralls \
+      #       -o codecov_report.json \
+      #       --service-name github \
+      #       --service-job-id "$GITHUB_RUN_NUMBER" \
+      #       ${{ github.event_name == 'pull_request' && format('--service-pull-request {0}', github.event.number) || '' }} \
+      #       --send-to coveralls
+      #   env:
+      #     COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
