@@ -288,6 +288,10 @@ let table_defined_marker : String = "\u0000__defined__"
 /// Marker key for inline tables (immutable after definition).
 let inline_table_marker : String = "\u0000__inline__"
 
+///|
+/// Marker for tables defined via [table] headers (distinct from dotted-key defined).
+let header_defined_marker : String = "\u0000__header__"
+
 pub fn parse(input : String) -> TomlValue raise {
   let tokens = tokenize(input)
   let parser = Parser::new(tokens)
@@ -338,6 +342,7 @@ pub fn parse(input : String) -> TomlValue raise {
           parser.error("Duplicate table definition: [\{path_str}]")
         }
         current_table[table_defined_marker] = TomlBoolean(true)
+        current_table[header_defined_marker] = TomlBoolean(true)
         continue current_table
       }
       _ => {
@@ -369,6 +374,7 @@ pub fn parse(input : String) -> TomlValue raise {
 fn cleanup_markers(table : Map[String, TomlValue]) -> Unit {
   table.remove(table_defined_marker)
   table.remove(inline_table_marker)
+  table.remove(header_defined_marker)
   for _, value in table {
     cleanup_value_markers(value)
   }

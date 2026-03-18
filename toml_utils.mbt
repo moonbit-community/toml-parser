@@ -5,7 +5,8 @@ fn create_nested_table(
   path : Array[String],
 ) -> Map[String, TomlValue] raise TableConflicts {
   let mut current_table = root_table
-  for key in path {
+  for i, key in path {
+    let is_final = i == path.length() - 1
     match current_table.get(key) {
       Some(TomlTable(existing_table)) => {
         if existing_table.contains("\u0000__inline__") {
@@ -13,8 +14,9 @@ fn create_nested_table(
         }
         current_table = existing_table
       }
-      Some(TomlArray(arr)) if arr.length() > 0 => {
+      Some(TomlArray(arr)) if arr.length() > 0 && !is_final => {
         // Navigate into the last element of an array of tables
+        // (only for intermediate path segments, not the final key)
         match arr[arr.length() - 1] {
           TomlTable(last_table) => current_table = last_table
           _ => raise ExpectedTable(key, TomlArray(arr))
@@ -409,6 +411,12 @@ fn set_dotted_key_value(
         // Reject extending inline tables
         if existing_table.contains("\u0000__inline__") {
           raise InlineTableImmutable(key)
+        }
+        // Reject using dotted keys to extend a table that was explicitly
+        // defined with a [table] header in a different section.
+        // (Tables defined by dotted keys have __dotted__ marker, not __defined__)
+        if mark_implicit && existing_table.contains("\u0000__header__") {
+          raise DuplicateKey(key)
         }
         current_table = existing_table
       }
