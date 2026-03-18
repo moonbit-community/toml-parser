@@ -499,9 +499,9 @@ fn Lexer::is_datetime_pattern(self : Lexer) -> Bool {
   // Check for datetime patterns using regex
   lexmatch self.view() {
     (
-      "[0-9]{2}:[0-9]{2}:[0-9]{2}"
-      "(\.[0-9]+)?",
-      // LocalTime pattern: HH:MM:SS[.fff] followed by valid terminator
+      "[0-9]{2}:[0-9]{2}"
+      "(:[0-9]{2})?(\.[0-9]+)?",
+      // LocalTime pattern: HH:MM[:SS[.fff]] followed by valid terminator
       rest
     ) => check_datetime_terminator_string(rest)
     // LocalDate pattern: YYYY-MM-DD (always valid, may continue with T for datetime)
@@ -531,8 +531,8 @@ fn Lexer::read_datetime_with_loc(
   // - Date-based: YYYY-MM-DD (starts with 4 digits)
   //   - Check what follows T to determine: LocalDate, LocalDateTime, or OffsetDateTime
   lexmatch self.view() {
-    // LocalTime: HH:MM:SS[.fff] - must check first (2-digit start vs 4-digit)
-    (("[0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?") as time, rest) => {
+    // LocalTime: HH:MM[:SS[.fff]] - must check first (2-digit start vs 4-digit)
+    (("[0-9]{2}:[0-9]{2}" "(:[0-9]{2})?(\.[0-9]+)?") as time, rest) => {
       self.update_view(rest)
       let end_pos = self.get_loc()
       DateTimeToken(
@@ -543,10 +543,10 @@ fn Lexer::read_datetime_with_loc(
     // Date-based patterns: lex YYYY-MM-DD first, then check continuation
     ("[0-9]{4}-[0-9]{2}-[0-9]{2}" as date, rest) => {
       self.update_view(rest)
-      // Check for time component: T/t/space followed by HH:MM:SS[.fff]
+      // Check for time component: T/t/space followed by HH:MM[:SS[.fff]]
       if self.view()
         lexmatch? (
-          ("[Tt ][0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?") as time_with_t,
+          ("[Tt ][0-9]{2}:[0-9]{2}" "(:[0-9]{2})?(\.[0-9]+)?") as time_with_t,
           rest2
         ) {
         self.update_view(rest2)

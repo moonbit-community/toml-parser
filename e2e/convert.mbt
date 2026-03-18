@@ -39,12 +39,12 @@ fn datetime_to_test_json(json : Json) -> Json {
     "OffsetDateTime" => typed_value("datetime", normalize_datetime(s))
     "LocalDateTime" => typed_value("datetime-local", normalize_datetime(s))
     "LocalDate" => typed_value("date-local", s)
-    _ => typed_value("time-local", s)
+    _ => typed_value("time-local", normalize_time_value(s))
   }
 }
 
 ///|
-/// Normalize datetime: uppercase T separator and Z suffix.
+/// Normalize datetime: uppercase T separator, Z suffix, and ensure seconds present.
 fn normalize_datetime(s : String) -> String {
   let buf = StringBuilder::new()
   for c in s {
@@ -54,7 +54,67 @@ fn normalize_datetime(s : String) -> String {
       _ => buf.write_char(c)
     }
   }
-  buf.to_string()
+  normalize_time_seconds(buf.to_string())
+}
+
+///|
+/// Normalize a time value to always include seconds (HH:MM → HH:MM:00).
+fn normalize_time_value(s : String) -> String {
+  // Count colons to check if seconds are present
+  let mut colons = 0
+  for c in s {
+    if c == ':' {
+      colons += 1
+    }
+  }
+  if colons == 1 {
+    // Only HH:MM, add :00
+    s + ":00"
+  } else {
+    s
+  }
+}
+
+///|
+/// Ensure the time portion of a datetime string has seconds.
+/// Handles formats like "1979-05-27T07:32Z" → "1979-05-27T07:32:00Z"
+fn normalize_time_seconds(s : String) -> String {
+  // Find the time portion (after T or at start for local time)
+  let mut t_pos = -1
+  for i = 0; i < s.length(); i = i + 1 {
+    if s[i] == 'T' {
+      t_pos = i
+    }
+  }
+  // Count colons in the time portion, stopping at timezone indicator (+/- after time, or Z)
+  let time_start = if t_pos >= 0 { t_pos + 1 } else { 0 }
+  let mut colons = 0
+  let mut first_colon = -1
+  // Find end of time portion (before timezone)
+  let mut time_end = s.length()
+  for i = time_start; i < s.length(); i = i + 1 {
+    let c = s[i]
+    if c == 'Z' || ((c == '+' || c == '-') && i > time_start + 2) {
+      time_end = i
+      break
+    }
+  }
+  for i = time_start; i < time_end; i = i + 1 {
+    if s[i] == ':' {
+      colons += 1
+      if first_colon < 0 {
+        first_colon = i
+      }
+    }
+  }
+  if colons == 1 {
+    // HH:MM without seconds, insert :00 after MM (at time_end)
+    let before = s[:time_end].to_string()
+    let after = s[time_end:].to_string()
+    "\{before}:00\{after}"
+  } else {
+    s
+  }
 }
 
 ///|
