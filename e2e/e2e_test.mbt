@@ -1,39 +1,12 @@
 ///|
-/// Known files that cause infinite loops in the tokenizer.
-/// These are skipped in e2e and reproduced as #skip unit tests below.
-let known_crashes : Array[String] = [
-  // Tokenizer infinite loop: dashed bare key in table header [a-a-a]
-  "e2e/testdata/valid/key/alphanum.toml",
-  // Tokenizer infinite loop: leading underscore values (_ as identifier prefix)
-   "e2e/testdata/invalid/float/leading-us.toml", "e2e/testdata/invalid/integer/leading-us.toml",
-  "e2e/testdata/invalid/integer/leading-us-bin.toml", "e2e/testdata/invalid/integer/leading-us-hex.toml",
-  "e2e/testdata/invalid/integer/leading-us-oct.toml",
-]
-
-///|
-fn should_skip(path : String) -> Bool {
-  for p in known_crashes {
-    if path == p {
-      return true
-    }
-  }
-  false
-}
-
-///|
 async test "valid toml-test suite" {
   let files : Array[String] = []
   collect_toml_files("e2e/testdata/valid", files)
   files.sort()
   let mut passed = 0
   let mut failed = 0
-  let mut skipped = 0
   let failures : Array[String] = []
   for toml_path in files {
-    if should_skip(toml_path) {
-      skipped += 1
-      continue
-    }
     let json_path = toml_path[:toml_path.length() - 5].to_string() + ".json"
     if !@fs.path_exists(json_path) {
       continue
@@ -67,7 +40,7 @@ async test "valid toml-test suite" {
     }
   }
   println(
-    "\{passed} passed, \{failed} failed, \{skipped} skipped out of \{passed + failed + skipped} valid tests",
+    "\{passed} passed, \{failed} failed out of \{passed + failed} valid tests",
   )
   if failed > 0 {
     let msg = StringBuilder::new()
@@ -86,13 +59,8 @@ async test "invalid toml-test suite" {
   files.sort()
   let mut passed = 0
   let mut failed = 0
-  let mut skipped = 0
   let failures : Array[String] = []
   for toml_path in files {
-    if should_skip(toml_path) {
-      skipped += 1
-      continue
-    }
     match run_single_invalid_test(toml_path) {
       None => passed += 1
       Some(msg) => {
@@ -102,7 +70,7 @@ async test "invalid toml-test suite" {
     }
   }
   println(
-    "\{passed} passed, \{failed} failed, \{skipped} skipped out of \{passed + failed + skipped} invalid tests",
+    "\{passed} passed, \{failed} failed out of \{passed + failed} invalid tests",
   )
   if failed > 0 {
     let msg = StringBuilder::new()

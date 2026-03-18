@@ -2,22 +2,26 @@
 // Fixed tests are active (no #skip). Remaining issues are #skip as backlog.
 
 // ============================================================
-// BUG: Tokenizer infinite loop on dashed bare keys in table headers
-// The lexer read_identifier regex fails to advance on patterns like [a-a-a]
+// FIXED: Tokenizer infinite loop on dashed bare keys in table headers
 // ============================================================
 
 ///|
-#skip
-test "bug: tokenizer infinite loop on [a-a-a] table header" {
-  let _ = try? @toml.parse("[a-a-a]\n_ = false\n")
-  // Should parse as table "a-a-a" with key _ = false
+test "fixed: [a-a-a] table header parses correctly" {
+  let result = try? @toml.parse("[a-a-a]\n_ = false\n")
+  inspect(result, content=(
+    
+    #|Ok([a-a-a]
+    #|_ = false
+    #|)
+  ))
 }
 
 ///|
-#skip
-test "bug: tokenizer infinite loop on leading underscore value" {
-  let _ = try? @toml.parse("x = _1.2\n")
-  // Should fail with parse error, not infinite loop
+test "fixed: leading underscore value rejected (not infinite loop)" {
+  let result = try? @toml.parse("x = _1.2\n")
+  inspect(result, content=(
+    #|Err(Failure("parser.mbt:195:20-195:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 7 } }"))
+  ))
 }
 
 // ============================================================
