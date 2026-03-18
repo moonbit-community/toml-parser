@@ -722,8 +722,13 @@ fn Lexer::read_number_with_loc(
     }
   }
   // Read digits
+  let raw = StringBuilder::new()
+  if is_negative {
+    raw.write_char('-')
+  }
   let next_view = loop self.view() {
     ['0'..='9' | '_' as ch, .. rest] => {
+      raw.write_char(ch)
       if ch != '_' {
         sb.write_char(ch)
       }
@@ -752,8 +757,10 @@ fn Lexer::read_number_with_loc(
       is_float = true
       self.update_view(rest)
       sb.write_char('.')
+      raw.write_char('.')
       let next_view = loop self.view() {
         ['0'..='9' | '_' as ch, .. rest] => {
+          raw.write_char(ch)
           if ch != '_' {
             sb.write_char(ch)
           }
@@ -773,6 +780,7 @@ fn Lexer::read_number_with_loc(
       match self.view() {
         ['e' | 'E' as ch, .. rest] => {
           sb.write_char(ch)
+          raw.write_char(ch)
           self.update_view(rest)
         }
         _ => ()
@@ -781,6 +789,7 @@ fn Lexer::read_number_with_loc(
       match self.view() {
         ['+' | '-' as ch, .. rest] => {
           sb.write_char(ch)
+          raw.write_char(ch)
           self.update_view(rest)
         }
         _ => ()
@@ -788,6 +797,7 @@ fn Lexer::read_number_with_loc(
       // Consume exponent digits
       let next_view = loop self.view() {
         ['0'..='9' | '_' as ch, .. rest] => {
+          raw.write_char(ch)
           if ch != '_' {
             sb.write_char(ch)
           }
@@ -818,6 +828,16 @@ fn Lexer::read_number_with_loc(
     _ => ()
   }
   let s = sb.to_string()
+  let raw_s = raw.to_string()
+  if is_float {
+    validate_float_string(s, raw_s) catch {
+      e => fail(self.error(e.to_string()))
+    }
+  } else {
+    validate_integer_string(raw_s) catch {
+      e => fail(self.error(e.to_string()))
+    }
+  }
   let end_pos = self.get_loc()
   let loc = make_loc(start_pos, end_pos)
   if is_float {
@@ -827,6 +847,58 @@ fn Lexer::read_number_with_loc(
   } else {
     IntegerToken(@strconv.parse_int64(s), loc~) catch {
       _ => fail("Invalid integer: \{s}")
+    }
+  }
+}
+
+///|
+/// Validate a float string for TOML spec compliance.
+/// `s` is the stripped string (no underscores), `raw` has underscores preserved.
+fn validate_float_string(s : String, raw : String) -> Unit raise {
+  // Check for trailing dot (e.g. "1.")
+  if s.has_suffix(".") {
+    raise Failure("Invalid float: trailing dot")
+  }
+  // Check for dot followed immediately by 'e' (e.g. "1.e2")
+  for i = 0; i < s.length() - 1; i = i + 1 {
+    if s[i] == '.' && (s[i + 1] == 'e' || s[i + 1] == 'E') {
+      raise Failure("Invalid float: no digits after decimal point")
+    }
+  }
+  // Validate underscore placement in raw string
+  validate_underscores(raw)
+}
+
+///|
+/// Validate a decimal integer string for underscore placement.
+fn validate_integer_string(raw : String) -> Unit raise {
+  validate_underscores(raw)
+}
+
+///|
+/// Validate underscore placement: no leading, trailing, or adjacent underscores,
+/// no underscore next to dot or e/E or sign.
+fn validate_underscores(raw : String) -> Unit raise {
+  let len = raw.length()
+  for i = 0; i < len; i = i + 1 {
+    if raw[i] == '_' {
+      // Trailing underscore
+      if i == len - 1 {
+        raise Failure("Invalid number: trailing underscore")
+      }
+      // Leading underscore (after optional sign)
+      if i == 0 || (i == 1 && raw[0] == '-') {
+        raise Failure("Invalid number: leading underscore")
+      }
+      // Underscore adjacent to non-digit
+      let prev = raw[i - 1]
+      let next = raw[i + 1]
+      if !(prev >= '0' && prev <= '9') {
+        raise Failure("Invalid number: underscore not between digits")
+      }
+      if !(next >= '0' && next <= '9') {
+        raise Failure("Invalid number: underscore not between digits")
+      }
     }
   }
 }
