@@ -106,11 +106,7 @@ test "test edge case number formats for error paths" {
   let tokens = try? @tokenize.tokenize(
     "huge = 999999999999999999999999999999999999999",
   )
-  json_inspect(tokens, content={
-    "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:656:12-656:41@bobzhang/toml FAILED: Invalid integer: 999999999999999999999999999999999999999",
-    ],
-  })
+  json_inspect(tokens, content=({"Err":["Failure","internal/tokenize/tokenize.mbt:787:12-787:41@bobzhang/toml FAILED: Invalid integer: 999999999999999999999999999999999999999"]}))
 }
 
 ///|

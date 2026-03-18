@@ -574,19 +574,11 @@ test "inf failure" {
   let inf_failure_toml2 =
     #|inf = -inf x=2
     #|
-  json_inspect(try? @toml.parse(inf_failure_toml2), content={
-    "Err": [
-      "Failure", "parser.mbt:176:20-176:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 12 }, end: { line: 1, column: 13 } }",
-    ],
-  })
+  json_inspect(try? @toml.parse(inf_failure_toml2), content=({"Err":["Failure","parser.mbt:180:20-180:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 12 }, end: { line: 1, column: 13 } }"]}))
   let table_failure =
     #|a = 3 b = 2
     #|
-  json_inspect(try? @toml.parse(table_failure), content={
-    "Err": [
-      "Failure", "parser.mbt:176:20-176:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }",
-    ],
-  })
+  json_inspect(try? @toml.parse(table_failure), content=({"Err":["Failure","parser.mbt:180:20-180:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }"]}))
 
   // Test that comments after key-value pairs are handled correctly
   let comment_test =
