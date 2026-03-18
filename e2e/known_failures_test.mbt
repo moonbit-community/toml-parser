@@ -1,5 +1,5 @@
 // Known failures from toml-test suite. Each test reproduces a specific issue.
-// These are annotated with #skip so they don't block CI, but serve as a backlog.
+// Fixed tests are active (no #skip). Remaining issues are #skip as backlog.
 
 // ============================================================
 // BUG: Tokenizer infinite loop on dashed bare keys in table headers
@@ -21,76 +21,77 @@ test "bug: tokenizer infinite loop on leading underscore value" {
 }
 
 // ============================================================
-// BUG: '+' prefix not supported for positive integers/floats
-// TOML spec allows +99, +1.0, +0, etc.
+// FIXED: '+' prefix for positive integers/floats
 // ============================================================
 
 ///|
-#skip
-test "bug: positive prefix '+' not tokenized for integers" {
+test "fixed: positive prefix '+' tokenized for integers" {
   let result = try? @toml.parse("pos = +99\n")
-  inspect(result, content="Ok(TomlTable({\"pos\": TomlInteger(99)}))")
+  inspect(result, content=(
+    
+    #|Ok(pos = 99
+    #|)
+  ))
 }
 
 ///|
-#skip
-test "bug: positive prefix '+' not tokenized for floats" {
+test "fixed: positive prefix '+' tokenized for floats" {
   let result = try? @toml.parse("pos = +1.0\n")
-  inspect(result, content="Ok(TomlTable({\"pos\": TomlFloat(1)}))")
+  inspect(result, content=(
+    
+    #|Ok(pos = 1.0
+    #|)
+  ))
 }
 
 // ============================================================
-// BUG: CRLF line endings not handled
-// The tokenizer doesn't handle \r\n or standalone \r
+// FIXED: CRLF line endings
 // ============================================================
 
 ///|
-#skip
-test "bug: CRLF line ending not handled" {
+test "fixed: CRLF line ending handled" {
   let result = try? @toml.parse("key = \"val\"\r\n")
-  inspect(result, content="Ok(TomlTable({\"key\": TomlString(\"val\")}))")
+  inspect(result, content=(
+    
+    #|Ok(key = "val"
+    #|)
+  ))
 }
 
 // ============================================================
-// BUG: Datetime with space separator not parsed
-// TOML allows space instead of 'T' between date and time
-// e.g. "1987-07-05 17:45:00Z"
+// FIXED: Datetime with space separator
 // ============================================================
 
 ///|
-#skip
-test "bug: datetime with space separator" {
+test "fixed: datetime with space separator" {
   let result = try? @toml.parse("dt = 1987-07-05 17:45:00Z\n")
-  inspect(
-    result,
-    content="Ok(TomlTable({\"dt\": TomlDateTime(OffsetDateTime(\"1987-07-05 17:45:00Z\"))}))",
-  )
+  inspect(result, content=(
+    
+    #|Ok(dt = 1987-07-05 17:45:00Z
+    #|)
+  ))
 }
 
 // ============================================================
-// BUG: Numeric keys with leading zeros get stripped
-// TOML bare keys like 0123 should preserve the full string "0123"
+// FIXED: Numeric keys with leading zeros preserved
 // ============================================================
 
 ///|
-#skip
-test "bug: numeric key leading zeros stripped" {
+test "fixed: numeric key leading zeros preserved" {
   let result = try? @toml.parse("0123 = true\n")
-  // Key should be "0123", not "123"
-  json_inspect(result, content=[
-    "Ok",
-    ["TomlTable", { "0123": ["TomlBoolean", true] }],
-  ])
+  inspect(result, content=(
+    
+    #|Ok(0123 = true
+    #|)
+  ))
 }
 
 // ============================================================
-// BUG: Multiline basic string line ending backslash
-// A backslash at end of line should trim the newline and leading whitespace
+// FIXED: Multiline basic string line ending backslash
 // ============================================================
 
 ///|
-#skip
-test "bug: multiline string line ending backslash" {
+test "fixed: multiline string line ending backslash" {
   let input =
     #|str = """
     #|The quick brown \
@@ -98,29 +99,35 @@ test "bug: multiline string line ending backslash" {
     #|  fox jumps over the lazy dog."""
     #|
   let result = try? @toml.parse(input)
-  inspect(
-    result,
-    content="Ok(TomlTable({\"str\": TomlString(\"The quick brown fox jumps over the lazy dog.\")}))",
-  )
+  inspect(result, content=(
+    
+    #|Ok(str = "The quick brown fox jumps over the lazy dog."
+    #|)
+  ))
 }
 
 // ============================================================
-// BUG: Escape sequences \x and \e not supported
-// TOML 1.1 adds \xHH hex escapes and \e (ESC) escape
+// FIXED: Escape sequences \x and \e
 // ============================================================
 
 ///|
-#skip
-test "bug: hex escape \\xHH not supported" {
+test "fixed: hex escape \\xHH" {
   let result = try? @toml.parse("esc = \"\\x41\"\n")
-  inspect(result, content="Ok(TomlTable({\"esc\": TomlString(\"A\")}))")
+  inspect(result, content=(
+    
+    #|Ok(esc = "A"
+    #|)
+  ))
 }
 
 ///|
-#skip
-test "bug: escape \\e (ESC) not supported" {
+test "fixed: escape \\e (ESC)" {
   let result = try? @toml.parse("esc = \"\\e\"\n")
-  inspect(result, content="Ok(TomlTable({\"esc\": TomlString(\"\\x1b\")}))")
+  inspect(result, content=(
+    
+    #|Ok(esc = "\u001B"
+    #|)
+  ))
 }
 
 // ============================================================
@@ -146,18 +153,18 @@ test "bug: array of tables cannot reopen" {
 }
 
 // ============================================================
-// BUG: 'true'/'false'/'inf'/'nan' should be allowed as table/key names
-// These are keywords only in value position, not key position
+// FIXED: Keywords as table/key names
 // ============================================================
 
 ///|
-#skip
-test "bug: keyword as table name" {
+test "fixed: keyword as table name" {
   let result = try? @toml.parse("[true]\nx = 1\n")
-  inspect(
-    result,
-    content="Ok(TomlTable({\"true\": TomlTable({\"x\": TomlInteger(1)})}))",
-  )
+  inspect(result, content=(
+    
+    #|Ok([true]
+    #|x = 1
+    #|)
+  ))
 }
 
 // ============================================================
@@ -197,27 +204,32 @@ test "bug: datetime millisecond trailing zeros" {
 }
 
 // ============================================================
-// BUG: Multiline strings with consecutive quotes
-// Up to 2 quotes inside a multiline basic string should be valid
+// FIXED: Multiline strings with consecutive quotes
 // ============================================================
 
 ///|
-#skip
-test "bug: multiline string with consecutive quotes" {
+test "fixed: multiline string with consecutive quotes" {
   let input =
     #|str = """Here are two quotes: "". Cool."""
     #|
-  let _ = try? @toml.parse(input)
+  let result = try? @toml.parse(input)
+  inspect(result, content=(
+    
+    #|Ok(str = "Here are two quotes: \"\". Cool."
+    #|)
+  ))
 }
 
 // ============================================================
-// BUG: Dashed bare key as first char
-// Keys starting with - (e.g. -key = 1) should be valid bare keys
+// FIXED: Dashed bare key starting with dash
 // ============================================================
 
 ///|
-#skip
-test "bug: dashed bare key starting with dash" {
+test "fixed: dashed bare key starting with dash" {
   let result = try? @toml.parse("-key = 1\n")
-  inspect(result, content="Ok(TomlTable({\"-key\": TomlInteger(1)}))")
+  inspect(result, content=(
+    
+    #|Ok(-key = 1
+    #|)
+  ))
 }
