@@ -22,7 +22,7 @@ fn Lexer::read_identifier(self : Lexer) -> String {
   // empty branches or single branch with _ => ... 
   if self.view()
     // TODO(upstream): allow `(` `)`
-    lexmatch? (("[a-zA-Z]" "[a-zA-Z0-9_\-]*") as identifier, rest) {
+    lexmatch? (("[a-zA-Z_\-]" "[a-zA-Z0-9_\-]*") as identifier, rest) {
     self.update_view(rest)
     identifier.to_string()
   } else {
@@ -723,6 +723,24 @@ fn Lexer::read_number_with_loc(
     }
     _ => ()
   }
+  // If followed by identifier chars (a-z, A-Z, _, -), this is a bare key
+  // like "1key" or "2000-datetime", not a number value.
+  match self.view() {
+    ['a'..='z' | 'A'..='Z' | '_' | '-', ..] if !is_negative => {
+      let next_view = loop self.view() {
+        ['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' as ch, .. rest] => {
+          sb.write_char(ch)
+          continue rest
+        }
+        rest => rest
+      }
+      self.update_view(next_view)
+      let end_pos = self.get_loc()
+      let loc = make_loc(start_pos, end_pos)
+      return Identifier(sb.to_string(), loc~)
+    }
+    _ => ()
+  }
   let s = sb.to_string()
   let end_pos = self.get_loc()
   let loc = make_loc(start_pos, end_pos)
@@ -913,8 +931,8 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       FloatToken(0.0 / 0.0, loc=make_loc(start_pos, end_pos)) // NaN
     }
 
-    // Identifiers and keywords
-    ['a'..='z' | 'A'..='Z' | '_', ..] => {
+    // Identifiers and keywords (bare keys: A-Za-z0-9_-)
+    ['a'..='z' | 'A'..='Z' | '_' | '-', ..] => {
       let identifier = self.read_identifier()
       let end_pos = self.get_loc()
       let loc = make_loc(start_pos, end_pos)
