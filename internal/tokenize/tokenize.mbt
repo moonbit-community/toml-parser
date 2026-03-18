@@ -875,7 +875,9 @@ fn Lexer::read_number_with_loc(
   if !is_negative && has_lossy_chars {
     let is_key = loop self.view() {
       [' ' | '\t', .. rest] => continue rest
-      ['=' | ']' | '.', ..] => true // key = value, [table], or dotted.key
+      ['=' | '.', ..] => true // key = value or dotted.key
+      // ] followed by newline/EOF indicates table header [key], not array
+      [']', '\n' | '\r', ..] | [']'] => true
       _ => false
     }
     if is_key {
