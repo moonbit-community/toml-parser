@@ -30,6 +30,7 @@ fn create_nested_table(
 priv suberror TableConflicts {
   ExpectedTable(String, TomlValue)
   ExpectedArray(String, TomlValue)
+  DuplicateKey(String)
 } derive(ToJson, Debug)
 
 ///|
@@ -48,6 +49,11 @@ impl Show for TableConflicts with output(self, logger) {
       logger.write_string(key)
       logger.write_string("\", \"")
       logger.write_string(value.type_name())
+      logger.write_string("\")")
+    }
+    DuplicateKey(key) => {
+      logger.write_string("DuplicateKey(\"")
+      logger.write_string(key)
       logger.write_string("\")")
     }
   }
@@ -400,8 +406,12 @@ fn set_dotted_key_value(
 ) -> Unit raise TableConflicts {
   guard key_path.length() != 0
   if key_path.length() == 1 {
-    // Simple key assignment
-    table[key_path[0]] = value
+    // Simple key assignment — reject duplicates
+    let key = key_path[0]
+    if table.contains(key) {
+      raise DuplicateKey(key)
+    }
+    table[key] = value
     return
   }
 
@@ -412,10 +422,6 @@ fn set_dotted_key_value(
     match current_table.get(key) {
       Some(TomlTable(existing_table)) => current_table = existing_table
       Some(value) => raise ExpectedTable(key, value)
-      // parse_error(
-      //   error_tokens,
-      //   "Dotted key path conflicts with existing non-table value: \{key}",
-      // )
       None => {
         // Create new nested table
         let new_table = Map::new()
@@ -425,8 +431,11 @@ fn set_dotted_key_value(
     }
   }
 
-  // Set the final value
+  // Set the final value — reject duplicates
   let final_key = key_path[key_path.length() - 1]
+  if current_table.contains(final_key) {
+    raise DuplicateKey(final_key)
+  }
   current_table[final_key] = value
 }
 
@@ -518,18 +527,14 @@ test "set dotted key value - multiple values same nested table" {
 }
 
 ///|
-test "set dotted key value - overwrite existing value" {
-  // Test overwriting an existing value
+test "set dotted key value - reject duplicate key" {
   let table : Map[String, TomlValue] = Map::new()
-
-  // Set initial value
   set_dotted_key_value(table, ["config", "timeout"], TomlInteger(30))
-
-  // Overwrite with new value
-  set_dotted_key_value(table, ["config", "timeout"], TomlInteger(60))
-  json_inspect(table, content={
-    "config": ["TomlTable", { "timeout": ["TomlInteger", "60"] }],
-  })
+  // Duplicate key should be rejected
+  let result = try? set_dotted_key_value(
+    table, ["config", "timeout"], TomlInteger(60),
+  )
+  inspect(result, content="Err(DuplicateKey(\"timeout\"))")
 }
 
 ///|
