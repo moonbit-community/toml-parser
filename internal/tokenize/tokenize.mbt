@@ -659,6 +659,17 @@ fn Lexer::read_number_with_loc(
   }
   self.update_view(next_view)
 
+  // Leading-zero numbers (e.g. 0123, 01.23) are not valid TOML values,
+  // but they are valid bare keys. Produce Identifier to preserve the text.
+  // Check this BEFORE trying to read decimal point so "01.23" doesn't
+  // become a float.
+  let digits_so_far = sb.to_string()
+  if !is_negative && digits_so_far.length() > 1 && digits_so_far[0] == '0' {
+    let end_pos = self.get_loc()
+    let loc = make_loc(start_pos, end_pos)
+    return Identifier(digits_so_far, loc~)
+  }
+
   // Check for decimal point
   match self.view() {
     ['.', .. rest] => {
