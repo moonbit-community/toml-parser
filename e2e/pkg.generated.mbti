@@ -1,0 +1,33 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bobzhang/toml-e2e"
+
+import {
+  "bobzhang/toml",
+  "moonbitlang/x/fs",
+}
+
+// Values
+pub fn collect_toml_files(String, Array[String]) -> Unit raise @fs.IOError
+
+pub fn json_equal(Json, Json) -> Bool
+
+pub fn run_single_invalid_test(String) -> String? raise @fs.IOError
+
+pub fn run_single_valid_test(String) -> String? raise @fs.IOError
+
+pub fn to_test_json(@toml.TomlValue) -> Json
+
+// Errors
+
+// Types and methods
+pub struct TestResult {
+  passed : Int
+  failed : Int
+  failures : Array[String]
+}
+pub fn TestResult::new() -> Self
+
+// Type aliases
+
+// Traits
+

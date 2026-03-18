@@ -1,148 +1,86 @@
-# TOML Parser Development Todo
+# TOML Parser — toml-test Compliance
 
-This todo file follows a two-level structure where **first-level tasks** should be completed in order (they have dependencies), while **second-level subtasks** can be tackled in parallel by different agents.
+E2E results against [toml-lang/toml-test](https://github.com/toml-lang/toml-test):
 
-## 1. Core Parser Improvements (🔴 High Priority)
+| Suite   | Passed | Failed | Skipped (crash) | Total |
+|---------|--------|--------|-----------------|-------|
+| Valid   | 202    | 59     | 1               | 262   |
+| Invalid | 347    | 131    | 5               | 478   |
 
-### 1.1 Error Handling & Diagnostics
-- [ ] Add line/column tracking to lexer for better error messages
-- [ ] Implement `ParseError` type with detailed location information
-- [ ] Add error recovery mechanisms for graceful parsing failures
-- [ ] Create comprehensive error message templates with examples
-
-### 1.2 String Processing Enhancements  
-- [ ] Implement multi-line string support (`"""` syntax)
-- [x] ~~Add escape sequence handling in strings (`\n`, `\t`, `\"`, etc.)~~ ✅ **Completed**
-- [x] ~~Support literal strings with single quotes~~ ✅ **Completed**
-- [x] ~~Add Unicode escape sequences (`\uXXXX`, `\UXXXXXXXX`)~~ ✅ **Completed**
-
-### 1.3 Comments System
-- [ ] Implement comment parsing in lexer (ignore `# comment` lines)
-- [ ] Handle inline comments (`key = value # comment`)
-- [ ] Preserve comments for potential serialization back to TOML
-- [ ] Add tests for edge cases with comments in arrays/tables
-
-## 2. Advanced TOML Features (🟡 Medium Priority)
-
-### 2.1 Dotted Key Support
-- [x] ~~Implement dotted key notation parsing (`a.b.c = value`)~~ ✅ **Completed**
-- [x] ~~Add nested table creation from dotted keys~~ ✅ **Completed**
-- [x] ~~Handle conflicts between dotted keys and explicit tables~~ ✅ **Completed**
-- [x] ~~Add validation for duplicate key definitions~~ ✅ **Completed**
-
-### 2.2 Table Processing Improvements
-- [ ] Enhance table header validation and error messages
-- [ ] Implement table redefinition detection and prevention
-- [ ] Add support for deeply nested table structures
-- [ ] Optimize table lookup performance for large configurations
-
-### 2.3 Array of Tables Enhancements
-- [ ] Improve array of tables (`[[section]]`) validation
-- [ ] Add support for mixed table array scenarios
-- [ ] Implement proper ordering preservation
-- [ ] Add comprehensive test cases for edge cases
-
-## 3. Performance & Optimization (🟢 Low Priority)
-
-### 3.1 Lexer Optimizations
-- [ ] Implement streaming lexer for large files
-- [ ] Add token lookahead caching
-- [ ] Optimize string allocation during tokenization
-- [ ] Profile and benchmark lexer performance
-
-### 3.2 Parser Optimizations  
-- [ ] Implement recursive descent optimizations
-- [ ] Add memoization for repeated parsing patterns
-- [ ] Optimize table creation and access patterns
-- [ ] Memory usage profiling and optimization
-
-### 3.3 Value Processing
-- [ ] Optimize TomlValue creation and manipulation
-- [ ] Implement lazy evaluation for large structures
-- [ ] Add streaming validation for memory efficiency
-- [ ] Benchmark against other TOML parsers
-
-## 4. Testing & Quality Assurance (🔴 High Priority)
-
-### 4.1 Test Suite Expansion
-- [ ] Add official TOML test suite integration
-- [ ] Create property-based testing for edge cases
-- [ ] Add performance regression tests
-- [ ] Implement fuzz testing for parser robustness
-
-### 4.2 Coverage & Validation
-- [ ] Achieve 90%+ code coverage across all modules
-- [ ] Add tests for all error conditions
-- [ ] Create integration tests with real-world TOML files
-- [ ] Add specification compliance validation tests
-
-### 4.3 Documentation Tests
-- [ ] Ensure all README examples compile and run
-- [ ] Add docstring examples to all public APIs
-- [ ] Create comprehensive usage tutorials
-- [ ] Add troubleshooting guide for common issues
-
-## 5. API & Developer Experience (🟡 Medium Priority)
-
-### 5.1 API Improvements
-- [ ] Add convenience methods for common access patterns
-- [ ] Implement builder pattern for complex TOML construction
-- [ ] Add serialization support (TOML → String)
-- [ ] Create type-safe value extraction methods
-
-### 5.2 Integration Features
-- [ ] Add JSON interoperability (TOML ↔ JSON conversion)
-- [ ] Implement configuration file watching/reloading
-- [ ] Add schema validation capabilities
-- [ ] Create CLI tool for TOML validation and conversion
-
-### 5.3 Documentation & Examples
-- [ ] Create comprehensive API documentation
-- [ ] Add cookbook with common usage patterns
-- [ ] Create migration guide from other TOML parsers
-- [ ] Add performance comparison benchmarks
-
-## 6. Advanced Features & Future Work (🟢 Low Priority)
-
-### 6.1 Extended Functionality
-- [ ] Add TOML v1.1 feature support when available
-- [ ] Implement custom date/time format support
-- [ ] Add support for environment variable substitution
-- [ ] Create plugin system for custom value types
-
-### 6.2 Tooling & Ecosystem
-- [ ] Create VS Code extension for TOML syntax highlighting
-- [ ] Add language server protocol support
-- [ ] Implement formatter/prettifier for TOML files
-- [ ] Create integration with popular MoonBit frameworks
-
-### 6.3 Community & Distribution
-- [ ] Publish to MoonBit package registry
-- [ ] Create contribution guidelines and templates
-- [ ] Set up continuous integration/deployment
-- [ ] Add security vulnerability scanning
+Run: `moon test e2e -v --target native`
 
 ---
 
-## Task Dependencies
+## Critical: tokenizer infinite loops (6 files)
 
-**Sequential Dependencies (Complete in Order):**
-1. Core Parser Improvements → Advanced TOML Features → API & Developer Experience
-2. Testing & Quality Assurance should run parallel to all development
-3. Performance & Optimization should come after core functionality is stable
+- [ ] Dashed bare key in table header `[a-a-a]` → infinite loop in `read_identifier` regex
+- [ ] Leading underscore values (`_1.2`, `_123`, `_0b1`, `_0x1`, `_0o1`) → infinite loop (5 invalid test files)
 
-**Parallel Work Opportunities:**
-- Multiple agents can work on different subsections (1.1, 1.2, 1.3) simultaneously
-- Testing tasks (4.x) can be developed alongside feature tasks (1.x-3.x)
-- Documentation and examples can be written while features are being implemented
-- Different agents can focus on different modules (lexer, parser, API)
+## Valid tests failing (59 files)
 
-## Current Status
-- ✅ Basic TOML parsing with most data types
-- ✅ DateTime support (all 4 RFC 3339 types)
-- ✅ Table headers and array of tables
-- ✅ Inline tables and arrays with homogeneity validation
-- ❌ Comments (not implemented)
-- ❌ Multi-line strings (not implemented)
-- ❌ Dotted key notation (not implemented)
-- ❌ Comprehensive error messages with locations
+### Tokenizer: `+` prefix not supported (9 files)
+- [ ] `+99`, `+1.0`, `+0`, `+0e0` — TOML spec allows `+` prefix on integers and floats
+
+### Tokenizer: datetime space separator and edge cases (8 files)
+- [ ] `1987-07-05 17:45:00Z` — space instead of `T` not recognized
+- [ ] No-seconds datetimes, leap-year dates, edge cases
+
+### Tokenizer: CRLF not handled (3 files)
+- [ ] `\r\n` line endings rejected as unexpected `\r`
+
+### Tokenizer: `-` as bare key start (2 files)
+- [ ] `-key = 1` — dash at start of bare key not tokenized
+
+### Escape: `\ ` line ending backslash in multiline strings (3 files)
+- [ ] Backslash at end of line should trim newline + leading whitespace
+
+### Escape: `\xHH` and `\e` — TOML 1.1 (3 files)
+- [ ] `\xHH` hex escape not supported
+- [ ] `\e` ESC escape not supported
+
+### Multiline strings: consecutive quotes and edge cases (5 files)
+- [ ] Up to 2 `"` inside `"""..."""` should be valid
+- [ ] Multiline raw string edge cases
+
+### Parser: array-of-tables reopen (5 files)
+- [ ] `[[array]]` after sub-tables should reopen the array, not error
+
+### Parser: keywords as table/key names (4 files)
+- [ ] `true`, `false`, `inf`, `nan` valid as bare keys and table names
+
+### Parser: inline table newlines — TOML 1.1 (4 files)
+- [ ] Newlines and comments inside inline tables
+
+### Parser: dotted key in table name edge cases (2 files)
+- [ ] Certain dotted patterns in `[a.b.c]` headers
+
+### Value: numeric key leading zeros stripped (4 files)
+- [ ] `0123` as bare key becomes `123` — should preserve full string
+
+### Value: datetime millisecond trailing zeros (1 file)
+- [ ] `.600` truncated to `.6` — should preserve trailing zeros
+
+### Value: multiline string whitespace trimming (2 files)
+- [ ] `\ ` followed by blank lines not trimming correctly
+
+### Other parse failures (4 files)
+- [ ] `valid/datetime/local.toml` — local datetime fractional seconds
+- [ ] `valid/float/underscore.toml` — float underscore grouping
+- [ ] `valid/comment/tricky.toml` — comment edge case
+- [ ] `valid/comment/after-literal-no-ws.toml` — comment after literal
+
+## Invalid tests failing (131 files)
+
+Parser accepts input that should be rejected:
+
+- [ ] **Control characters** (27): bare control chars in strings/comments not rejected
+- [ ] **Key validation** (19): newlines in keys, keys after array/table not caught
+- [ ] **Table validation** (18): redefinition errors, duplicate tables, bracket mismatch
+- [ ] **Datetime validation** (10): invalid dates (feb-29/30, day-zero, hour/month overflow)
+- [ ] **Local datetime/date/time** (18): similar date validation issues
+- [ ] **Integer validation** (9): double underscores, capital prefix (`0B`), leading zeros
+- [ ] **Float validation** (9): trailing dot, leading zeros, underscore placement
+- [ ] **Inline table** (9): trailing commas, duplicate keys, newline restrictions (1.0)
+- [ ] **String** (3): unclosed string edge cases
+- [ ] **Spec compliance** (8): spec-1.0.0 / spec-1.1.0 specific rejections
+- [ ] **Array** (1): `tables-01.toml`
