@@ -2,30 +2,42 @@
 
 E2E results against [toml-lang/toml-test](https://github.com/toml-lang/toml-test):
 
-| Suite   | Passed | Failed | Skipped (crash) | Total |
-|---------|--------|--------|-----------------|-------|
-| Valid   | 256    | 5      | 1               | 262   |
-| Invalid | 326    | 152    | 5               | 483   |
+| Suite   | Passed | Failed | Total | Rate  |
+|---------|--------|--------|-------|-------|
+| Valid   | 256    | 6      | 262   | 97.7% |
+| Invalid | 474    | 9      | 483   | 98.1% |
+| **Total** | **730** | **15** | **745** | **98.0%** |
 
 Run: `moon test e2e -v --target native`
 
 ---
 
-## Critical: tokenizer infinite loops (6 files)
+## Valid tests: 6 remaining
 
-- [ ] Dashed bare key in table header `[a-a-a]` → infinite loop in `read_identifier` regex
-- [ ] Leading underscore values (`_1.2`, `_123`, `_0b1`, `_0x1`, `_0o1`) → infinite loop (5 invalid test files)
-
-## Valid tests: 5 remaining (all value representation, no parse errors)
-
+### Value representation mismatches (5 files)
 - [ ] `float/exponent.toml` — `"300"` vs expected `"300.0"` (test suite format inconsistency)
 - [ ] `float/underscore.toml` — `"3e+14"` vs expected `"3.0e14"` (exponent format)
 - [ ] `float/max-int.toml` — Double precision loss: `9007199254740991` vs `9.007...987e+15`
 - [ ] `comment/tricky.toml` — `"1000"` vs expected `"1000.0"` (same float `.0` issue)
-- [ ] `datetime/milliseconds.toml` — `.6` vs `.600` (test suite expects padding but other tests don't)
+- [ ] `datetime/milliseconds.toml` — `.6` vs `.600` (test suite padding inconsistency)
 
-## Fixed valid tests (54 files)
+### Tokenizer ambiguity (1 file)
+- [ ] `key/alphanum.toml` — `10e3` and `2018_10` tokenized as number instead of bare key
 
+## Invalid tests: 9 remaining (all TOML 1.0-only)
+
+These tests are invalid in TOML 1.0 but valid in TOML 1.1 (which we support):
+
+- [ ] `datetime/no-secs.toml` — optional seconds (TOML 1.1 feature)
+- [ ] `local-time/no-secs.toml` — optional seconds
+- [ ] `local-datetime/no-secs.toml` — optional seconds
+- [ ] `inline-table/linebreak-01..04.toml` — inline table newlines (TOML 1.1)
+- [ ] `inline-table/trailing-comma.toml` — trailing commas (TOML 1.1)
+- [ ] `string/basic-byte-escapes.toml` — `\xHH` escapes (TOML 1.1)
+
+## All fixes applied
+
+- [x] Tokenizer infinite loops on `[a-a-a]` and `_value` (was critical, now fixed)
 - [x] `+` prefix for integers/floats (9 files)
 - [x] Datetime space/`t`/`z` separators (8 files)
 - [x] CRLF line endings (3 files)
@@ -42,18 +54,18 @@ Run: `moon test e2e -v --target native`
 - [x] Exponent notation in floats (1 file)
 - [x] Lowercase `z` timezone (1 file)
 - [x] Optional seconds in datetime — TOML 1.1 (4 files)
-
-## Invalid tests failing (152 files)
-
-Parser accepts input that should be rejected:
-
-- [ ] **Control characters** (~30): bare control chars in strings/comments not rejected
-- [ ] **Key validation** (~19): newlines in keys, keys after array/table not caught
-- [ ] **Table validation** (~18): redefinition errors, duplicate tables, bracket mismatch
-- [ ] **Datetime validation** (~28): invalid dates, time ranges, semantic checks
-- [ ] **Integer validation** (~9): double underscores, capital prefix (`0B`), etc.
-- [ ] **Float validation** (~12): trailing dot, leading zeros, underscore placement
-- [ ] **Inline table** (~15): duplicate keys, TOML 1.0 newline restrictions
-- [ ] **String** (~5): unclosed string edge cases, control chars
-- [ ] **Spec compliance** (~8): spec-specific rejections
-- [ ] **Array** (~1): array/table interaction edge cases
+- [x] Control character rejection in strings/comments (31 files)
+- [x] Float/integer number format validation (17 files)
+- [x] Datetime semantic validation — ranges, leap years (28 files)
+- [x] Timezone offset validation (2 files)
+- [x] Duplicate key rejection (20 files)
+- [x] Newline/EOF required after table headers (2 files)
+- [x] Duplicate `[table]` definition rejection (4 files)
+- [x] Inline table immutability (6 files)
+- [x] Multiline strings rejected as keys (6 files)
+- [x] Uppercase `0X/0O/0B` prefix rejection (3 files)
+- [x] Invalid backslash-space in multiline strings (4 files)
+- [x] Dotted-key table redefinition rejection (8 files)
+- [x] Spaced bracket rejection `[ [` and `] ]` (2 files)
+- [x] Static array immutability (2 files)
+- [x] Bare `\r` rejection (3 files)
