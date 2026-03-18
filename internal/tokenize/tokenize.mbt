@@ -66,6 +66,29 @@ fn Char::is_hex(ch : Char) -> Int? {
 
 ///|
 /// Parse Unicode escape sequence \uXXXX
+/// Parse hex escape sequence \xHH (TOML 1.1)
+fn Lexer::read_hex_2_escape(self : Lexer) -> Char raise {
+  let code = match self.view() {
+    [
+      a0,
+      a1,
+      .. rest,
+    ] if a0.is_hex() is Some(a0) &&
+      a1.is_hex() is Some(a1) => {
+      self.update_view(rest)
+      a0 * 16 + a1
+    }
+    _ =>
+      fail(self.error("Invalid hex escape sequence: expected 2 hex digits"))
+  }
+  match code.to_char() {
+    Some(ch) => ch
+    None => fail(self.error("Invalid hex code point: \{code}"))
+  }
+}
+
+///|
+/// Parse Unicode escape sequence \uXXXX
 fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
   let code = match self.view() {
     [
@@ -181,6 +204,15 @@ fn Lexer::read_basic_string(self : Lexer) -> String raise {
           sb.write_char('\u000C')
           continue rest
         }
+        'e' => {
+          sb.write_char('\u001B') // ESC
+          continue rest
+        }
+        'x' => {
+          self.update_view(rest)
+          sb.write_char(self.read_hex_2_escape())
+          continue self.view()
+        }
         'u' => {
           self.update_view(rest)
           sb.write_char(self.read_unicode_4_escape())
@@ -189,7 +221,7 @@ fn Lexer::read_basic_string(self : Lexer) -> String raise {
         'U' => {
           self.update_view(rest)
           // this may affect error message about location
-          // we may fix this by storing the beginnning position 
+          // we may fix this by storing the beginnning position
           // of the string
           sb.write_char(self.read_unicode_8_escape())
           continue self.view()
@@ -262,6 +294,8 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
         '\'' => sb.write_char('\'')
         'b' => sb.write_char('\u0008')
         'f' => sb.write_char('\u000C')
+        'e' => sb.write_char('\u001B') // ESC
+        'x' => sb.write_char(self.read_hex_2_escape())
         'u' => sb.write_char(self.read_unicode_4_escape())
         'U' => sb.write_char(self.read_unicode_8_escape())
         // Line ending backslash (trim all whitespace and newlines until content)
