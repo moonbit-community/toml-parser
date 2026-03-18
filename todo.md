@@ -4,8 +4,8 @@ E2E results against [toml-lang/toml-test](https://github.com/toml-lang/toml-test
 
 | Suite   | Passed | Failed | Skipped (crash) | Total |
 |---------|--------|--------|-----------------|-------|
-| Valid   | 202    | 59     | 1               | 262   |
-| Invalid | 347    | 131    | 5               | 478   |
+| Valid   | 256    | 5      | 1               | 262   |
+| Invalid | 326    | 152    | 5               | 483   |
 
 Run: `moon test e2e -v --target native`
 
@@ -16,71 +16,44 @@ Run: `moon test e2e -v --target native`
 - [ ] Dashed bare key in table header `[a-a-a]` → infinite loop in `read_identifier` regex
 - [ ] Leading underscore values (`_1.2`, `_123`, `_0b1`, `_0x1`, `_0o1`) → infinite loop (5 invalid test files)
 
-## Valid tests failing (59 files)
+## Valid tests: 5 remaining (all value representation, no parse errors)
 
-### Tokenizer: `+` prefix not supported (9 files)
-- [ ] `+99`, `+1.0`, `+0`, `+0e0` — TOML spec allows `+` prefix on integers and floats
+- [ ] `float/exponent.toml` — `"300"` vs expected `"300.0"` (test suite format inconsistency)
+- [ ] `float/underscore.toml` — `"3e+14"` vs expected `"3.0e14"` (exponent format)
+- [ ] `float/max-int.toml` — Double precision loss: `9007199254740991` vs `9.007...987e+15`
+- [ ] `comment/tricky.toml` — `"1000"` vs expected `"1000.0"` (same float `.0` issue)
+- [ ] `datetime/milliseconds.toml` — `.6` vs `.600` (test suite expects padding but other tests don't)
 
-### Tokenizer: datetime space separator and edge cases (8 files)
-- [ ] `1987-07-05 17:45:00Z` — space instead of `T` not recognized
-- [ ] No-seconds datetimes, leap-year dates, edge cases
+## Fixed valid tests (54 files)
 
-### Tokenizer: CRLF not handled (3 files)
-- [ ] `\r\n` line endings rejected as unexpected `\r`
+- [x] `+` prefix for integers/floats (9 files)
+- [x] Datetime space/`t`/`z` separators (8 files)
+- [x] CRLF line endings (3 files)
+- [x] `-` and mixed alphanumeric bare keys (2 files)
+- [x] `\ ` line ending backslash in multiline strings (5 files)
+- [x] `\xHH` and `\e` escape sequences — TOML 1.1 (3 files)
+- [x] Consecutive quotes in multiline strings (6 files)
+- [x] Array-of-tables reopen with subtable navigation (5 files)
+- [x] Keywords as table/key names (4 files)
+- [x] Inline table newlines and trailing commas — TOML 1.1 (3 files)
+- [x] Dotted key float splitting in table paths (2 files)
+- [x] Numeric key leading zeros preserved (4 files)
+- [x] Date-like bare keys (1 file)
+- [x] Exponent notation in floats (1 file)
+- [x] Lowercase `z` timezone (1 file)
+- [x] Optional seconds in datetime — TOML 1.1 (4 files)
 
-### Tokenizer: `-` as bare key start (2 files)
-- [ ] `-key = 1` — dash at start of bare key not tokenized
-
-### Escape: `\ ` line ending backslash in multiline strings (3 files)
-- [ ] Backslash at end of line should trim newline + leading whitespace
-
-### Escape: `\xHH` and `\e` — TOML 1.1 (3 files)
-- [ ] `\xHH` hex escape not supported
-- [ ] `\e` ESC escape not supported
-
-### Multiline strings: consecutive quotes and edge cases (5 files)
-- [ ] Up to 2 `"` inside `"""..."""` should be valid
-- [ ] Multiline raw string edge cases
-
-### Parser: array-of-tables reopen (5 files)
-- [ ] `[[array]]` after sub-tables should reopen the array, not error
-
-### Parser: keywords as table/key names (4 files)
-- [ ] `true`, `false`, `inf`, `nan` valid as bare keys and table names
-
-### Parser: inline table newlines — TOML 1.1 (4 files)
-- [ ] Newlines and comments inside inline tables
-
-### Parser: dotted key in table name edge cases (2 files)
-- [ ] Certain dotted patterns in `[a.b.c]` headers
-
-### Value: numeric key leading zeros stripped (4 files)
-- [ ] `0123` as bare key becomes `123` — should preserve full string
-
-### Value: datetime millisecond trailing zeros (1 file)
-- [ ] `.600` truncated to `.6` — should preserve trailing zeros
-
-### Value: multiline string whitespace trimming (2 files)
-- [ ] `\ ` followed by blank lines not trimming correctly
-
-### Other parse failures (4 files)
-- [ ] `valid/datetime/local.toml` — local datetime fractional seconds
-- [ ] `valid/float/underscore.toml` — float underscore grouping
-- [ ] `valid/comment/tricky.toml` — comment edge case
-- [ ] `valid/comment/after-literal-no-ws.toml` — comment after literal
-
-## Invalid tests failing (131 files)
+## Invalid tests failing (152 files)
 
 Parser accepts input that should be rejected:
 
-- [ ] **Control characters** (27): bare control chars in strings/comments not rejected
-- [ ] **Key validation** (19): newlines in keys, keys after array/table not caught
-- [ ] **Table validation** (18): redefinition errors, duplicate tables, bracket mismatch
-- [ ] **Datetime validation** (10): invalid dates (feb-29/30, day-zero, hour/month overflow)
-- [ ] **Local datetime/date/time** (18): similar date validation issues
-- [ ] **Integer validation** (9): double underscores, capital prefix (`0B`), leading zeros
-- [ ] **Float validation** (9): trailing dot, leading zeros, underscore placement
-- [ ] **Inline table** (9): trailing commas, duplicate keys, newline restrictions (1.0)
-- [ ] **String** (3): unclosed string edge cases
-- [ ] **Spec compliance** (8): spec-1.0.0 / spec-1.1.0 specific rejections
-- [ ] **Array** (1): `tables-01.toml`
+- [ ] **Control characters** (~30): bare control chars in strings/comments not rejected
+- [ ] **Key validation** (~19): newlines in keys, keys after array/table not caught
+- [ ] **Table validation** (~18): redefinition errors, duplicate tables, bracket mismatch
+- [ ] **Datetime validation** (~28): invalid dates, time ranges, semantic checks
+- [ ] **Integer validation** (~9): double underscores, capital prefix (`0B`), etc.
+- [ ] **Float validation** (~12): trailing dot, leading zeros, underscore placement
+- [ ] **Inline table** (~15): duplicate keys, TOML 1.0 newline restrictions
+- [ ] **String** (~5): unclosed string edge cases, control chars
+- [ ] **Spec compliance** (~8): spec-specific rejections
+- [ ] **Array** (~1): array/table interaction edge cases
