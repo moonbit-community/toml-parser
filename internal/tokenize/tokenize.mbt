@@ -391,9 +391,16 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
       self.advance()
       fail(self.error("Unexpected end of input after escape character"))
     }
+    ['\r', '\n', .. rest] => {
+      // CRLF in multiline string
+      self.update_view(rest)
+      sb.write_char('\n')
+      self.new_line()
+      continue self.view()
+    }
     [ch, .. rest] => {
-      // Allow \n and \r in multiline strings, reject other control chars
-      if ch != '\n' && ch != '\r' && is_control_char(ch) {
+      // Allow \n in multiline strings, reject bare \r and other control chars
+      if ch != '\n' && is_control_char(ch) {
         self.update_view(rest)
         fail(
           self.error(
@@ -457,8 +464,8 @@ fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
     // CR: zhangyu
 
     [ch, .. rest] => {
-      // Allow \n and \r in multiline literal strings, reject other control chars
-      if ch != '\n' && ch != '\r' && is_control_char(ch) {
+      // Allow \n in multiline literal strings, reject bare \r and other control chars
+      if ch != '\n' && is_control_char(ch) {
         self.update_view(rest)
         fail(
           self.error(
@@ -1050,7 +1057,8 @@ test "read_number" {
 fn Lexer::skip_comments_or_whitespace(self : Lexer) -> Unit raise {
   let next = loop self.view() {
     ['\r', '\n', ..] | ['\n', ..] | [] as rest => rest
-    [' ' | '\t' | '\r', .. rest] => continue rest
+    [' ' | '\t', .. rest] => continue rest
+    ['\r', ..] as rest => rest // bare \r stops here, will be rejected by next_token
     ['#', .. next] =>
       loop next {
         ['\r', '\n', ..] | ['\n', ..] | [] as rest => rest
