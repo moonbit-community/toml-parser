@@ -740,11 +740,7 @@ test "precise column tracking" {
   })
 
   // Test 4: Error position after unicode characters
-  json_inspect(try? @toml.parse("café = "), content={
-    "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:838:17-838:54@bobzhang/toml FAILED: Unexpected character: 'é'",
-    ],
-  })
+  json_inspect(try? @toml.parse("café = "), content=({"Err":["Failure","internal/tokenize/tokenize.mbt:850:17-850:54@bobzhang/toml FAILED: Unexpected character: 'é'"]}))
 
   // Test 5: Multiple equals signs - error on second one
   json_inspect(try? @toml.parse("key = = \"value\""), content={
@@ -827,11 +823,7 @@ test "location tracking with special cases" {
   })
 
   // Test 2: Error with windows-style line endings (if supported)
-  json_inspect(try? @toml.parse("key1 = \"value\"\r\nkey2 = "), content={
-    "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:838:17-838:54@bobzhang/toml FAILED: Unexpected character: '\r'",
-    ],
-  })
+  json_inspect(try? @toml.parse("key1 = \"value\"\r\nkey2 = "), content=({"Err":["Failure","internal/tokenize/tokenize.mbt:850:17-850:54@bobzhang/toml FAILED: Unexpected character: '\r'"]}))
 
   // Test 3: Error with just spaces as a key
   json_inspect(try? @toml.parse("   = \"value\""), content={

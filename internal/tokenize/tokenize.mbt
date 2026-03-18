@@ -794,6 +794,18 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
         _ => abort("Internal error: pattern matching inconsistency")
       }
 
+    // Positive numbers with explicit '+' (only decimal, not 0x/0o/0b)
+    ['+', '0'..='9', ..] =>
+      match self.view() {
+        ['+', '0', 'x' | 'X' | 'o' | 'O' | 'b' | 'B', ..] =>
+          fail("Unexpected character: '+'")
+        ['+', .. rest] => {
+          self.update_view(rest)
+          self.read_number_with_loc(false, start_pos)
+        }
+        _ => abort("Internal error: pattern matching inconsistency")
+      }
+
     // Handle negative special float values (-inf, -nan)
     ['-', 'i', 'n', 'f', .. rest] => {
       self.update_view(rest)
