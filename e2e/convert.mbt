@@ -44,7 +44,8 @@ fn datetime_to_test_json(json : Json) -> Json {
 }
 
 ///|
-/// Normalize datetime: uppercase T separator, Z suffix, and ensure seconds present.
+/// Normalize datetime: uppercase T separator, Z suffix, ensure seconds present,
+/// and pad fractional seconds to 3 digits.
 fn normalize_datetime(s : String) -> String {
   let buf = StringBuilder::new()
   for c in s {
@@ -55,6 +56,45 @@ fn normalize_datetime(s : String) -> String {
     }
   }
   normalize_time_seconds(buf.to_string())
+}
+
+///|
+/// Pad fractional seconds to 3 digits (e.g. .6 → .600, .12 → .120).
+fn normalize_fractional_seconds(s : String) -> String {
+  // Find the dot in the time portion (fractional seconds)
+  // The dot must be after HH:MM:SS (at least position 8 in the time portion)
+  let mut dot_pos = -1
+  let mut t_pos = -1
+  for i = 0; i < s.length(); i = i + 1 {
+    if s[i] == 'T' {
+      t_pos = i
+    }
+    if s[i] == '.' && t_pos >= 0 {
+      dot_pos = i
+    }
+  }
+  if dot_pos < 0 {
+    return s
+  }
+  // Count fractional digits (until non-digit: Z, +, -, or end)
+  let mut frac_end = dot_pos + 1
+  while frac_end < s.length() {
+    let c = s[frac_end]
+    if c >= '0' && c <= '9' {
+      frac_end += 1
+    } else {
+      break
+    }
+  }
+  let frac_len = frac_end - dot_pos - 1
+  if frac_len >= 3 {
+    return s // already 3+ digits
+  }
+  // Pad with zeros
+  let before = s[:frac_end].to_string()
+  let after = s[frac_end:].to_string()
+  let padding = "0".repeat(3 - frac_len)
+  "\{before}\{padding}\{after}"
 }
 
 ///|
