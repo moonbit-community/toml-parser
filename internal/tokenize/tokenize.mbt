@@ -320,18 +320,55 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
         'x' => sb.write_char(self.read_hex_2_escape())
         'u' => sb.write_char(self.read_unicode_4_escape())
         'U' => sb.write_char(self.read_unicode_8_escape())
-        // Line ending backslash (trim all whitespace and newlines until content)
-        '\r' | '\n' | ' ' | '\t' => {
-          if escaped == '\n' {
-            self.new_line()
-          } else if escaped == '\r' {
-            self.new_line()
-            match self.view() {
-              ['\n', .. rest] => self.update_view(rest)
-              _ => ()
-            }
-          }
+        // Line ending backslash: \ at end of line trims newline + whitespace
+        '\n' => {
+          self.new_line()
           // Skip all whitespace and newlines until non-whitespace content
+          let next_view = loop self.view() {
+            ['\n', .. rest] => {
+              self.new_line()
+              continue rest
+            }
+            ['\r', '\n', .. rest] => {
+              self.new_line()
+              continue rest
+            }
+            [' ' | '\t' | '\r', .. rest] => continue rest
+            rest => rest
+          }
+          self.update_view(next_view)
+        }
+        '\r' => {
+          self.new_line()
+          match self.view() {
+            ['\n', .. rest] => self.update_view(rest)
+            _ => ()
+          }
+          let next_view = loop self.view() {
+            ['\n', .. rest] => {
+              self.new_line()
+              continue rest
+            }
+            ['\r', '\n', .. rest] => {
+              self.new_line()
+              continue rest
+            }
+            [' ' | '\t' | '\r', .. rest] => continue rest
+            rest => rest
+          }
+          self.update_view(next_view)
+        }
+        ' ' | '\t' => {
+          // \ followed by space/tab: must be followed by only whitespace then newline
+          let found_newline = loop self.view() {
+            [' ' | '\t', .. rest] => continue rest
+            ['\n', ..] | ['\r', ..] => true
+            _ => false
+          }
+          if !found_newline {
+            fail(self.error("Invalid escape: backslash followed by whitespace but no newline"))
+          }
+          // Now consume the newline and following whitespace
           let next_view = loop self.view() {
             ['\n', .. rest] => {
               self.new_line()
@@ -686,39 +723,27 @@ fn Lexer::read_number_with_loc(
   // Check if this might be a special format number (0x, 0o, 0b)
   if !is_negative {
     match self.view() {
-      ['0', 'x' | 'X', ..] => {
+      ['0', 'x', ..] => {
         let value = self.read_hex_number()
         let end_pos = self.get_loc()
         return IntegerToken(
-          if is_negative {
-            -value
-          } else {
-            value
-          },
+          if is_negative { -value } else { value },
           loc=make_loc(start_pos, end_pos),
         )
       }
-      ['0', 'o' | 'O', ..] => {
+      ['0', 'o', ..] => {
         let value = self.read_octal_number()
         let end_pos = self.get_loc()
         return IntegerToken(
-          if is_negative {
-            -value
-          } else {
-            value
-          },
+          if is_negative { -value } else { value },
           loc=make_loc(start_pos, end_pos),
         )
       }
-      ['0', 'b' | 'B', ..] => {
+      ['0', 'b', ..] => {
         let value = self.read_binary_number()
         let end_pos = self.get_loc()
         return IntegerToken(
-          if is_negative {
-            -value
-          } else {
-            value
-          },
+          if is_negative { -value } else { value },
           loc=make_loc(start_pos, end_pos),
         )
       }
@@ -1132,7 +1157,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
     // Positive numbers with explicit '+' (only decimal, not 0x/0o/0b)
     ['+', '0'..='9', ..] =>
       match self.view() {
-        ['+', '0', 'x' | 'X' | 'o' | 'O' | 'b' | 'B', ..] =>
+        ['+', '0', 'x' | 'o' | 'b', ..] =>
           fail("Unexpected character: '+'")
         ['+', .. rest] => {
           self.update_view(rest)
