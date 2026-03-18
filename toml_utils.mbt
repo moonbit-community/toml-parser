@@ -241,36 +241,7 @@ test "create_array_of_tables - mixed with regular tables" {
   let db2 = create_array_of_tables(root_table, ["database", "servers"])
   db2["host"] = TomlString("192.168.1.2")
   db2["port"] = TomlInteger(5433)
-  json_inspect(root_table, content={
-    "owner": [
-      "TomlTable",
-      { "name": ["TomlString", "Tom"], "dob": ["TomlString", "1979-05-27"] },
-    ],
-    "database": [
-      "TomlTable",
-      {
-        "servers": [
-          "TomlArray",
-          [
-            [
-              "TomlTable",
-              {
-                "host": ["TomlString", "192.168.1.1"],
-                "port": ["TomlInteger", "5432"],
-              },
-            ],
-            [
-              "TomlTable",
-              {
-                "host": ["TomlString", "192.168.1.2"],
-                "port": ["TomlInteger", "5433"],
-              },
-            ],
-          ],
-        ],
-      },
-    ],
-  })
+  json_inspect(root_table, content=({"owner":["TomlTable",{"name":["TomlString","Tom"],"dob":["TomlString","1979-05-27"]}],"database":["TomlTable",{"servers":["TomlArray",[["TomlTable",{"host":["TomlString","192.168.1.1"],"port":["TomlInteger","5432"]}],["TomlTable",{"host":["TomlString","192.168.1.2"],"port":["TomlInteger","5433"]}]]]}]}))
 }
 
 ///|
@@ -415,12 +386,16 @@ fn set_dotted_key_value(
     return
   }
 
-  // Navigate through the dotted path, creating tables as needed
+  // Navigate through the dotted path, creating tables as needed.
+  // Mark intermediate tables as "dotted-key defined" so they can't be
+  // explicitly redefined with [table] headers.
   let mut current_table = table
   for i = 0; i < key_path.length() - 1; i = i + 1 {
     let key = key_path[i]
     match current_table.get(key) {
-      Some(TomlTable(existing_table)) => current_table = existing_table
+      Some(TomlTable(existing_table)) => {
+        current_table = existing_table
+      }
       Some(value) => raise ExpectedTable(key, value)
       None => {
         // Create new nested table
@@ -453,12 +428,7 @@ test "set dotted key value - nested keys creating tables" {
   let table : Map[String, TomlValue] = Map::new()
   set_dotted_key_value(table, ["server", "host"], TomlString("localhost"))
   set_dotted_key_value(table, ["server", "port"], TomlInteger(8080))
-  json_inspect(table, content={
-    "server": [
-      "TomlTable",
-      { "host": ["TomlString", "localhost"], "port": ["TomlInteger", "8080"] },
-    ],
-  })
+  json_inspect(table, content=({"server":["TomlTable",{"host":["TomlString","localhost"],"port":["TomlInteger","8080"]}]}))
 }
 
 ///|
@@ -470,22 +440,7 @@ test "set dotted key value - deep nesting" {
     ["a", "b", "c", "d", "e"],
     TomlString("deep value"),
   )
-  json_inspect(table, content={
-    "a": [
-      "TomlTable",
-      {
-        "b": [
-          "TomlTable",
-          {
-            "c": [
-              "TomlTable",
-              { "d": ["TomlTable", { "e": ["TomlString", "deep value"] }] },
-            ],
-          },
-        ],
-      },
-    ],
-  })
+  json_inspect(table, content=({"a":["TomlTable",{"b":["TomlTable",{"c":["TomlTable",{"d":["TomlTable",{"e":["TomlString","deep value"]}]}]}]}]}))
 }
 
 ///|
@@ -507,23 +462,7 @@ test "set dotted key value - multiple values same nested table" {
     TomlString("secret"),
   )
   set_dotted_key_value(table, ["database", "options", "ssl"], TomlBoolean(true))
-  json_inspect(table, content={
-    "database": [
-      "TomlTable",
-      {
-        "server": ["TomlString", "postgres"],
-        "port": ["TomlInteger", "5432"],
-        "credentials": [
-          "TomlTable",
-          {
-            "user": ["TomlString", "admin"],
-            "password": ["TomlString", "secret"],
-          },
-        ],
-        "options": ["TomlTable", { "ssl": ["TomlBoolean", true] }],
-      },
-    ],
-  })
+  json_inspect(table, content=({"database":["TomlTable",{"server":["TomlString","postgres"],"port":["TomlInteger","5432"],"credentials":["TomlTable",{"user":["TomlString","admin"],"password":["TomlString","secret"]}],"options":["TomlTable",{"ssl":["TomlBoolean",true]}]}]}))
 }
 
 ///|
@@ -549,17 +488,7 @@ test "set dotted key value - add to existing table" {
   // Add more values to the same table later
   set_dotted_key_value(table, ["app", "author"], TomlString("Developer"))
   set_dotted_key_value(table, ["app", "license"], TomlString("MIT"))
-  json_inspect(table, content={
-    "app": [
-      "TomlTable",
-      {
-        "name": ["TomlString", "MyApp"],
-        "version": ["TomlString", "1.0.0"],
-        "author": ["TomlString", "Developer"],
-        "license": ["TomlString", "MIT"],
-      },
-    ],
-  })
+  json_inspect(table, content=({"app":["TomlTable",{"name":["TomlString","MyApp"],"version":["TomlString","1.0.0"],"author":["TomlString","Developer"],"license":["TomlString","MIT"]}]}))
 }
 
 ///|
@@ -601,28 +530,7 @@ test "set dotted key value - mixed types in path" {
     ["root", "nested", "datetime"],
     TomlDateTime(@tokenize.TomlDateTime::OffsetDateTime("2024-01-01T12:00:00Z")),
   )
-  json_inspect(table, content={
-    "root": [
-      "TomlTable",
-      {
-        "array": [
-          "TomlArray",
-          [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
-        ],
-        "float": ["TomlFloat", 3.14],
-        "nested": [
-          "TomlTable",
-          {
-            "bool": ["TomlBoolean", false],
-            "datetime": [
-              "TomlDateTime",
-              ["OffsetDateTime", "2024-01-01T12:00:00Z"],
-            ],
-          },
-        ],
-      },
-    ],
-  })
+  json_inspect(table, content=({"root":["TomlTable",{"array":["TomlArray",[["TomlInteger","1"],["TomlInteger","2"],["TomlInteger","3"]]],"float":["TomlFloat",3.14],"nested":["TomlTable",{"bool":["TomlBoolean",false],"datetime":["TomlDateTime",["OffsetDateTime","2024-01-01T12:00:00Z"]]}]}]}))
 }
 
 ///|

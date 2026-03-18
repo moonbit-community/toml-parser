@@ -278,6 +278,10 @@ fn Parser::parse_key_value(self : Parser) -> (Array[String], TomlValue) raise {
 
 ///|
 /// Parse a TOML document with support for tables
+/// Marker key used to track explicitly defined tables.
+/// This is removed before returning the final result.
+let table_defined_marker : String = "\u0000__defined__"
+
 pub fn parse(input : String) -> TomlValue raise {
   let tokens = tokenize(input)
   let parser = Parser::new(tokens)
@@ -322,6 +326,12 @@ pub fn parse(input : String) -> TomlValue raise {
         let current_table = create_nested_table(main_table, table_path) catch {
           error => parser.error(error.to_string())
         }
+        // Check if this table was already explicitly defined
+        if current_table.contains(table_defined_marker) {
+          let path_str = table_path.join(".")
+          parser.error("Duplicate table definition: [\{path_str}]")
+        }
+        current_table[table_defined_marker] = TomlBoolean(true)
         continue current_table
       }
       _ => {
@@ -340,5 +350,25 @@ pub fn parse(input : String) -> TomlValue raise {
       }
     }
   }
+  cleanup_markers(main_table)
   TomlTable(main_table)
+}
+
+///|
+/// Remove internal marker keys from all tables recursively.
+fn cleanup_markers(table : Map[String, TomlValue]) -> Unit {
+  table.remove(table_defined_marker)
+  for _, value in table {
+    match value {
+      TomlTable(sub) => cleanup_markers(sub)
+      TomlArray(arr) =>
+        for item in arr {
+          match item {
+            TomlTable(sub) => cleanup_markers(sub)
+            _ => ()
+          }
+        }
+      _ => ()
+    }
+  }
 }
