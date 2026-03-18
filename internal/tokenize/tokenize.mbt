@@ -252,18 +252,28 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
         'f' => sb.write_char('\u000C')
         'u' => sb.write_char(self.read_unicode_4_escape())
         'U' => sb.write_char(self.read_unicode_8_escape())
-        // Line ending backslash (trim whitespace at line start)
-        '\r' | '\n' => {
-          self.new_line()
-          if escaped == '\r' {
+        // Line ending backslash (trim all whitespace and newlines until content)
+        '\r' | '\n' | ' ' | '\t' => {
+          if escaped == '\n' {
+            self.new_line()
+          } else if escaped == '\r' {
+            self.new_line()
             match self.view() {
               ['\n', .. rest] => self.update_view(rest)
               _ => ()
             }
           }
-          // Skip whitespace at the beginning of the next line
+          // Skip all whitespace and newlines until non-whitespace content
           let next_view = loop self.view() {
-            [' ' | '\t', .. rest] => continue rest
+            ['\n', .. rest] => {
+              self.new_line()
+              continue rest
+            }
+            ['\r', '\n', .. rest] => {
+              self.new_line()
+              continue rest
+            }
+            [' ' | '\t' | '\r', .. rest] => continue rest
             rest => rest
           }
           self.update_view(next_view)
