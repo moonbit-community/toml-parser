@@ -45,6 +45,17 @@ fn Parser::try_parse_single_key(self : Parser) -> String? {
         None
       }
     }
+    [DateTimeToken(dt, ..), .. rest] => {
+      // Date-like bare keys (e.g. 2001-02-03)
+      self.update_view(rest)
+      let s = match dt {
+        OffsetDateTime(s) => s
+        LocalDateTime(s) => s
+        LocalDate(s) => s
+        LocalTime(s) => s
+      }
+      Some(s)
+    }
     _ => None
   }
 }

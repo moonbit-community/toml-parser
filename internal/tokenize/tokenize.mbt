@@ -586,7 +586,7 @@ fn Lexer::read_datetime_with_loc(
         self.update_view(rest2)
         let datetime_str = "\{date}\{time_with_t}"
         // Check for timezone: Z or ±HH:MM
-        if self.view() lexmatch? ("Z", rest3) {
+        if self.view() lexmatch? ("[Zz]", rest3) {
           self.update_view(rest3)
           let end_pos = self.get_loc()
           DateTimeToken(
