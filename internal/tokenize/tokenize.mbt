@@ -543,10 +543,10 @@ fn Lexer::read_datetime_with_loc(
     // Date-based patterns: lex YYYY-MM-DD first, then check continuation
     ("[0-9]{4}-[0-9]{2}-[0-9]{2}" as date, rest) => {
       self.update_view(rest)
-      // Check for time component: THH:MM:SS[.fff]
+      // Check for time component: T/t/space followed by HH:MM:SS[.fff]
       if self.view()
         lexmatch? (
-          ("T[0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?") as time_with_t,
+          ("[Tt ][0-9]{2}:[0-9]{2}:[0-9]{2}" "(\.[0-9]+)?") as time_with_t,
           rest2
         ) {
         self.update_view(rest2)
