@@ -118,7 +118,7 @@ fn normalize_time_seconds(s : String) -> String {
 }
 
 ///|
-/// Format float for toml-test comparison.
+/// Format float for toml-test comparison (matches Go's %g format).
 fn format_test_float(f : Double) -> String {
   if f.is_nan() {
     return "nan"
@@ -130,10 +130,63 @@ fn format_test_float(f : Double) -> String {
   if f == 0.0 && 1.0 / f < 0.0 {
     return "-0"
   }
+  if f == 0.0 {
+    return "0"
+  }
   let s = f.to_string()
+  // If MoonBit already uses exponential notation, it matches Go's %g
+  if s.contains("e") || s.contains("E") {
+    return s
+  }
+  // Go's %g uses exponential notation when exponent >= precision (default ~15)
+  // or exponent < -4. For toml-test matching, detect when we should switch.
+  // Check the absolute magnitude: if very large or very small, use scientific.
+  let abs_f = f.abs()
+  if abs_f >= 1000000.0 || (abs_f > 0.0 && abs_f < 0.0001) {
+    return format_scientific(f)
+  }
   // Remove trailing .0 for integer-like floats to match toml-test format
   if s.has_suffix(".0") {
     return s[:s.length() - 2].to_string()
   }
   s
+}
+
+///|
+/// Format a number in scientific notation matching Go's %g output.
+fn format_scientific(f : Double) -> String {
+  let negative = f < 0.0
+  let abs_f = f.abs()
+  // Calculate exponent
+  let mut exp = 0
+  let mut mantissa = abs_f
+  if mantissa >= 10.0 {
+    while mantissa >= 10.0 {
+      mantissa = mantissa / 10.0
+      exp += 1
+    }
+  } else if mantissa > 0.0 && mantissa < 1.0 {
+    while mantissa < 1.0 {
+      mantissa = mantissa * 10.0
+      exp -= 1
+    }
+  }
+  // Format mantissa with minimal precision
+  let mantissa_str = mantissa.to_string()
+  // Remove trailing zeros after decimal point
+  let trimmed = if mantissa_str.contains(".") {
+    let mut end = mantissa_str.length()
+    while end > 0 && mantissa_str[end - 1] == '0' {
+      end -= 1
+    }
+    if end > 0 && mantissa_str[end - 1] == '.' {
+      end -= 1
+    }
+    mantissa_str[:end].to_string()
+  } else {
+    mantissa_str
+  }
+  let sign = if negative { "-" } else { "" }
+  let exp_sign = if exp >= 0 { "+" } else { "" }
+  "\{sign}\{trimmed}e\{exp_sign}\{exp.to_string().pad_start(2, '0')}"
 }
