@@ -105,7 +105,7 @@ fn should_format_inline(arr : Array[TomlValue]) -> Bool {
   for value in arr {
     match value {
       TomlTable(_) => return false
-      TomlArray(inner) if not(should_format_inline(inner)) => return false
+      TomlArray(inner) if !should_format_inline(inner) => return false
       _ => continue
     }
   }
@@ -149,7 +149,7 @@ fn TomlValue::write_toml(
       } else {
         // Ensure floats always have decimal point
         let s = f.to_string()
-        if not(s.contains(".")) && not(s.contains("e")) && not(s.contains("E")) {
+        if !s.contains(".") && !s.contains("e") && !s.contains("E") {
           output.write_string(s + ".0")
         } else {
           output.write_string(s)
@@ -310,7 +310,7 @@ fn write_inline_table(
   output.write_string("{ ")
   let mut first = true
   table.each(fn(key, value) {
-    if not(first) {
+    if !first {
       output.write_string(", ")
     }
     first = false

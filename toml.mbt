@@ -92,12 +92,12 @@ pub fn TomlValue::validate(self : TomlValue) -> Bool {
   match self {
     TomlArray(arr) => {
       // Check homogeneity
-      if not(TomlValue::is_homogeneous_array(arr)) {
+      if !TomlValue::is_homogeneous_array(arr) {
         return false
       }
       // Recursively validate nested values
       for i = 0; i < arr.length(); i = i + 1 {
-        if not(arr[i].validate()) {
+        if !arr[i].validate() {
           return false
         }
       }
@@ -106,7 +106,7 @@ pub fn TomlValue::validate(self : TomlValue) -> Bool {
     TomlTable(table) => {
       // Recursively validate all values in the table
       let mut valid = true
-      table.each(fn(_key, value) { if not(value.validate()) { valid = false } })
+      table.each(fn(_key, value) { if !value.validate() { valid = false } })
       valid
     }
     _ => true // All other types are always valid by themselves
