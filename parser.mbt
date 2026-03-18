@@ -291,6 +291,11 @@ pub fn parse(input : String) -> TomlValue raise {
           [RightBracket, RightBracket, .. rest] => parser.update_view(rest)
           _ => parser.error("Expected ']]'")
         }
+        // Validate newline/EOF/comment after ]]
+        match parser.view() {
+          [EOF, ..] | [Newline, ..] => ()
+          _ => parser.error("Expected newline or end of file after ']]'")
+        }
         // Create or append to the array of tables structure
         let current_table = create_array_of_tables(main_table, table_path) catch {
           error => parser.error(error.to_string())
@@ -303,6 +308,12 @@ pub fn parse(input : String) -> TomlValue raise {
         match parser.view() {
           [RightBracket, .. rest3] => parser.update_view(rest3)
           _ => parser.error("Expected ']'")
+        }
+        // Validate newline/EOF/comment after ]
+        match parser.view() {
+          [EOF, ..] | [Newline, ..] => ()
+          _ =>
+            parser.error("Expected newline or end of file after ']'")
         }
 
         // Create or get the nested table structure
