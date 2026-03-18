@@ -12,6 +12,44 @@ fn Parser::skip_newlines(self : Parser) -> Unit {
 }
 
 ///|
+/// Try to consume a single bare key from the current position.
+/// Handles identifiers, strings, integers, booleans (true/false),
+/// and special float keywords (inf/nan) in key position.
+fn Parser::try_parse_single_key(self : Parser) -> String? {
+  match self.view() {
+    [Identifier(name, ..), .. rest] => {
+      self.update_view(rest)
+      Some(name)
+    }
+    [StringToken(name, ..), .. rest] => {
+      self.update_view(rest)
+      Some(name)
+    }
+    [IntegerToken(i, ..), .. rest] => {
+      self.update_view(rest)
+      Some(i.to_string())
+    }
+    [BooleanToken(b, ..), .. rest] => {
+      self.update_view(rest)
+      Some(if b { "true" } else { "false" })
+    }
+    [FloatToken(f, ..), .. rest] => {
+      // inf and nan are valid bare keys
+      if f.is_inf() {
+        self.update_view(rest)
+        Some(if f < 0.0 { "-inf" } else { "inf" })
+      } else if f.is_nan() {
+        self.update_view(rest)
+        Some("nan")
+      } else {
+        None
+      }
+    }
+    _ => None
+  }
+}
+
+///|
 /// Parse a primary value (string, number, boolean)
 fn Parser::parse_value(
   self : Self,
@@ -125,20 +163,9 @@ fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
   let path = Array::new()
 
   // Parse first key
-  let first_key = match self.view() {
-    [Identifier(name, ..), .. rest] => {
-      self.update_view(rest)
-      name
-    }
-    [StringToken(name, ..), .. rest] => {
-      self.update_view(rest)
-      name
-    }
-    [IntegerToken(i, ..), .. rest] => {
-      self.update_view(rest)
-      i.to_string()
-    }
-    _ => self.error("Expected path name")
+  let first_key = match self.try_parse_single_key() {
+    Some(k) => k
+    None => self.error("Expected path name")
   }
   path.push(first_key)
 
@@ -146,20 +173,9 @@ fn Parser::parse_table_path(self : Parser) -> Array[String] raise {
   let next_view = loop self.view() {
     [Dot(..), .. rest] => {
       self.update_view(rest)
-      let key = match self.view() {
-        [Identifier(name, ..), .. rest2] => {
-          self.update_view(rest2)
-          name
-        }
-        [StringToken(name, ..), .. rest2] => {
-          self.update_view(rest2)
-          name
-        }
-        [IntegerToken(i, ..), .. rest2] => {
-          self.update_view(rest2)
-          i.to_string()
-        }
-        _ => self.error("Expected table name after dot")
+      let key = match self.try_parse_single_key() {
+        Some(k) => k
+        None => self.error("Expected table name after dot")
       }
       path.push(key)
       continue self.view()
@@ -184,20 +200,8 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
   let path = Array::new()
 
   // Parse first key - handle the case where the tokenizer saw a float like "1.2"
-  let first_key = match self.view() {
-    [Identifier(k), .. rest] => {
-      self.update_view(rest)
-      k
-    }
-    [StringToken(k), .. rest] => {
-      self.update_view(rest)
-      k
-    }
-    [IntegerToken(i), .. rest] => {
-      self.update_view(rest)
-      i.to_string()
-    }
-    [FloatToken(f), .. rest] => {
+  match self.view() {
+    [FloatToken(f), .. rest] if !f.is_inf() && !f.is_nan() => {
       // Handle float tokens that represent dotted numeric keys like "1.2"
       self.update_view(rest)
       let float_str = f.to_string()
@@ -215,56 +219,21 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
       let second_part = float_str[dot_index + 1:].to_string()
       path.push(first_part)
       path.push(second_part)
-
-      // Continue parsing for more dots after this float
-      let next_view = loop self.view() {
-        [Dot(..), .. rest] => {
-          self.update_view(rest)
-          let key = match self.view() {
-            [Identifier(name), .. rest2] => {
-              self.update_view(rest2)
-              name
-            }
-            [StringToken(name), .. rest2] => {
-              self.update_view(rest2)
-              name
-            }
-            [IntegerToken(i), .. rest2] => {
-              self.update_view(rest2)
-              i.to_string()
-            }
-            _ => self.error("Expected key after dot")
-          }
-          path.push(key)
-          continue self.view()
-        }
-        rest => rest
-      }
-      self.update_view(next_view)
-      return path
     }
-    _ => self.error("Expected key")
+    _ =>
+      match self.try_parse_single_key() {
+        Some(k) => path.push(k)
+        None => self.error("Expected key")
+      }
   }
-  path.push(first_key)
 
   // Parse additional keys separated by dots
   let next_view = loop self.view() {
     [Dot(..), .. rest] => {
       self.update_view(rest)
-      let key = match self.view() {
-        [Identifier(name), .. rest2] => {
-          self.update_view(rest2)
-          name
-        }
-        [StringToken(name), .. rest2] => {
-          self.update_view(rest2)
-          name
-        }
-        [IntegerToken(i), .. rest2] => {
-          self.update_view(rest2)
-          i.to_string()
-        }
-        _ => self.error("Expected key after dot")
+      let key = match self.try_parse_single_key() {
+        Some(k) => k
+        None => self.error("Expected key after dot")
       }
       path.push(key)
       continue self.view()
