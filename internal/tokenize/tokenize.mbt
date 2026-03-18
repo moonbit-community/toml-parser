@@ -723,6 +723,40 @@ fn Lexer::read_number_with_loc(
     }
     _ => ()
   }
+  // Check for exponent notation (e/E followed by optional +/- and digits)
+  match self.view() {
+    ['e' | 'E', '+' | '-', '0'..='9', ..] | ['e' | 'E', '0'..='9', ..] => {
+      is_float = true
+      // Consume e/E
+      match self.view() {
+        ['e' | 'E' as ch, .. rest] => {
+          sb.write_char(ch)
+          self.update_view(rest)
+        }
+        _ => ()
+      }
+      // Consume optional sign
+      match self.view() {
+        ['+' | '-' as ch, .. rest] => {
+          sb.write_char(ch)
+          self.update_view(rest)
+        }
+        _ => ()
+      }
+      // Consume exponent digits
+      let next_view = loop self.view() {
+        ['0'..='9' | '_' as ch, .. rest] => {
+          if ch != '_' {
+            sb.write_char(ch)
+          }
+          continue rest
+        }
+        rest => rest
+      }
+      self.update_view(next_view)
+    }
+    _ => ()
+  }
   // If followed by identifier chars (a-z, A-Z, _, -), this is a bare key
   // like "1key" or "2000-datetime", not a number value.
   match self.view() {
