@@ -198,6 +198,12 @@ fn float_values_equal(a : Map[String, Json], b : Map[String, Json]) -> Bool {
   if va == "inf" || va == "-inf" || vb == "inf" || vb == "-inf" {
     return va == vb
   }
+  // Preserve negative zero distinction: "-0" != "0"
+  let va_neg_zero = va == "-0" || va == "-0.0"
+  let vb_neg_zero = vb == "-0" || vb == "-0.0"
+  if va_neg_zero || vb_neg_zero {
+    return va_neg_zero == vb_neg_zero
+  }
   // Parse and compare numerically
   let fa = try? @strconv.parse_double(va)
   let fb = try? @strconv.parse_double(vb)

@@ -47,15 +47,11 @@ fn Parser::try_parse_single_key(self : Parser) -> String? {
         None
       }
     }
-    [DateTimeToken(dt, ..), .. rest] => {
-      // Date-like bare keys (e.g. 2001-02-03)
+    [DateTimeToken(LocalDate(s), ..), .. rest] => {
+      // Only LocalDate (YYYY-MM-DD) is valid as a bare key — it only
+      // contains digits and dashes. Other datetime variants contain
+      // colons, T, Z, or offsets which are not bare key characters.
       self.update_view(rest)
-      let s = match dt {
-        OffsetDateTime(s) => s
-        LocalDateTime(s) => s
-        LocalDate(s) => s
-        LocalTime(s) => s
-      }
       Some(s)
     }
     _ => None

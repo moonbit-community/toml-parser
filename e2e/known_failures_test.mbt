@@ -20,7 +20,8 @@ test "fixed: [a-a-a] table header parses correctly" {
 test "fixed: leading underscore value rejected (not infinite loop)" {
   let result = try? @toml.parse("x = _1.2\n")
   inspect(result, content=(
-    #|Err(Failure("parser.mbt:195:20-195:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 7 } }"))
+    #|Err(Failure("parser.mbt:191:20-191:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 7 } }"))
+
   ))
 }
 

@@ -115,11 +115,21 @@ fn create_array_of_tables(
   // Navigate to the parent of the final key
   for key in path[:-1] {
     match current_table.get(key) {
-      Some(TomlTable(existing_table)) => current_table = existing_table
+      Some(TomlTable(existing_table)) => {
+        if existing_table.contains("\u0000__inline__") {
+          raise InlineTableImmutable(key)
+        }
+        current_table = existing_table
+      }
       Some(TomlArray(arr)) if arr.length() > 0 => {
         // Navigate into the last element of an array of tables
         match arr[arr.length() - 1] {
-          TomlTable(last_table) => current_table = last_table
+          TomlTable(last_table) => {
+            if last_table.contains("\u0000__inline__") {
+              raise InlineTableImmutable(key)
+            }
+            current_table = last_table
+          }
           _ => raise ExpectedTable(key, TomlArray(arr))
         }
       }
