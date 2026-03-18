@@ -300,11 +300,19 @@ pub fn parse(input : String) -> TomlValue raise {
     parser.skip_newlines()
     match parser.view() {
       [EOF, ..] => break
-      [LeftBracket, LeftBracket, .. rest] => {
+      [LeftBracket(loc=loc1), LeftBracket(loc=loc2), .. rest] => {
+        if !loc1.adjacent(loc2) {
+          parser.error("Invalid table header: space between '[' and '['")
+        }
         parser.update_view(rest)
         let table_path = parser.parse_table_path()
         match parser.view() {
-          [RightBracket, RightBracket, .. rest] => parser.update_view(rest)
+          [RightBracket(loc=rl1), RightBracket(loc=rl2), .. rest] => {
+            if !rl1.adjacent(rl2) {
+              parser.error("Expected ']]' (no space between brackets)")
+            }
+            parser.update_view(rest)
+          }
           _ => parser.error("Expected ']]'")
         }
         // Validate newline/EOF/comment after ]]
