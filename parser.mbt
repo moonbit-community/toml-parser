@@ -126,11 +126,13 @@ fn Parser::parse_array(self : Self) -> TomlValue raise {
 /// No trailing comma allowed unlike Array
 fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
   let table = {}
+  self.skip_newlines() // TOML 1.1: allow newlines in inline tables
   if self.view() is [RightBrace, .. rest] {
     self.update_view(rest)
     return TomlTable(table)
   }
   while true {
+    self.skip_newlines()
     // Parse dotted key
     let key_path = self.parse_dotted_key()
 
@@ -145,8 +147,17 @@ fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
     set_dotted_key_value(table, key_path, value) catch {
       error => self.error(error.to_string())
     }
+    self.skip_newlines()
     match self.view() {
-      [Comma, .. rest] => self.update_view(rest)
+      [Comma, .. rest] => {
+        self.update_view(rest)
+        self.skip_newlines()
+        // Trailing comma: check for closing brace after comma
+        if self.view() is [RightBrace, .. rest2] {
+          self.update_view(rest2)
+          break
+        }
+      }
       [RightBrace, .. rest] => {
         self.update_view(rest)
         break
