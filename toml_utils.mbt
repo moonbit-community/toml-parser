@@ -385,6 +385,7 @@ fn set_dotted_key_value(
   table : Map[String, TomlValue],
   key_path : Array[String],
   value : TomlValue,
+  mark_implicit~ : Bool = false,
 ) -> Unit raise TableConflicts {
   guard key_path.length() != 0
   if key_path.length() == 1 {
@@ -397,7 +398,9 @@ fn set_dotted_key_value(
     return
   }
 
-  // Navigate through the dotted path, creating tables as needed
+  // Navigate through the dotted path, creating tables as needed.
+  // Mark newly created intermediate tables as "defined" so they can't
+  // be reopened with [table] headers later.
   let mut current_table = table
   for i = 0; i < key_path.length() - 1; i = i + 1 {
     let key = key_path[i]
@@ -413,6 +416,9 @@ fn set_dotted_key_value(
       None => {
         // Create new nested table
         let new_table = Map::new()
+        if mark_implicit {
+          new_table["\u0000__defined__"] = TomlBoolean(true)
+        }
         current_table[key] = TomlTable(new_table)
         current_table = new_table
       }

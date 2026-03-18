@@ -343,7 +343,11 @@ pub fn parse(input : String) -> TomlValue raise {
       _ => {
         // Parse key-value pair
         let (key_path, value) = parser.parse_key_value()
-        set_dotted_key_value(current_table, key_path, value) catch {
+        // Mark implicit tables when inside an explicitly defined [table] section
+        let in_defined_section = current_table.contains(table_defined_marker)
+        set_dotted_key_value(
+          current_table, key_path, value, mark_implicit=in_defined_section,
+        ) catch {
           error => parser.error(error.to_string())
         }
         // Validate that key-value pair is properly terminated
