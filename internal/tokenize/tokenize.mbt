@@ -722,6 +722,7 @@ fn Lexer::read_number_with_loc(
   self : Lexer,
   is_negative : Bool,
   start_pos : @lexer.Position,
+  has_sign~ : Bool = false,
 ) -> Token raise {
   let sb = StringBuilder::new()
   if is_negative {
@@ -872,7 +873,7 @@ fn Lexer::read_number_with_loc(
   // and the raw string contains characters that would be lost in numeric conversion
   // (underscores, exponent notation), produce an Identifier to preserve the text.
   let has_lossy_chars = raw_s != s || (is_float && !raw_s.contains("."))
-  if !is_negative && has_lossy_chars {
+  if !is_negative && !has_sign && has_lossy_chars {
     let is_key = loop self.view() {
       [' ' | '\t', .. rest] => continue rest
       ['=' | '.', ..] => true // key = value or dotted.key
@@ -1197,8 +1198,20 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
         _ => abort("Internal error: pattern matching inconsistency")
       }
 
-    // Positive numbers with explicit '+' (only decimal, not 0x/0o/0b)
-    ['+', '0'..='9', ..] =>
+    // Positive numbers with explicit '+' (only decimal, not 0x/0o/0b).
+    // '+' is not a valid bare key character, so +number in key position
+    // (followed by = or ]) should be rejected.
+    ['+', '0'..='9', ..] => {
+      // Peek ahead: skip digits/underscores, then check for key indicators
+      let is_key_context = loop self.view()[1:] {
+        ['0'..='9' | '_', .. rest] => continue rest
+        [' ' | '\t', .. rest] => continue rest
+        ['=' | ']', ..] => true // +num= or [+num] are both invalid
+        _ => false
+      }
+      if is_key_context {
+        fail("Unexpected character: '+'")
+      }
       match self.view() {
         ['+', '0', 'x' | 'o' | 'b', ..] =>
           fail("Unexpected character: '+'")
@@ -1208,6 +1221,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
         }
         _ => abort("Internal error: pattern matching inconsistency")
       }
+    }
 
     // Handle negative special float values (-inf, -nan)
     ['-', 'i', 'n', 'f', .. rest] => {
