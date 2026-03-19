@@ -558,27 +558,19 @@ test "inf failure" {
   let inf_failure_toml =
     #|inf = -infx
     #|
-  json_inspect(try? @toml.parse(inf_failure_toml), content={
-    "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:52:7-52:72@bobzhang/toml FAILED: Invalid character 'x' after special value at line 1, column 11",
-    ],
-  })
+  json_inspect(try? @toml.parse(inf_failure_toml), content=({"Err":["Failure","internal/tokenize/tokenize.mbt:58:7-58:72@bobzhang/toml FAILED: Invalid character 'x' after special value at line 1, column 11"]}))
   let inf_failure_toml2 =
     #|inf = -infx=2
     #|
-  json_inspect(try? @toml.parse(inf_failure_toml2), content={
-    "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:52:7-52:72@bobzhang/toml FAILED: Invalid character 'x' after special value at line 1, column 11",
-    ],
-  })
+  json_inspect(try? @toml.parse(inf_failure_toml2), content=({"Err":["Failure","internal/tokenize/tokenize.mbt:58:7-58:72@bobzhang/toml FAILED: Invalid character 'x' after special value at line 1, column 11"]}))
   let inf_failure_toml2 =
     #|inf = -inf x=2
     #|
-  json_inspect(try? @toml.parse(inf_failure_toml2), content=({"Err":["Failure","parser.mbt:180:20-180:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 12 }, end: { line: 1, column: 13 } }"]}))
+  json_inspect(try? @toml.parse(inf_failure_toml2), content=({"Err":["Failure","parser.mbt:191:20-191:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 12 }, end: { line: 1, column: 13 } }"]}))
   let table_failure =
     #|a = 3 b = 2
     #|
-  json_inspect(try? @toml.parse(table_failure), content=({"Err":["Failure","parser.mbt:180:20-180:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }"]}))
+  json_inspect(try? @toml.parse(table_failure), content=({"Err":["Failure","parser.mbt:191:20-191:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }"]}))
 
   // Test that comments after key-value pairs are handled correctly
   let comment_test =

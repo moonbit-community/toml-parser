@@ -103,7 +103,7 @@ test "parse inline table" {
 ///|
 /// Tests for uncovered parser error conditions
 test "test parser expect method failure" {
-  json_inspect(try? @toml.parse("key = [missing_bracket"), content=({"Err":["Failure","parser.mbt:180:20-180:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 8 }, end: { line: 1, column: 23 } }"]}))
+  json_inspect(try? @toml.parse("key = [missing_bracket"), content=({"Err":["Failure","parser.mbt:191:20-191:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 8 }, end: { line: 1, column: 23 } }"]}))
 }
 
 ///|
@@ -113,7 +113,7 @@ test "test parser EOF handling in peek" {
 
 ///|
 test "test parser EOF handling in advance" {
-  json_inspect(try? @toml.parse("key ="), content=({"Err":["Failure","parser.mbt:180:20-180:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 6 }, end: { line: 1, column: 6 } }"]}))
+  json_inspect(try? @toml.parse("key ="), content=({"Err":["Failure","parser.mbt:191:20-191:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 6 }, end: { line: 1, column: 6 } }"]}))
 }
 
 ///|
@@ -128,12 +128,12 @@ test "test inline table with string keys" {
 
 ///|
 test "test inline table invalid syntax" {
-  json_inspect(try? @toml.parse("table = {key value}"), content=({"Err":["Failure","parser.mbt:180:20-180:70@bobzhang/toml FAILED: Expected '=' at { start: { line: 1, column: 14 }, end: { line: 1, column: 19 } }"]}))
+  json_inspect(try? @toml.parse("table = {key value}"), content=({"Err":["Failure","parser.mbt:191:20-191:70@bobzhang/toml FAILED: Expected '=' at { start: { line: 1, column: 14 }, end: { line: 1, column: 19 } }"]}))
 }
 
 ///|
 test "test inline table missing comma or closing brace" {
-  json_inspect(try? @toml.parse("table = {key = \"value\" invalid}"), content=({"Err":["Failure","parser.mbt:180:20-180:70@bobzhang/toml FAILED: Expected ',' or '}' in inline table at { start: { line: 1, column: 24 }, end: { line: 1, column: 31 } }"]}))
+  json_inspect(try? @toml.parse("table = {key = \"value\" invalid}"), content=({"Err":["Failure","parser.mbt:191:20-191:70@bobzhang/toml FAILED: Expected ',' or '}' in inline table at { start: { line: 1, column: 24 }, end: { line: 1, column: 31 } }"]}))
 }
 
 ///|
@@ -172,17 +172,7 @@ test "test duplicate table redefinition" {
     #|[table]
     #|key2 = "value2"
     #|
-  json_inspect(try? @toml.parse(duplicate_table_toml), content={
-    "Ok": [
-      "TomlTable",
-      {
-        "table": [
-          "TomlTable",
-          { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
-        ],
-      },
-    ],
-  })
+  json_inspect(try? @toml.parse(duplicate_table_toml), content=({"Err":["Failure","parser.mbt:191:20-191:70@bobzhang/toml FAILED: Duplicate table definition: [table] at { start: { line: 3, column: 8 }, end: { line: 4, column: 1 } }"]}))
 }
 
 ///|
@@ -192,7 +182,7 @@ test "test table name conflicts with existing value" {
     #|[table]
     #|key = "value"
     #|
-  json_inspect(try? @toml.parse(conflicting_table_toml), content=({"Err":["Failure","parser.mbt:180:20-180:70@bobzhang/toml FAILED: ExpectedTable(\"table\", \"string\") at { start: { line: 2, column: 8 }, end: { line: 3, column: 1 } }"]}))
+  json_inspect(try? @toml.parse(conflicting_table_toml), content=({"Err":["Failure","parser.mbt:191:20-191:70@bobzhang/toml FAILED: ExpectedTable(\"table\", \"string\") at { start: { line: 2, column: 8 }, end: { line: 3, column: 1 } }"]}))
 }
 
 ///|
