@@ -18,12 +18,13 @@ pub(all) struct Loc {
   start : @lexer.Position
   end : @lexer.Position
 }
+pub fn Loc::adjacent(Self, Self) -> Bool
 pub impl Eq for Loc
 pub impl ToJson for Loc
 pub impl @debug.Debug for Loc
 
 pub(all) enum Token {
-  StringToken(String, loc~ : Loc)
+  StringToken(String, loc~ : Loc, multiline~ : Bool)
   IntegerToken(Int64, loc~ : Loc)
   FloatToken(Double, loc~ : Loc)
   BooleanToken(Bool, loc~ : Loc)
