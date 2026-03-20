@@ -36,10 +36,7 @@ jobs:
           git diff --exit-code
       
       - name: moon test (unit tests)
-        run: moon test -p bobzhang/toml -p bobzhang/toml/internal/tokenize
-
-      - name: moon test (e2e, native)
-        run: moon test e2e --target native
+        run: moon test .
         
       # - name: moon test
       #   run: moon test --enable-coverage

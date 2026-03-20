@@ -743,7 +743,7 @@ test "precise column tracking" {
   // Test 4: Error position after unicode characters
   json_inspect(try? @toml.parse("café = "), content={
     "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:1273:17-1273:54@bobzhang/toml FAILED: Unexpected character: 'é'",
+      "Failure", "internal/tokenize/tokenize.mbt:1275:17-1275:54@bobzhang/toml FAILED: Unexpected character: 'é'",
     ],
   })
 

@@ -435,7 +435,7 @@ test "invalid_character_error" {
   )
   json_inspect(result, content={
     "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:1273:17-1273:54@bobzhang/toml FAILED: Unexpected character: '@'",
+      "Failure", "internal/tokenize/tokenize.mbt:1275:17-1275:54@bobzhang/toml FAILED: Unexpected character: '@'",
     ],
   }) // Expected error
 }
