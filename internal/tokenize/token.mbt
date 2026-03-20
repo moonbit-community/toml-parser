@@ -97,7 +97,7 @@ pub fn Loc::adjacent(self : Loc, other : Loc) -> Bool {
 ///|
 pub fn Token::loc(self : Self) -> Loc {
   match self {
-    StringToken(_, loc~) => loc
+    StringToken(_, loc~, ..) => loc
     IntegerToken(_, loc~) => loc
     FloatToken(_, loc~) => loc
     BooleanToken(_, loc~) => loc

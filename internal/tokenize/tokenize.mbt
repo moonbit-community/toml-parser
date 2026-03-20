@@ -922,12 +922,12 @@ fn Lexer::read_number_with_loc(
 fn validate_float_string(s : String, raw : String) -> Unit raise {
   // Check for trailing dot (e.g. "1.")
   if s.has_suffix(".") {
-    raise Failure("Invalid float: trailing dot")
+    raise Failure::Failure("Invalid float: trailing dot")
   }
   // Check for dot followed immediately by 'e' (e.g. "1.e2")
   for i = 0; i < s.length() - 1; i = i + 1 {
     if s[i] == '.' && (s[i + 1] == 'e' || s[i + 1] == 'E') {
-      raise Failure("Invalid float: no digits after decimal point")
+      raise Failure::Failure("Invalid float: no digits after decimal point")
     }
   }
   // Validate underscore placement in raw string
@@ -945,20 +945,20 @@ fn validate_integer_string(raw : String) -> Unit raise {
 fn validate_date(s : String) -> Unit raise {
   // s is "YYYY-MM-DD" (10 chars)
   if s.length() < 10 {
-    raise Failure("Invalid date: '\{s}'")
+    raise Failure::Failure("Invalid date: '\{s}'")
   }
   let year = parse_int_substr(s, 0, 4)
   let month = parse_int_substr(s, 5, 7)
   let day = parse_int_substr(s, 8, 10)
   if month < 1 || month > 12 {
-    raise Failure("Invalid date: month \{month} out of range")
+    raise Failure::Failure("Invalid date: month \{month} out of range")
   }
   if day < 1 {
-    raise Failure("Invalid date: day must be >= 1")
+    raise Failure::Failure("Invalid date: day must be >= 1")
   }
   let max_day = days_in_month(year, month)
   if day > max_day {
-    raise Failure(
+    raise Failure::Failure(
       "Invalid date: day \{day} exceeds max \{max_day} for month \{month}",
     )
   }
@@ -968,21 +968,21 @@ fn validate_date(s : String) -> Unit raise {
 /// Validate a time string HH:MM or HH:MM:SS[.fff].
 fn validate_time(s : String) -> Unit raise {
   if s.length() < 5 {
-    raise Failure("Invalid time: '\{s}'")
+    raise Failure::Failure("Invalid time: '\{s}'")
   }
   let hour = parse_int_substr(s, 0, 2)
   let minute = parse_int_substr(s, 3, 5)
   if hour > 23 {
-    raise Failure("Invalid time: hour \{hour} out of range")
+    raise Failure::Failure("Invalid time: hour \{hour} out of range")
   }
   if minute > 59 {
-    raise Failure("Invalid time: minute \{minute} out of range")
+    raise Failure::Failure("Invalid time: minute \{minute} out of range")
   }
   if s.length() >= 8 {
     let second = parse_int_substr(s, 6, 8)
     if second > 60 {
       // 60 is allowed for leap seconds
-      raise Failure("Invalid time: second \{second} out of range")
+      raise Failure::Failure("Invalid time: second \{second} out of range")
     }
   }
 }
@@ -1018,10 +1018,12 @@ fn validate_timezone_offset(s : String) -> Unit raise {
   let hour = parse_int_substr(s, 1, 3)
   let minute = parse_int_substr(s, 4, 6)
   if hour > 23 {
-    raise Failure("Invalid timezone offset: hour \{hour} out of range")
+    raise Failure::Failure("Invalid timezone offset: hour \{hour} out of range")
   }
   if minute > 59 {
-    raise Failure("Invalid timezone offset: minute \{minute} out of range")
+    raise Failure::Failure(
+      "Invalid timezone offset: minute \{minute} out of range",
+    )
   }
 }
 
@@ -1039,20 +1041,20 @@ fn validate_underscores(raw : String) -> Unit raise {
     if raw[i] == '_' {
       // Trailing underscore
       if i == len - 1 {
-        raise Failure("Invalid number: trailing underscore")
+        raise Failure::Failure("Invalid number: trailing underscore")
       }
       // Leading underscore (after optional sign)
       if i == 0 || (i == 1 && raw[0] == '-') {
-        raise Failure("Invalid number: leading underscore")
+        raise Failure::Failure("Invalid number: leading underscore")
       }
       // Underscore adjacent to non-digit
       let prev = raw[i - 1]
       let next = raw[i + 1]
       if !(prev >= '0' && prev <= '9') {
-        raise Failure("Invalid number: underscore not between digits")
+        raise Failure::Failure("Invalid number: underscore not between digits")
       }
       if !(next >= '0' && next <= '9') {
-        raise Failure("Invalid number: underscore not between digits")
+        raise Failure::Failure("Invalid number: underscore not between digits")
       }
     }
   }

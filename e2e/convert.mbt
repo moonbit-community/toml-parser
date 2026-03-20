@@ -60,42 +60,6 @@ fn normalize_datetime(s : String) -> String {
 
 ///|
 /// Pad fractional seconds to 3 digits (e.g. .6 → .600, .12 → .120).
-fn normalize_fractional_seconds(s : String) -> String {
-  // Find the dot in the time portion (fractional seconds)
-  // The dot must be after HH:MM:SS (at least position 8 in the time portion)
-  let mut dot_pos = -1
-  let mut t_pos = -1
-  for i = 0; i < s.length(); i = i + 1 {
-    if s[i] == 'T' {
-      t_pos = i
-    }
-    if s[i] == '.' && t_pos >= 0 {
-      dot_pos = i
-    }
-  }
-  if dot_pos < 0 {
-    return s
-  }
-  // Count fractional digits (until non-digit: Z, +, -, or end)
-  let mut frac_end = dot_pos + 1
-  while frac_end < s.length() {
-    let c = s[frac_end]
-    if c >= '0' && c <= '9' {
-      frac_end += 1
-    } else {
-      break
-    }
-  }
-  let frac_len = frac_end - dot_pos - 1
-  if frac_len >= 3 {
-    return s // already 3+ digits
-  }
-  // Pad with zeros
-  let before = s[:frac_end].to_string()
-  let after = s[frac_end:].to_string()
-  let padding = "0".repeat(3 - frac_len)
-  "\{before}\{padding}\{after}"
-}
 
 ///|
 /// Normalize a time value to always include seconds (HH:MM → HH:MM:00).
@@ -183,39 +147,3 @@ fn format_test_float(f : Double) -> String {
 
 ///|
 /// Format a number in scientific notation matching Go's %g output.
-fn format_scientific(f : Double) -> String {
-  let negative = f < 0.0
-  let abs_f = f.abs()
-  // Calculate exponent
-  let mut exp = 0
-  let mut mantissa = abs_f
-  if mantissa >= 10.0 {
-    while mantissa >= 10.0 {
-      mantissa = mantissa / 10.0
-      exp += 1
-    }
-  } else if mantissa > 0.0 && mantissa < 1.0 {
-    while mantissa < 1.0 {
-      mantissa = mantissa * 10.0
-      exp -= 1
-    }
-  }
-  // Format mantissa with minimal precision
-  let mantissa_str = mantissa.to_string()
-  // Remove trailing zeros after decimal point
-  let trimmed = if mantissa_str.contains(".") {
-    let mut end = mantissa_str.length()
-    while end > 0 && mantissa_str[end - 1] == '0' {
-      end -= 1
-    }
-    if end > 0 && mantissa_str[end - 1] == '.' {
-      end -= 1
-    }
-    mantissa_str[:end].to_string()
-  } else {
-    mantissa_str
-  }
-  let sign = if negative { "-" } else { "" }
-  let exp_sign = if exp >= 0 { "+" } else { "" }
-  "\{sign}\{trimmed}e\{exp_sign}\{exp.to_string().pad_start(2, '0')}"
-}

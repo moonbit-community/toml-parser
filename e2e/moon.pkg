@@ -4,4 +4,7 @@ import {
   "moonbitlang/core/json",
   "moonbitlang/core/encoding/utf8",
   "moonbitlang/async",
+  "moonbitlang/core/strconv",
 }
+
+warnings = "-unused_package"
