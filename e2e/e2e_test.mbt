@@ -15,7 +15,7 @@ async test "valid toml-test suite" {
     let expected_json_str = @fs.read_file_to_string(json_path)
     let expected : Json = @json.parse(expected_json_str) catch {
       e => {
-        failures.push("\{toml_path}: failed to parse expected JSON: \{e}")
+        failures.push("[JSON-ERROR] \{toml_path}: \{e}")
         failed += 1
         continue
       }
@@ -23,14 +23,14 @@ async test "valid toml-test suite" {
     let parsed = try? @toml.parse(toml_content)
     match parsed {
       Err(e) => {
-        failures.push("\{toml_path}: parse error: \{e}")
+        failures.push("[PARSE-ERROR] \{toml_path}: \{e}")
         failed += 1
       }
       Ok(value) => {
         let actual = to_test_json(value)
         if !json_equal(actual, expected) {
           failures.push(
-            "\{toml_path}:\n  expected: \{expected.stringify()}\n  actual:   \{actual.stringify()}",
+            "[MISMATCH] \{toml_path}\n    expected: \{expected.stringify()}\n    actual:   \{actual.stringify()}",
           )
           failed += 1
         } else {
@@ -46,9 +46,11 @@ async test "valid toml-test suite" {
     let msg = StringBuilder::new()
     msg.write_string("\{failed} of \{passed + failed} valid tests failed:\n")
     for f in failures {
-      msg.write_string("\{f}\n\n")
+      msg.write_string("  \{f}\n")
     }
-    @fs.write_string_to_file("e2e/_valid_failures.txt", msg.to_string())
+    let msg = msg.to_string()
+    println(msg)
+    @fs.write_string_to_file("e2e/_valid_failures.txt", msg)
   }
 }
 
@@ -76,8 +78,10 @@ async test "invalid toml-test suite" {
     let msg = StringBuilder::new()
     msg.write_string("\{failed} of \{passed + failed} invalid tests failed:\n")
     for f in failures {
-      msg.write_string("\{f}\n\n")
+      msg.write_string("  \{f}\n")
     }
-    @fs.write_string_to_file("e2e/_invalid_failures.txt", msg.to_string())
+    let msg = msg.to_string()
+    println(msg)
+    @fs.write_string_to_file("e2e/_invalid_failures.txt", msg)
   }
 }

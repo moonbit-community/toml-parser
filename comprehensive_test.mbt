@@ -741,11 +741,7 @@ test "precise column tracking" {
   })
 
   // Test 4: Error position after unicode characters
-  json_inspect(try? @toml.parse("café = "), content={
-    "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:1275:17-1275:54@bobzhang/toml FAILED: Unexpected character: 'é'",
-    ],
-  })
+  json_inspect(try? @toml.parse("café = "), content=({"Err":["Failure","internal/tokenize/tokenize.mbt:1275:17-1275:54@bobzhang/toml FAILED: Unexpected character: 'é'"]}))
 
   // Test 5: Multiple equals signs - error on second one
   json_inspect(try? @toml.parse("key = = \"value\""), content={
