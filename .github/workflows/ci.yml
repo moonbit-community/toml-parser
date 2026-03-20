@@ -32,11 +32,14 @@ jobs:
       
       - name: moon info
         run: |
-          moon info --target wasm,wasm-gc,js,native
+          moon info
           git diff --exit-code
       
-      - name: moon test          
-        run: moon test
+      - name: moon test (unit tests)
+        run: moon test -p bobzhang/toml -p bobzhang/toml/internal/tokenize
+
+      - name: moon test (e2e, native)
+        run: moon test e2e --target native
         
       # - name: moon test
       #   run: moon test --enable-coverage
