@@ -8,12 +8,23 @@ test "lexer datetime LocalTime basic" {
       #|time = 07:32:00
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "time", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalTime", "07:32:00"], { "loc": "1:8-1:16" }],
-    ["EOF", { "loc": "1:16-1:16" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "time",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalTime("07:32:00"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 16 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 16 }, end: { line: 1, column: 16 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -24,12 +35,23 @@ test "lexer datetime LocalTime with fractional seconds" {
       #|time = 07:32:00.999999
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "time", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalTime", "07:32:00.999999"], { "loc": "1:8-1:23" }],
-    ["EOF", { "loc": "1:23-1:23" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "time",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalTime("07:32:00.999999"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 23 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 23 }, end: { line: 1, column: 23 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -40,23 +62,45 @@ test "lexer datetime LocalTime edge times" {
       #|time = 00:00:00
     ),
   )
-  json_inspect(tokens1, content=[
-    ["Identifier", "time", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalTime", "00:00:00"], { "loc": "1:8-1:16" }],
-    ["EOF", { "loc": "1:16-1:16" }],
-  ])
+  debug_inspect(
+    tokens1,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "time",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalTime("00:00:00"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 16 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 16 }, end: { line: 1, column: 16 } }),
+      #|]
+    ),
+  )
   let tokens2 = @tokenize.tokenize(
     (
       #|time = 23:59:59
     ),
   )
-  json_inspect(tokens2, content=[
-    ["Identifier", "time", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalTime", "23:59:59"], { "loc": "1:8-1:16" }],
-    ["EOF", { "loc": "1:16-1:16" }],
-  ])
+  debug_inspect(
+    tokens2,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "time",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalTime("23:59:59"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 16 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 16 }, end: { line: 1, column: 16 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -67,12 +111,23 @@ test "lexer datetime LocalDate basic" {
       #|date = 1979-05-27
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "date", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalDate", "1979-05-27"], { "loc": "1:8-1:18" }],
-    ["EOF", { "loc": "1:18-1:18" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "date",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalDate("1979-05-27"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 18 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 18 }, end: { line: 1, column: 18 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -84,36 +139,69 @@ test "lexer datetime LocalDate various years" {
       #|date = 1900-01-01
     ),
   )
-  json_inspect(tokens1, content=[
-    ["Identifier", "date", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalDate", "1900-01-01"], { "loc": "1:8-1:18" }],
-    ["EOF", { "loc": "1:18-1:18" }],
-  ])
+  debug_inspect(
+    tokens1,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "date",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalDate("1900-01-01"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 18 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 18 }, end: { line: 1, column: 18 } }),
+      #|]
+    ),
+  )
   // Far future date
   let tokens2 = @tokenize.tokenize(
     (
       #|date = 9999-12-31
     ),
   )
-  json_inspect(tokens2, content=[
-    ["Identifier", "date", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalDate", "9999-12-31"], { "loc": "1:8-1:18" }],
-    ["EOF", { "loc": "1:18-1:18" }],
-  ])
+  debug_inspect(
+    tokens2,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "date",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalDate("9999-12-31"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 18 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 18 }, end: { line: 1, column: 18 } }),
+      #|]
+    ),
+  )
   // Leap year date
   let tokens3 = @tokenize.tokenize(
     (
       #|date = 2024-02-29
     ),
   )
-  json_inspect(tokens3, content=[
-    ["Identifier", "date", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalDate", "2024-02-29"], { "loc": "1:8-1:18" }],
-    ["EOF", { "loc": "1:18-1:18" }],
-  ])
+  debug_inspect(
+    tokens3,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "date",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalDate("2024-02-29"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 18 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 18 }, end: { line: 1, column: 18 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -124,16 +212,23 @@ test "lexer datetime LocalDateTime basic" {
       #|datetime = 1979-05-27T07:32:00
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "datetime", { "loc": "1:1-1:9" }],
-    ["Equals", { "loc": "1:10-1:11" }],
-    [
-      "DateTimeToken",
-      ["LocalDateTime", "1979-05-27T07:32:00"],
-      { "loc": "1:12-1:31" },
-    ],
-    ["EOF", { "loc": "1:31-1:31" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "datetime",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 9 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }),
+      #|  DateTimeToken(
+      #|    LocalDateTime("1979-05-27T07:32:00"),
+      #|    loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 31 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 31 }, end: { line: 1, column: 31 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -144,16 +239,23 @@ test "lexer datetime LocalDateTime with fractional seconds" {
       #|datetime = 1979-05-27T00:32:00.999999
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "datetime", { "loc": "1:1-1:9" }],
-    ["Equals", { "loc": "1:10-1:11" }],
-    [
-      "DateTimeToken",
-      ["LocalDateTime", "1979-05-27T00:32:00.999999"],
-      { "loc": "1:12-1:38" },
-    ],
-    ["EOF", { "loc": "1:38-1:38" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "datetime",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 9 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }),
+      #|  DateTimeToken(
+      #|    LocalDateTime("1979-05-27T00:32:00.999999"),
+      #|    loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 38 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 38 }, end: { line: 1, column: 38 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -164,16 +266,23 @@ test "lexer datetime OffsetDateTime with Z" {
       #|datetime = 1979-05-27T07:32:00Z
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "datetime", { "loc": "1:1-1:9" }],
-    ["Equals", { "loc": "1:10-1:11" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "1979-05-27T07:32:00Z"],
-      { "loc": "1:12-1:32" },
-    ],
-    ["EOF", { "loc": "1:32-1:32" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "datetime",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 9 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("1979-05-27T07:32:00Z"),
+      #|    loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 32 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 32 }, end: { line: 1, column: 32 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -184,16 +293,23 @@ test "lexer datetime OffsetDateTime Z with fractional" {
       #|datetime = 1979-05-27T07:32:00.123456Z
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "datetime", { "loc": "1:1-1:9" }],
-    ["Equals", { "loc": "1:10-1:11" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "1979-05-27T07:32:00.123456Z"],
-      { "loc": "1:12-1:39" },
-    ],
-    ["EOF", { "loc": "1:39-1:39" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "datetime",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 9 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("1979-05-27T07:32:00.123456Z"),
+      #|    loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 39 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 39 }, end: { line: 1, column: 39 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -204,16 +320,23 @@ test "lexer datetime OffsetDateTime positive offset" {
       #|datetime = 1979-05-27T00:32:00+07:00
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "datetime", { "loc": "1:1-1:9" }],
-    ["Equals", { "loc": "1:10-1:11" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "1979-05-27T00:32:00+07:00"],
-      { "loc": "1:12-1:37" },
-    ],
-    ["EOF", { "loc": "1:37-1:37" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "datetime",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 9 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("1979-05-27T00:32:00+07:00"),
+      #|    loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 37 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 37 }, end: { line: 1, column: 37 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -224,16 +347,23 @@ test "lexer datetime OffsetDateTime negative offset" {
       #|datetime = 1979-05-27T00:32:00-07:00
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "datetime", { "loc": "1:1-1:9" }],
-    ["Equals", { "loc": "1:10-1:11" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "1979-05-27T00:32:00-07:00"],
-      { "loc": "1:12-1:37" },
-    ],
-    ["EOF", { "loc": "1:37-1:37" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "datetime",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 9 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("1979-05-27T00:32:00-07:00"),
+      #|    loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 37 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 37 }, end: { line: 1, column: 37 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -244,16 +374,23 @@ test "lexer datetime OffsetDateTime offset with fractional" {
       #|datetime = 1979-05-27T00:32:00.999999-07:00
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "datetime", { "loc": "1:1-1:9" }],
-    ["Equals", { "loc": "1:10-1:11" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "1979-05-27T00:32:00.999999-07:00"],
-      { "loc": "1:12-1:44" },
-    ],
-    ["EOF", { "loc": "1:44-1:44" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "datetime",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 9 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("1979-05-27T00:32:00.999999-07:00"),
+      #|    loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 44 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 44 }, end: { line: 1, column: 44 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -265,80 +402,115 @@ test "lexer datetime OffsetDateTime various offsets" {
       #|dt = 2023-01-01T12:00:00+00:00
     ),
   )
-  json_inspect(tokens1, content=[
-    ["Identifier", "dt", { "loc": "1:1-1:3" }],
-    ["Equals", { "loc": "1:4-1:5" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "2023-01-01T12:00:00+00:00"],
-      { "loc": "1:6-1:31" },
-    ],
-    ["EOF", { "loc": "1:31-1:31" }],
-  ])
+  debug_inspect(
+    tokens1,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "dt",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 3 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 4 }, end: { line: 1, column: 5 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("2023-01-01T12:00:00+00:00"),
+      #|    loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 31 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 31 }, end: { line: 1, column: 31 } }),
+      #|]
+    ),
+  )
   // -00:00 (UTC)
   let tokens2 = @tokenize.tokenize(
     (
       #|dt = 2023-01-01T12:00:00-00:00
     ),
   )
-  json_inspect(tokens2, content=[
-    ["Identifier", "dt", { "loc": "1:1-1:3" }],
-    ["Equals", { "loc": "1:4-1:5" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "2023-01-01T12:00:00-00:00"],
-      { "loc": "1:6-1:31" },
-    ],
-    ["EOF", { "loc": "1:31-1:31" }],
-  ])
+  debug_inspect(
+    tokens2,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "dt",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 3 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 4 }, end: { line: 1, column: 5 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("2023-01-01T12:00:00-00:00"),
+      #|    loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 31 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 31 }, end: { line: 1, column: 31 } }),
+      #|]
+    ),
+  )
   // +14:00 (max positive)
   let tokens3 = @tokenize.tokenize(
     (
       #|dt = 2023-01-01T12:00:00+14:00
     ),
   )
-  json_inspect(tokens3, content=[
-    ["Identifier", "dt", { "loc": "1:1-1:3" }],
-    ["Equals", { "loc": "1:4-1:5" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "2023-01-01T12:00:00+14:00"],
-      { "loc": "1:6-1:31" },
-    ],
-    ["EOF", { "loc": "1:31-1:31" }],
-  ])
+  debug_inspect(
+    tokens3,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "dt",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 3 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 4 }, end: { line: 1, column: 5 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("2023-01-01T12:00:00+14:00"),
+      #|    loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 31 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 31 }, end: { line: 1, column: 31 } }),
+      #|]
+    ),
+  )
   // -12:00 (max negative)
   let tokens4 = @tokenize.tokenize(
     (
       #|dt = 2023-01-01T12:00:00-12:00
     ),
   )
-  json_inspect(tokens4, content=[
-    ["Identifier", "dt", { "loc": "1:1-1:3" }],
-    ["Equals", { "loc": "1:4-1:5" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "2023-01-01T12:00:00-12:00"],
-      { "loc": "1:6-1:31" },
-    ],
-    ["EOF", { "loc": "1:31-1:31" }],
-  ])
+  debug_inspect(
+    tokens4,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "dt",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 3 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 4 }, end: { line: 1, column: 5 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("2023-01-01T12:00:00-12:00"),
+      #|    loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 31 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 31 }, end: { line: 1, column: 31 } }),
+      #|]
+    ),
+  )
   // Half-hour offset (India +05:30)
   let tokens5 = @tokenize.tokenize(
     (
       #|dt = 2023-01-01T12:00:00+05:30
     ),
   )
-  json_inspect(tokens5, content=[
-    ["Identifier", "dt", { "loc": "1:1-1:3" }],
-    ["Equals", { "loc": "1:4-1:5" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "2023-01-01T12:00:00+05:30"],
-      { "loc": "1:6-1:31" },
-    ],
-    ["EOF", { "loc": "1:31-1:31" }],
-  ])
+  debug_inspect(
+    tokens5,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "dt",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 3 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 4 }, end: { line: 1, column: 5 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("2023-01-01T12:00:00+05:30"),
+      #|    loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 31 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 31 }, end: { line: 1, column: 31 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -353,32 +525,53 @@ test "lexer datetime multiple datetimes" {
     ),
   )
   // Just verify token types are correct for each
-  json_inspect(tokens, content=[
-    ["Identifier", "time", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalTime", "12:30:00"], { "loc": "1:8-1:16" }],
-    ["Newline", { "loc": "1:16-2:1" }],
-    ["Identifier", "date", { "loc": "2:1-2:5" }],
-    ["Equals", { "loc": "2:6-2:7" }],
-    ["DateTimeToken", ["LocalDate", "2023-06-15"], { "loc": "2:8-2:18" }],
-    ["Newline", { "loc": "2:18-3:1" }],
-    ["Identifier", "local_dt", { "loc": "3:1-3:9" }],
-    ["Equals", { "loc": "3:10-3:11" }],
-    [
-      "DateTimeToken",
-      ["LocalDateTime", "2023-06-15T12:30:00"],
-      { "loc": "3:12-3:31" },
-    ],
-    ["Newline", { "loc": "3:31-4:1" }],
-    ["Identifier", "offset_dt", { "loc": "4:1-4:10" }],
-    ["Equals", { "loc": "4:11-4:12" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "2023-06-15T12:30:00Z"],
-      { "loc": "4:13-4:33" },
-    ],
-    ["EOF", { "loc": "4:33-4:33" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "time",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalTime("12:30:00"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 16 } },
+      #|  ),
+      #|  Newline(loc={ start: { line: 1, column: 16 }, end: { line: 2, column: 1 } }),
+      #|  Identifier(
+      #|    "date",
+      #|    loc={ start: { line: 2, column: 1 }, end: { line: 2, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 2, column: 6 }, end: { line: 2, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalDate("2023-06-15"),
+      #|    loc={ start: { line: 2, column: 8 }, end: { line: 2, column: 18 } },
+      #|  ),
+      #|  Newline(loc={ start: { line: 2, column: 18 }, end: { line: 3, column: 1 } }),
+      #|  Identifier(
+      #|    "local_dt",
+      #|    loc={ start: { line: 3, column: 1 }, end: { line: 3, column: 9 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 3, column: 10 }, end: { line: 3, column: 11 } }),
+      #|  DateTimeToken(
+      #|    LocalDateTime("2023-06-15T12:30:00"),
+      #|    loc={ start: { line: 3, column: 12 }, end: { line: 3, column: 31 } },
+      #|  ),
+      #|  Newline(loc={ start: { line: 3, column: 31 }, end: { line: 4, column: 1 } }),
+      #|  Identifier(
+      #|    "offset_dt",
+      #|    loc={ start: { line: 4, column: 1 }, end: { line: 4, column: 10 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 4, column: 11 }, end: { line: 4, column: 12 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("2023-06-15T12:30:00Z"),
+      #|    loc={ start: { line: 4, column: 13 }, end: { line: 4, column: 33 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 4, column: 33 }, end: { line: 4, column: 33 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -389,18 +582,35 @@ test "lexer datetime in array" {
       #|dates = [2023-01-01, 2023-06-15, 2023-12-31]
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "dates", { "loc": "1:1-1:6" }],
-    ["Equals", { "loc": "1:7-1:8" }],
-    ["LeftBracket", { "loc": "1:9-1:10" }],
-    ["DateTimeToken", ["LocalDate", "2023-01-01"], { "loc": "1:10-1:20" }],
-    ["Comma", { "loc": "1:20-1:21" }],
-    ["DateTimeToken", ["LocalDate", "2023-06-15"], { "loc": "1:22-1:32" }],
-    ["Comma", { "loc": "1:32-1:33" }],
-    ["DateTimeToken", ["LocalDate", "2023-12-31"], { "loc": "1:34-1:44" }],
-    ["RightBracket", { "loc": "1:44-1:45" }],
-    ["EOF", { "loc": "1:45-1:45" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "dates",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 6 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }),
+      #|  LeftBracket(loc={ start: { line: 1, column: 9 }, end: { line: 1, column: 10 } }),
+      #|  DateTimeToken(
+      #|    LocalDate("2023-01-01"),
+      #|    loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 20 } },
+      #|  ),
+      #|  Comma(loc={ start: { line: 1, column: 20 }, end: { line: 1, column: 21 } }),
+      #|  DateTimeToken(
+      #|    LocalDate("2023-06-15"),
+      #|    loc={ start: { line: 1, column: 22 }, end: { line: 1, column: 32 } },
+      #|  ),
+      #|  Comma(loc={ start: { line: 1, column: 32 }, end: { line: 1, column: 33 } }),
+      #|  DateTimeToken(
+      #|    LocalDate("2023-12-31"),
+      #|    loc={ start: { line: 1, column: 34 }, end: { line: 1, column: 44 } },
+      #|  ),
+      #|  RightBracket(loc={ start: { line: 1, column: 44 }, end: { line: 1, column: 45 } }),
+      #|  EOF(loc={ start: { line: 1, column: 45 }, end: { line: 1, column: 45 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -411,12 +621,23 @@ test "lexer datetime with comment" {
       #|date = 2023-06-15 # deployment date
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "date", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalDate", "2023-06-15"], { "loc": "1:8-1:18" }],
-    ["EOF", { "loc": "1:36-1:36" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "date",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalDate("2023-06-15"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 18 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 36 }, end: { line: 1, column: 36 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -428,52 +649,92 @@ test "lexer datetime LocalTime fractional precision" {
       #|time = 12:30:45.1
     ),
   )
-  json_inspect(tokens1, content=[
-    ["Identifier", "time", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalTime", "12:30:45.1"], { "loc": "1:8-1:18" }],
-    ["EOF", { "loc": "1:18-1:18" }],
-  ])
+  debug_inspect(
+    tokens1,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "time",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalTime("12:30:45.1"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 18 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 18 }, end: { line: 1, column: 18 } }),
+      #|]
+    ),
+  )
   // 3 digits (milliseconds)
   let tokens2 = @tokenize.tokenize(
     (
       #|time = 12:30:45.123
     ),
   )
-  json_inspect(tokens2, content=[
-    ["Identifier", "time", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalTime", "12:30:45.123"], { "loc": "1:8-1:20" }],
-    ["EOF", { "loc": "1:20-1:20" }],
-  ])
+  debug_inspect(
+    tokens2,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "time",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalTime("12:30:45.123"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 20 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 20 }, end: { line: 1, column: 20 } }),
+      #|]
+    ),
+  )
   // 6 digits (microseconds)
   let tokens3 = @tokenize.tokenize(
     (
       #|time = 12:30:45.123456
     ),
   )
-  json_inspect(tokens3, content=[
-    ["Identifier", "time", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalTime", "12:30:45.123456"], { "loc": "1:8-1:23" }],
-    ["EOF", { "loc": "1:23-1:23" }],
-  ])
+  debug_inspect(
+    tokens3,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "time",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalTime("12:30:45.123456"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 23 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 23 }, end: { line: 1, column: 23 } }),
+      #|]
+    ),
+  )
   // 9 digits (nanoseconds)
   let tokens4 = @tokenize.tokenize(
     (
       #|time = 12:30:45.123456789
     ),
   )
-  json_inspect(tokens4, content=[
-    ["Identifier", "time", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    [
-      "DateTimeToken",
-      ["LocalTime", "12:30:45.123456789"],
-      { "loc": "1:8-1:26" },
-    ],
-    ["EOF", { "loc": "1:26-1:26" }],
-  ])
+  debug_inspect(
+    tokens4,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "time",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalTime("12:30:45.123456789"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 26 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 26 }, end: { line: 1, column: 26 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -484,20 +745,40 @@ test "lexer datetime in inline table" {
       #|event = { date = 2023-06-15, time = 09:00:00 }
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "event", { "loc": "1:1-1:6" }],
-    ["Equals", { "loc": "1:7-1:8" }],
-    ["LeftBrace", { "loc": "1:9-1:10" }],
-    ["Identifier", "date", { "loc": "1:11-1:15" }],
-    ["Equals", { "loc": "1:16-1:17" }],
-    ["DateTimeToken", ["LocalDate", "2023-06-15"], { "loc": "1:18-1:28" }],
-    ["Comma", { "loc": "1:28-1:29" }],
-    ["Identifier", "time", { "loc": "1:30-1:34" }],
-    ["Equals", { "loc": "1:35-1:36" }],
-    ["DateTimeToken", ["LocalTime", "09:00:00"], { "loc": "1:37-1:45" }],
-    ["RightBrace", { "loc": "1:46-1:47" }],
-    ["EOF", { "loc": "1:47-1:47" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "event",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 6 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }),
+      #|  LeftBrace(loc={ start: { line: 1, column: 9 }, end: { line: 1, column: 10 } }),
+      #|  Identifier(
+      #|    "date",
+      #|    loc={ start: { line: 1, column: 11 }, end: { line: 1, column: 15 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 16 }, end: { line: 1, column: 17 } }),
+      #|  DateTimeToken(
+      #|    LocalDate("2023-06-15"),
+      #|    loc={ start: { line: 1, column: 18 }, end: { line: 1, column: 28 } },
+      #|  ),
+      #|  Comma(loc={ start: { line: 1, column: 28 }, end: { line: 1, column: 29 } }),
+      #|  Identifier(
+      #|    "time",
+      #|    loc={ start: { line: 1, column: 30 }, end: { line: 1, column: 34 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 35 }, end: { line: 1, column: 36 } }),
+      #|  DateTimeToken(
+      #|    LocalTime("09:00:00"),
+      #|    loc={ start: { line: 1, column: 37 }, end: { line: 1, column: 45 } },
+      #|  ),
+      #|  RightBrace(loc={ start: { line: 1, column: 46 }, end: { line: 1, column: 47 } }),
+      #|  EOF(loc={ start: { line: 1, column: 47 }, end: { line: 1, column: 47 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -511,16 +792,33 @@ test "lexer datetime disambiguation" {
       #|other = 123
     ),
   )
-  json_inspect(tokens1, content=[
-    ["Identifier", "date", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalDate", "2023-06-15"], { "loc": "1:8-1:18" }],
-    ["Newline", { "loc": "1:18-2:1" }],
-    ["Identifier", "other", { "loc": "2:1-2:6" }],
-    ["Equals", { "loc": "2:7-2:8" }],
-    ["IntegerToken", "123", { "loc": "2:9-2:12" }],
-    ["EOF", { "loc": "2:12-2:12" }],
-  ])
+  debug_inspect(
+    tokens1,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "date",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalDate("2023-06-15"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 18 } },
+      #|  ),
+      #|  Newline(loc={ start: { line: 1, column: 18 }, end: { line: 2, column: 1 } }),
+      #|  Identifier(
+      #|    "other",
+      #|    loc={ start: { line: 2, column: 1 }, end: { line: 2, column: 6 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 2, column: 7 }, end: { line: 2, column: 8 } }),
+      #|  IntegerToken(
+      #|    123,
+      #|    loc={ start: { line: 2, column: 9 }, end: { line: 2, column: 12 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 2, column: 12 }, end: { line: 2, column: 12 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -532,109 +830,177 @@ test "lexer datetime RFC 3339 spec examples" {
       #|odt1 = 1979-05-27T07:32:00Z
     ),
   )
-  json_inspect(tokens1, content=[
-    ["Identifier", "odt1", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "1979-05-27T07:32:00Z"],
-      { "loc": "1:8-1:28" },
-    ],
-    ["EOF", { "loc": "1:28-1:28" }],
-  ])
+  debug_inspect(
+    tokens1,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "odt1",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("1979-05-27T07:32:00Z"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 28 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 28 }, end: { line: 1, column: 28 } }),
+      #|]
+    ),
+  )
   let tokens2 = @tokenize.tokenize(
     (
       #|odt2 = 1979-05-27T00:32:00-07:00
     ),
   )
-  json_inspect(tokens2, content=[
-    ["Identifier", "odt2", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "1979-05-27T00:32:00-07:00"],
-      { "loc": "1:8-1:33" },
-    ],
-    ["EOF", { "loc": "1:33-1:33" }],
-  ])
+  debug_inspect(
+    tokens2,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "odt2",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("1979-05-27T00:32:00-07:00"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 33 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 33 }, end: { line: 1, column: 33 } }),
+      #|]
+    ),
+  )
   let tokens3 = @tokenize.tokenize(
     (
       #|odt3 = 1979-05-27T00:32:00.999999-07:00
     ),
   )
-  json_inspect(tokens3, content=[
-    ["Identifier", "odt3", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "1979-05-27T00:32:00.999999-07:00"],
-      { "loc": "1:8-1:40" },
-    ],
-    ["EOF", { "loc": "1:40-1:40" }],
-  ])
+  debug_inspect(
+    tokens3,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "odt3",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("1979-05-27T00:32:00.999999-07:00"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 40 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 40 }, end: { line: 1, column: 40 } }),
+      #|]
+    ),
+  )
   let tokens4 = @tokenize.tokenize(
     (
       #|ldt1 = 1979-05-27T07:32:00
     ),
   )
-  json_inspect(tokens4, content=[
-    ["Identifier", "ldt1", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    [
-      "DateTimeToken",
-      ["LocalDateTime", "1979-05-27T07:32:00"],
-      { "loc": "1:8-1:27" },
-    ],
-    ["EOF", { "loc": "1:27-1:27" }],
-  ])
+  debug_inspect(
+    tokens4,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "ldt1",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalDateTime("1979-05-27T07:32:00"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 27 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 27 }, end: { line: 1, column: 27 } }),
+      #|]
+    ),
+  )
   let tokens5 = @tokenize.tokenize(
     (
       #|ldt2 = 1979-05-27T00:32:00.999999
     ),
   )
-  json_inspect(tokens5, content=[
-    ["Identifier", "ldt2", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    [
-      "DateTimeToken",
-      ["LocalDateTime", "1979-05-27T00:32:00.999999"],
-      { "loc": "1:8-1:34" },
-    ],
-    ["EOF", { "loc": "1:34-1:34" }],
-  ])
+  debug_inspect(
+    tokens5,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "ldt2",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalDateTime("1979-05-27T00:32:00.999999"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 34 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 34 }, end: { line: 1, column: 34 } }),
+      #|]
+    ),
+  )
   let tokens6 = @tokenize.tokenize(
     (
       #|ld1 = 1979-05-27
     ),
   )
-  json_inspect(tokens6, content=[
-    ["Identifier", "ld1", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["DateTimeToken", ["LocalDate", "1979-05-27"], { "loc": "1:7-1:17" }],
-    ["EOF", { "loc": "1:17-1:17" }],
-  ])
+  debug_inspect(
+    tokens6,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "ld1",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  DateTimeToken(
+      #|    LocalDate("1979-05-27"),
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 17 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 17 }, end: { line: 1, column: 17 } }),
+      #|]
+    ),
+  )
   let tokens7 = @tokenize.tokenize(
     (
       #|lt1 = 07:32:00
     ),
   )
-  json_inspect(tokens7, content=[
-    ["Identifier", "lt1", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["DateTimeToken", ["LocalTime", "07:32:00"], { "loc": "1:7-1:15" }],
-    ["EOF", { "loc": "1:15-1:15" }],
-  ])
+  debug_inspect(
+    tokens7,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "lt1",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  DateTimeToken(
+      #|    LocalTime("07:32:00"),
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 15 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }),
+      #|]
+    ),
+  )
   let tokens8 = @tokenize.tokenize(
     (
       #|lt2 = 00:32:00.999999
     ),
   )
-  json_inspect(tokens8, content=[
-    ["Identifier", "lt2", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["DateTimeToken", ["LocalTime", "00:32:00.999999"], { "loc": "1:7-1:22" }],
-    ["EOF", { "loc": "1:22-1:22" }],
-  ])
+  debug_inspect(
+    tokens8,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "lt2",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  DateTimeToken(
+      #|    LocalTime("00:32:00.999999"),
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 22 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 22 }, end: { line: 1, column: 22 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -646,54 +1012,90 @@ test "lexer datetime year boundaries" {
       #|date = 2023-01-01
     ),
   )
-  json_inspect(tokens1, content=[
-    ["Identifier", "date", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalDate", "2023-01-01"], { "loc": "1:8-1:18" }],
-    ["EOF", { "loc": "1:18-1:18" }],
-  ])
+  debug_inspect(
+    tokens1,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "date",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalDate("2023-01-01"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 18 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 18 }, end: { line: 1, column: 18 } }),
+      #|]
+    ),
+  )
   // End of year
   let tokens2 = @tokenize.tokenize(
     (
       #|date = 2023-12-31
     ),
   )
-  json_inspect(tokens2, content=[
-    ["Identifier", "date", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["DateTimeToken", ["LocalDate", "2023-12-31"], { "loc": "1:8-1:18" }],
-    ["EOF", { "loc": "1:18-1:18" }],
-  ])
+  debug_inspect(
+    tokens2,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "date",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    LocalDate("2023-12-31"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 18 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 18 }, end: { line: 1, column: 18 } }),
+      #|]
+    ),
+  )
   // New Year's Eve 23:59:59
   let tokens3 = @tokenize.tokenize(
     (
       #|dt = 2023-12-31T23:59:59
     ),
   )
-  json_inspect(tokens3, content=[
-    ["Identifier", "dt", { "loc": "1:1-1:3" }],
-    ["Equals", { "loc": "1:4-1:5" }],
-    [
-      "DateTimeToken",
-      ["LocalDateTime", "2023-12-31T23:59:59"],
-      { "loc": "1:6-1:25" },
-    ],
-    ["EOF", { "loc": "1:25-1:25" }],
-  ])
+  debug_inspect(
+    tokens3,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "dt",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 3 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 4 }, end: { line: 1, column: 5 } }),
+      #|  DateTimeToken(
+      #|    LocalDateTime("2023-12-31T23:59:59"),
+      #|    loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 25 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 25 }, end: { line: 1, column: 25 } }),
+      #|]
+    ),
+  )
   // New Year's Day 00:00:00
   let tokens4 = @tokenize.tokenize(
     (
       #|dt = 2024-01-01T00:00:00Z
     ),
   )
-  json_inspect(tokens4, content=[
-    ["Identifier", "dt", { "loc": "1:1-1:3" }],
-    ["Equals", { "loc": "1:4-1:5" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "2024-01-01T00:00:00Z"],
-      { "loc": "1:6-1:26" },
-    ],
-    ["EOF", { "loc": "1:26-1:26" }],
-  ])
+  debug_inspect(
+    tokens4,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "dt",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 3 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 4 }, end: { line: 1, column: 5 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("2024-01-01T00:00:00Z"),
+      #|    loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 26 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 26 }, end: { line: 1, column: 26 } }),
+      #|]
+    ),
+  )
 }

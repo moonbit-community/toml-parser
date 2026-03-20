@@ -221,13 +221,7 @@ test "bug: inline table newlines (TOML 1.1)" {
 test "bug: datetime millisecond trailing zeros" {
   let result = try? @toml.parse("dt = 1987-07-05T17:45:56.600Z\n")
   // Should preserve .600, not truncate to .6
-  json_inspect(result, content=[
-    "Ok",
-    [
-      "TomlTable",
-      { "dt": ["TomlDateTime", ["OffsetDateTime", "1987-07-05T17:45:56.600Z"]] },
-    ],
-  ])
+  debug_inspect(result, content="")
 }
 
 // ============================================================

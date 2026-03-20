@@ -20,7 +20,6 @@ pub(all) struct Loc {
 }
 pub fn Loc::adjacent(Self, Self) -> Bool
 pub impl Eq for Loc
-pub impl ToJson for Loc
 pub impl @debug.Debug for Loc
 
 pub(all) enum Token {
@@ -42,7 +41,6 @@ pub(all) enum Token {
 }
 pub fn Token::loc(Self) -> Loc
 pub impl Eq for Token
-pub impl ToJson for Token
 pub impl @debug.Debug for Token
 
 pub(all) enum TomlDateTime {
@@ -53,7 +51,6 @@ pub(all) enum TomlDateTime {
 }
 pub impl Eq for TomlDateTime
 pub impl Show for TomlDateTime
-pub impl ToJson for TomlDateTime
 pub impl @debug.Debug for TomlDateTime
 
 // Type aliases

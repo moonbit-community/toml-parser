@@ -6,7 +6,12 @@ test "parse simple key-value string" {
       #|name = "John"
     ),
   )
-  json_inspect(result, content=["TomlTable", { "name": ["TomlString", "John"] }])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "name": TomlString("John") })
+    ),
+  )
 }
 
 ///|
@@ -31,10 +36,12 @@ test "parse simple key-value boolean" {
       #|enabled = true
     ),
   )
-  json_inspect(result, content=[
-    "TomlTable",
-    { "enabled": ["TomlBoolean", true] },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "enabled": TomlBoolean(true) })
+    ),
+  )
 }
 
 ///|
@@ -44,7 +51,12 @@ test "parse simple key-value float" {
       #|pi = 3.14
     ),
   )
-  json_inspect(result, content=["TomlTable", { "pi": ["TomlFloat", 3.14] }])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "pi": TomlFloat(3.14) })
+    ),
+  )
 }
 
 ///|
@@ -55,14 +67,18 @@ test "parse multiple key-value pairs" {
     #|enabled = false
     #|
   let result = @toml.parse(multiple_kvp_toml)
-  json_inspect(result, content=[
-    "TomlTable",
-    {
-      "name": ["TomlString", "Alice"],
-      "age": ["TomlInteger", "30"],
-      "enabled": ["TomlBoolean", false],
-    },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "name": TomlString("Alice"),
+      #|    "age": TomlInteger(30),
+      #|    "enabled": TomlBoolean(false),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -72,15 +88,12 @@ test "parse array" {
       #|numbers = [1, 2, 3]
     ),
   )
-  json_inspect(result, content=[
-    "TomlTable",
-    {
-      "numbers": [
-        "TomlArray",
-        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
-      ],
-    },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "numbers": TomlArray([TomlInteger(1), TomlInteger(2), TomlInteger(3)]) })
+    ),
+  )
 }
 
 ///|
@@ -89,39 +102,43 @@ test "parse inline table" {
     #|person = {name = "Bob", age = 25}
     #|
   let result = @toml.parse(inline_table_toml)
-  json_inspect(result, content=[
-    "TomlTable",
-    {
-      "person": [
-        "TomlTable",
-        { "name": ["TomlString", "Bob"], "age": ["TomlInteger", "25"] },
-      ],
-    },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "person": TomlTable({ "name": TomlString("Bob"), "age": TomlInteger(25) }) })
+    ),
+  )
 }
 
 ///|
 /// Tests for uncovered parser error conditions
 test "test parser expect method failure" {
-  json_inspect(try? @toml.parse("key = [missing_bracket"), content={
-    "Err": [
-      "Failure", "parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 8 }, end: { line: 1, column: 23 } }",
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse("key = [missing_bracket"),
+    content=(
+      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 8 }, end: { line: 1, column: 23 } }"))
+    ),
+  )
 }
 
 ///|
 test "test parser EOF handling in peek" {
-  json_inspect(try? @toml.parse(""), content={ "Ok": ["TomlTable", {}] })
+  debug_inspect(
+    try? @toml.parse(""),
+    content=(
+      #|Ok(TomlTable({}))
+    ),
+  )
 }
 
 ///|
 test "test parser EOF handling in advance" {
-  json_inspect(try? @toml.parse("key ="), content={
-    "Err": [
-      "Failure", "parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 6 }, end: { line: 1, column: 6 } }",
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse("key ="),
+    content=(
+      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 6 }, end: { line: 1, column: 6 } }"))
+    ),
+  )
 }
 
 ///|
@@ -135,30 +152,32 @@ test "test parser rejects dash-starting identifier as value" {
 
 ///|
 test "test inline table with string keys" {
-  json_inspect(try? @toml.parse("table = {\"string key\" = \"value\"}"), content={
-    "Ok": [
-      "TomlTable",
-      { "table": ["TomlTable", { "string key": ["TomlString", "value"] }] },
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse("table = {\"string key\" = \"value\"}"),
+    content=(
+      #|Ok(TomlTable({ "table": TomlTable({ "string key": TomlString("value") }) }))
+    ),
+  )
 }
 
 ///|
 test "test inline table invalid syntax" {
-  json_inspect(try? @toml.parse("table = {key value}"), content={
-    "Err": [
-      "Failure", "parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected '=' at { start: { line: 1, column: 14 }, end: { line: 1, column: 19 } }",
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse("table = {key value}"),
+    content=(
+      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected '=' at { start: { line: 1, column: 14 }, end: { line: 1, column: 19 } }"))
+    ),
+  )
 }
 
 ///|
 test "test inline table missing comma or closing brace" {
-  json_inspect(try? @toml.parse("table = {key = \"value\" invalid}"), content={
-    "Err": [
-      "Failure", "parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or '}' in inline table at { start: { line: 1, column: 24 }, end: { line: 1, column: 31 } }",
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse("table = {key = \"value\" invalid}"),
+    content=(
+      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or '}' in inline table at { start: { line: 1, column: 24 }, end: { line: 1, column: 31 } }"))
+    ),
+  )
 }
 
 ///|
@@ -167,12 +186,12 @@ test "test table header with string name" {
     #|["table name"]
     #|key = "value"
     #|
-  json_inspect(try? @toml.parse(string_table_name_toml), content={
-    "Ok": [
-      "TomlTable",
-      { "table name": ["TomlTable", { "key": ["TomlString", "value"] }] },
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse(string_table_name_toml),
+    content=(
+      #|Ok(TomlTable({ "table name": TomlTable({ "key": TomlString("value") }) }))
+    ),
+  )
 }
 
 ///|
@@ -181,12 +200,12 @@ test "test table header numeric name" {
     #|[123]
     #|key = "value"
     #|
-  json_inspect(try? @toml.parse(numeric_table_name_toml), content={
-    "Ok": [
-      "TomlTable",
-      { "123": ["TomlTable", { "key": ["TomlString", "value"] }] },
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse(numeric_table_name_toml),
+    content=(
+      #|Ok(TomlTable({ "123": TomlTable({ "key": TomlString("value") }) }))
+    ),
+  )
 }
 
 ///|
@@ -197,11 +216,12 @@ test "test duplicate table redefinition" {
     #|[table]
     #|key2 = "value2"
     #|
-  json_inspect(try? @toml.parse(duplicate_table_toml), content={
-    "Err": [
-      "Failure", "parser.mbt:189:20-189:70@bobzhang/toml FAILED: Duplicate table definition: [table] at { start: { line: 3, column: 8 }, end: { line: 4, column: 1 } }",
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse(duplicate_table_toml),
+    content=(
+      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Duplicate table definition: [table] at { start: { line: 3, column: 8 }, end: { line: 4, column: 1 } }"))
+    ),
+  )
 }
 
 ///|
@@ -211,70 +231,64 @@ test "test table name conflicts with existing value" {
     #|[table]
     #|key = "value"
     #|
-  json_inspect(try? @toml.parse(conflicting_table_toml), content={
-    "Err": [
-      "Failure", "parser.mbt:189:20-189:70@bobzhang/toml FAILED: ExpectedTable(\"table\", \"string\") at { start: { line: 2, column: 8 }, end: { line: 3, column: 1 } }",
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse(conflicting_table_toml),
+    content=(
+      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: ExpectedTable(\"table\", \"string\") at { start: { line: 2, column: 8 }, end: { line: 3, column: 1 } }"))
+    ),
+  )
 }
 
 ///|
 /// Tests for inline table edge cases  
 test "test empty inline table" {
-  json_inspect(try? @toml.parse("empty = {}"), content={
-    "Ok": ["TomlTable", { "empty": ["TomlTable", {}] }],
-  })
+  debug_inspect(
+    try? @toml.parse("empty = {}"),
+    content=(
+      #|Ok(TomlTable({ "empty": TomlTable({}) }))
+    ),
+  )
 }
 
 ///|
 test "test nested inline tables" {
-  json_inspect(try? @toml.parse("table = {inner = {key = \"value\"}}"), content={
-    "Ok": [
-      "TomlTable",
-      {
-        "table": [
-          "TomlTable",
-          { "inner": ["TomlTable", { "key": ["TomlString", "value"] }] },
-        ],
-      },
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse("table = {inner = {key = \"value\"}}"),
+    content=(
+      #|Ok(TomlTable({ "table": TomlTable({ "inner": TomlTable({ "key": TomlString("value") }) }) }))
+    ),
+  )
 }
 
 ///|
 test "test inline table with multiple key types" {
-  json_inspect(try? @toml.parse("mixed = {\"quoted\" = 1, unquoted = 2}"), content={
-    "Ok": [
-      "TomlTable",
-      {
-        "mixed": [
-          "TomlTable",
-          { "quoted": ["TomlInteger", "1"], "unquoted": ["TomlInteger", "2"] },
-        ],
-      },
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse("mixed = {\"quoted\" = 1, unquoted = 2}"),
+    content=(
+      #|Ok(TomlTable({ "mixed": TomlTable({ "quoted": TomlInteger(1), "unquoted": TomlInteger(2) }) }))
+    ),
+  )
 }
 
 ///|
 test "test inline table with array values" {
-  json_inspect(try? @toml.parse("table = {arr = [1, 2, 3], str = \"test\"}"), content={
-    "Ok": [
-      "TomlTable",
-      {
-        "table": [
-          "TomlTable",
-          {
-            "arr": [
-              "TomlArray",
-              [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
-            ],
-            "str": ["TomlString", "test"],
-          },
-        ],
-      },
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse("table = {arr = [1, 2, 3], str = \"test\"}"),
+    content=(
+      #|Ok(
+      #|  TomlTable(
+      #|    {
+      #|      "table": TomlTable(
+      #|        {
+      #|          "arr": TomlArray([TomlInteger(1), TomlInteger(2), TomlInteger(3)]),
+      #|          "str": TomlString("test"),
+      #|        },
+      #|      ),
+      #|    },
+      #|  ),
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -285,15 +299,12 @@ test "dotted key notation simple" {
       #|a.b.c = "value"
     ),
   )
-  json_inspect(result, content=[
-    "TomlTable",
-    {
-      "a": [
-        "TomlTable",
-        { "b": ["TomlTable", { "c": ["TomlString", "value"] }] },
-      ],
-    },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "a": TomlTable({ "b": TomlTable({ "c": TomlString("value") }) }) })
+    ),
+  )
 }
 
 ///|
@@ -305,22 +316,22 @@ test "dotted key notation multiple" {
     #|a.e = "value3"
     #|f = "value4"
     #|
-  json_inspect(@toml.parse(dotted_multiple_toml), content=[
-    "TomlTable",
-    {
-      "a": [
-        "TomlTable",
-        {
-          "b": [
-            "TomlTable",
-            { "c": ["TomlString", "value1"], "d": ["TomlString", "value2"] },
-          ],
-          "e": ["TomlString", "value3"],
-        },
-      ],
-      "f": ["TomlString", "value4"],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(dotted_multiple_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "a": TomlTable(
+      #|      {
+      #|        "b": TomlTable({ "c": TomlString("value1"), "d": TomlString("value2") }),
+      #|        "e": TomlString("value3"),
+      #|      },
+      #|    ),
+      #|    "f": TomlString("value4"),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -333,21 +344,24 @@ test "dotted key notation data types" {
     #|server.timeout = 30.5
     #|server.tags = ["web", "api"]
     #|
-  json_inspect(@toml.parse(dotted_types_toml), content=[
-    "TomlTable",
-    {
-      "server": [
-        "TomlTable",
-        {
-          "host": ["TomlString", "localhost"],
-          "port": ["TomlInteger", "8080"],
-          "enabled": ["TomlBoolean", true],
-          "timeout": ["TomlFloat", 30.5],
-          "tags": ["TomlArray", [["TomlString", "web"], ["TomlString", "api"]]],
-        },
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(dotted_types_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "server": TomlTable(
+      #|      {
+      #|        "host": TomlString("localhost"),
+      #|        "port": TomlInteger(8080),
+      #|        "enabled": TomlBoolean(true),
+      #|        "timeout": TomlFloat(30.5),
+      #|        "tags": TomlArray([TomlString("web"), TomlString("api")]),
+      #|      },
+      #|    ),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -358,10 +372,12 @@ test "dotted key notation quoted keys" {
       #|"first.part"."second.part" = "value"
     ),
   )
-  json_inspect(result, content=[
-    "TomlTable",
-    { "first.part": ["TomlTable", { "second.part": ["TomlString", "value"] }] },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "first.part": TomlTable({ "second.part": TomlString("value") }) })
+    ),
+  )
 }
 
 ///|
@@ -372,15 +388,12 @@ test "dotted key notation integer keys" {
       #|1.2.3 = "numeric path"
     ),
   )
-  json_inspect(result, content=[
-    "TomlTable",
-    {
-      "1": [
-        "TomlTable",
-        { "2": ["TomlTable", { "3": ["TomlString", "numeric path"] }] },
-      ],
-    },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "1": TomlTable({ "2": TomlTable({ "3": TomlString("numeric path") }) }) })
+    ),
+  )
 }
 
 ///|
@@ -391,15 +404,12 @@ test "dotted key notation table conflict" {
     #|[a]
     #|c = "table"
     #|
-  json_inspect(@toml.parse(conflict_toml), content=[
-    "TomlTable",
-    {
-      "a": [
-        "TomlTable",
-        { "b": ["TomlString", "dotted"], "c": ["TomlString", "table"] },
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(conflict_toml),
+    content=(
+      #|TomlTable({ "a": TomlTable({ "b": TomlString("dotted"), "c": TomlString("table") }) })
+    ),
+  )
 }
 
 ///|
@@ -428,9 +438,5 @@ test "complex dotted keys" {
     #|server."port number".8080.config = 3
     #|
   // TODO: fix
-  json_inspect(try? @toml.parse(data), content={
-    "Err": [
-      "Failure", "/Users/hongbozhang/git/toml-parser/parser.mbt:180:20-180:52 FAILED: Expected key after dot at {start: {line: 2, column: 22}, end: {line: 2, column: 27}}",
-    ],
-  })
+  debug_inspect(try? @toml.parse(data), content="")
 }

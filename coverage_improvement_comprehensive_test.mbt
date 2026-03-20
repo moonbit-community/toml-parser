@@ -11,7 +11,12 @@ test "parser_eof_handling" {
       #|
     ),
   )
-  json_inspect(result, content=["TomlTable", {}])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({})
+    ),
+  )
 }
 
 ///|
@@ -19,10 +24,12 @@ test "parser_eof_handling" {
 test "inline_table_with_integer_key" {
   let toml_input = "table = {123 = \"value\"}"
   let result = @toml.parse(toml_input)
-  json_inspect(result, content=[
-    "TomlTable",
-    { "table": ["TomlTable", { "123": ["TomlString", "value"] }] },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "table": TomlTable({ "123": TomlString("value") }) })
+    ),
+  )
 }
 
 ///|
@@ -30,15 +37,12 @@ test "inline_table_with_integer_key" {
 test "table_path_with_string_key" {
   let toml_input = "[\"section\".\"subsection\"]\nkey = \"value\""
   let result = @toml.parse(toml_input)
-  json_inspect(result, content=[
-    "TomlTable",
-    {
-      "section": [
-        "TomlTable",
-        { "subsection": ["TomlTable", { "key": ["TomlString", "value"] }] },
-      ],
-    },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "section": TomlTable({ "subsection": TomlTable({ "key": TomlString("value") }) }) })
+    ),
+  )
 }
 
 ///|
@@ -46,15 +50,12 @@ test "table_path_with_string_key" {
 test "table_path_with_integer_key" {
   let toml_input = "[section.123]\nkey = \"value\""
   let result = @toml.parse(toml_input)
-  json_inspect(result, content=[
-    "TomlTable",
-    {
-      "section": [
-        "TomlTable",
-        { "123": ["TomlTable", { "key": ["TomlString", "value"] }] },
-      ],
-    },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "section": TomlTable({ "123": TomlTable({ "key": TomlString("value") }) }) })
+    ),
+  )
 }
 
 ///|
@@ -62,15 +63,12 @@ test "table_path_with_integer_key" {
 test "array_of_tables_path_with_string_key" {
   let toml_input = "[[\"products\"]]\nname = \"Hammer\""
   let result = @toml.parse(toml_input)
-  json_inspect(result, content=[
-    "TomlTable",
-    {
-      "products": [
-        "TomlArray",
-        [["TomlTable", { "name": ["TomlString", "Hammer"] }]],
-      ],
-    },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "products": TomlArray([TomlTable({ "name": TomlString("Hammer") })]) })
+    ),
+  )
 }
 
 ///|
@@ -78,20 +76,12 @@ test "array_of_tables_path_with_string_key" {
 test "array_of_tables_path_with_integer_key" {
   let toml_input = "[[section.123]]\nvalue = 42"
   let result = @toml.parse(toml_input)
-  json_inspect(result, content=[
-    "TomlTable",
-    {
-      "section": [
-        "TomlTable",
-        {
-          "123": [
-            "TomlArray",
-            [["TomlTable", { "value": ["TomlInteger", "42"] }]],
-          ],
-        },
-      ],
-    },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "section": TomlTable({ "123": TomlArray([TomlTable({ "value": TomlInteger(42) })]) }) })
+    ),
+  )
 }
 
 ///|
@@ -102,11 +92,12 @@ test "invalid_unicode_escapes" {
       #|key = "\uZZZZ"
     ),
   )
-  json_inspect(result, content={
-    "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:111:7-111:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10",
-    ],
-  }) // Expected error
+  debug_inspect(
+    result,
+    content=(
+      #|Err(Failure("internal/tokenize/tokenize.mbt:111:7-111:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10"))
+    ),
+  ) // Expected error
 }
 
 ///|
@@ -117,11 +108,12 @@ test "invalid_8byte_unicode_escape" {
       #|key = "\U00200000"
     ),
   ) // Invalid code point > 0x10FFFF
-  json_inspect(result, content={
-    "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:158:5-158:60@bobzhang/toml FAILED: Invalid Unicode code point: 2097152 at line 1, column 18",
-    ],
-  }) // Expected error
+  debug_inspect(
+    result,
+    content=(
+      #|Err(Failure("internal/tokenize/tokenize.mbt:158:5-158:60@bobzhang/toml FAILED: Invalid Unicode code point: 2097152 at line 1, column 18"))
+    ),
+  ) // Expected error
 }
 
 ///|
@@ -132,11 +124,12 @@ test "unterminated_multiline_string" {
       #|key = """This is unterminated
     ),
   )
-  json_inspect(result, content={
-    "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:416:11-416:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 30",
-    ],
-  }) // Expected error
+  debug_inspect(
+    result,
+    content=(
+      #|Err(Failure("internal/tokenize/tokenize.mbt:416:11-416:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 30"))
+    ),
+  ) // Expected error
 }
 
 ///|
@@ -195,11 +188,12 @@ test "table_path_conflict_error" {
       #|[key]
     ),
   )
-  json_inspect(result, content={
-    "Err": [
-      "Failure", "parser.mbt:189:20-189:70@bobzhang/toml FAILED: ExpectedTable(\"key\", \"integer\") at { start: { line: 2, column: 6 }, end: { line: 2, column: 6 } }",
-    ],
-  }) // Expected error
+  debug_inspect(
+    result,
+    content=(
+      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: ExpectedTable(\"key\", \"integer\") at { start: { line: 2, column: 6 }, end: { line: 2, column: 6 } }"))
+    ),
+  ) // Expected error
 }
 
 ///|
@@ -211,11 +205,12 @@ test "array_of_tables_path_conflict_error" {
       #|[[key]]
     ),
   )
-  json_inspect(result, content={
-    "Err": [
-      "Failure", "parser.mbt:189:20-189:70@bobzhang/toml FAILED: ExpectedArray(\"key\", \"integer\") at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }",
-    ],
-  }) // Expected error
+  debug_inspect(
+    result,
+    content=(
+      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: ExpectedArray(\"key\", \"integer\") at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }"))
+    ),
+  ) // Expected error
 }
 
 ///|
@@ -223,7 +218,12 @@ test "array_of_tables_path_conflict_error" {
 test "empty_inline_table" {
   let toml_input = "table = {}"
   let result = @toml.parse(toml_input)
-  json_inspect(result, content=["TomlTable", { "table": ["TomlTable", {}] }])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "table": TomlTable({}) })
+    ),
+  )
 }
 
 ///|
@@ -231,7 +231,12 @@ test "empty_inline_table" {
 test "empty_array" {
   let toml_input = "arr = []"
   let result = @toml.parse(toml_input)
-  json_inspect(result, content=["TomlTable", { "arr": ["TomlArray", []] }])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "arr": TomlArray([]) })
+    ),
+  )
 }
 
 ///|
@@ -286,7 +291,12 @@ test "toml_value_to_string_coverage" {
 test "float_token_parsing" {
   let toml_input = "pi = 3.14159"
   let result = @toml.parse(toml_input)
-  json_inspect(result, content=["TomlTable", { "pi": ["TomlFloat", 3.14159] }])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "pi": TomlFloat(3.14159) })
+    ),
+  )
 }
 
 ///|
@@ -294,15 +304,12 @@ test "float_token_parsing" {
 test "array_with_trailing_comma" {
   let toml_input = "numbers = [1, 2, 3,]"
   let result = @toml.parse(toml_input)
-  json_inspect(result, content=[
-    "TomlTable",
-    {
-      "numbers": [
-        "TomlArray",
-        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
-      ],
-    },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "numbers": TomlArray([TomlInteger(1), TomlInteger(2), TomlInteger(3)]) })
+    ),
+  )
 }
 
 ///|
@@ -367,10 +374,12 @@ test "main_function_components_coverage" {
 test "hex_number_parsing_coverage" {
   let toml_input = "hex_num = 0xDEADBEEF"
   let result = @toml.parse(toml_input)
-  json_inspect(result, content=[
-    "TomlTable",
-    { "hex_num": ["TomlInteger", "3735928559"] },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "hex_num": TomlInteger(3735928559) })
+    ),
+  )
 }
 
 ///|
@@ -378,10 +387,12 @@ test "hex_number_parsing_coverage" {
 test "octal_number_parsing_coverage" {
   let toml_input = "octal_num = 0o755"
   let result = @toml.parse(toml_input)
-  json_inspect(result, content=[
-    "TomlTable",
-    { "octal_num": ["TomlInteger", "493"] },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "octal_num": TomlInteger(493) })
+    ),
+  )
 }
 
 ///|
@@ -389,10 +400,12 @@ test "octal_number_parsing_coverage" {
 test "binary_number_parsing_coverage" {
   let toml_input = "binary_num = 0b1010"
   let result = @toml.parse(toml_input)
-  json_inspect(result, content=[
-    "TomlTable",
-    { "binary_num": ["TomlInteger", "10"] },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "binary_num": TomlInteger(10) })
+    ),
+  )
 }
 
 ///|
@@ -400,18 +413,21 @@ test "binary_number_parsing_coverage" {
 test "multiple_array_of_tables" {
   let toml_input = "[[products]]\nname = \"Hammer\"\n\n[[products]]\nname = \"Nail\""
   let result = @toml.parse(toml_input)
-  json_inspect(result, content=[
-    "TomlTable",
-    {
-      "products": [
-        "TomlArray",
-        [
-          ["TomlTable", { "name": ["TomlString", "Hammer"] }],
-          ["TomlTable", { "name": ["TomlString", "Nail"] }],
-        ],
-      ],
-    },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "products": TomlArray(
+      #|      [
+      #|        TomlTable({ "name": TomlString("Hammer") }),
+      #|        TomlTable({ "name": TomlString("Nail") }),
+      #|      ],
+      #|    ),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -419,10 +435,12 @@ test "multiple_array_of_tables" {
 test "negative_number_parsing" {
   let toml_input = "negative = -42"
   let result = @toml.parse(toml_input)
-  json_inspect(result, content=[
-    "TomlTable",
-    { "negative": ["TomlInteger", "-42"] },
-  ])
+  debug_inspect(
+    result,
+    content=(
+      #|TomlTable({ "negative": TomlInteger(-42) })
+    ),
+  )
 }
 
 ///|
@@ -433,7 +451,12 @@ test "invalid_character_error" {
       #|key = @invalid
     ),
   )
-  json_inspect(result, content=({"Err":["Failure","internal/tokenize/tokenize.mbt:1275:17-1275:54@bobzhang/toml FAILED: Unexpected character: '@'"]})) // Expected error
+  debug_inspect(
+    result,
+    content=(
+      #|Err(Failure("internal/tokenize/tokenize.mbt:1275:17-1275:54@bobzhang/toml FAILED: Unexpected character: '@'"))
+    ),
+  ) // Expected error
 }
 
 ///|

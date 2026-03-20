@@ -10,10 +10,12 @@ test "basic string" {
   let basic_string_toml =
     #|basic = "value"
     #|
-  json_inspect(@toml.parse(basic_string_toml), content=[
-    "TomlTable",
-    { "basic": ["TomlString", "value"] },
-  ])
+  debug_inspect(
+    @toml.parse(basic_string_toml),
+    content=(
+      #|TomlTable({ "basic": TomlString("value") })
+    ),
+  )
 }
 
 ///|
@@ -22,14 +24,12 @@ test "string escape sequences" {
   let escaped_string_toml =
     #|escaped = "I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."
     #|
-  json_inspect(@toml.parse(escaped_string_toml), content=[
-    "TomlTable",
-    {
-      "escaped": [
-        "TomlString", "I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF.",
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(escaped_string_toml),
+    content=(
+      #|TomlTable({ "escaped": TomlString("I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF.") })
+    ),
+  )
 }
 
 ///|
@@ -40,14 +40,18 @@ test "basic integer" {
     #|negative = -17
     #|zero = 0
     #|
-  json_inspect(@toml.parse(integer_toml), content=[
-    "TomlTable",
-    {
-      "answer": ["TomlInteger", "42"],
-      "negative": ["TomlInteger", "-17"],
-      "zero": ["TomlInteger", "0"],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(integer_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "answer": TomlInteger(42),
+      #|    "negative": TomlInteger(-17),
+      #|    "zero": TomlInteger(0),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -58,14 +62,18 @@ test "basic float" {
     #|negative = -0.01
     #|positive = 5.0
     #|
-  json_inspect(@toml.parse(float_toml), content=[
-    "TomlTable",
-    {
-      "pi": ["TomlFloat", 3.14],
-      "negative": ["TomlFloat", -0.01],
-      "positive": ["TomlFloat", 5.0],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(float_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "pi": TomlFloat(3.14),
+      #|    "negative": TomlFloat(-0.01),
+      #|    "positive": TomlFloat(5),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -75,10 +83,12 @@ test "basic boolean" {
     #|enabled = true
     #|disabled = false
     #|
-  json_inspect(@toml.parse(boolean_toml), content=[
-    "TomlTable",
-    { "enabled": ["TomlBoolean", true], "disabled": ["TomlBoolean", false] },
-  ])
+  debug_inspect(
+    @toml.parse(boolean_toml),
+    content=(
+      #|TomlTable({ "enabled": TomlBoolean(true), "disabled": TomlBoolean(false) })
+    ),
+  )
 }
 
 ///|
@@ -90,37 +100,27 @@ test "homogeneous arrays" {
     #|booleans = [true, false, true]
     #|floats = [1.1, 2.2, 3.3]
     #|
-  json_inspect(@toml.parse(array_toml), content=[
-    "TomlTable",
-    {
-      "integers": [
-        "TomlArray",
-        [
-          ["TomlInteger", "1"],
-          ["TomlInteger", "2"],
-          ["TomlInteger", "3"],
-          ["TomlInteger", "4"],
-          ["TomlInteger", "5"],
-        ],
-      ],
-      "strings": [
-        "TomlArray",
-        [
-          ["TomlString", "red"],
-          ["TomlString", "yellow"],
-          ["TomlString", "green"],
-        ],
-      ],
-      "booleans": [
-        "TomlArray",
-        [["TomlBoolean", true], ["TomlBoolean", false], ["TomlBoolean", true]],
-      ],
-      "floats": [
-        "TomlArray",
-        [["TomlFloat", 1.1], ["TomlFloat", 2.2], ["TomlFloat", 3.3]],
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(array_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "integers": TomlArray(
+      #|      [
+      #|        TomlInteger(1),
+      #|        TomlInteger(2),
+      #|        TomlInteger(3),
+      #|        TomlInteger(4),
+      #|        TomlInteger(5),
+      #|      ],
+      #|    ),
+      #|    "strings": TomlArray([TomlString("red"), TomlString("yellow"), TomlString("green")]),
+      #|    "booleans": TomlArray([TomlBoolean(true), TomlBoolean(false), TomlBoolean(true)]),
+      #|    "floats": TomlArray([TomlFloat(1.1), TomlFloat(2.2), TomlFloat(3.3)]),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -129,21 +129,21 @@ test "nested arrays" {
   let nested_array_toml =
     #|nested = [[1, 2], [3, 4, 5]]
     #|
-  json_inspect(@toml.parse(nested_array_toml), content=[
-    "TomlTable",
-    {
-      "nested": [
-        "TomlArray",
-        [
-          ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"]]],
-          [
-            "TomlArray",
-            [["TomlInteger", "3"], ["TomlInteger", "4"], ["TomlInteger", "5"]],
-          ],
-        ],
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(nested_array_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "nested": TomlArray(
+      #|      [
+      #|        TomlArray([TomlInteger(1), TomlInteger(2)]),
+      #|        TomlArray([TomlInteger(3), TomlInteger(4), TomlInteger(5)]),
+      #|      ],
+      #|    ),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -152,10 +152,12 @@ test "empty arrays" {
   let empty_array_toml =
     #|empty = []
     #|
-  json_inspect(@toml.parse(empty_array_toml), content=[
-    "TomlTable",
-    { "empty": ["TomlArray", []] },
-  ])
+  debug_inspect(
+    @toml.parse(empty_array_toml),
+    content=(
+      #|TomlTable({ "empty": TomlArray([]) })
+    ),
+  )
 }
 
 ///|
@@ -166,20 +168,18 @@ test "inline tables" {
     #|point = {x = 1, y = 2}
     #|empty = {}
     #|
-  json_inspect(@toml.parse(inline_table_toml), content=[
-    "TomlTable",
-    {
-      "person": [
-        "TomlTable",
-        { "name": ["TomlString", "John"], "age": ["TomlInteger", "30"] },
-      ],
-      "point": [
-        "TomlTable",
-        { "x": ["TomlInteger", "1"], "y": ["TomlInteger", "2"] },
-      ],
-      "empty": ["TomlTable", {}],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(inline_table_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "person": TomlTable({ "name": TomlString("John"), "age": TomlInteger(30) }),
+      #|    "point": TomlTable({ "x": TomlInteger(1), "y": TomlInteger(2) }),
+      #|    "empty": TomlTable({}),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -193,34 +193,27 @@ test "complex values combination" {
     #|database = {server = "192.168.1.1", port = 5432, enabled = true}
     #|tags = ["production", "web"]
     #|
-  json_inspect(@toml.parse(complex_toml), content=[
-    "TomlTable",
-    {
-      "title": ["TomlString", "TOML Example"],
-      "version": ["TomlFloat", 1.0],
-      "enabled": ["TomlBoolean", true],
-      "ports": [
-        "TomlArray",
-        [
-          ["TomlInteger", "8000"],
-          ["TomlInteger", "8001"],
-          ["TomlInteger", "8002"],
-        ],
-      ],
-      "database": [
-        "TomlTable",
-        {
-          "server": ["TomlString", "192.168.1.1"],
-          "port": ["TomlInteger", "5432"],
-          "enabled": ["TomlBoolean", true],
-        },
-      ],
-      "tags": [
-        "TomlArray",
-        [["TomlString", "production"], ["TomlString", "web"]],
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(complex_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "title": TomlString("TOML Example"),
+      #|    "version": TomlFloat(1),
+      #|    "enabled": TomlBoolean(true),
+      #|    "ports": TomlArray([TomlInteger(8000), TomlInteger(8001), TomlInteger(8002)]),
+      #|    "database": TomlTable(
+      #|      {
+      #|        "server": TomlString("192.168.1.1"),
+      #|        "port": TomlInteger(5432),
+      #|        "enabled": TomlBoolean(true),
+      #|      },
+      #|    ),
+      #|    "tags": TomlArray([TomlString("production"), TomlString("web")]),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -231,18 +224,21 @@ test "basic table" {
     #|name = "Tom Preston-Werner"
     #|organization = "GitHub"
     #|
-  json_inspect(@toml.parse(table_toml), content=[
-    "TomlTable",
-    {
-      "owner": [
-        "TomlTable",
-        {
-          "name": ["TomlString", "Tom Preston-Werner"],
-          "organization": ["TomlString", "GitHub"],
-        },
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(table_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "owner": TomlTable(
+      #|      {
+      #|        "name": TomlString("Tom Preston-Werner"),
+      #|        "organization": TomlString("GitHub"),
+      #|      },
+      #|    ),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -257,24 +253,21 @@ test "nested tables" {
     #|ip = "10.0.0.2"
     #|dc = "eqdc10"
     #|
-  json_inspect(@toml.parse(nested_table_toml), content=[
-    "TomlTable",
-    {
-      "servers": [
-        "TomlTable",
-        {
-          "alpha": [
-            "TomlTable",
-            { "ip": ["TomlString", "10.0.0.1"], "dc": ["TomlString", "eqdc10"] },
-          ],
-          "beta": [
-            "TomlTable",
-            { "ip": ["TomlString", "10.0.0.2"], "dc": ["TomlString", "eqdc10"] },
-          ],
-        },
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(nested_table_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "servers": TomlTable(
+      #|      {
+      #|        "alpha": TomlTable({ "ip": TomlString("10.0.0.1"), "dc": TomlString("eqdc10") }),
+      #|        "beta": TomlTable({ "ip": TomlString("10.0.0.2"), "dc": TomlString("eqdc10") }),
+      #|      },
+      #|    ),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -289,30 +282,21 @@ test "array of tables" {
     #|name = "Nail"
     #|sku = 284758393
     #|
-  json_inspect(@toml.parse(array_of_tables_toml), content=[
-    "TomlTable",
-    {
-      "products": [
-        "TomlArray",
-        [
-          [
-            "TomlTable",
-            {
-              "name": ["TomlString", "Hammer"],
-              "sku": ["TomlInteger", "738594937"],
-            },
-          ],
-          [
-            "TomlTable",
-            {
-              "name": ["TomlString", "Nail"],
-              "sku": ["TomlInteger", "284758393"],
-            },
-          ],
-        ],
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(array_of_tables_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "products": TomlArray(
+      #|      [
+      #|        TomlTable({ "name": TomlString("Hammer"), "sku": TomlInteger(738594937) }),
+      #|        TomlTable({ "name": TomlString("Nail"), "sku": TomlInteger(284758393) }),
+      #|      ],
+      #|    ),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -327,35 +311,25 @@ test "nested array of tables" {
     #|color = "yellow"
     #|shape = "banana"
     #|
-  json_inspect(@toml.parse(nested_array_toml), content=[
-    "TomlTable",
-    {
-      "fruit": [
-        "TomlTable",
-        {
-          "physical": [
-            "TomlArray",
-            [
-              [
-                "TomlTable",
-                {
-                  "color": ["TomlString", "red"],
-                  "shape": ["TomlString", "round"],
-                },
-              ],
-              [
-                "TomlTable",
-                {
-                  "color": ["TomlString", "yellow"],
-                  "shape": ["TomlString", "banana"],
-                },
-              ],
-            ],
-          ],
-        },
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(nested_array_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "fruit": TomlTable(
+      #|      {
+      #|        "physical": TomlArray(
+      #|          [
+      #|            TomlTable({ "color": TomlString("red"), "shape": TomlString("round") }),
+      #|            TomlTable({ "color": TomlString("yellow"), "shape": TomlString("banana") }),
+      #|          ],
+      #|        ),
+      #|      },
+      #|    ),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -379,33 +353,24 @@ test "mixed tables and array of tables" {
     #|server = "192.168.1.1"
     #|port = 5432
     #|
-  json_inspect(@toml.parse(mixed_toml), content=[
-    "TomlTable",
-    {
-      "title": ["TomlString", "Test Document"],
-      "owner": ["TomlTable", { "name": ["TomlString", "John Doe"] }],
-      "products": [
-        "TomlArray",
-        [
-          [
-            "TomlTable",
-            { "name": ["TomlString", "Hammer"], "price": ["TomlFloat", 12.99] },
-          ],
-          [
-            "TomlTable",
-            { "name": ["TomlString", "Saw"], "price": ["TomlFloat", 25.50] },
-          ],
-        ],
-      ],
-      "database": [
-        "TomlTable",
-        {
-          "server": ["TomlString", "192.168.1.1"],
-          "port": ["TomlInteger", "5432"],
-        },
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(mixed_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "title": TomlString("Test Document"),
+      #|    "owner": TomlTable({ "name": TomlString("John Doe") }),
+      #|    "products": TomlArray(
+      #|      [
+      #|        TomlTable({ "name": TomlString("Hammer"), "price": TomlFloat(12.99) }),
+      #|        TomlTable({ "name": TomlString("Saw"), "price": TomlFloat(25.5) }),
+      #|      ],
+      #|    ),
+      #|    "database": TomlTable({ "server": TomlString("192.168.1.1"), "port": TomlInteger(5432) }),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -417,19 +382,20 @@ test "datetime values" {
     #|local_time = 07:32:00
     #|local_datetime = 1979-05-27T07:32:00
     #|
-  json_inspect(@toml.parse(datetime_toml), content=[
-    "TomlTable",
-    {
-      "date1": ["TomlDateTime", ["OffsetDateTime", "1979-05-27T07:32:00Z"]],
-      "date2": ["TomlDateTime", ["OffsetDateTime", "1979-05-27T00:32:00-07:00"]],
-      "local_date": ["TomlDateTime", ["LocalDate", "1979-05-27"]],
-      "local_time": ["TomlDateTime", ["LocalTime", "07:32:00"]],
-      "local_datetime": [
-        "TomlDateTime",
-        ["LocalDateTime", "1979-05-27T07:32:00"],
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(datetime_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "date1": TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z")),
+      #|    "date2": TomlDateTime(OffsetDateTime("1979-05-27T00:32:00-07:00")),
+      #|    "local_date": TomlDateTime(LocalDate("1979-05-27")),
+      #|    "local_time": TomlDateTime(LocalTime("07:32:00")),
+      #|    "local_datetime": TomlDateTime(LocalDateTime("1979-05-27T07:32:00")),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -440,10 +406,12 @@ test "multiline basic strings" {
     #|Roses are red
     #|Violets are blue"""
     #|
-  json_inspect(@toml.parse(multiline_basic_toml), content=[
-    "TomlTable",
-    { "str1": ["TomlString", "Roses are red\nViolets are blue"] },
-  ])
+  debug_inspect(
+    @toml.parse(multiline_basic_toml),
+    content=(
+      #|TomlTable({ "str1": TomlString("Roses are red\nViolets are blue") })
+    ),
+  )
 }
 
 ///|
@@ -454,14 +422,18 @@ test "literal strings" {
     #|quoted = 'Tom "Dubs" Preston-Werner'
     #|regex = '<\i\c*\s*>'
     #|
-  json_inspect(@toml.parse(literal_string_toml), content=[
-    "TomlTable",
-    {
-      "winpath": ["TomlString", "C:\\Users\\nodejs\\templates"],
-      "quoted": ["TomlString", "Tom \"Dubs\" Preston-Werner"],
-      "regex": ["TomlString", "<\\i\\c*\\s*>"],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(literal_string_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "winpath": TomlString("C:\\Users\\nodejs\\templates"),
+      #|    "quoted": TomlString("Tom \"Dubs\" Preston-Werner"),
+      #|    "regex": TomlString("<\\i\\c*\\s*>"),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 // TODO: Multiline literal strings not yet supported
@@ -477,15 +449,17 @@ test "multiline literal strings" {
     #|   is preserved.
     #|'''
     #|
-  json_inspect(@toml.parse(multiline_literal_toml), content=[
-    "TomlTable",
-    {
-      "regex2": ["TomlString", "I [dw]on't need \\d{2} apples"],
-      "lines": [
-        "TomlString", "The first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved.\n",
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(multiline_literal_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "regex2": TomlString("I [dw]on't need \\d{2} apples"),
+      #|    "lines": TomlString("The first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved.\n"),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -496,13 +470,17 @@ test "comments" {
     #|key = "value"  # This is a comment at the end of a line
     #|another = "# This is not a comment"
     #|
-  json_inspect(@toml.parse(comments_toml), content=[
-    "TomlTable",
-    {
-      "key": ["TomlString", "value"],
-      "another": ["TomlString", "# This is not a comment"],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(comments_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "key": TomlString("value"),
+      #|    "another": TomlString("# This is not a comment"),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -516,17 +494,21 @@ test "integer formats" {
     #|oct2 = 0o755
     #|bin1 = 0b11010110
     #|
-  json_inspect(@toml.parse(integer_formats_toml), content=[
-    "TomlTable",
-    {
-      "hex1": ["TomlInteger", "3735928559"],
-      "hex2": ["TomlInteger", "3735928559"],
-      "hex3": ["TomlInteger", "3735928559"],
-      "oct1": ["TomlInteger", "342391"],
-      "oct2": ["TomlInteger", "493"],
-      "bin1": ["TomlInteger", "214"],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(integer_formats_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "hex1": TomlInteger(3735928559),
+      #|    "hex2": TomlInteger(3735928559),
+      #|    "hex3": TomlInteger(3735928559),
+      #|    "oct1": TomlInteger(342391),
+      #|    "oct2": TomlInteger(493),
+      #|    "bin1": TomlInteger(214),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -540,17 +522,21 @@ test "float special values" {
     #|not_a_number3 = -nan
     #|
   // FIXME: json.inspect get null
-  json_inspect(@toml.parse(float_special_toml), content=[
-    "TomlTable",
-    {
-      "infinity1": ["TomlFloat", @double.infinity],
-      "infinity2": ["TomlFloat", @double.infinity],
-      "infinity3": ["TomlFloat", @double.neg_infinity],
-      "not_a_number1": ["TomlFloat", @double.not_a_number],
-      "not_a_number2": ["TomlFloat", @double.not_a_number],
-      "not_a_number3": ["TomlFloat", @double.not_a_number],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(float_special_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "infinity1": TomlFloat(Infinity),
+      #|    "infinity2": TomlFloat(Infinity),
+      #|    "infinity3": TomlFloat(-Infinity),
+      #|    "not_a_number1": TomlFloat(NaN),
+      #|    "not_a_number2": TomlFloat(NaN),
+      #|    "not_a_number3": TomlFloat(NaN),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -558,45 +544,51 @@ test "inf failure" {
   let inf_failure_toml =
     #|inf = -infx
     #|
-  json_inspect(try? @toml.parse(inf_failure_toml), content={
-    "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:58:7-58:72@bobzhang/toml FAILED: Invalid character 'x' after special value at line 1, column 11",
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse(inf_failure_toml),
+    content=(
+      #|Err(Failure("internal/tokenize/tokenize.mbt:58:7-58:72@bobzhang/toml FAILED: Invalid character 'x' after special value at line 1, column 11"))
+    ),
+  )
   let inf_failure_toml2 =
     #|inf = -infx=2
     #|
-  json_inspect(try? @toml.parse(inf_failure_toml2), content={
-    "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:58:7-58:72@bobzhang/toml FAILED: Invalid character 'x' after special value at line 1, column 11",
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse(inf_failure_toml2),
+    content=(
+      #|Err(Failure("internal/tokenize/tokenize.mbt:58:7-58:72@bobzhang/toml FAILED: Invalid character 'x' after special value at line 1, column 11"))
+    ),
+  )
   let inf_failure_toml2 =
     #|inf = -inf x=2
     #|
-  json_inspect(try? @toml.parse(inf_failure_toml2), content={
-    "Err": [
-      "Failure", "parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 12 }, end: { line: 1, column: 13 } }",
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse(inf_failure_toml2),
+    content=(
+      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 12 }, end: { line: 1, column: 13 } }"))
+    ),
+  )
   let table_failure =
     #|a = 3 b = 2
     #|
-  json_inspect(try? @toml.parse(table_failure), content={
-    "Err": [
-      "Failure", "parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }",
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse(table_failure),
+    content=(
+      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }"))
+    ),
+  )
 
   // Test that comments after key-value pairs are handled correctly
   let comment_test =
     #|key1 = "value1" # this is a comment
     #|key2 = "value2"
     #|
-  json_inspect(@toml.parse(comment_test), content=[
-    "TomlTable",
-    { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
-  ])
+  debug_inspect(
+    @toml.parse(comment_test),
+    content=(
+      #|TomlTable({ "key1": TomlString("value1"), "key2": TomlString("value2") })
+    ),
+  )
 
   // Test that valid inf values still work correctly
   let valid_inf_toml =
@@ -605,15 +597,19 @@ test "inf failure" {
     #|pos_nan = nan
     #|neg_nan = -nan
     #|
-  json_inspect(@toml.parse(valid_inf_toml), content=[
-    "TomlTable",
-    {
-      "pos_inf": ["TomlFloat", @double.infinity],
-      "neg_inf": ["TomlFloat", @double.neg_infinity],
-      "pos_nan": ["TomlFloat", @double.not_a_number],
-      "neg_nan": ["TomlFloat", @double.not_a_number],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(valid_inf_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "pos_inf": TomlFloat(Infinity),
+      #|    "neg_inf": TomlFloat(-Infinity),
+      #|    "pos_nan": TomlFloat(NaN),
+      #|    "neg_nan": TomlFloat(NaN),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -643,15 +639,19 @@ test "whitespace handling" {
     #|key3 ="value3"
     #|key4="value4"
     #|
-  json_inspect(@toml.parse(whitespace_toml), content=[
-    "TomlTable",
-    {
-      "key1": ["TomlString", "value1"],
-      "key2": ["TomlString", "value2"],
-      "key3": ["TomlString", "value3"],
-      "key4": ["TomlString", "value4"],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(whitespace_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "key1": TomlString("value1"),
+      #|    "key2": TomlString("value2"),
+      #|    "key3": TomlString("value3"),
+      #|    "key4": TomlString("value4"),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -665,17 +665,15 @@ test "array formatting" {
     #|]
     #|array2 = [1, 2, 3,]
     #|
-  json_inspect(@toml.parse(array_formatting_toml), content=[
-    "TomlTable",
-    {
-      "array1": [
-        "TomlArray",
-        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
-      ],
-      "array2": [
-        "TomlArray",
-        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(array_formatting_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "array1": TomlArray([TomlInteger(1), TomlInteger(2), TomlInteger(3)]),
+      #|    "array2": TomlArray([TomlInteger(1), TomlInteger(2), TomlInteger(3)]),
+      #|  },
+      #|)
+    ),
+  )
 }

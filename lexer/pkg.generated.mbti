@@ -32,7 +32,6 @@ pub(all) struct Position {
 }
 pub impl Eq for Position
 pub impl Show for Position
-pub impl ToJson for Position
 pub impl @debug.Debug for Position
 
 // Type aliases

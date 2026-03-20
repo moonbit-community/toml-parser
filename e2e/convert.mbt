@@ -9,7 +9,15 @@ pub fn to_test_json(value : @toml.TomlValue) -> Json {
     @toml.TomlFloat(f) => typed_value("float", format_test_float(f))
     @toml.TomlBoolean(b) =>
       typed_value("bool", if b { "true" } else { "false" })
-    @toml.TomlDateTime(_) => datetime_to_test_json(value.to_json())
+    @toml.TomlDateTime(_) => {
+      let (kind, s) = value.datetime_info().unwrap()
+      match kind {
+        "OffsetDateTime" => typed_value("datetime", normalize_datetime(s))
+        "LocalDateTime" => typed_value("datetime-local", normalize_datetime(s))
+        "LocalTime" => typed_value("time-local", normalize_time_value(s))
+        _ => typed_value("date-local", s)
+      }
+    }
     @toml.TomlArray(arr) => Json::array(arr.map(to_test_json))
     @toml.TomlTable(table) => {
       let obj : Map[String, Json] = {}
@@ -25,22 +33,6 @@ fn typed_value(ty : String, value : String) -> Json {
   obj["type"] = Json::string(ty)
   obj["value"] = Json::string(value)
   Json::object(obj)
-}
-
-///|
-/// Extract datetime from derived ToJson format:
-/// ["TomlDateTime", ["OffsetDateTime", "..."]]
-fn datetime_to_test_json(json : Json) -> Json {
-  // json is ["TomlDateTime", [variant, value_string]]
-  guard json is Array([_, Array([String(variant), String(s)])]) else {
-    abort("unexpected datetime JSON: \{json.stringify()}")
-  }
-  match variant {
-    "OffsetDateTime" => typed_value("datetime", normalize_datetime(s))
-    "LocalDateTime" => typed_value("datetime-local", normalize_datetime(s))
-    "LocalDate" => typed_value("date-local", s)
-    _ => typed_value("time-local", normalize_time_value(s))
-  }
 }
 
 ///|

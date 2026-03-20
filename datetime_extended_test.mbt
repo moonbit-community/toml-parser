@@ -15,17 +15,20 @@ test "test TomlDateTime types and equality" {
 }
 
 ///|
-test "test datetime token JSON serialization" {
+test "test datetime token debug representation" {
   let offset_dt = @tokenize.OffsetDateTime("1979-05-27T07:32:00+01:00")
   let token = @tokenize.DateTimeToken(offset_dt, loc=@tokenize.default_loc())
 
-  // Test that datetime token can be serialized to JSON
-  let json_result = token.to_json()
-  json_inspect(json_result, content=[
-    "DateTimeToken",
-    ["OffsetDateTime", "1979-05-27T07:32:00+01:00"],
-    { "loc": "1:1-1:1" },
-  ])
+  // Test that datetime token has a debug representation
+  debug_inspect(
+    token,
+    content=(
+      #|DateTimeToken(
+      #|  OffsetDateTime("1979-05-27T07:32:00+01:00"),
+      #|  loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 1 } },
+      #|)
+    ),
+  )
 }
 
 ///|

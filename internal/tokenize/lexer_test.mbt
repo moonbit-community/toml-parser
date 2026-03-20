@@ -6,12 +6,24 @@ test "tokenize simple key-value" {
       #|key = "value"
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "value", { "loc": "1:7-1:14", "multiline": false }],
-    ["EOF", { "loc": "1:14-1:14" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "value",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 14 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 14 }, end: { line: 1, column: 14 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -21,12 +33,23 @@ test "tokenize integer" {
       #|number = 42
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "number", { "loc": "1:1-1:7" }],
-    ["Equals", { "loc": "1:8-1:9" }],
-    ["IntegerToken", "42", { "loc": "1:10-1:12" }],
-    ["EOF", { "loc": "1:12-1:12" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "number",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 7 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 9 } }),
+      #|  IntegerToken(
+      #|    42,
+      #|    loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 12 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -36,12 +59,23 @@ test "tokenize float" {
       #|pi = 3.14
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "pi", { "loc": "1:1-1:3" }],
-    ["Equals", { "loc": "1:4-1:5" }],
-    ["FloatToken", 3.14, { "loc": "1:6-1:10" }],
-    ["EOF", { "loc": "1:10-1:10" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "pi",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 3 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 4 }, end: { line: 1, column: 5 } }),
+      #|  FloatToken(
+      #|    3.14,
+      #|    loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 10 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 10 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -51,12 +85,23 @@ test "tokenize boolean" {
       #|enabled = true
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "enabled", { "loc": "1:1-1:8" }],
-    ["Equals", { "loc": "1:9-1:10" }],
-    ["BooleanToken", true, { "loc": "1:11-1:15" }],
-    ["EOF", { "loc": "1:15-1:15" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "enabled",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 8 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 9 }, end: { line: 1, column: 10 } }),
+      #|  BooleanToken(
+      #|    true,
+      #|    loc={ start: { line: 1, column: 11 }, end: { line: 1, column: 15 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -66,16 +111,30 @@ test "tokenize array syntax" {
       #|[1, 2, 3]
     ),
   )
-  json_inspect(tokens, content=[
-    ["LeftBracket", { "loc": "1:1-1:2" }],
-    ["IntegerToken", "1", { "loc": "1:2-1:3" }],
-    ["Comma", { "loc": "1:3-1:4" }],
-    ["IntegerToken", "2", { "loc": "1:5-1:6" }],
-    ["Comma", { "loc": "1:6-1:7" }],
-    ["IntegerToken", "3", { "loc": "1:8-1:9" }],
-    ["RightBracket", { "loc": "1:9-1:10" }],
-    ["EOF", { "loc": "1:10-1:10" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  LeftBracket(loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }),
+      #|  IntegerToken(
+      #|    1,
+      #|    loc={ start: { line: 1, column: 2 }, end: { line: 1, column: 3 } },
+      #|  ),
+      #|  Comma(loc={ start: { line: 1, column: 3 }, end: { line: 1, column: 4 } }),
+      #|  IntegerToken(
+      #|    2,
+      #|    loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } },
+      #|  ),
+      #|  Comma(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  IntegerToken(
+      #|    3,
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 9 } },
+      #|  ),
+      #|  RightBracket(loc={ start: { line: 1, column: 9 }, end: { line: 1, column: 10 } }),
+      #|  EOF(loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 10 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -85,12 +144,24 @@ test "tokenize with comments" {
       #|key = "value" # this is a comment
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "value", { "loc": "1:7-1:14", "multiline": false }],
-    ["EOF", { "loc": "1:34-1:34" }],
-  ]) // comment ignored
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "value",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 14 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 34 }, end: { line: 1, column: 34 } }),
+      #|]
+    ),
+  ) // comment ignored
 }
 
 ///|
@@ -101,16 +172,34 @@ test "tokenize multiline" {
       #|key2 = 42
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key1", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["StringToken", "value1", { "loc": "1:8-1:16", "multiline": false }],
-    ["Newline", { "loc": "1:16-2:1" }],
-    ["Identifier", "key2", { "loc": "2:1-2:5" }],
-    ["Equals", { "loc": "2:6-2:7" }],
-    ["IntegerToken", "42", { "loc": "2:8-2:10" }],
-    ["EOF", { "loc": "2:10-2:10" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key1",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  StringToken(
+      #|    "value1",
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 16 } },
+      #|    multiline=false,
+      #|  ),
+      #|  Newline(loc={ start: { line: 1, column: 16 }, end: { line: 2, column: 1 } }),
+      #|  Identifier(
+      #|    "key2",
+      #|    loc={ start: { line: 2, column: 1 }, end: { line: 2, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 2, column: 6 }, end: { line: 2, column: 7 } }),
+      #|  IntegerToken(
+      #|    42,
+      #|    loc={ start: { line: 2, column: 8 }, end: { line: 2, column: 10 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 2, column: 10 }, end: { line: 2, column: 10 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -121,16 +210,35 @@ test "unicode or emoji" {
       #|key2 = "💩"
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key1", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["StringToken", "💩", { "loc": "1:8-1:12", "multiline": false }],
-    ["Newline", { "loc": "1:12-2:1" }],
-    ["Identifier", "key2", { "loc": "2:1-2:5" }],
-    ["Equals", { "loc": "2:6-2:7" }],
-    ["StringToken", "💩", { "loc": "2:8-2:12", "multiline": false }],
-    ["EOF", { "loc": "2:12-2:12" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key1",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  StringToken(
+      #|    "💩",
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 12 } },
+      #|    multiline=false,
+      #|  ),
+      #|  Newline(loc={ start: { line: 1, column: 12 }, end: { line: 2, column: 1 } }),
+      #|  Identifier(
+      #|    "key2",
+      #|    loc={ start: { line: 2, column: 1 }, end: { line: 2, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 2, column: 6 }, end: { line: 2, column: 7 } }),
+      #|  StringToken(
+      #|    "💩",
+      #|    loc={ start: { line: 2, column: 8 }, end: { line: 2, column: 12 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 2, column: 12 }, end: { line: 2, column: 12 } }),
+      #|]
+    ),
+  )
   // more tests
 
 }
@@ -140,11 +248,15 @@ test "unicode or emoji" {
 test "test DateTimeToken JSON serialization" {
   let dt = @tokenize.OffsetDateTime("1979-05-27T07:32:00Z")
   let token = @tokenize.DateTimeToken(dt, loc=@tokenize.default_loc())
-  json_inspect(token, content=[
-    "DateTimeToken",
-    ["OffsetDateTime", "1979-05-27T07:32:00Z"],
-    { "loc": "1:1-1:1" },
-  ])
+  debug_inspect(
+    token,
+    content=(
+      #|DateTimeToken(
+      #|  OffsetDateTime("1979-05-27T07:32:00Z"),
+      #|  loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 1 } },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -154,11 +266,16 @@ test "test LeftBrace token JSON serialization" {
       #|{}
     ),
   )
-  json_inspect(tokens, content=[
-    ["LeftBrace", { "loc": "1:1-1:2" }],
-    ["RightBrace", { "loc": "1:2-1:3" }],
-    ["EOF", { "loc": "1:3-1:3" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  LeftBrace(loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }),
+      #|  RightBrace(loc={ start: { line: 1, column: 2 }, end: { line: 1, column: 3 } }),
+      #|  EOF(loc={ start: { line: 1, column: 3 }, end: { line: 1, column: 3 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -168,10 +285,15 @@ test "test RightBrace token JSON serialization" {
       #|}
     ),
   )
-  json_inspect(tokens, content=[
-    ["RightBrace", { "loc": "1:1-1:2" }],
-    ["EOF", { "loc": "1:2-1:2" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  RightBrace(loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }),
+      #|  EOF(loc={ start: { line: 1, column: 2 }, end: { line: 1, column: 2 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -181,10 +303,15 @@ test "test Dot token JSON serialization" {
       #|.
     ),
   )
-  json_inspect(tokens, content=[
-    ["Dot", { "loc": "1:1-1:2" }],
-    ["EOF", { "loc": "1:2-1:2" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Dot(loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }),
+      #|  EOF(loc={ start: { line: 1, column: 2 }, end: { line: 1, column: 2 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -195,23 +322,45 @@ test "tokenize hexadecimal numbers" {
       #|hex = 0xDEAD
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "hex", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["IntegerToken", "57005", { "loc": "1:7-1:13" }],
-    ["EOF", { "loc": "1:13-1:13" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "hex",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  IntegerToken(
+      #|    57005,
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 13 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 13 } }),
+      #|]
+    ),
+  )
   let tokens2 = @tokenize.tokenize(
     (
       #|hex2 = 0X1F
     ),
   )
-  json_inspect(tokens2, content=[
-    ["Identifier", "hex2", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["Identifier", "0X1F", { "loc": "1:8-1:12" }],
-    ["EOF", { "loc": "1:12-1:12" }],
-  ])
+  debug_inspect(
+    tokens2,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "hex2",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  Identifier(
+      #|    "0X1F",
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 12 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -221,23 +370,45 @@ test "tokenize octal numbers" {
       #|oct = 0o755
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "oct", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["IntegerToken", "493", { "loc": "1:7-1:12" }],
-    ["EOF", { "loc": "1:12-1:12" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "oct",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  IntegerToken(
+      #|    493,
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 12 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }),
+      #|]
+    ),
+  )
   let tokens2 = @tokenize.tokenize(
     (
       #|oct2 = 0O123
     ),
   )
-  json_inspect(tokens2, content=[
-    ["Identifier", "oct2", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["Identifier", "0O123", { "loc": "1:8-1:13" }],
-    ["EOF", { "loc": "1:13-1:13" }],
-  ])
+  debug_inspect(
+    tokens2,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "oct2",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  Identifier(
+      #|    "0O123",
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 13 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 13 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -247,23 +418,45 @@ test "tokenize binary numbers" {
       #|bin = 0b1101
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "bin", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["IntegerToken", "13", { "loc": "1:7-1:13" }],
-    ["EOF", { "loc": "1:13-1:13" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "bin",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  IntegerToken(
+      #|    13,
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 13 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 13 } }),
+      #|]
+    ),
+  )
   let tokens2 = @tokenize.tokenize(
     (
       #|bin2 = 0B101010
     ),
   )
-  json_inspect(tokens2, content=[
-    ["Identifier", "bin2", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    ["Identifier", "0B101010", { "loc": "1:8-1:16" }],
-    ["EOF", { "loc": "1:16-1:16" }],
-  ])
+  debug_inspect(
+    tokens2,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "bin2",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  Identifier(
+      #|    "0B101010",
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 16 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 16 }, end: { line: 1, column: 16 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -273,34 +466,67 @@ test "tokenize numbers with underscores" {
       #|num = 1_000_000
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "num", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["IntegerToken", "1000000", { "loc": "1:7-1:16" }],
-    ["EOF", { "loc": "1:16-1:16" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "num",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  IntegerToken(
+      #|    1000000,
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 16 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 16 }, end: { line: 1, column: 16 } }),
+      #|]
+    ),
+  )
   let tokens2 = @tokenize.tokenize(
     (
       #|float_val = 3.14_159
     ),
   )
-  json_inspect(tokens2, content=[
-    ["Identifier", "float_val", { "loc": "1:1-1:10" }],
-    ["Equals", { "loc": "1:11-1:12" }],
-    ["FloatToken", 3.14159, { "loc": "1:13-1:21" }],
-    ["EOF", { "loc": "1:21-1:21" }],
-  ])
+  debug_inspect(
+    tokens2,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "float_val",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 10 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 11 }, end: { line: 1, column: 12 } }),
+      #|  FloatToken(
+      #|    3.14159,
+      #|    loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 21 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }),
+      #|]
+    ),
+  )
   let tokens3 = @tokenize.tokenize(
     (
       #|hex_under = 0xFF_FF
     ),
   )
-  json_inspect(tokens3, content=[
-    ["Identifier", "hex_under", { "loc": "1:1-1:10" }],
-    ["Equals", { "loc": "1:11-1:12" }],
-    ["IntegerToken", "65535", { "loc": "1:13-1:20" }],
-    ["EOF", { "loc": "1:20-1:20" }],
-  ])
+  debug_inspect(
+    tokens3,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "hex_under",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 10 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 11 }, end: { line: 1, column: 12 } }),
+      #|  IntegerToken(
+      #|    65535,
+      #|    loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 20 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 20 }, end: { line: 1, column: 20 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -310,12 +536,23 @@ test "tokenize special hex digits" {
       #|hex_digits = 0x0123456789ABCDEF
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "hex_digits", { "loc": "1:1-1:11" }],
-    ["Equals", { "loc": "1:12-1:13" }],
-    ["IntegerToken", "81985529216486895", { "loc": "1:14-1:32" }],
-    ["EOF", { "loc": "1:32-1:32" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "hex_digits",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 11 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 13 } }),
+      #|  IntegerToken(
+      #|    81985529216486895,
+      #|    loc={ start: { line: 1, column: 14 }, end: { line: 1, column: 32 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 32 }, end: { line: 1, column: 32 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -326,12 +563,24 @@ test "test escaped single quote in string" {
       #|key = "test\' quote"
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "test' quote", { "loc": "1:7-1:21", "multiline": false }],
-    ["EOF", { "loc": "1:21-1:21" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "test' quote",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 21 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -342,9 +591,11 @@ test "test invalid escape sequence error" {
     ),
   )
   // TODO: ArgsLoc no absolute loc
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:232:11-232:67@bobzhang/toml FAILED: Invalid escape sequence: \\\\z at line 1, column 12\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:232:11-232:67@bobzhang/toml FAILED: Invalid escape sequence: \\\\z at line 1, column 12\")"
+    ),
   ) // Should fail with invalid escape sequence
 }
 
@@ -356,9 +607,11 @@ test "test unterminated string error" {
     ),
   )
   // TODO: ArgsLoc no absolute loc
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:247:11-247:50@bobzhang/toml FAILED: Unterminated string at line 1, column 8\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:247:11-247:50@bobzhang/toml FAILED: Unterminated string at line 1, column 8\")"
+    ),
   ) // Should fail with unterminated string
 }
 
@@ -370,9 +623,11 @@ test "test unexpected end after escape" {
     ),
   )
   // TODO: ArgsLoc no absolute loc
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:247:11-247:50@bobzhang/toml FAILED: Unterminated string at line 1, column 8\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:247:11-247:50@bobzhang/toml FAILED: Unterminated string at line 1, column 8\")"
+    ),
   ) // Should fail with unexpected end after escape
 }
 
@@ -383,9 +638,11 @@ test "test invalid characters" {
       #|key @ value
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:1275:17-1275:54@bobzhang/toml FAILED: Unexpected character: '@'\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:1275:17-1275:54@bobzhang/toml FAILED: Unexpected character: '@'\")"
+    ),
   ) // Should fail with unexpected character
 }
 
@@ -396,12 +653,23 @@ test "test binary number with underscores" {
       #|bin = 0b1010_1100
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "bin", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["IntegerToken", "172", { "loc": "1:7-1:18" }],
-    ["EOF", { "loc": "1:18-1:18" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "bin",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  IntegerToken(
+      #|    172,
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 18 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 18 }, end: { line: 1, column: 18 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -411,12 +679,23 @@ test "test dash-starting identifier tokenized before parser validation" {
       #|key = -abc
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["Identifier", "-abc", { "loc": "1:7-1:11" }],
-    ["EOF", { "loc": "1:11-1:11" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  Identifier(
+      #|    "-abc",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 11 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 11 }, end: { line: 1, column: 11 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -428,9 +707,11 @@ test "lexer expect_string failure" {
     ),
   )
   let maybe_result = try? lexer.expect_string("goodbye")
-  json_inspect(
+  debug_inspect(
     maybe_result.unwrap_err().to_string(),
-    content="Failure(\"lexer.mbt:172:7-172:65@bobzhang/lexer FAILED: Expected string: goodbye at line 1, column 1\")",
+    content=(
+      #|"Failure(\"lexer.mbt:172:7-172:65@bobzhang/lexer FAILED: Expected string: goodbye at line 1, column 1\")"
+    ),
   )
 }
 
@@ -442,12 +723,24 @@ test "unicode 4 escape lowercase hex" {
       #|key = "\uabcd"
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "ꯍ", { "loc": "1:7-1:15", "multiline": false }],
-    ["EOF", { "loc": "1:15-1:15" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "ꯍ",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 15 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -458,12 +751,24 @@ test "unicode 4 escape uppercase hex" {
       #|key = "\uABCD"
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "ꯍ", { "loc": "1:7-1:15", "multiline": false }],
-    ["EOF", { "loc": "1:15-1:15" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "ꯍ",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 15 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -474,9 +779,11 @@ test "unicode 4 escape invalid hex" {
       #|key = "\uGHIJ"
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:111:7-111:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:111:7-111:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10\")"
+    ),
   )
 }
 
@@ -488,9 +795,11 @@ test "unicode 4 escape incomplete" {
       #|key = "\u123"
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:111:7-111:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:111:7-111:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10\")"
+    ),
   )
 }
 
@@ -502,9 +811,11 @@ test "unicode 4 escape invalid code point" {
       #|key = "\uD800"
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:115:13-115:68@bobzhang/toml FAILED: Invalid Unicode code point: 55296 at line 1, column 14\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:115:13-115:68@bobzhang/toml FAILED: Invalid Unicode code point: 55296 at line 1, column 14\")"
+    ),
   )
 }
 
@@ -516,12 +827,24 @@ test "unicode 8 escape lowercase hex" {
       #|key = "\U000000ab"
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "«", { "loc": "1:7-1:19", "multiline": false }],
-    ["EOF", { "loc": "1:19-1:19" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "«",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 19 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 19 }, end: { line: 1, column: 19 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -532,12 +855,24 @@ test "unicode 8 escape uppercase hex" {
       #|key = "\U000000AB"
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "«", { "loc": "1:7-1:19", "multiline": false }],
-    ["EOF", { "loc": "1:19-1:19" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "«",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 19 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 19 }, end: { line: 1, column: 19 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -548,9 +883,11 @@ test "unicode 8 escape invalid hex" {
       #|key = "\U0000000G"
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:155:7-155:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:155:7-155:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10\")"
+    ),
   )
 }
 
@@ -562,9 +899,11 @@ test "unicode 8 escape incomplete" {
       #|key = "\U0000001"
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:155:7-155:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:155:7-155:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10\")"
+    ),
   )
 }
 
@@ -576,9 +915,11 @@ test "unicode 8 escape invalid code point large" {
       #|key = "\U00110000"
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:158:5-158:60@bobzhang/toml FAILED: Invalid Unicode code point: 1114112 at line 1, column 18\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:158:5-158:60@bobzhang/toml FAILED: Invalid Unicode code point: 1114112 at line 1, column 18\")"
+    ),
   )
 }
 
@@ -590,9 +931,11 @@ test "unicode 8 escape invalid code point surrogate" {
       #|key = "\U0000D800"
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:158:5-158:60@bobzhang/toml FAILED: Invalid Unicode code point: 55296 at line 1, column 18\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:158:5-158:60@bobzhang/toml FAILED: Invalid Unicode code point: 55296 at line 1, column 18\")"
+    ),
   )
 }
 
@@ -604,9 +947,11 @@ test "unicode 8 escape invalid conversion" {
       #|key = "\U7FFFFFFF"
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:158:5-158:60@bobzhang/toml FAILED: Invalid Unicode code point: 2147483647 at line 1, column 18\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:158:5-158:60@bobzhang/toml FAILED: Invalid Unicode code point: 2147483647 at line 1, column 18\")"
+    ),
   )
 }
 
@@ -618,12 +963,24 @@ test "backspace escape sequence" {
       #|key = "test\b"
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "test\b", { "loc": "1:7-1:15", "multiline": false }],
-    ["EOF", { "loc": "1:15-1:15" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "test\b",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 15 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -635,12 +992,24 @@ test "form feed escape sequence" {
     ),
   )
   // FIXME(upstream): inspect test generate '\f' instead of '\u000C'
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "test\f", { "loc": "1:7-1:15", "multiline": false }],
-    ["EOF", { "loc": "1:15-1:15" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "test\u{0c}",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 15 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -651,16 +1020,24 @@ test "multiline basic string escapes" {
       #|key = """line1\nline2\tindented"""
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    [
-      "StringToken",
-      "line1\nline2\tindented",
-      { "loc": "1:7-1:35", "multiline": true },
-    ],
-    ["EOF", { "loc": "1:35-1:35" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "line1\nline2\tindented",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 35 } },
+      #|    multiline=true,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 35 }, end: { line: 1, column: 35 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -671,28 +1048,48 @@ test "multiline basic string all escapes" {
       #|key = """\n\t\r\\\"\b\f\u0041\U00000042"""
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    [
-      "StringToken",
-      "\n\t\r\\\"\b\fAB",
-      { "loc": "1:7-1:43", "multiline": true },
-    ],
-    ["EOF", { "loc": "1:43-1:43" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "\n\t\r\\\"\b\u{0c}AB",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 43 } },
+      #|    multiline=true,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 43 }, end: { line: 1, column: 43 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
 /// Test multiline basic string with line ending backslash and CR
 test "multiline basic string line ending backslash CR" {
   let tokens = @tokenize.tokenize("key = \"\"\"line1\\\r\n   line2\"\"\"")
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "line1line2", { "loc": "1:7-2:13", "multiline": true }],
-    ["EOF", { "loc": "2:13-2:13" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "line1line2",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 2, column: 13 } },
+      #|    multiline=true,
+      #|  ),
+      #|  EOF(loc={ start: { line: 2, column: 13 }, end: { line: 2, column: 13 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -703,9 +1100,11 @@ test "multiline basic string invalid escape" {
       #|key = """\z"""
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:384:14-384:71@bobzhang/toml FAILED: Invalid escape sequence: \\\\z at line 1, column 12\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:384:14-384:71@bobzhang/toml FAILED: Invalid escape sequence: \\\\z at line 1, column 12\")"
+    ),
   )
 }
 
@@ -717,9 +1116,11 @@ test "multiline basic string unexpected end after escape" {
       #|key = """\
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:390:7-390:73@bobzhang/toml FAILED: Unexpected end of input after escape character at line 1, column 11\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:390:7-390:73@bobzhang/toml FAILED: Unexpected end of input after escape character at line 1, column 11\")"
+    ),
   )
 }
 
@@ -731,9 +1132,11 @@ test "multiline basic string unterminated" {
       #|key = """incomplete
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:416:11-416:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 20\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:416:11-416:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 20\")"
+    ),
   )
 }
 
@@ -745,9 +1148,11 @@ test "multiline basic string early termination" {
       #|key = """line
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:416:11-416:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 14\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:416:11-416:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 14\")"
+    ),
   )
 }
 
@@ -755,12 +1160,24 @@ test "multiline basic string early termination" {
 /// Test multiline literal string with CR+LF
 test "multiline literal string CRLF" {
   let tokens = @tokenize.tokenize("key = '''line1\r\nline2'''")
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "line1\r\nline2", { "loc": "1:7-2:9", "multiline": true }],
-    ["EOF", { "loc": "2:9-2:9" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "line1\r\nline2",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 2, column: 9 } },
+      #|    multiline=true,
+      #|  ),
+      #|  EOF(loc={ start: { line: 2, column: 9 }, end: { line: 2, column: 9 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -771,9 +1188,11 @@ test "multiline literal string unterminated" {
       #|key = '''incomplete
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:481:11-481:68@bobzhang/toml FAILED: Unterminated multiline literal string at line 1, column 20\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:481:11-481:68@bobzhang/toml FAILED: Unterminated multiline literal string at line 1, column 20\")"
+    ),
   )
 }
 
@@ -786,9 +1205,11 @@ test "hex number invalid digit error path" {
       #|key = 0x
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:495:5-495:50@bobzhang/toml FAILED: Invalid hex number format at line 1, column 7\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:495:5-495:50@bobzhang/toml FAILED: Invalid hex number format at line 1, column 7\")"
+    ),
   )
 }
 
@@ -802,12 +1223,23 @@ test "invalid float error" {
       #|key = 3.14
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["FloatToken", 3.14, { "loc": "1:7-1:11" }],
-    ["EOF", { "loc": "1:11-1:11" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  FloatToken(
+      #|    3.14,
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 11 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 11 }, end: { line: 1, column: 11 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -818,12 +1250,24 @@ test "multiline literal string token" {
       #|key = '''hello world'''
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "hello world", { "loc": "1:7-1:24", "multiline": true }],
-    ["EOF", { "loc": "1:24-1:24" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "hello world",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 24 } },
+      #|    multiline=true,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 24 }, end: { line: 1, column: 24 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -836,12 +1280,24 @@ test "tokenize else branch coverage" {
       #|key = "value"
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "value", { "loc": "1:7-1:14", "multiline": false }],
-    ["EOF", { "loc": "1:14-1:14" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "value",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 14 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 14 }, end: { line: 1, column: 14 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -852,16 +1308,24 @@ test "multiline basic string single quote escape" {
       #|key = """line with \' quote"""
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    [
-      "StringToken",
-      "line with ' quote",
-      { "loc": "1:7-1:31", "multiline": true },
-    ],
-    ["EOF", { "loc": "1:31-1:31" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "line with ' quote",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 31 } },
+      #|    multiline=true,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 31 }, end: { line: 1, column: 31 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -870,12 +1334,24 @@ test "multiline basic string CR only" {
   // CR: '\r' is hard to visualize in the multipline string
   // explicit escaping is better for testing
   let tokens = @tokenize.tokenize("key = \"\"\"line1\\\rline2\"\"\"")
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "line1line2", { "loc": "1:7-2:9", "multiline": true }],
-    ["EOF", { "loc": "2:9-2:9" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "line1line2",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 2, column: 9 } },
+      #|    multiline=true,
+      #|  ),
+      #|  EOF(loc={ start: { line: 2, column: 9 }, end: { line: 2, column: 9 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -887,9 +1363,11 @@ test "multiline basic string none peek" {
       #|key = """incomplete string
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:416:11-416:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 27\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:416:11-416:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 27\")"
+    ),
   )
 }
 
@@ -903,12 +1381,24 @@ test "unicode escape invalid conversion to char" {
     ),
   )
   // This should work for valid Unicode, but test the error path
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "￿", { "loc": "1:7-1:15", "multiline": false }],
-    ["EOF", { "loc": "1:15-1:15" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "￿",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 15 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -919,12 +1409,23 @@ test "hex number with underscores" {
       #|hex = 0xDE_AD_BE_EF
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "hex", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["IntegerToken", "3735928559", { "loc": "1:7-1:20" }],
-    ["EOF", { "loc": "1:20-1:20" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "hex",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  IntegerToken(
+      #|    3735928559,
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 20 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 20 }, end: { line: 1, column: 20 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -936,12 +1437,24 @@ test "multiline string opening CRLF" {
       #|content"""
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "key", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "content", { "loc": "1:7-2:11", "multiline": true }],
-    ["EOF", { "loc": "2:11-2:11" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "key",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  StringToken(
+      #|    "content",
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 2, column: 11 } },
+      #|    multiline=true,
+      #|  ),
+      #|  EOF(loc={ start: { line: 2, column: 11 }, end: { line: 2, column: 11 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -972,12 +1485,23 @@ test "test hex overflow edge case" {
       #|hex = 0xFFFFFFFFFFFFFFFF
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "hex", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["IntegerToken", "-1", { "loc": "1:7-1:25" }],
-    ["EOF", { "loc": "1:25-1:25" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "hex",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  IntegerToken(
+      #|    -1,
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 25 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 25 }, end: { line: 1, column: 25 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -1046,12 +1570,23 @@ test "attempt hex digit error path" {
       #|hex = 0xABCDEF123456
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "hex", { "loc": "1:1-1:4" }],
-    ["Equals", { "loc": "1:5-1:6" }],
-    ["IntegerToken", "188900967593046", { "loc": "1:7-1:21" }],
-    ["EOF", { "loc": "1:21-1:21" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "hex",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
+      #|  IntegerToken(
+      #|    188900967593046,
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 21 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -1076,9 +1611,11 @@ test "trailing _ in binary number" {
       #|key = 0b10_10_
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:603:9-607:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 14\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:603:9-607:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 14\")"
+    ),
   )
 }
 
@@ -1090,9 +1627,11 @@ test "consequence _ in binary number" {
     ),
   )
   // according to spec, this should fail
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:603:9-607:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 11\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:603:9-607:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 11\")"
+    ),
   )
 }
 
@@ -1103,9 +1642,11 @@ test "trailing _ in hex number" {
       #|key = 0xAB_CD_
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:518:9-522:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 14\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:518:9-522:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 14\")"
+    ),
   )
 }
 
@@ -1117,9 +1658,11 @@ test "consecutive _ in hex number" {
     ),
   )
   // according to spec, this should fail
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:518:9-522:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 11\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:518:9-522:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 11\")"
+    ),
   )
 }
 
@@ -1130,9 +1673,11 @@ test "trailing _ in octal number" {
       #|key = 0o755_
     ),
   )
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:554:9-558:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 12\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:554:9-558:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 12\")"
+    ),
   )
 }
 
@@ -1144,8 +1689,10 @@ test "consecutive _ in octal number" {
     ),
   )
   // according to spec, this should fail
-  json_inspect(
+  debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:554:9-558:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 10\")",
+    content=(
+      #|"Failure(\"internal/tokenize/tokenize.mbt:554:9-558:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 10\")"
+    ),
   )
 }
