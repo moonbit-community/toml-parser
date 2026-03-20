@@ -106,7 +106,11 @@ test "test edge case number formats for error paths" {
   let tokens = try? @tokenize.tokenize(
     "huge = 999999999999999999999999999999999999999",
   )
-  json_inspect(tokens, content=({"Err":["Failure","internal/tokenize/tokenize.mbt:907:12-907:41@bobzhang/toml FAILED: Invalid integer: 999999999999999999999999999999999999999"]}))
+  json_inspect(tokens, content={
+    "Err": [
+      "Failure", "internal/tokenize/tokenize.mbt:914:12-914:41@bobzhang/toml FAILED: Invalid integer: 999999999999999999999999999999999999999",
+    ],
+  })
 }
 
 ///|
@@ -116,7 +120,16 @@ test "test literal string handling" {
       #|literal = 'this is a literal string'
     ),
   )
-  json_inspect(tokens, content=([["Identifier","literal",{"loc":"1:1-1:8"}],["Equals",{"loc":"1:9-1:10"}],["StringToken","this is a literal string",{"loc":"1:11-1:37","multiline":false}],["EOF",{"loc":"1:37-1:37"}]]))
+  json_inspect(tokens, content=[
+    ["Identifier", "literal", { "loc": "1:1-1:8" }],
+    ["Equals", { "loc": "1:9-1:10" }],
+    [
+      "StringToken",
+      "this is a literal string",
+      { "loc": "1:11-1:37", "multiline": false },
+    ],
+    ["EOF", { "loc": "1:37-1:37" }],
+  ])
 }
 
 ///|

@@ -114,22 +114,23 @@ pub fn json_equal(a : Json, b : Json) -> Bool {
 
 ///|
 /// Check if a JSON object is a toml-test typed value: {"type": "...", "value": "..."}
+
 ///|
 /// Check if a JSON object is a datetime typed value.
 fn is_datetime_typed_value(m : Map[String, Json]) -> Bool {
   guard m.length() == 2 && m.get("type") is Some(String(t)) else {
     return false
   }
-  t == "datetime" || t == "datetime-local" || t == "date-local" || t == "time-local"
+  t == "datetime" ||
+  t == "datetime-local" ||
+  t == "date-local" ||
+  t == "time-local"
 }
 
 ///|
 /// Compare two datetime typed values with normalized fractional seconds.
 /// Treats ".6" and ".600" as equal by stripping trailing zeros in fractional part.
-fn datetime_values_equal(
-  a : Map[String, Json],
-  b : Map[String, Json],
-) -> Bool {
+fn datetime_values_equal(a : Map[String, Json], b : Map[String, Json]) -> Bool {
   guard a.get("type") is Some(at) && b.get("type") is Some(bt) && at == bt else {
     return false
   }

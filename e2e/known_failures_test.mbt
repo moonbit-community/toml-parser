@@ -8,21 +8,25 @@
 ///|
 test "fixed: [a-a-a] table header parses correctly" {
   let result = try? @toml.parse("[a-a-a]\n_ = false\n")
-  inspect(result, content=(
-    
-    #|Ok([a-a-a]
-    #|_ = false
-    #|)
-  ))
+  inspect(
+    result,
+    content=(
+      #|Ok([a-a-a]
+      #|_ = false
+      #|)
+    ),
+  )
 }
 
 ///|
 test "fixed: leading underscore value rejected (not infinite loop)" {
   let result = try? @toml.parse("x = _1.2\n")
-  inspect(result, content=(
-    #|Err(Failure("parser.mbt:191:20-191:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 7 } }"))
-
-  ))
+  inspect(
+    result,
+    content=(
+      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 7 } }"))
+    ),
+  )
 }
 
 // ============================================================
@@ -32,23 +36,25 @@ test "fixed: leading underscore value rejected (not infinite loop)" {
 ///|
 test "fixed: positive prefix '+' tokenized for integers" {
   let result = try? @toml.parse("pos = +99\n")
-  inspect(result, content=(
-    
-    #|Ok(pos = 99
-    #|)
-  ))
+  inspect(
+    result,
+    content=(
+      #|Ok(pos = 99
+      #|)
+    ),
+  )
 }
 
 ///|
 test "fixed: positive prefix '+' tokenized for floats" {
   let result = try? @toml.parse("pos = +1.0\n")
-  inspect(result, content=(
-    
-    #|Ok(pos = 1.0
-    #|)
-
-
-  ))
+  inspect(
+    result,
+    content=(
+      #|Ok(pos = 1.0
+      #|)
+    ),
+  )
 }
 
 // ============================================================
@@ -58,11 +64,13 @@ test "fixed: positive prefix '+' tokenized for floats" {
 ///|
 test "fixed: CRLF line ending handled" {
   let result = try? @toml.parse("key = \"val\"\r\n")
-  inspect(result, content=(
-    
-    #|Ok(key = "val"
-    #|)
-  ))
+  inspect(
+    result,
+    content=(
+      #|Ok(key = "val"
+      #|)
+    ),
+  )
 }
 
 // ============================================================
@@ -72,11 +80,13 @@ test "fixed: CRLF line ending handled" {
 ///|
 test "fixed: datetime with space separator" {
   let result = try? @toml.parse("dt = 1987-07-05 17:45:00Z\n")
-  inspect(result, content=(
-    
-    #|Ok(dt = 1987-07-05 17:45:00Z
-    #|)
-  ))
+  inspect(
+    result,
+    content=(
+      #|Ok(dt = 1987-07-05 17:45:00Z
+      #|)
+    ),
+  )
 }
 
 // ============================================================
@@ -86,11 +96,13 @@ test "fixed: datetime with space separator" {
 ///|
 test "fixed: numeric key leading zeros preserved" {
   let result = try? @toml.parse("0123 = true\n")
-  inspect(result, content=(
-    
-    #|Ok(0123 = true
-    #|)
-  ))
+  inspect(
+    result,
+    content=(
+      #|Ok(0123 = true
+      #|)
+    ),
+  )
 }
 
 // ============================================================
@@ -106,11 +118,13 @@ test "fixed: multiline string line ending backslash" {
     #|  fox jumps over the lazy dog."""
     #|
   let result = try? @toml.parse(input)
-  inspect(result, content=(
-    
-    #|Ok(str = "The quick brown fox jumps over the lazy dog."
-    #|)
-  ))
+  inspect(
+    result,
+    content=(
+      #|Ok(str = "The quick brown fox jumps over the lazy dog."
+      #|)
+    ),
+  )
 }
 
 // ============================================================
@@ -120,21 +134,25 @@ test "fixed: multiline string line ending backslash" {
 ///|
 test "fixed: hex escape \\xHH" {
   let result = try? @toml.parse("esc = \"\\x41\"\n")
-  inspect(result, content=(
-    
-    #|Ok(esc = "A"
-    #|)
-  ))
+  inspect(
+    result,
+    content=(
+      #|Ok(esc = "A"
+      #|)
+    ),
+  )
 }
 
 ///|
 test "fixed: escape \\e (ESC)" {
   let result = try? @toml.parse("esc = \"\\e\"\n")
-  inspect(result, content=(
-    
-    #|Ok(esc = "\u001B"
-    #|)
-  ))
+  inspect(
+    result,
+    content=(
+      #|Ok(esc = "\u001B"
+      #|)
+    ),
+  )
 }
 
 // ============================================================
@@ -166,12 +184,14 @@ test "bug: array of tables cannot reopen" {
 ///|
 test "fixed: keyword as table name" {
   let result = try? @toml.parse("[true]\nx = 1\n")
-  inspect(result, content=(
-    
-    #|Ok([true]
-    #|x = 1
-    #|)
-  ))
+  inspect(
+    result,
+    content=(
+      #|Ok([true]
+      #|x = 1
+      #|)
+    ),
+  )
 }
 
 // ============================================================
@@ -220,11 +240,13 @@ test "fixed: multiline string with consecutive quotes" {
     #|str = """Here are two quotes: "". Cool."""
     #|
   let result = try? @toml.parse(input)
-  inspect(result, content=(
-    
-    #|Ok(str = "Here are two quotes: \"\". Cool."
-    #|)
-  ))
+  inspect(
+    result,
+    content=(
+      #|Ok(str = "Here are two quotes: \"\". Cool."
+      #|)
+    ),
+  )
 }
 
 // ============================================================
@@ -234,9 +256,11 @@ test "fixed: multiline string with consecutive quotes" {
 ///|
 test "fixed: dashed bare key starting with dash" {
   let result = try? @toml.parse("-key = 1\n")
-  inspect(result, content=(
-    
-    #|Ok(-key = 1
-    #|)
-  ))
+  inspect(
+    result,
+    content=(
+      #|Ok(-key = 1
+      #|)
+    ),
+  )
 }

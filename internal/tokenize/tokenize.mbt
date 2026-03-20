@@ -75,17 +75,11 @@ fn Char::is_hex(ch : Char) -> Int? {
 /// Parse hex escape sequence \xHH (TOML 1.1)
 fn Lexer::read_hex_2_escape(self : Lexer) -> Char raise {
   let code = match self.view() {
-    [
-      a0,
-      a1,
-      .. rest,
-    ] if a0.is_hex() is Some(a0) &&
-      a1.is_hex() is Some(a1) => {
+    [a0, a1, .. rest] if a0.is_hex() is Some(a0) && a1.is_hex() is Some(a1) => {
       self.update_view(rest)
       a0 * 16 + a1
     }
-    _ =>
-      fail(self.error("Invalid hex escape sequence: expected 2 hex digits"))
+    _ => fail(self.error("Invalid hex escape sequence: expected 2 hex digits"))
   }
   match code.to_char() {
     Some(ch) => ch
@@ -366,7 +360,11 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
             _ => false
           }
           if !found_newline {
-            fail(self.error("Invalid escape: backslash followed by whitespace but no newline"))
+            fail(
+              self.error(
+                "Invalid escape: backslash followed by whitespace but no newline",
+              ),
+            )
           }
           // Now consume the newline and following whitespace
           let next_view = loop self.view() {
@@ -702,10 +700,7 @@ fn Lexer::read_datetime_with_loc(
       } else {
         // Just date, no time component - LocalDate
         let end_pos = self.get_loc()
-        DateTimeToken(
-          LocalDate(date_str),
-          loc=make_loc(start_pos, end_pos),
-        )
+        DateTimeToken(LocalDate(date_str), loc=make_loc(start_pos, end_pos))
       }
     }
     _ => {
@@ -722,7 +717,7 @@ fn Lexer::read_number_with_loc(
   self : Lexer,
   is_negative : Bool,
   start_pos : @lexer.Position,
-  has_sign~ : Bool = false,
+  has_sign? : Bool = false,
 ) -> Token raise {
   let sb = StringBuilder::new()
   if is_negative {
@@ -737,7 +732,11 @@ fn Lexer::read_number_with_loc(
         let value = self.read_hex_number()
         let end_pos = self.get_loc()
         return IntegerToken(
-          if is_negative { -value } else { value },
+          if is_negative {
+            -value
+          } else {
+            value
+          },
           loc=make_loc(start_pos, end_pos),
         )
       }
@@ -745,7 +744,11 @@ fn Lexer::read_number_with_loc(
         let value = self.read_octal_number()
         let end_pos = self.get_loc()
         return IntegerToken(
-          if is_negative { -value } else { value },
+          if is_negative {
+            -value
+          } else {
+            value
+          },
           loc=make_loc(start_pos, end_pos),
         )
       }
@@ -753,7 +756,11 @@ fn Lexer::read_number_with_loc(
         let value = self.read_binary_number()
         let end_pos = self.get_loc()
         return IntegerToken(
-          if is_negative { -value } else { value },
+          if is_negative {
+            -value
+          } else {
+            value
+          },
           loc=make_loc(start_pos, end_pos),
         )
       }
@@ -1213,8 +1220,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
         fail("Unexpected character: '+'")
       }
       match self.view() {
-        ['+', '0', 'x' | 'o' | 'b', ..] =>
-          fail("Unexpected character: '+'")
+        ['+', '0', 'x' | 'o' | 'b', ..] => fail("Unexpected character: '+'")
         ['+', .. rest] => {
           self.update_view(rest)
           self.read_number_with_loc(false, start_pos)

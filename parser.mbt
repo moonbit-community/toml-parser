@@ -21,8 +21,7 @@ fn Parser::try_parse_single_key(self : Parser) -> String? {
       self.update_view(rest)
       Some(name)
     }
-    [StringToken(_, multiline=true, ..), ..] =>
-      None // multiline strings not allowed as keys
+    [StringToken(_, multiline=true, ..), ..] => None // multiline strings not allowed as keys
     [StringToken(name, ..), .. rest] => {
       self.update_view(rest)
       Some(name)
@@ -35,7 +34,7 @@ fn Parser::try_parse_single_key(self : Parser) -> String? {
       self.update_view(rest)
       Some(if b { "true" } else { "false" })
     }
-    [FloatToken(f, ..), .. rest] => {
+    [FloatToken(f, ..), .. rest] =>
       // inf and nan are valid bare keys
       if f.is_inf() {
         self.update_view(rest)
@@ -46,7 +45,6 @@ fn Parser::try_parse_single_key(self : Parser) -> String? {
       } else {
         None
       }
-    }
     [DateTimeToken(LocalDate(s), ..), .. rest] => {
       // Only LocalDate (YYYY-MM-DD) is valid as a bare key — it only
       // contains digits and dashes. Other datetime variants contain
@@ -288,6 +286,7 @@ let inline_table_marker : String = "\u0000__inline__"
 /// Marker for tables defined via [table] headers (distinct from dotted-key defined).
 let header_defined_marker : String = "\u0000__header__"
 
+///|
 pub fn parse(input : String) -> TomlValue raise {
   let tokens = tokenize(input)
   let parser = Parser::new(tokens)
@@ -332,8 +331,7 @@ pub fn parse(input : String) -> TomlValue raise {
         // Validate newline/EOF/comment after ]
         match parser.view() {
           [EOF, ..] | [Newline, ..] => ()
-          _ =>
-            parser.error("Expected newline or end of file after ']'")
+          _ => parser.error("Expected newline or end of file after ']'")
         }
 
         // Create or get the nested table structure
@@ -355,7 +353,10 @@ pub fn parse(input : String) -> TomlValue raise {
         // Mark implicit tables when inside an explicitly defined [table] section
         let in_defined_section = current_table.contains(table_defined_marker)
         set_dotted_key_value(
-          current_table, key_path, value, mark_implicit=in_defined_section,
+          current_table,
+          key_path,
+          value,
+          mark_implicit=in_defined_section,
         ) catch {
           error => parser.error(error.to_string())
         }

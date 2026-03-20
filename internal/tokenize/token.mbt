@@ -87,6 +87,7 @@ pub impl Show for TomlDateTime with output(self, logger) {
 }
 
 ///|
+
 ///|
 /// Check if two locations are adjacent (end of first equals start of second).
 pub fn Loc::adjacent(self : Loc, other : Loc) -> Bool {

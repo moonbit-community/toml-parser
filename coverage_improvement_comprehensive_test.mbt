@@ -102,7 +102,11 @@ test "invalid_unicode_escapes" {
       #|key = "\uZZZZ"
     ),
   )
-  json_inspect(result, content=({"Err":["Failure","internal/tokenize/tokenize.mbt:117:7-117:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10"]})) // Expected error
+  json_inspect(result, content={
+    "Err": [
+      "Failure", "internal/tokenize/tokenize.mbt:111:7-111:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10",
+    ],
+  }) // Expected error
 }
 
 ///|
@@ -113,7 +117,11 @@ test "invalid_8byte_unicode_escape" {
       #|key = "\U00200000"
     ),
   ) // Invalid code point > 0x10FFFF
-  json_inspect(result, content=({"Err":["Failure","internal/tokenize/tokenize.mbt:164:5-164:60@bobzhang/toml FAILED: Invalid Unicode code point: 2097152 at line 1, column 18"]})) // Expected error
+  json_inspect(result, content={
+    "Err": [
+      "Failure", "internal/tokenize/tokenize.mbt:158:5-158:60@bobzhang/toml FAILED: Invalid Unicode code point: 2097152 at line 1, column 18",
+    ],
+  }) // Expected error
 }
 
 ///|
@@ -124,7 +132,11 @@ test "unterminated_multiline_string" {
       #|key = """This is unterminated
     ),
   )
-  json_inspect(result, content=({"Err":["Failure","internal/tokenize/tokenize.mbt:418:11-418:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 30"]})) // Expected error
+  json_inspect(result, content={
+    "Err": [
+      "Failure", "internal/tokenize/tokenize.mbt:416:11-416:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 30",
+    ],
+  }) // Expected error
 }
 
 ///|
@@ -183,7 +195,11 @@ test "table_path_conflict_error" {
       #|[key]
     ),
   )
-  json_inspect(result, content=({"Err":["Failure","parser.mbt:191:20-191:70@bobzhang/toml FAILED: ExpectedTable(\"key\", \"integer\") at { start: { line: 2, column: 6 }, end: { line: 2, column: 6 } }"]})) // Expected error
+  json_inspect(result, content={
+    "Err": [
+      "Failure", "parser.mbt:189:20-189:70@bobzhang/toml FAILED: ExpectedTable(\"key\", \"integer\") at { start: { line: 2, column: 6 }, end: { line: 2, column: 6 } }",
+    ],
+  }) // Expected error
 }
 
 ///|
@@ -195,7 +211,11 @@ test "array_of_tables_path_conflict_error" {
       #|[[key]]
     ),
   )
-  json_inspect(result, content=({"Err":["Failure","parser.mbt:191:20-191:70@bobzhang/toml FAILED: ExpectedArray(\"key\", \"integer\") at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }"]})) // Expected error
+  json_inspect(result, content={
+    "Err": [
+      "Failure", "parser.mbt:189:20-189:70@bobzhang/toml FAILED: ExpectedArray(\"key\", \"integer\") at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }",
+    ],
+  }) // Expected error
 }
 
 ///|
@@ -413,7 +433,11 @@ test "invalid_character_error" {
       #|key = @invalid
     ),
   )
-  json_inspect(result, content=({"Err":["Failure","internal/tokenize/tokenize.mbt:1267:17-1267:54@bobzhang/toml FAILED: Unexpected character: '@'"]})) // Expected error
+  json_inspect(result, content={
+    "Err": [
+      "Failure", "internal/tokenize/tokenize.mbt:1273:17-1273:54@bobzhang/toml FAILED: Unexpected character: '@'",
+    ],
+  }) // Expected error
 }
 
 ///|
