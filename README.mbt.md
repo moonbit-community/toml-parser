@@ -1,23 +1,23 @@
 # TOML Parser for MoonBit
 
-A lightweight and efficient TOML (Tom's Obvious Minimal Language) parser implementation written in MoonBit with full TOML 1.0 specification compliance.
+A lightweight and efficient TOML parser written in MoonBit with TOML 1.1 support and **98.8% compliance** against the official [toml-test](https://github.com/toml-lang/toml-test) suite (736/745 tests pass, 262/262 valid tests at 100%).
 
 ## Features
 
-- ✅ **Complete TOML 1.0 Compliance** - Fully compatible with the official TOML specification
+- ✅ **TOML 1.1 Support** - Full TOML 1.0 + 1.1 features (optional seconds, inline table newlines, `\xHH` escapes)
+- ✅ **100% Valid Test Compliance** - Every valid TOML document parses correctly (262/262)
 - ✅ **All Data Types** - Strings, integers, floats, booleans, arrays, tables, and datetimes
-- ✅ **Array Homogeneity Validation** - Ensures arrays contain uniform types (`[1, 2, 3]`)
-- ✅ **Inline Tables** - Compact table syntax (`{key = value, key2 = value2}`)
+- ✅ **Multiline Strings** - Basic (`"""..."""`) and literal (`'''...'''`) with consecutive quote support
+- ✅ **Inline Tables** - With TOML 1.1 newlines and trailing commas
 - ✅ **Dotted Key Notation** - Create nested structures easily (`a.b.c = value`)
-- ✅ **Comprehensive Escape Sequences** - Full support for `\n`, `\t`, `\"`, `\\`, `\uXXXX`, `\UXXXXXXXX`
-- ✅ **RFC 3339 DateTime Support** - All 4 datetime types (offset, local datetime, date, time)
-- ✅ **Table Headers** - Organize configuration with `[section]` and `[section.subsection]`
-- ✅ **Array of Tables** - Define repeated structures with `[[section]]`
-- ✅ **Special Float Values** - Support for `inf`, `-inf`, and `nan`
+- ✅ **Comprehensive Escape Sequences** - `\n`, `\t`, `\"`, `\\`, `\uXXXX`, `\UXXXXXXXX`, `\xHH`, `\e`
+- ✅ **RFC 3339 DateTime Support** - All 4 datetime types with semantic validation (leap years, ranges)
+- ✅ **Table Headers** - `[section]`, `[section.subsection]`, with duplicate detection
+- ✅ **Array of Tables** - `[[section]]` with subtable reopening support
+- ✅ **Validation** - Control characters, duplicate keys, inline table immutability, number formats
+- ✅ **Special Float Values** - `inf`, `-inf`, `nan`, `+` prefix, exponent notation
 - ✅ **Unicode Support** - International characters in keys and values
-- ✅ **Comment Handling** - Full `# comment` syntax support
 - ✅ **Precise Error Reporting** - Line and column information for all parse errors
-- ✅ **Production Ready** - Battle-tested with 8000+ lines of test coverage
 
 ## Supported TOML Features
 
@@ -70,7 +70,7 @@ Then add it directly to your `moon.mod.json`:
 ```json
 {
   "deps": {
-    "bobzhang/toml": "^0.1.4"
+    "bobzhang/toml": "^0.2.0"
   }
 }
 ```
@@ -676,37 +676,26 @@ test {
 
 ## Development Status
 
-**Current Release**: v0.1.4 (Stable)  
-**Repository**: https://github.com/moonbit-community/toml-parser  
-**Status**: Production-ready with comprehensive TOML 1.0 support
+**Current Release**: v0.2.0
+**Repository**: https://github.com/moonbit-community/toml-parser
+**Status**: Production-ready with TOML 1.1 support
 
-### Recent Improvements
+### toml-test Compliance
 
-- ✅ Enhanced error location tracking in lexer and parser
-- ✅ Comprehensive test suite expansion (8000+ lines)
-- ✅ Official TOML test suite integration
-- ✅ Unicode key support and complex escape sequences
-- ✅ Special float values support (inf, -inf, nan)
-- ✅ Advanced string escaping and literal strings
-- ✅ Robust table and array of tables implementation
+| Suite | Passed | Total | Rate |
+|-------|--------|-------|------|
+| Valid | 262 | 262 | **100%** |
+| Invalid | 474 | 483 | 98.1% |
+| **Total** | **736** | **745** | **98.8%** |
+
+The 9 remaining invalid "failures" are TOML 1.0-only restrictions for features we intentionally support (TOML 1.1: optional seconds, inline table newlines/trailing commas, `\xHH` escapes).
 
 ### Running Tests
 
 ```bash
-moon test
+moon test                              # unit tests (224 tests)
+moon test e2e -v --target native       # e2e toml-test suite (745 tests)
 ```
-
-Current test coverage: **8000+ lines of test code** covering:
-
-- Basic TOML data types
-- DateTime functionality (all 4 types)
-- Array homogeneity validation
-- TOML 1.0 specification compliance
-- Edge cases and real-world scenarios
-- Error handling with location tracking
-- Official TOML test suite integration
-- Unicode key support and escape sequences
-- Complex nested structures
 
 ### Running the Demo
 
@@ -794,31 +783,39 @@ moon build
    server.port = 8080
    ```
 
-## TOML 1.0 Specification Compliance
+## TOML Specification Compliance
 
-This parser implements the complete TOML 1.0 specification including:
+This parser implements the complete TOML 1.0 specification plus TOML 1.1 features:
 
 - ✅ **All basic data types** (strings, integers, floats, booleans)
-- ✅ **Complete datetime support** (4 types: offset datetime, local datetime, local date, local time)
-- ✅ **Array homogeneity validation** (arrays must contain single type)
-- ✅ **Inline tables** with proper nesting
-- ✅ **RFC 3339 datetime format** compliance
-- ✅ **Recursive validation** for complex structures
-- ✅ **Enhanced error reporting** with line/column location tracking
-- ✅ **Unicode key support** for international characters
-- ✅ **Comprehensive test coverage** with official TOML test suite integration
+- ✅ **Complete datetime support** with semantic validation (leap years, ranges)
+- ✅ **Multiline strings** — basic and literal, with consecutive quote support
+- ✅ **Inline tables** with TOML 1.1 newlines and trailing commas
+- ✅ **Number validation** — underscore placement, leading zeros, exponent format
+- ✅ **Control character rejection** in strings and comments
+- ✅ **Duplicate key detection** and inline table immutability
+- ✅ **Table redefinition prevention** and dotted-key scope tracking
+- ✅ **`\xHH` hex escapes** and **`\e` ESC escape** (TOML 1.1)
+- ✅ **Optional seconds** in datetime values (TOML 1.1)
+- ✅ **98.8% toml-test compliance** — 262/262 valid, 474/483 invalid
 
 ## Roadmap
 
-- [x] ~~Support for table headers `[section]`~~ ✅ **Completed**
-- [x] ~~Support for array of tables `[[section]]`~~ ✅ **Completed**
-- [x] ~~Date and time types~~ ✅ **Completed**
-- [x] ~~Better error messages with line/column information~~ ✅ **Completed**
-- [x] ~~Dotted key notation~~ ✅ **Completed**
-- [x] ~~Escape sequence handling in strings~~ ✅ **Completed**
-- [x] ~~Special float values (inf, nan)~~ ✅ **Completed**
-- [x] ~~Comments handling~~ ✅ **Completed**
-- [ ] Multi-line strings (🚧 **In Progress**)
+All planned features are complete:
+
+- [x] Table headers `[section]` and `[section.subsection]`
+- [x] Array of tables `[[section]]` with subtable reopening
+- [x] All 4 RFC 3339 datetime types with semantic validation
+- [x] Dotted key notation with duplicate detection
+- [x] Multiline basic and literal strings
+- [x] Complete escape sequences including `\xHH` and `\e` (TOML 1.1)
+- [x] Special float values (inf, nan) and exponent notation
+- [x] Comments handling
+- [x] Inline table newlines and trailing commas (TOML 1.1)
+- [x] Optional seconds in datetime (TOML 1.1)
+- [x] Control character validation
+- [x] Inline table and static array immutability
+- [x] 98.8% toml-test compliance (262/262 valid, 474/483 invalid)
 
 ## Contributing
 

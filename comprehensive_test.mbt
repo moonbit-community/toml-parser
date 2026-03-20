@@ -612,7 +612,7 @@ test "precise column tracking" {
   json_inspect(try? @toml.parse("very_long_key_name_here = "), content=({"Err":["Failure","parser.mbt:191:20-191:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 27 }, end: { line: 1, column: 27 } }"]}))
 
   // Test 4: Error position after unicode characters
-  json_inspect(try? @toml.parse("café = "), content=({"Err":["Failure","internal/tokenize/tokenize.mbt:1253:17-1253:54@bobzhang/toml FAILED: Unexpected character: 'é'"]}))
+  json_inspect(try? @toml.parse("café = "), content=({"Err":["Failure","internal/tokenize/tokenize.mbt:1267:17-1267:54@bobzhang/toml FAILED: Unexpected character: 'é'"]}))
 
   // Test 5: Multiple equals signs - error on second one
   json_inspect(try? @toml.parse("key = = \"value\""), content=({"Err":["Failure","parser.mbt:191:20-191:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }"]}))
