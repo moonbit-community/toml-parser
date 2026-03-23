@@ -9,7 +9,7 @@ test "tokenize simple key-value" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "value", { "loc": "1:7-1:14" }],
+    ["StringToken", "value", { "loc": "1:7-1:14", "multiline": false }],
     ["EOF", { "loc": "1:14-1:14" }],
   ])
 }
@@ -88,7 +88,7 @@ test "tokenize with comments" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "value", { "loc": "1:7-1:14" }],
+    ["StringToken", "value", { "loc": "1:7-1:14", "multiline": false }],
     ["EOF", { "loc": "1:34-1:34" }],
   ]) // comment ignored
 }
@@ -104,7 +104,7 @@ test "tokenize multiline" {
   json_inspect(tokens, content=[
     ["Identifier", "key1", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
-    ["StringToken", "value1", { "loc": "1:8-1:16" }],
+    ["StringToken", "value1", { "loc": "1:8-1:16", "multiline": false }],
     ["Newline", { "loc": "1:16-2:1" }],
     ["Identifier", "key2", { "loc": "2:1-2:5" }],
     ["Equals", { "loc": "2:6-2:7" }],
@@ -124,11 +124,11 @@ test "unicode or emoji" {
   json_inspect(tokens, content=[
     ["Identifier", "key1", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
-    ["StringToken", "💩", { "loc": "1:8-1:12" }],
+    ["StringToken", "💩", { "loc": "1:8-1:12", "multiline": false }],
     ["Newline", { "loc": "1:12-2:1" }],
     ["Identifier", "key2", { "loc": "2:1-2:5" }],
     ["Equals", { "loc": "2:6-2:7" }],
-    ["StringToken", "💩", { "loc": "2:8-2:12" }],
+    ["StringToken", "💩", { "loc": "2:8-2:12", "multiline": false }],
     ["EOF", { "loc": "2:12-2:12" }],
   ])
   // more tests
@@ -209,7 +209,7 @@ test "tokenize hexadecimal numbers" {
   json_inspect(tokens2, content=[
     ["Identifier", "hex2", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
-    ["IntegerToken", "31", { "loc": "1:8-1:12" }],
+    ["Identifier", "0X1F", { "loc": "1:8-1:12" }],
     ["EOF", { "loc": "1:12-1:12" }],
   ])
 }
@@ -235,7 +235,7 @@ test "tokenize octal numbers" {
   json_inspect(tokens2, content=[
     ["Identifier", "oct2", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
-    ["IntegerToken", "83", { "loc": "1:8-1:13" }],
+    ["Identifier", "0O123", { "loc": "1:8-1:13" }],
     ["EOF", { "loc": "1:13-1:13" }],
   ])
 }
@@ -261,7 +261,7 @@ test "tokenize binary numbers" {
   json_inspect(tokens2, content=[
     ["Identifier", "bin2", { "loc": "1:1-1:5" }],
     ["Equals", { "loc": "1:6-1:7" }],
-    ["IntegerToken", "42", { "loc": "1:8-1:16" }],
+    ["Identifier", "0B101010", { "loc": "1:8-1:16" }],
     ["EOF", { "loc": "1:16-1:16" }],
   ])
 }
@@ -329,7 +329,7 @@ test "test escaped single quote in string" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "test' quote", { "loc": "1:7-1:21" }],
+    ["StringToken", "test' quote", { "loc": "1:7-1:21", "multiline": false }],
     ["EOF", { "loc": "1:21-1:21" }],
   ])
 }
@@ -344,7 +344,7 @@ test "test invalid escape sequence error" {
   // TODO: ArgsLoc no absolute loc
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:200:11-200:67@bobzhang/toml FAILED: Invalid escape sequence: \\\\z at line 1, column 12\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:232:11-232:67@bobzhang/toml FAILED: Invalid escape sequence: \\\\z at line 1, column 12\")",
   ) // Should fail with invalid escape sequence
 }
 
@@ -358,7 +358,7 @@ test "test unterminated string error" {
   // TODO: ArgsLoc no absolute loc
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:207:11-207:50@bobzhang/toml FAILED: Unterminated string at line 1, column 8\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:247:11-247:50@bobzhang/toml FAILED: Unterminated string at line 1, column 8\")",
   ) // Should fail with unterminated string
 }
 
@@ -372,7 +372,7 @@ test "test unexpected end after escape" {
   // TODO: ArgsLoc no absolute loc
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:207:11-207:50@bobzhang/toml FAILED: Unterminated string at line 1, column 8\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:247:11-247:50@bobzhang/toml FAILED: Unterminated string at line 1, column 8\")",
   ) // Should fail with unexpected end after escape
 }
 
@@ -385,7 +385,7 @@ test "test invalid characters" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:838:17-838:54@bobzhang/toml FAILED: Unexpected character: '@'\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:1275:17-1275:54@bobzhang/toml FAILED: Unexpected character: '@'\")",
   ) // Should fail with unexpected character
 }
 
@@ -405,16 +405,18 @@ test "test binary number with underscores" {
 }
 
 ///|
-test "test negative sign not followed by number" {
-  let maybe_tokens = try? @tokenize.tokenize(
+test "test dash-starting identifier tokenized before parser validation" {
+  let tokens = @tokenize.tokenize(
     (
       #|key = -abc
     ),
   )
-  json_inspect(
-    maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:838:17-838:54@bobzhang/toml FAILED: Unexpected character: '-'\")",
-  )
+  json_inspect(tokens, content=[
+    ["Identifier", "key", { "loc": "1:1-1:4" }],
+    ["Equals", { "loc": "1:5-1:6" }],
+    ["Identifier", "-abc", { "loc": "1:7-1:11" }],
+    ["EOF", { "loc": "1:11-1:11" }],
+  ])
 }
 
 ///|
@@ -443,7 +445,7 @@ test "unicode 4 escape lowercase hex" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "ꯍ", { "loc": "1:7-1:15" }],
+    ["StringToken", "ꯍ", { "loc": "1:7-1:15", "multiline": false }],
     ["EOF", { "loc": "1:15-1:15" }],
   ])
 }
@@ -459,7 +461,7 @@ test "unicode 4 escape uppercase hex" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "ꯍ", { "loc": "1:7-1:15" }],
+    ["StringToken", "ꯍ", { "loc": "1:7-1:15", "multiline": false }],
     ["EOF", { "loc": "1:15-1:15" }],
   ])
 }
@@ -474,7 +476,7 @@ test "unicode 4 escape invalid hex" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:88:7-88:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:111:7-111:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10\")",
   )
 }
 
@@ -488,7 +490,7 @@ test "unicode 4 escape incomplete" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:88:7-88:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:111:7-111:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10\")",
   )
 }
 
@@ -502,7 +504,7 @@ test "unicode 4 escape invalid code point" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:92:13-92:68@bobzhang/toml FAILED: Invalid Unicode code point: 55296 at line 1, column 14\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:115:13-115:68@bobzhang/toml FAILED: Invalid Unicode code point: 55296 at line 1, column 14\")",
   )
 }
 
@@ -517,7 +519,7 @@ test "unicode 8 escape lowercase hex" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "«", { "loc": "1:7-1:19" }],
+    ["StringToken", "«", { "loc": "1:7-1:19", "multiline": false }],
     ["EOF", { "loc": "1:19-1:19" }],
   ])
 }
@@ -533,7 +535,7 @@ test "unicode 8 escape uppercase hex" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "«", { "loc": "1:7-1:19" }],
+    ["StringToken", "«", { "loc": "1:7-1:19", "multiline": false }],
     ["EOF", { "loc": "1:19-1:19" }],
   ])
 }
@@ -548,7 +550,7 @@ test "unicode 8 escape invalid hex" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:132:7-132:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:155:7-155:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10\")",
   )
 }
 
@@ -562,7 +564,7 @@ test "unicode 8 escape incomplete" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:132:7-132:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:155:7-155:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10\")",
   )
 }
 
@@ -576,7 +578,7 @@ test "unicode 8 escape invalid code point large" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:135:5-135:60@bobzhang/toml FAILED: Invalid Unicode code point: 1114112 at line 1, column 18\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:158:5-158:60@bobzhang/toml FAILED: Invalid Unicode code point: 1114112 at line 1, column 18\")",
   )
 }
 
@@ -590,7 +592,7 @@ test "unicode 8 escape invalid code point surrogate" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:135:5-135:60@bobzhang/toml FAILED: Invalid Unicode code point: 55296 at line 1, column 18\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:158:5-158:60@bobzhang/toml FAILED: Invalid Unicode code point: 55296 at line 1, column 18\")",
   )
 }
 
@@ -604,7 +606,7 @@ test "unicode 8 escape invalid conversion" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:135:5-135:60@bobzhang/toml FAILED: Invalid Unicode code point: 2147483647 at line 1, column 18\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:158:5-158:60@bobzhang/toml FAILED: Invalid Unicode code point: 2147483647 at line 1, column 18\")",
   )
 }
 
@@ -619,7 +621,7 @@ test "backspace escape sequence" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "test\b", { "loc": "1:7-1:15" }],
+    ["StringToken", "test\b", { "loc": "1:7-1:15", "multiline": false }],
     ["EOF", { "loc": "1:15-1:15" }],
   ])
 }
@@ -636,7 +638,7 @@ test "form feed escape sequence" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "test\u000C", { "loc": "1:7-1:15" }],
+    ["StringToken", "test\f", { "loc": "1:7-1:15", "multiline": false }],
     ["EOF", { "loc": "1:15-1:15" }],
   ])
 }
@@ -652,7 +654,11 @@ test "multiline basic string escapes" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "line1\nline2\tindented", { "loc": "1:7-1:35" }],
+    [
+      "StringToken",
+      "line1\nline2\tindented",
+      { "loc": "1:7-1:35", "multiline": true },
+    ],
     ["EOF", { "loc": "1:35-1:35" }],
   ])
 }
@@ -668,7 +674,11 @@ test "multiline basic string all escapes" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "\n\t\r\\\"\b\u000CAB", { "loc": "1:7-1:43" }],
+    [
+      "StringToken",
+      "\n\t\r\\\"\b\fAB",
+      { "loc": "1:7-1:43", "multiline": true },
+    ],
     ["EOF", { "loc": "1:43-1:43" }],
   ])
 }
@@ -680,7 +690,7 @@ test "multiline basic string line ending backslash CR" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "line1line2", { "loc": "1:7-2:13" }],
+    ["StringToken", "line1line2", { "loc": "1:7-2:13", "multiline": true }],
     ["EOF", { "loc": "2:13-2:13" }],
   ])
 }
@@ -695,7 +705,7 @@ test "multiline basic string invalid escape" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:271:14-271:71@bobzhang/toml FAILED: Invalid escape sequence: \\\\z at line 1, column 12\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:384:14-384:71@bobzhang/toml FAILED: Invalid escape sequence: \\\\z at line 1, column 12\")",
   )
 }
 
@@ -709,7 +719,7 @@ test "multiline basic string unexpected end after escape" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:277:7-277:73@bobzhang/toml FAILED: Unexpected end of input after escape character at line 1, column 11\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:390:7-390:73@bobzhang/toml FAILED: Unexpected end of input after escape character at line 1, column 11\")",
   )
 }
 
@@ -723,7 +733,7 @@ test "multiline basic string unterminated" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:287:11-287:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 20\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:416:11-416:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 20\")",
   )
 }
 
@@ -737,7 +747,7 @@ test "multiline basic string early termination" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:287:11-287:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 14\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:416:11-416:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 14\")",
   )
 }
 
@@ -748,7 +758,7 @@ test "multiline literal string CRLF" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "line1\r\nline2", { "loc": "1:7-2:9" }],
+    ["StringToken", "line1\r\nline2", { "loc": "1:7-2:9", "multiline": true }],
     ["EOF", { "loc": "2:9-2:9" }],
   ])
 }
@@ -763,7 +773,7 @@ test "multiline literal string unterminated" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:331:11-331:68@bobzhang/toml FAILED: Unterminated multiline literal string at line 1, column 20\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:481:11-481:68@bobzhang/toml FAILED: Unterminated multiline literal string at line 1, column 20\")",
   )
 }
 
@@ -778,7 +788,7 @@ test "hex number invalid digit error path" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:345:5-345:50@bobzhang/toml FAILED: Invalid hex number format at line 1, column 7\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:495:5-495:50@bobzhang/toml FAILED: Invalid hex number format at line 1, column 7\")",
   )
 }
 
@@ -811,7 +821,7 @@ test "multiline literal string token" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "hello world", { "loc": "1:7-1:24" }],
+    ["StringToken", "hello world", { "loc": "1:7-1:24", "multiline": true }],
     ["EOF", { "loc": "1:24-1:24" }],
   ])
 }
@@ -829,7 +839,7 @@ test "tokenize else branch coverage" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "value", { "loc": "1:7-1:14" }],
+    ["StringToken", "value", { "loc": "1:7-1:14", "multiline": false }],
     ["EOF", { "loc": "1:14-1:14" }],
   ])
 }
@@ -845,7 +855,11 @@ test "multiline basic string single quote escape" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "line with ' quote", { "loc": "1:7-1:31" }],
+    [
+      "StringToken",
+      "line with ' quote",
+      { "loc": "1:7-1:31", "multiline": true },
+    ],
     ["EOF", { "loc": "1:31-1:31" }],
   ])
 }
@@ -859,7 +873,7 @@ test "multiline basic string CR only" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "line1line2", { "loc": "1:7-2:9" }],
+    ["StringToken", "line1line2", { "loc": "1:7-2:9", "multiline": true }],
     ["EOF", { "loc": "2:9-2:9" }],
   ])
 }
@@ -875,7 +889,7 @@ test "multiline basic string none peek" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:287:11-287:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 27\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:416:11-416:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 27\")",
   )
 }
 
@@ -892,7 +906,7 @@ test "unicode escape invalid conversion to char" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "￿", { "loc": "1:7-1:15" }],
+    ["StringToken", "￿", { "loc": "1:7-1:15", "multiline": false }],
     ["EOF", { "loc": "1:15-1:15" }],
   ])
 }
@@ -925,7 +939,7 @@ test "multiline string opening CRLF" {
   json_inspect(tokens, content=[
     ["Identifier", "key", { "loc": "1:1-1:4" }],
     ["Equals", { "loc": "1:5-1:6" }],
-    ["StringToken", "content", { "loc": "1:7-2:11" }],
+    ["StringToken", "content", { "loc": "1:7-2:11", "multiline": true }],
     ["EOF", { "loc": "2:11-2:11" }],
   ])
 }
@@ -1064,7 +1078,7 @@ test "trailing _ in binary number" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:453:9-457:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 14\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:603:9-607:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 14\")",
   )
 }
 
@@ -1078,7 +1092,7 @@ test "consequence _ in binary number" {
   // according to spec, this should fail
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:453:9-457:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 11\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:603:9-607:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 11\")",
   )
 }
 
@@ -1091,7 +1105,7 @@ test "trailing _ in hex number" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:368:9-372:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 14\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:518:9-522:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 14\")",
   )
 }
 
@@ -1105,7 +1119,7 @@ test "consecutive _ in hex number" {
   // according to spec, this should fail
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:368:9-372:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 11\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:518:9-522:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 11\")",
   )
 }
 
@@ -1118,7 +1132,7 @@ test "trailing _ in octal number" {
   )
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:404:9-408:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 12\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:554:9-558:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 12\")",
   )
 }
 
@@ -1132,6 +1146,6 @@ test "consecutive _ in octal number" {
   // according to spec, this should fail
   json_inspect(
     maybe_tokens.unwrap_err().to_string(),
-    content="Failure(\"internal/tokenize/tokenize.mbt:404:9-408:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 10\")",
+    content="Failure(\"internal/tokenize/tokenize.mbt:554:9-558:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 10\")",
   )
 }

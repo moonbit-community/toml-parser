@@ -125,6 +125,15 @@ test "test parser EOF handling in advance" {
 }
 
 ///|
+test "test parser rejects dash-starting identifier as value" {
+  json_inspect(try? @toml.parse("key = -abc"), content={
+    "Err": [
+      "Failure", "parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 11 } }",
+    ],
+  })
+}
+
+///|
 test "test inline table with string keys" {
   json_inspect(try? @toml.parse("table = {\"string key\" = \"value\"}"), content={
     "Ok": [
