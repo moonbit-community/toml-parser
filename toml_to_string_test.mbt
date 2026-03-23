@@ -376,7 +376,7 @@ test "serialize table with special key names" {
   debug_inspect(
     value.to_string(),
     content=(
-      #|"normal-key = \"value1\"\nkey with spaces = \"value2\"\nkey.with.dots = \"value3\"\n\"key\\\"with\\\"quotes\" = \"value4\"\n\"key#with#hash\" = \"value5\"\n"
+      #|"normal-key = \"value1\"\n\"key with spaces\" = \"value2\"\n\"key.with.dots\" = \"value3\"\n\"key\\\"with\\\"quotes\" = \"value4\"\n\"key#with#hash\" = \"value5\"\n"
     ),
   )
 }
