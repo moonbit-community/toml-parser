@@ -36,51 +36,48 @@ fn escape_toml_string(s : String) -> String {
 }
 
 ///|
-/// Check if a string needs to be quoted (contains special characters or starts/ends with whitespace)
-fn needs_quoting(s : String) -> Bool {
-  if s.is_empty() {
-    return true
+/// Bare TOML keys are limited to ASCII letters, digits, '_' and '-'.
+fn is_bare_toml_key_char(char : Char) -> Bool {
+  match char {
+    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' => true
+    _ => false
   }
+}
 
-  // Check for leading/trailing whitespace
-  if s is [' ' | '\t', ..] || s is [.., ' ' | '\t'] {
-    return true
-  }
-  // if s lexmatch? ("([ \t].*|.*[ \t])") {
-  //   return true
-  // }
-  // Check for special characters
-  for char in s {
-    match char {
-      '\n'
-      | '\r'
-      | '\t'
-      | '"'
-      | '\\'
-      | '['
-      | ']'
-      | '{'
-      | '}'
-      | '='
-      | ','
-      | '#' => return true
-      c if c >= '\u0000' && c <= '\u001F' => return true
-      '\u007F' => return true
-      _ => continue
+///|
+fn is_bare_toml_key(s : String) -> Bool {
+  if s.is_empty() {
+    false
+  } else {
+    for char in s {
+      if !is_bare_toml_key_char(char) {
+        return false
+      }
     }
+    true
   }
-  false
+}
+
+///|
+/// Quote any key that is not a valid TOML bare key.
+fn needs_quoting(s : String) -> Bool {
+  !is_bare_toml_key(s)
 }
 
 ///|
 test "needs_quoting tests" {
   debug_inspect(needs_quoting("simplekey"), content="false")
-  debug_inspect(needs_quoting("key with spaces"), content="false")
+  debug_inspect(needs_quoting("normal-key"), content="false")
+  debug_inspect(needs_quoting("123"), content="false")
+  debug_inspect(needs_quoting("key with spaces"), content="true")
+  debug_inspect(needs_quoting("key.with.dots"), content="true")
   debug_inspect(needs_quoting("key\nwith\nnewlines"), content="true")
   debug_inspect(needs_quoting(" key"), content="true")
   debug_inspect(needs_quoting("key "), content="true")
   debug_inspect(needs_quoting(""), content="true")
   debug_inspect(needs_quoting("key=with=equals"), content="true")
+  debug_inspect(needs_quoting("café"), content="true")
+  debug_inspect(needs_quoting("[1]"), content="true")
 }
 
 ///|
