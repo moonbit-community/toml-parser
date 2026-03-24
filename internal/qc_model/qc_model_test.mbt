@@ -12,9 +12,13 @@ test "quickcheck simple document roundtrip" {
     ),
     content=(
       #|+++ [2000/0/2000] Ok, passed!
-      #|49.85% : contains-string
-      #|56.2% : contains-complex-key
-      #|60.550000000000004% : contains-array
+      #|44.4% : contains-string
+      #|52.55% : contains-complex-key
+      #|33.15% : contains-negative-exponent-like-key
+      #|36.7% : contains-datetime
+      #|22.05% : contains-fractional-datetime
+      #|21.05% : contains-datetime-array
+      #|61% : contains-array
       #|29.15% : contains-table
     ),
   )

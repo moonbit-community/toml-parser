@@ -9,6 +9,15 @@ fn shrink_simple_value(
       @qc.Shrink::shrink(n).map(fn(next) { @qc_model.SInteger(next) })
     SBoolean(b) =>
       @qc.Shrink::shrink(b).map(fn(next) { @qc_model.SBoolean(next) })
+    SDateTime(_) => Iter::empty()
+    SDateTimeArray(values) =>
+      shrink_datetime_values(values).map(fn(next_values) {
+        if next_values.is_empty() {
+          @qc_model.SEmptyArray
+        } else {
+          @qc_model.SDateTimeArray(next_values)
+        }
+      })
     SEmptyArray => Iter::empty()
     SStringArray(values) =>
       @qc.Shrink::shrink(values).map(fn(next_values) {
@@ -39,6 +48,17 @@ fn shrink_simple_value(
         @qc_model.STable(Map::from_array(next_entries[:]))
       })
   }
+}
+
+///|
+fn shrink_datetime_values(
+  values : Array[@tokenize.TomlDateTime],
+) -> Iter[Array[@tokenize.TomlDateTime]] {
+  Array::makei(values.length(), fn(i) {
+    let next = values.copy()
+    next.remove(i) |> ignore
+    next
+  }).iter()
 }
 
 ///|
