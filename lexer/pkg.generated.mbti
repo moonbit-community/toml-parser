@@ -29,10 +29,7 @@ pub fn Lexer::view(Self) -> StringView
 pub(all) struct Position {
   line : Int
   column : Int
-}
-pub impl Eq for Position
-pub impl Show for Position
-pub impl @debug.Debug for Position
+} derive(Eq, Show, @debug.Debug)
 
 // Type aliases
 

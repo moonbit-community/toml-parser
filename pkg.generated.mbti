@@ -28,15 +28,13 @@ pub(all) enum TomlValue {
   TomlArray(Array[TomlValue])
   TomlTable(Map[String, TomlValue])
   TomlDateTime(@tokenize.TomlDateTime)
-}
+} derive(Eq, @debug.Debug)
 pub fn TomlValue::datetime_info(Self) -> (String, String)?
 pub fn TomlValue::is_homogeneous_array(Array[Self]) -> Bool
 pub fn TomlValue::to_string(Self) -> String
 pub fn TomlValue::type_name(Self) -> String
 pub fn TomlValue::validate(Self) -> Bool
-pub impl Eq for TomlValue
 pub impl Show for TomlValue
-pub impl @debug.Debug for TomlValue
 
 // Type aliases
 
