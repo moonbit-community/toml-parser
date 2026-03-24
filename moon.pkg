@@ -5,8 +5,6 @@ import {
 
 import {
   "moonbitlang/core/double",
-  "moonbitlang/quickcheck" @qc,
-  "bobzhang/toml/internal/qc_model" @qc_model,
 } for "test"
 
 warnings = "+test_unqualified_package-missing_pattern_payload-missing_pattern_arguments"

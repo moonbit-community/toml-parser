@@ -1,3 +1,7 @@
 import {
   "moonbitlang/quickcheck" @qc,
 }
+
+import {
+  "bobzhang/toml" @toml,
+} for "test"
