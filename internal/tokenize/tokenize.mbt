@@ -878,9 +878,9 @@ fn Lexer::read_number_with_loc(
   let raw_s = raw.to_string()
   // If the number is in key position (followed by = after whitespace),
   // and the raw string contains characters that would be lost in numeric conversion
-  // (underscores, exponent notation), produce an Identifier to preserve the text.
+  // (underscores, exponent notation), produce an Identifier, including for negative bare keys like "-1e2".
   let has_lossy_chars = raw_s != s || (is_float && !raw_s.contains("."))
-  if !is_negative && !has_sign && has_lossy_chars {
+  if !has_sign && has_lossy_chars {
     let is_key = loop self.view() {
       [' ' | '\t', .. rest] => continue rest
       ['=' | '.', ..] => true // key = value or dotted.key
