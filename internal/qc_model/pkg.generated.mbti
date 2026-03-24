@@ -1,0 +1,53 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bobzhang/toml/internal/qc_model"
+
+import {
+  "moonbitlang/core/debug",
+  "moonbitlang/quickcheck",
+}
+
+// Values
+pub fn is_bare_key(String) -> Bool
+
+pub fn shrink_table_entries(Array[(String, SimpleValue)]) -> Iter[Array[(String, SimpleValue)]]
+
+pub fn simple_document_gen() -> @quickcheck.Gen[SimpleDocument]
+
+pub fn simple_entry_gen(Int) -> @quickcheck.Gen[(String, SimpleValue)]
+
+pub fn simple_key_gen() -> @quickcheck.Gen[String]
+
+pub fn simple_value_gen(Int) -> @quickcheck.Gen[SimpleValue]
+
+// Errors
+
+// Types and methods
+pub(all) struct SimpleDocument {
+  fields : Map[String, SimpleValue]
+} derive(Eq, Show, @debug.Debug)
+pub fn SimpleDocument::contains_array(Self) -> Bool
+pub fn SimpleDocument::contains_complex_key(Self) -> Bool
+pub fn SimpleDocument::contains_string(Self) -> Bool
+pub fn SimpleDocument::contains_table(Self) -> Bool
+pub impl @quickcheck.Shrink for SimpleDocument
+
+pub(all) enum SimpleValue {
+  SString(String)
+  SInteger(Int64)
+  SBoolean(Bool)
+  SEmptyArray
+  SStringArray(Array[String])
+  SIntegerArray(Array[Int64])
+  SBooleanArray(Array[Bool])
+  STable(Map[String, SimpleValue])
+} derive(Eq, Show, @debug.Debug)
+pub fn SimpleValue::contains_array(Self) -> Bool
+pub fn SimpleValue::contains_complex_key(Self) -> Bool
+pub fn SimpleValue::contains_string(Self) -> Bool
+pub fn SimpleValue::contains_table(Self) -> Bool
+pub impl @quickcheck.Shrink for SimpleValue
+
+// Type aliases
+
+// Traits
+
