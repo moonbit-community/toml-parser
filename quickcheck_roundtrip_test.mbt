@@ -1,7 +1,7 @@
 ///|
 struct SimpleDocument {
   fields : Map[String, SimpleValue]
-} derive(Eq, Show, ToJson)
+} derive(Eq, Show, Debug)
 
 ///|
 enum SimpleValue {
@@ -13,7 +13,7 @@ enum SimpleValue {
   SIntegerArray(Array[Int64])
   SBooleanArray(Array[Bool])
   STable(Map[String, SimpleValue])
-} derive(Eq, Show, ToJson)
+} derive(Eq, Show, Debug)
 
 ///|
 fn capped_size(size : Int, cap : Int) -> Int {
