@@ -311,8 +311,8 @@ test "serialize table with special key names" {
     @toml.TomlTable(table),
     content=(
       #|normal-key = "value1"
-      #|key with spaces = "value2"
-      #|key.with.dots = "value3"
+      #|"key with spaces" = "value2"
+      #|"key.with.dots" = "value3"
       #|"key\"with\"quotes" = "value4"
       #|"key#with#hash" = "value5"
       #|
