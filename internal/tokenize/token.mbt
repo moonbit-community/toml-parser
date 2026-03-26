@@ -8,22 +8,6 @@ pub(all) struct Loc {
 } derive(Eq, Debug)
 
 ///|
-/// minimal format for visual debugging
-/// # Example
-/// ```
-/// let loc = Loc::{start: {line:1, column:1}, end: {line:1, column:10}}
-/// json_inspect(loc, content = "1:1-1:10")
-/// ```
-///
-pub impl ToJson for Loc with to_json(self) {
-  "\{self.start.line}:\{self.start.column}-\{self.end.line}:\{self.end.column}"
-}
-
-// impl ToJson for Loc with to_json(self) {
-//   ["Loc", self.start, self.end]
-// }
-
-///|
 /// Token types for the lexer
 pub(all) enum Token {
   // Literals
@@ -48,7 +32,7 @@ pub(all) enum Token {
   // Special
   Newline(loc~ : Loc)
   EOF(loc~ : Loc)
-} derive(Eq, ToJson, Debug)
+} derive(Eq, Debug)
 
 ///|
 /// DateTime type for TOML datetime values
@@ -57,7 +41,7 @@ pub(all) enum TomlDateTime {
   LocalDateTime(String) // e.g., "1979-05-27T07:32:00"
   LocalDate(String) // e.g., "1979-05-27"
   LocalTime(String) // e.g., "07:32:00"
-} derive(Eq, ToJson, Debug)
+} derive(Eq, Debug)
 
 ///|
 /// Show impl for TomlDateTime - provides human-readable format

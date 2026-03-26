@@ -141,7 +141,7 @@ pub(all) enum TomlValue {
   TomlArray(Array[TomlValue])
   TomlTable(Map[String, TomlValue])
   TomlDateTime(TomlDateTime)
-} derive(Eq, ToJson)
+} derive(Eq, Debug)
 ```
 
 You can construct `TomlValue` directly in code:
@@ -250,15 +250,19 @@ test {
     #|debug = true
     #|max_connections = 100
     #|
-  json_inspect(@toml.parse(toml), content=[
-    "TomlTable",
-    {
-      "title": ["TomlString", "My Application"],
-      "version": ["TomlString", "1.0.0"],
-      "debug": ["TomlBoolean", true],
-      "max_connections": ["TomlInteger", "100"],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "title": TomlString("My Application"),
+      #|    "version": TomlString("1.0.0"),
+      #|    "debug": TomlBoolean(true),
+      #|    "max_connections": TomlInteger(100),
+      #|  },
+      #|)
+    ),
+  )
 }
 ```
 
@@ -273,29 +277,26 @@ test {
     #|strings = ["red", "green", "blue"]
     #|booleans = [true, false, true]
     #|
-  json_inspect(@toml.parse(toml_arrays), content=[
-    "TomlTable",
-    {
-      "numbers": [
-        "TomlArray",
-        [
-          ["TomlInteger", "1"],
-          ["TomlInteger", "2"],
-          ["TomlInteger", "3"],
-          ["TomlInteger", "4"],
-          ["TomlInteger", "5"],
-        ],
-      ],
-      "strings": [
-        "TomlArray",
-        [["TomlString", "red"], ["TomlString", "green"], ["TomlString", "blue"]],
-      ],
-      "booleans": [
-        "TomlArray",
-        [["TomlBoolean", true], ["TomlBoolean", false], ["TomlBoolean", true]],
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(toml_arrays),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "numbers": TomlArray(
+      #|      [
+      #|        TomlInteger(1),
+      #|        TomlInteger(2),
+      #|        TomlInteger(3),
+      #|        TomlInteger(4),
+      #|        TomlInteger(5),
+      #|      ],
+      #|    ),
+      #|    "strings": TomlArray([TomlString("red"), TomlString("green"), TomlString("blue")]),
+      #|    "booleans": TomlArray([TomlBoolean(true), TomlBoolean(false), TomlBoolean(true)]),
+      #|  },
+      #|)
+    ),
+  )
 }
 ```
 
@@ -320,38 +321,23 @@ test {
     #|name = "Nail"
     #|sku = 284758393
     #|
-  json_inspect(@toml.parse(toml_tables), content=[
-    "TomlTable",
-    {
-      "title": ["TomlString", "Configuration Example"],
-      "database": [
-        "TomlTable",
-        {
-          "server": ["TomlString", "192.168.1.1"],
-          "port": ["TomlInteger", "5432"],
-        },
-      ],
-      "products": [
-        "TomlArray",
-        [
-          [
-            "TomlTable",
-            {
-              "name": ["TomlString", "Hammer"],
-              "sku": ["TomlInteger", "738594937"],
-            },
-          ],
-          [
-            "TomlTable",
-            {
-              "name": ["TomlString", "Nail"],
-              "sku": ["TomlInteger", "284758393"],
-            },
-          ],
-        ],
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(toml_tables),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "title": TomlString("Configuration Example"),
+      #|    "database": TomlTable({ "server": TomlString("192.168.1.1"), "port": TomlInteger(5432) }),
+      #|    "products": TomlArray(
+      #|      [
+      #|        TomlTable({ "name": TomlString("Hammer"), "sku": TomlInteger(738594937) }),
+      #|        TomlTable({ "name": TomlString("Nail"), "sku": TomlInteger(284758393) }),
+      #|      ],
+      #|    ),
+      #|  },
+      #|)
+    ),
+  )
 }
 ```
 
@@ -367,15 +353,19 @@ test {
     #|birth_date = 1990-05-15
     #|meeting_time = 14:30:00
     #|
-  json_inspect(@toml.parse(toml_datetime), content=[
-    "TomlTable",
-    {
-      "created_at": ["TomlDateTime", ["OffsetDateTime", "2023-01-01T00:00:00Z"]],
-      "updated_at": ["TomlDateTime", ["LocalDateTime", "2023-01-02T12:30:45"]],
-      "birth_date": ["TomlDateTime", ["LocalDate", "1990-05-15"]],
-      "meeting_time": ["TomlDateTime", ["LocalTime", "14:30:00"]],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(toml_datetime),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "created_at": TomlDateTime(OffsetDateTime("2023-01-01T00:00:00Z")),
+      #|    "updated_at": TomlDateTime(LocalDateTime("2023-01-02T12:30:45")),
+      #|    "birth_date": TomlDateTime(LocalDate("1990-05-15")),
+      #|    "meeting_time": TomlDateTime(LocalTime("14:30:00")),
+      #|  },
+      #|)
+    ),
+  )
 }
 ```
 
@@ -391,22 +381,17 @@ test {
     #|database = {server = "localhost", port = 5432}
     #|cache = {enabled = true, ttl = 300}
     #|
-  json_inspect(@toml.parse(toml_inline), content=[
-    "TomlTable",
-    {
-      "database": [
-        "TomlTable",
-        {
-          "server": ["TomlString", "localhost"],
-          "port": ["TomlInteger", "5432"],
-        },
-      ],
-      "cache": [
-        "TomlTable",
-        { "enabled": ["TomlBoolean", true], "ttl": ["TomlInteger", "300"] },
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(toml_inline),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "database": TomlTable({ "server": TomlString("localhost"), "port": TomlInteger(5432) }),
+      #|    "cache": TomlTable({ "enabled": TomlBoolean(true), "ttl": TomlInteger(300) }),
+      #|  },
+      #|)
+    ),
+  )
 }
 ```
 
@@ -486,49 +471,33 @@ test {
     #|name = "secondary"
     #|weight = 0.5
     #|
-  json_inspect(@toml.parse(toml_advanced), content=[
-    "TomlTable",
-    {
-      "app_name": ["TomlString", "TOML Demo"],
-      "version": ["TomlString", "1.0.0"],
-      "max_timeout": ["TomlFloat", @double.infinity],
-      "min_timeout": ["TomlFloat", @double.neg_infinity],
-      "error_rate": ["TomlFloat", @double.not_a_number],
-      "café": ["TomlString", "☕ Coffee shop"],
-      "数量": ["TomlInteger", "42"],
-      "server": [
-        "TomlTable",
-        {
-          "database": [
-            "TomlTable",
-            {
-              "host": ["TomlString", "localhost"],
-              "port": ["TomlInteger", "5432"],
-            },
-          ],
-          "replicas": [
-            "TomlArray",
-            [
-              [
-                "TomlTable",
-                {
-                  "name": ["TomlString", "primary"],
-                  "weight": ["TomlFloat", 1],
-                },
-              ],
-              [
-                "TomlTable",
-                {
-                  "name": ["TomlString", "secondary"],
-                  "weight": ["TomlFloat", 0.5],
-                },
-              ],
-            ],
-          ],
-        },
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(toml_advanced),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "app_name": TomlString("TOML Demo"),
+      #|    "version": TomlString("1.0.0"),
+      #|    "max_timeout": TomlFloat(Infinity),
+      #|    "min_timeout": TomlFloat(-Infinity),
+      #|    "error_rate": TomlFloat(NaN),
+      #|    "café": TomlString("☕ Coffee shop"),
+      #|    "数量": TomlInteger(42),
+      #|    "server": TomlTable(
+      #|      {
+      #|        "database": TomlTable({ "host": TomlString("localhost"), "port": TomlInteger(5432) }),
+      #|        "replicas": TomlArray(
+      #|          [
+      #|            TomlTable({ "name": TomlString("primary"), "weight": TomlFloat(1) }),
+      #|            TomlTable({ "name": TomlString("secondary"), "weight": TomlFloat(0.5) }),
+      #|          ],
+      #|        ),
+      #|      },
+      #|    ),
+      #|  },
+      #|)
+    ),
+  )
 }
 ```
 
@@ -662,15 +631,19 @@ test {
   )
 
   // Verify all datetime types are parsed correctly
-  json_inspect(parsed_toml, content=[
-    "TomlTable",
-    {
-      "offset_dt": ["TomlDateTime", ["OffsetDateTime", "2023-01-15T10:30:00Z"]],
-      "local_dt": ["TomlDateTime", ["LocalDateTime", "2023-01-15T10:30:00"]],
-      "local_date": ["TomlDateTime", ["LocalDate", "2023-01-15"]],
-      "local_time": ["TomlDateTime", ["LocalTime", "10:30:00"]],
-    },
-  ])
+  debug_inspect(
+    parsed_toml,
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "offset_dt": TomlDateTime(OffsetDateTime("2023-01-15T10:30:00Z")),
+      #|    "local_dt": TomlDateTime(LocalDateTime("2023-01-15T10:30:00")),
+      #|    "local_date": TomlDateTime(LocalDate("2023-01-15")),
+      #|    "local_time": TomlDateTime(LocalTime("10:30:00")),
+      #|  },
+      #|)
+    ),
+  )
 }
 ```
 

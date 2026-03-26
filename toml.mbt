@@ -8,7 +8,21 @@ pub(all) enum TomlValue {
   TomlArray(Array[TomlValue])
   TomlTable(Map[String, TomlValue])
   TomlDateTime(TomlDateTime)
-} derive(Eq, ToJson, Debug)
+} derive(Eq, Debug)
+
+///|
+/// Extract datetime variant name and value string from a TomlDateTime value.
+/// Returns `(kind, value)` where kind is one of:
+/// "OffsetDateTime", "LocalDateTime", "LocalDate", "LocalTime"
+pub fn TomlValue::datetime_info(self : TomlValue) -> (String, String)? {
+  match self {
+    TomlDateTime(OffsetDateTime(s)) => Some(("OffsetDateTime", s))
+    TomlDateTime(LocalDateTime(s)) => Some(("LocalDateTime", s))
+    TomlDateTime(LocalDate(s)) => Some(("LocalDate", s))
+    TomlDateTime(LocalTime(s)) => Some(("LocalTime", s))
+    _ => None
+  }
+}
 
 ///|
 /// Parser state (will implement methods later)

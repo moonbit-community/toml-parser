@@ -21,66 +21,45 @@ test "test complex TOML with all token types" {
     #|dc = "eqdc10"
     #|
   // This now successfully parses with nested tables support
-  json_inspect(try? @toml.parse(complex_toml), content={
-    "Ok": [
-      "TomlTable",
-      {
-        "string_key": ["TomlString", "value with \"quotes\""],
-        "integer_key": ["TomlInteger", "42"],
-        "float_key": ["TomlFloat", 3.14159],
-        "bool_key": ["TomlBoolean", true],
-        "int_array": [
-          "TomlArray",
-          [
-            ["TomlInteger", "1"],
-            ["TomlInteger", "2"],
-            ["TomlInteger", "3"],
-            ["TomlInteger", "4"],
-            ["TomlInteger", "5"],
-          ],
-        ],
-        "inline_table": [
-          "TomlTable",
-          { "name": ["TomlString", "John"], "age": ["TomlInteger", "30"] },
-        ],
-        "database": [
-          "TomlTable",
-          {
-            "server": ["TomlString", "192.168.1.1"],
-            "ports": [
-              "TomlArray",
-              [
-                ["TomlInteger", "8001"],
-                ["TomlInteger", "8001"],
-                ["TomlInteger", "8002"],
-              ],
-            ],
-            "connection_max": ["TomlInteger", "5000"],
-            "enabled": ["TomlBoolean", true],
-          },
-        ],
-        "servers": [
-          "TomlTable",
-          {
-            "alpha": [
-              "TomlTable",
-              {
-                "ip": ["TomlString", "10.0.0.1"],
-                "dc": ["TomlString", "eqdc10"],
-              },
-            ],
-            "beta": [
-              "TomlTable",
-              {
-                "ip": ["TomlString", "10.0.0.2"],
-                "dc": ["TomlString", "eqdc10"],
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse(complex_toml),
+    content=(
+      #|Ok(
+      #|  TomlTable(
+      #|    {
+      #|      "string_key": TomlString("value with \"quotes\""),
+      #|      "integer_key": TomlInteger(42),
+      #|      "float_key": TomlFloat(3.14159),
+      #|      "bool_key": TomlBoolean(true),
+      #|      "int_array": TomlArray(
+      #|        [
+      #|          TomlInteger(1),
+      #|          TomlInteger(2),
+      #|          TomlInteger(3),
+      #|          TomlInteger(4),
+      #|          TomlInteger(5),
+      #|        ],
+      #|      ),
+      #|      "inline_table": TomlTable({ "name": TomlString("John"), "age": TomlInteger(30) }),
+      #|      "database": TomlTable(
+      #|        {
+      #|          "server": TomlString("192.168.1.1"),
+      #|          "ports": TomlArray([TomlInteger(8001), TomlInteger(8001), TomlInteger(8002)]),
+      #|          "connection_max": TomlInteger(5000),
+      #|          "enabled": TomlBoolean(true),
+      #|        },
+      #|      ),
+      #|      "servers": TomlTable(
+      #|        {
+      #|          "alpha": TomlTable({ "ip": TomlString("10.0.0.1"), "dc": TomlString("eqdc10") }),
+      #|          "beta": TomlTable({ "ip": TomlString("10.0.0.2"), "dc": TomlString("eqdc10") }),
+      #|        },
+      #|      ),
+      #|    },
+      #|  ),
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -91,12 +70,23 @@ test "test tokenizer unreachable path coverage" {
       #|simple = true
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "simple", { "loc": "1:1-1:7" }],
-    ["Equals", { "loc": "1:8-1:9" }],
-    ["BooleanToken", true, { "loc": "1:10-1:14" }],
-    ["EOF", { "loc": "1:14-1:14" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "simple",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 7 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 9 } }),
+      #|  BooleanToken(
+      #|    true,
+      #|    loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 14 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 14 }, end: { line: 1, column: 14 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -106,11 +96,12 @@ test "test edge case number formats for error paths" {
   let tokens = try? @tokenize.tokenize(
     "huge = 999999999999999999999999999999999999999",
   )
-  json_inspect(tokens, content={
-    "Err": [
-      "Failure", "internal/tokenize/tokenize.mbt:914:12-914:41@bobzhang/toml FAILED: Invalid integer: 999999999999999999999999999999999999999",
-    ],
-  })
+  debug_inspect(
+    tokens,
+    content=(
+      #|Err(Failure("internal/tokenize/tokenize.mbt:914:12-914:41@bobzhang/toml FAILED: Invalid integer: 999999999999999999999999999999999999999"))
+    ),
+  )
 }
 
 ///|
@@ -120,16 +111,24 @@ test "test literal string handling" {
       #|literal = 'this is a literal string'
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "literal", { "loc": "1:1-1:8" }],
-    ["Equals", { "loc": "1:9-1:10" }],
-    [
-      "StringToken",
-      "this is a literal string",
-      { "loc": "1:11-1:37", "multiline": false },
-    ],
-    ["EOF", { "loc": "1:37-1:37" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "literal",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 8 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 9 }, end: { line: 1, column: 10 } }),
+      #|  StringToken(
+      #|    "this is a literal string",
+      #|    loc={ start: { line: 1, column: 11 }, end: { line: 1, column: 37 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 37 }, end: { line: 1, column: 37 } }),
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -141,18 +140,22 @@ test "test various escape sequences coverage" {
     #|backslash = "path\\to\\file"
     #|quote = "say \"hello\""
     #|
-  json_inspect(try? @toml.parse(toml_with_escapes), content={
-    "Ok": [
-      "TomlTable",
-      {
-        "newline": ["TomlString", "line1\nline2"],
-        "tab": ["TomlString", "col1\tcol2"],
-        "carriage": ["TomlString", "line1\rline2"],
-        "backslash": ["TomlString", "path\\to\\file"],
-        "quote": ["TomlString", "say \"hello\""],
-      },
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse(toml_with_escapes),
+    content=(
+      #|Ok(
+      #|  TomlTable(
+      #|    {
+      #|      "newline": TomlString("line1\nline2"),
+      #|      "tab": TomlString("col1\tcol2"),
+      #|      "carriage": TomlString("line1\rline2"),
+      #|      "backslash": TomlString("path\\to\\file"),
+      #|      "quote": TomlString("say \"hello\""),
+      #|    },
+      #|  ),
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -163,12 +166,12 @@ test "test whitespace and comment skipping" {
     #|
     #|key2 = "value2"
     #|
-  json_inspect(try? @toml.parse(toml_with_whitespace), content={
-    "Ok": [
-      "TomlTable",
-      { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
-    ],
-  })
+  debug_inspect(
+    try? @toml.parse(toml_with_whitespace),
+    content=(
+      #|Ok(TomlTable({ "key1": TomlString("value1"), "key2": TomlString("value2") }))
+    ),
+  )
 }
 
 ///|
@@ -178,10 +181,21 @@ test "test mixed case hex digits" {
       #|mixed_hex = 0xaBcDeF
     ),
   )
-  json_inspect(tokens, content=[
-    ["Identifier", "mixed_hex", { "loc": "1:1-1:10" }],
-    ["Equals", { "loc": "1:11-1:12" }],
-    ["IntegerToken", "11259375", { "loc": "1:13-1:21" }],
-    ["EOF", { "loc": "1:21-1:21" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "mixed_hex",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 10 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 11 }, end: { line: 1, column: 12 } }),
+      #|  IntegerToken(
+      #|    11259375,
+      #|    loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 21 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }),
+      #|]
+    ),
+  )
 }

@@ -42,12 +42,12 @@ pub fn run_single_valid_test(toml_path : String) -> String? raise @fs.IOError {
   }
   let parsed = try? @toml.parse(toml_content)
   match parsed {
-    Err(e) => Some("\{toml_path}: parse error: \{e}")
+    Err(e) => Some("[PARSE-ERROR] \{toml_path}: \{e}")
     Ok(value) => {
       let actual = to_test_json(value)
       if !json_equal(actual, expected) {
         Some(
-          "\{toml_path}:\n  expected: \{expected.stringify()}\n  actual:   \{actual.stringify()}",
+          "[MISMATCH] \{toml_path}\n    expected: \{expected.stringify()}\n    actual:   \{actual.stringify()}",
         )
       } else {
         None
@@ -68,7 +68,7 @@ pub fn run_single_invalid_test(toml_path : String) -> String? raise @fs.IOError 
   }
   let parsed = try? @toml.parse(toml_content)
   match parsed {
-    Ok(_) => Some("\{toml_path}: should have failed but parsed OK")
+    Ok(_) => Some("[PASS-BUT-SHOULD-FAIL] \{toml_path}")
     Err(_) => None
   }
 }

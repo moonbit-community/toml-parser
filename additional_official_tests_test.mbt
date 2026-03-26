@@ -13,17 +13,21 @@ test "key name variations" {
     #|"character encoding" = "value"
     #|"ʎǝʞ" = "value"
     #|
-  json_inspect(@toml.parse(key_variations_toml), content=[
-    "TomlTable",
-    {
-      "bare_key": ["TomlString", "value"],
-      "bare-key": ["TomlString", "value"],
-      "bare_key2": ["TomlString", "value"],
-      "127.0.0.1": ["TomlString", "value"],
-      "character encoding": ["TomlString", "value"],
-      "ʎǝʞ": ["TomlString", "value"],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(key_variations_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "bare_key": TomlString("value"),
+      #|    "bare-key": TomlString("value"),
+      #|    "bare_key2": TomlString("value"),
+      #|    "127.0.0.1": TomlString("value"),
+      #|    "character encoding": TomlString("value"),
+      #|    "ʎǝʞ": TomlString("value"),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -32,10 +36,12 @@ test "numeric keys" {
     #|1234 = "value"
     #|0 = "zero"
     #|
-  json_inspect(@toml.parse(numeric_keys_toml), content=[
-    "TomlTable",
-    { "1234": ["TomlString", "value"], "0": ["TomlString", "zero"] },
-  ])
+  debug_inspect(
+    @toml.parse(numeric_keys_toml),
+    content=(
+      #|TomlTable({ "1234": TomlString("value"), "0": TomlString("zero") })
+    ),
+  )
   // according to the spec, bare keys may only contain ASCII letters, ASCII digits, underscores, 
   // and dashes (A-Za-z0-9_-).
   // Note that bare keys are allowed to be composed of only ASCII digits, e.g. 1234, but are
@@ -53,19 +59,21 @@ test "complex escape sequences" {
     #|backslash = "This is a backslash: \\"
     #|quote = "This has a quote: \""
     #|
-  json_inspect(@toml.parse(escape_sequences_toml), content=[
-    "TomlTable",
-    {
-      "basic": [
-        "TomlString", "I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF.",
-      ],
-      "newline": ["TomlString", "First line\nSecond line"],
-      "tab": ["TomlString", "Column1\tColumn2"],
-      "carriage_return": ["TomlString", "Line1\rLine2"],
-      "backslash": ["TomlString", "This is a backslash: \\"],
-      "quote": ["TomlString", "This has a quote: \""],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(escape_sequences_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "basic": TomlString("I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."),
+      #|    "newline": TomlString("First line\nSecond line"),
+      #|    "tab": TomlString("Column1\tColumn2"),
+      #|    "carriage_return": TomlString("Line1\rLine2"),
+      #|    "backslash": TomlString("This is a backslash: \\"),
+      #|    "quote": TomlString("This has a quote: \""),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -82,20 +90,24 @@ test "number formats" {
     #|small_float = 0.00001
     #|large_number = 9223372036854775807
     #|
-  json_inspect(@toml.parse(numbers_toml), content=[
-    "TomlTable",
-    {
-      "positive_int": ["TomlInteger", "42"],
-      "negative_int": ["TomlInteger", "-17"],
-      "zero": ["TomlInteger", "0"],
-      "positive_float": ["TomlFloat", 1.0],
-      "negative_float": ["TomlFloat", -2.5],
-      "pi": ["TomlFloat", 3.14159],
-      "large_float": ["TomlFloat", 50000000000000000000000.0],
-      "small_float": ["TomlFloat", 0.00001],
-      "large_number": ["TomlInteger", "9223372036854775807"],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(numbers_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "positive_int": TomlInteger(42),
+      #|    "negative_int": TomlInteger(-17),
+      #|    "zero": TomlInteger(0),
+      #|    "positive_float": TomlFloat(1),
+      #|    "negative_float": TomlFloat(-2.5),
+      #|    "pi": TomlFloat(3.14159),
+      #|    "large_float": TomlFloat(5e+22),
+      #|    "small_float": TomlFloat(0.00001),
+      #|    "large_number": TomlInteger(9223372036854775807),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -107,51 +119,44 @@ test "complex nested arrays" {
     #|deep_nested = [[[1, 2]], [[3, 4], [5, 6]]]
     #|array_with_spaces = [ [ 1 , 2 ] , [ 3 , 4 ] ]
     #|
-  json_inspect(@toml.parse(nested_arrays_toml), content=[
-    "TomlTable",
-    {
-      "nested_arrays_of_ints": [
-        "TomlArray",
-        [
-          ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"]]],
-          [
-            "TomlArray",
-            [["TomlInteger", "3"], ["TomlInteger", "4"], ["TomlInteger", "5"]],
-          ],
-        ],
-      ],
-      "nested_mixed_array": [
-        "TomlArray",
-        [
-          ["TomlArray", [["TomlString", "str1"], ["TomlString", "str2"]]],
-          ["TomlArray", [["TomlString", "str3"], ["TomlString", "str4"]]],
-        ],
-      ],
-      "deep_nested": [
-        "TomlArray",
-        [
-          [
-            "TomlArray",
-            [["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"]]]],
-          ],
-          [
-            "TomlArray",
-            [
-              ["TomlArray", [["TomlInteger", "3"], ["TomlInteger", "4"]]],
-              ["TomlArray", [["TomlInteger", "5"], ["TomlInteger", "6"]]],
-            ],
-          ],
-        ],
-      ],
-      "array_with_spaces": [
-        "TomlArray",
-        [
-          ["TomlArray", [["TomlInteger", "1"], ["TomlInteger", "2"]]],
-          ["TomlArray", [["TomlInteger", "3"], ["TomlInteger", "4"]]],
-        ],
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(nested_arrays_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "nested_arrays_of_ints": TomlArray(
+      #|      [
+      #|        TomlArray([TomlInteger(1), TomlInteger(2)]),
+      #|        TomlArray([TomlInteger(3), TomlInteger(4), TomlInteger(5)]),
+      #|      ],
+      #|    ),
+      #|    "nested_mixed_array": TomlArray(
+      #|      [
+      #|        TomlArray([TomlString("str1"), TomlString("str2")]),
+      #|        TomlArray([TomlString("str3"), TomlString("str4")]),
+      #|      ],
+      #|    ),
+      #|    "deep_nested": TomlArray(
+      #|      [
+      #|        TomlArray([TomlArray([TomlInteger(1), TomlInteger(2)])]),
+      #|        TomlArray(
+      #|          [
+      #|            TomlArray([TomlInteger(3), TomlInteger(4)]),
+      #|            TomlArray([TomlInteger(5), TomlInteger(6)]),
+      #|          ],
+      #|        ),
+      #|      ],
+      #|    ),
+      #|    "array_with_spaces": TomlArray(
+      #|      [
+      #|        TomlArray([TomlInteger(1), TomlInteger(2)]),
+      #|        TomlArray([TomlInteger(3), TomlInteger(4)]),
+      #|      ],
+      #|    ),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -165,40 +170,33 @@ test "inline table variations" {
     #|with_arrays = {numbers = [1, 2, 3], strings = ["a", "b"]}
     #|spaces = { key1 = "value1" , key2 = "value2" }
     #|
-  json_inspect(@toml.parse(inline_tables_toml), content=[
-    "TomlTable",
-    {
-      "simple": ["TomlTable", { "name": ["TomlString", "value"] }],
-      "empty_table": ["TomlTable", {}],
-      "nested_inline": [
-        "TomlTable",
-        { "a": ["TomlTable", { "b": ["TomlString", "c"] }] },
-      ],
-      "mixed_types": [
-        "TomlTable",
-        {
-          "string": ["TomlString", "value"],
-          "integer": ["TomlInteger", "42"],
-          "boolean": ["TomlBoolean", true],
-          "float": ["TomlFloat", 3.14],
-        },
-      ],
-      "with_arrays": [
-        "TomlTable",
-        {
-          "numbers": [
-            "TomlArray",
-            [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
-          ],
-          "strings": ["TomlArray", [["TomlString", "a"], ["TomlString", "b"]]],
-        },
-      ],
-      "spaces": [
-        "TomlTable",
-        { "key1": ["TomlString", "value1"], "key2": ["TomlString", "value2"] },
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(inline_tables_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "simple": TomlTable({ "name": TomlString("value") }),
+      #|    "empty_table": TomlTable({}),
+      #|    "nested_inline": TomlTable({ "a": TomlTable({ "b": TomlString("c") }) }),
+      #|    "mixed_types": TomlTable(
+      #|      {
+      #|        "string": TomlString("value"),
+      #|        "integer": TomlInteger(42),
+      #|        "boolean": TomlBoolean(true),
+      #|        "float": TomlFloat(3.14),
+      #|      },
+      #|    ),
+      #|    "with_arrays": TomlTable(
+      #|      {
+      #|        "numbers": TomlArray([TomlInteger(1), TomlInteger(2), TomlInteger(3)]),
+      #|        "strings": TomlArray([TomlString("a"), TomlString("b")]),
+      #|      },
+      #|    ),
+      #|    "spaces": TomlTable({ "key1": TomlString("value1"), "key2": TomlString("value2") }),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -227,44 +225,45 @@ test "config file example" {
     #|# Feature flags
     #|features = {new_ui = true, beta_api = false, experimental = true}
     #|
-  json_inspect(@toml.parse(config_toml), content=[
-    "TomlTable",
-    {
-      "title": ["TomlString", "TOML Example Configuration"],
-      "host": ["TomlString", "localhost"],
-      "port": ["TomlInteger", "5432"],
-      "username": ["TomlString", "admin"],
-      "password": ["TomlString", "secret123"],
-      "ssl_enabled": ["TomlBoolean", true],
-      "timeout": ["TomlFloat", 30.5],
-      "debug": ["TomlBoolean", false],
-      "log_level": ["TomlString", "info"],
-      "max_connections": ["TomlInteger", "100"],
-      "allowed_origins": [
-        "TomlArray",
-        [
-          ["TomlString", "https://example.com"],
-          ["TomlString", "https://api.example.com"],
-        ],
-      ],
-      "cache": [
-        "TomlTable",
-        {
-          "enabled": ["TomlBoolean", true],
-          "ttl": ["TomlInteger", "3600"],
-          "max_size": ["TomlInteger", "1000"],
-        },
-      ],
-      "features": [
-        "TomlTable",
-        {
-          "new_ui": ["TomlBoolean", true],
-          "beta_api": ["TomlBoolean", false],
-          "experimental": ["TomlBoolean", true],
-        },
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(config_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "title": TomlString("TOML Example Configuration"),
+      #|    "host": TomlString("localhost"),
+      #|    "port": TomlInteger(5432),
+      #|    "username": TomlString("admin"),
+      #|    "password": TomlString("secret123"),
+      #|    "ssl_enabled": TomlBoolean(true),
+      #|    "timeout": TomlFloat(30.5),
+      #|    "debug": TomlBoolean(false),
+      #|    "log_level": TomlString("info"),
+      #|    "max_connections": TomlInteger(100),
+      #|    "allowed_origins": TomlArray(
+      #|      [
+      #|        TomlString("https://example.com"),
+      #|        TomlString("https://api.example.com"),
+      #|      ],
+      #|    ),
+      #|    "cache": TomlTable(
+      #|      {
+      #|        "enabled": TomlBoolean(true),
+      #|        "ttl": TomlInteger(3600),
+      #|        "max_size": TomlInteger(1000),
+      #|      },
+      #|    ),
+      #|    "features": TomlTable(
+      #|      {
+      #|        "new_ui": TomlBoolean(true),
+      #|        "beta_api": TomlBoolean(false),
+      #|        "experimental": TomlBoolean(true),
+      #|      },
+      #|    ),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -288,43 +287,26 @@ test "whitespace edge cases" {
     #|table2 = {a = 1, b = 2}
     #|table3= { a=1 , b=2 }
     #|
-  json_inspect(@toml.parse(whitespace_edge_toml), content=[
-    "TomlTable",
-    {
-      "key1": ["TomlInteger", "42"],
-      "key2": ["TomlInteger", "43"],
-      "key3": ["TomlInteger", "44"],
-      "key4": ["TomlInteger", "45"],
-      "array1": [
-        "TomlArray",
-        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
-      ],
-      "array2": [
-        "TomlArray",
-        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
-      ],
-      "array3": [
-        "TomlArray",
-        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
-      ],
-      "array4": [
-        "TomlArray",
-        [["TomlInteger", "1"], ["TomlInteger", "2"], ["TomlInteger", "3"]],
-      ],
-      "table1": [
-        "TomlTable",
-        { "a": ["TomlInteger", "1"], "b": ["TomlInteger", "2"] },
-      ],
-      "table2": [
-        "TomlTable",
-        { "a": ["TomlInteger", "1"], "b": ["TomlInteger", "2"] },
-      ],
-      "table3": [
-        "TomlTable",
-        { "a": ["TomlInteger", "1"], "b": ["TomlInteger", "2"] },
-      ],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(whitespace_edge_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "key1": TomlInteger(42),
+      #|    "key2": TomlInteger(43),
+      #|    "key3": TomlInteger(44),
+      #|    "key4": TomlInteger(45),
+      #|    "array1": TomlArray([TomlInteger(1), TomlInteger(2), TomlInteger(3)]),
+      #|    "array2": TomlArray([TomlInteger(1), TomlInteger(2), TomlInteger(3)]),
+      #|    "array3": TomlArray([TomlInteger(1), TomlInteger(2), TomlInteger(3)]),
+      #|    "array4": TomlArray([TomlInteger(1), TomlInteger(2), TomlInteger(3)]),
+      #|    "table1": TomlTable({ "a": TomlInteger(1), "b": TomlInteger(2) }),
+      #|    "table2": TomlTable({ "a": TomlInteger(1), "b": TomlInteger(2) }),
+      #|    "table3": TomlTable({ "a": TomlInteger(1), "b": TomlInteger(2) }),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|
@@ -343,22 +325,26 @@ test "boundary values" {
     #|empty_table = {}
     #|single_key_table = {key = "value"}
     #|
-  json_inspect(@toml.parse(boundary_toml), content=[
-    "TomlTable",
-    {
-      "empty_string": ["TomlString", ""],
-      "single_char": ["TomlString", "a"],
-      "zero_int": ["TomlInteger", "0"],
-      "one_int": ["TomlInteger", "1"],
-      "minus_one": ["TomlInteger", "-1"],
-      "zero_float": ["TomlFloat", 0.0],
-      "tiny_float": ["TomlFloat", 0.000001],
-      "empty_array": ["TomlArray", []],
-      "single_element_array": ["TomlArray", [["TomlInteger", "42"]]],
-      "empty_table": ["TomlTable", {}],
-      "single_key_table": ["TomlTable", { "key": ["TomlString", "value"] }],
-    },
-  ])
+  debug_inspect(
+    @toml.parse(boundary_toml),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "empty_string": TomlString(""),
+      #|    "single_char": TomlString("a"),
+      #|    "zero_int": TomlInteger(0),
+      #|    "one_int": TomlInteger(1),
+      #|    "minus_one": TomlInteger(-1),
+      #|    "zero_float": TomlFloat(0),
+      #|    "tiny_float": TomlFloat(0.000001),
+      #|    "empty_array": TomlArray([]),
+      #|    "single_element_array": TomlArray([TomlInteger(42)]),
+      #|    "empty_table": TomlTable({}),
+      #|    "single_key_table": TomlTable({ "key": TomlString("value") }),
+      #|  },
+      #|)
+    ),
+  )
 }
 
 ///|

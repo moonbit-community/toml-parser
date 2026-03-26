@@ -1441,14 +1441,21 @@ test "binary number parsing" {
 /// Test datetime tokenization
 test "datetime tokenization" {
   let tokens = tokenize("date = 1979-05-27T07:32:00Z")
-  json_inspect(tokens, content=[
-    ["Identifier", "date", { "loc": "1:1-1:5" }],
-    ["Equals", { "loc": "1:6-1:7" }],
-    [
-      "DateTimeToken",
-      ["OffsetDateTime", "1979-05-27T07:32:00Z"],
-      { "loc": "1:8-1:28" },
-    ],
-    ["EOF", { "loc": "1:28-1:28" }],
-  ])
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "date",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  DateTimeToken(
+      #|    OffsetDateTime("1979-05-27T07:32:00Z"),
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 28 } },
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 28 }, end: { line: 1, column: 28 } }),
+      #|]
+    ),
+  )
 }

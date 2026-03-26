@@ -28,7 +28,7 @@ The `Position` struct tracks location information in the input:
 pub(all) struct Position {
   line : Int
   column : Int
-} derive(Eq, Show, ToJson)
+} derive(Eq, Show, Debug)
 ```
 
 ### Lexer
