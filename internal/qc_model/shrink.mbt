@@ -23,6 +23,17 @@ pub fn shrink_table_entries(
 }
 
 ///|
+fn shrink_datetime_values(
+  values : Array[@tokenize.TomlDateTime],
+) -> Iter[Array[@tokenize.TomlDateTime]] {
+  Array::makei(values.length(), fn(i) {
+    let next = values.copy()
+    next.remove(i) |> ignore
+    next
+  }).iter()
+}
+
+///|
 pub impl @qc.Shrink for SimpleValue with shrink(self) {
   match self {
     SString(value) => @qc.Shrink::shrink(value).map(fn(next) { SString(next) })
@@ -30,6 +41,15 @@ pub impl @qc.Shrink for SimpleValue with shrink(self) {
       @qc.Shrink::shrink(value).map(fn(next) { SInteger(next) })
     SBoolean(value) =>
       @qc.Shrink::shrink(value).map(fn(next) { SBoolean(next) })
+    SDateTime(_) => Iter::empty()
+    SDateTimeArray(values) =>
+      shrink_datetime_values(values).map(fn(next_values) {
+        if next_values.is_empty() {
+          SEmptyArray
+        } else {
+          SDateTimeArray(next_values)
+        }
+      })
     SEmptyArray => Iter::empty()
     SStringArray(values) =>
       @qc.Shrink::shrink(values).map(fn(next_values) {

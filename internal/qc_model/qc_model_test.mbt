@@ -4,6 +4,9 @@ fn simple_value_to_toml(value : @qc_model.SimpleValue) -> @toml.TomlValue {
     SString(s) => @toml.TomlString(s)
     SInteger(n) => @toml.TomlInteger(n)
     SBoolean(b) => @toml.TomlBoolean(b)
+    SDateTime(datetime) => @toml.TomlDateTime(datetime)
+    SDateTimeArray(values) =>
+      @toml.TomlArray(values.map(fn(datetime) { @toml.TomlDateTime(datetime) }))
     SEmptyArray => @toml.TomlArray([])
     SStringArray(values) =>
       @toml.TomlArray(values.map(fn(v) { @toml.TomlString(v) }))
@@ -79,6 +82,16 @@ fn simple_boolean_from_toml(value : @toml.TomlValue) -> Bool? {
 }
 
 ///|
+fn simple_datetime_from_toml(
+  value : @toml.TomlValue,
+) -> @tokenize.TomlDateTime? {
+  match value {
+    @toml.TomlDateTime(datetime) => Some(datetime)
+    _ => None
+  }
+}
+
+///|
 fn simple_table_entries_from_toml(
   entries : ArrayView[(String, @toml.TomlValue)],
 ) -> Array[(String, @qc_model.SimpleValue)]? {
@@ -99,9 +112,16 @@ fn simple_value_from_toml(value : @toml.TomlValue) -> @qc_model.SimpleValue? {
     @toml.TomlString(text) => Some(@qc_model.SString(text))
     @toml.TomlInteger(number) => Some(@qc_model.SInteger(number))
     @toml.TomlBoolean(boolean) => Some(@qc_model.SBoolean(boolean))
+    @toml.TomlDateTime(datetime) => Some(@qc_model.SDateTime(datetime))
     @toml.TomlArray(values) =>
       match values {
         [] => Some(@qc_model.SEmptyArray)
+        [@toml.TomlDateTime(_), ..] =>
+          collect_toml_array(values[:], simple_datetime_from_toml).map(fn(
+            items,
+          ) {
+            @qc_model.SDateTimeArray(items)
+          })
         [@toml.TomlString(_), ..] =>
           collect_toml_array(values[:], simple_string_from_toml).map(fn(items) {
             @qc_model.SStringArray(items)
@@ -178,22 +198,22 @@ fn simple_document_roundtrip_property(
 ) -> @qc.Property {
   let rendered = simple_document_to_toml(doc).to_string()
   let checked = simple_document_roundtrip_check(doc, rendered)
-  @qc.counterexample(
-    @qc.classify(
-      @qc.classify(
-        @qc.classify(
-          @qc.classify(checked, doc.contains_table(), "contains-table"),
-          doc.contains_array(),
-          "contains-array",
-        ),
-        doc.contains_complex_key(),
-        "contains-complex-key",
-      ),
-      doc.contains_string(),
-      "contains-string",
-    ),
-    rendered,
-  )
+  let classified = checked
+    |> @qc.classify(doc.contains_table(), "contains-table")
+    |> @qc.classify(doc.contains_array(), "contains-array")
+    |> @qc.classify(doc.contains_datetime_array(), "contains-datetime-array")
+    |> @qc.classify(
+      doc.contains_fractional_datetime(),
+      "contains-fractional-datetime",
+    )
+    |> @qc.classify(doc.contains_datetime(), "contains-datetime")
+    |> @qc.classify(
+      doc.contains_negative_exponent_like_key(),
+      "contains-negative-exponent-like-key",
+    )
+    |> @qc.classify(doc.contains_complex_key(), "contains-complex-key")
+    |> @qc.classify(doc.contains_string(), "contains-string")
+  @qc.counterexample(classified, rendered)
 }
 
 ///|
@@ -210,9 +230,13 @@ test "quickcheck simple document roundtrip" {
     ),
     content=(
       #|+++ [2000/0/2000] Ok, passed!
-      #|49.85% : contains-string
-      #|56.2% : contains-complex-key
-      #|60.550000000000004% : contains-array
+      #|44.4% : contains-string
+      #|52.55% : contains-complex-key
+      #|33.15% : contains-negative-exponent-like-key
+      #|36.7% : contains-datetime
+      #|22.05% : contains-fractional-datetime
+      #|21.05% : contains-datetime-array
+      #|61% : contains-array
       #|29.15% : contains-table
     ),
   )

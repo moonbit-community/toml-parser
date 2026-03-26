@@ -210,6 +210,60 @@ test "test table header numeric name" {
 }
 
 ///|
+test "test exponent-like bare keys" {
+  let exponent_like_keys_toml =
+    #|10e-1 = "a"
+    #|10e1 = "b"
+    #|-e-1 = "c"
+    #|-10e-1 = "d"
+    #|
+  debug_inspect(
+    try? @toml.parse(exponent_like_keys_toml),
+    content=(
+      #|Ok(
+      #|  TomlTable(
+      #|    {
+      #|      "10e-1": TomlString("a"),
+      #|      "10e1": TomlString("b"),
+      #|      "-e-1": TomlString("c"),
+      #|      "-10e-1": TomlString("d"),
+      #|    },
+      #|  ),
+      #|)
+    ),
+  )
+}
+
+///|
+test "test exponent-like bare table headers" {
+  let exponent_like_table_names_toml =
+    #|[10e-1]
+    #|value = "a"
+    #|[10e1]
+    #|value = "b"
+    #|[-e-1]
+    #|value = "c"
+    #|[-10e-1]
+    #|value = "d"
+    #|
+  debug_inspect(
+    try? @toml.parse(exponent_like_table_names_toml),
+    content=(
+      #|Ok(
+      #|  TomlTable(
+      #|    {
+      #|      "10e-1": TomlTable({ "value": TomlString("a") }),
+      #|      "10e1": TomlTable({ "value": TomlString("b") }),
+      #|      "-e-1": TomlTable({ "value": TomlString("c") }),
+      #|      "-10e-1": TomlTable({ "value": TomlString("d") }),
+      #|    },
+      #|  ),
+      #|)
+    ),
+  )
+}
+
+///|
 test "test duplicate table redefinition" {
   let duplicate_table_toml =
     #|[table]

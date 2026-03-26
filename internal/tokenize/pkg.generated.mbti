@@ -17,8 +17,10 @@ pub fn tokenize(String) -> Array[Token] raise
 pub(all) struct Loc {
   start : @lexer.Position
   end : @lexer.Position
-} derive(Eq, @debug.Debug)
+}
 pub fn Loc::adjacent(Self, Self) -> Bool
+pub impl Eq for Loc
+pub impl @debug.Debug for Loc
 
 pub(all) enum Token {
   StringToken(String, loc~ : Loc, multiline~ : Bool)
@@ -36,16 +38,20 @@ pub(all) enum Token {
   Identifier(String, loc~ : Loc)
   Newline(loc~ : Loc)
   EOF(loc~ : Loc)
-} derive(Eq, @debug.Debug)
+}
 pub fn Token::loc(Self) -> Loc
+pub impl Eq for Token
+pub impl @debug.Debug for Token
 
 pub(all) enum TomlDateTime {
   OffsetDateTime(String)
   LocalDateTime(String)
   LocalDate(String)
   LocalTime(String)
-} derive(Eq, @debug.Debug)
+}
+pub impl Eq for TomlDateTime
 pub impl Show for TomlDateTime
+pub impl @debug.Debug for TomlDateTime
 
 // Type aliases
 
