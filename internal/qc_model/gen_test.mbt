@@ -90,28 +90,28 @@ fn complex_key_gen() -> @qc.Gen[String] {
 }
 
 ///|
-pub fn simple_key_gen() -> @qc.Gen[String] {
+fn simple_key_gen() -> @qc.Gen[String] {
   @qc.frequency([(3U, bare_key_gen()), (2U, complex_key_gen())])
 }
 
 ///|
-fn string_value_gen() -> @qc.Gen[SimpleValue] {
+fn string_value_gen() -> @qc.Gen[@qc_model.SimpleValue] {
   let strings : @qc.Gen[String] = @qc.Gen::spawn()
   strings
   .scale(fn(size) { capped_size(size, 8) })
-  .fmap(fn(value) { SString(value) })
+  .fmap(fn(value) { @qc_model.SString(value) })
 }
 
 ///|
-fn integer_value_gen() -> @qc.Gen[SimpleValue] {
+fn integer_value_gen() -> @qc.Gen[@qc_model.SimpleValue] {
   let integers : @qc.Gen[Int64] = @qc.Gen::spawn()
-  integers.fmap(fn(value) { SInteger(value) })
+  integers.fmap(fn(value) { @qc_model.SInteger(value) })
 }
 
 ///|
-fn boolean_value_gen() -> @qc.Gen[SimpleValue] {
+fn boolean_value_gen() -> @qc.Gen[@qc_model.SimpleValue] {
   let booleans : @qc.Gen[Bool] = @qc.Gen::spawn()
-  booleans.fmap(fn(value) { SBoolean(value) })
+  booleans.fmap(fn(value) { @qc_model.SBoolean(value) })
 }
 
 ///|
@@ -121,37 +121,43 @@ fn non_empty_length_gen(size : Int) -> @qc.Gen[Int] {
 }
 
 ///|
-fn string_array_value_gen(size : Int) -> @qc.Gen[SimpleValue] {
+fn string_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
   let strings : @qc.Gen[String] = @qc.Gen::spawn()
   let strings = strings.scale(fn(n) { capped_size(n, 8) })
   non_empty_length_gen(size).bind(fn(len) {
-    strings.array_with_size(len).fmap(fn(values) { SStringArray(values) })
+    strings
+    .array_with_size(len)
+    .fmap(fn(values) { @qc_model.SStringArray(values) })
   })
 }
 
 ///|
-fn integer_array_value_gen(size : Int) -> @qc.Gen[SimpleValue] {
+fn integer_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
   let integers : @qc.Gen[Int64] = @qc.Gen::spawn()
   non_empty_length_gen(size).bind(fn(len) {
-    integers.array_with_size(len).fmap(fn(values) { SIntegerArray(values) })
+    integers
+    .array_with_size(len)
+    .fmap(fn(values) { @qc_model.SIntegerArray(values) })
   })
 }
 
 ///|
-fn boolean_array_value_gen(size : Int) -> @qc.Gen[SimpleValue] {
+fn boolean_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
   let booleans : @qc.Gen[Bool] = @qc.Gen::spawn()
   non_empty_length_gen(size).bind(fn(len) {
-    booleans.array_with_size(len).fmap(fn(values) { SBooleanArray(values) })
+    booleans
+    .array_with_size(len)
+    .fmap(fn(values) { @qc_model.SBooleanArray(values) })
   })
 }
 
 ///|
-fn scalar_or_array_value_gen(size : Int) -> @qc.Gen[SimpleValue] {
+fn scalar_or_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
   @qc.frequency([
     (3U, string_value_gen()),
     (2U, integer_value_gen()),
     (2U, boolean_value_gen()),
-    (1U, @qc.pure(SEmptyArray)),
+    (1U, @qc.pure(@qc_model.SEmptyArray)),
     (2U, string_array_value_gen(size)),
     (2U, integer_array_value_gen(size)),
     (2U, boolean_array_value_gen(size)),
@@ -159,7 +165,7 @@ fn scalar_or_array_value_gen(size : Int) -> @qc.Gen[SimpleValue] {
 }
 
 ///|
-pub fn simple_entry_gen(size : Int) -> @qc.Gen[(String, SimpleValue)] {
+fn simple_entry_gen(size : Int) -> @qc.Gen[(String, @qc_model.SimpleValue)] {
   @qc.liftA2(
     fn(key, value) { (key, value) },
     simple_key_gen(),
@@ -168,18 +174,18 @@ pub fn simple_entry_gen(size : Int) -> @qc.Gen[(String, SimpleValue)] {
 }
 
 ///|
-fn table_value_gen(size : Int) -> @qc.Gen[SimpleValue] {
+fn table_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
   let next_size = size / 2
   let max_fields = capped_size(size + 1, 4)
   @qc.int_range(0, max_fields + 1).bind(fn(field_count) {
     simple_entry_gen(next_size)
     .array_with_size(field_count)
-    .fmap(fn(entries) { STable(Map::from_array(entries[:])) })
+    .fmap(fn(entries) { @qc_model.STable(Map::from_array(entries[:])) })
   })
 }
 
 ///|
-pub fn simple_value_gen(size : Int) -> @qc.Gen[SimpleValue] {
+fn simple_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
   let leaf = scalar_or_array_value_gen(size)
   if size <= 0 {
     leaf
@@ -189,13 +195,15 @@ pub fn simple_value_gen(size : Int) -> @qc.Gen[SimpleValue] {
 }
 
 ///|
-pub fn simple_document_gen() -> @qc.Gen[SimpleDocument] {
+fn simple_document_gen() -> @qc.Gen[@qc_model.SimpleDocument] {
   @qc.sized(fn(size) {
     let max_fields = capped_size(size + 1, 5)
     @qc.int_range(0, max_fields + 1).bind(fn(field_count) {
       simple_entry_gen(size)
       .array_with_size(field_count)
-      .fmap(fn(entries) { { fields: Map::from_array(entries[:]) } })
+      .fmap(fn(entries) {
+        @qc_model.SimpleDocument::{ fields: Map::from_array(entries[:]) }
+      })
     })
   })
 }
