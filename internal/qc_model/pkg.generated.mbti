@@ -2,22 +2,12 @@
 package "bobzhang/toml/internal/qc_model"
 
 import {
+  "bobzhang/toml/internal/tokenize",
   "moonbitlang/core/debug",
-  "moonbitlang/quickcheck",
 }
 
 // Values
 pub fn is_bare_key(String) -> Bool
-
-pub fn shrink_table_entries(Array[(String, SimpleValue)]) -> Iter[Array[(String, SimpleValue)]]
-
-pub fn simple_document_gen() -> @quickcheck.Gen[SimpleDocument]
-
-pub fn simple_entry_gen(Int) -> @quickcheck.Gen[(String, SimpleValue)]
-
-pub fn simple_key_gen() -> @quickcheck.Gen[String]
-
-pub fn simple_value_gen(Int) -> @quickcheck.Gen[SimpleValue]
 
 // Errors
 
@@ -27,14 +17,19 @@ pub(all) struct SimpleDocument {
 } derive(Eq, Show, @debug.Debug)
 pub fn SimpleDocument::contains_array(Self) -> Bool
 pub fn SimpleDocument::contains_complex_key(Self) -> Bool
+pub fn SimpleDocument::contains_datetime(Self) -> Bool
+pub fn SimpleDocument::contains_datetime_array(Self) -> Bool
+pub fn SimpleDocument::contains_fractional_datetime(Self) -> Bool
+pub fn SimpleDocument::contains_negative_exponent_like_key(Self) -> Bool
 pub fn SimpleDocument::contains_string(Self) -> Bool
 pub fn SimpleDocument::contains_table(Self) -> Bool
-pub impl @quickcheck.Shrink for SimpleDocument
 
 pub(all) enum SimpleValue {
   SString(String)
   SInteger(Int64)
   SBoolean(Bool)
+  SDateTime(@tokenize.TomlDateTime)
+  SDateTimeArray(Array[@tokenize.TomlDateTime])
   SEmptyArray
   SStringArray(Array[String])
   SIntegerArray(Array[Int64])
@@ -43,9 +38,12 @@ pub(all) enum SimpleValue {
 } derive(Eq, Show, @debug.Debug)
 pub fn SimpleValue::contains_array(Self) -> Bool
 pub fn SimpleValue::contains_complex_key(Self) -> Bool
+pub fn SimpleValue::contains_datetime(Self) -> Bool
+pub fn SimpleValue::contains_datetime_array(Self) -> Bool
+pub fn SimpleValue::contains_fractional_datetime(Self) -> Bool
+pub fn SimpleValue::contains_negative_exponent_like_key(Self) -> Bool
 pub fn SimpleValue::contains_string(Self) -> Bool
 pub fn SimpleValue::contains_table(Self) -> Bool
-pub impl @quickcheck.Shrink for SimpleValue
 
 // Type aliases
 

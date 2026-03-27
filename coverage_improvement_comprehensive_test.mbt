@@ -191,7 +191,7 @@ test "table_path_conflict_error" {
   debug_inspect(
     result,
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: ExpectedTable(\"key\", \"integer\") at { start: { line: 2, column: 6 }, end: { line: 2, column: 6 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: ExpectedTable(\"key\", \"integer\") at { start: { line: 2, column: 6 }, end: { line: 2, column: 6 } }"))
     ),
   ) // Expected error
 }
@@ -208,7 +208,7 @@ test "array_of_tables_path_conflict_error" {
   debug_inspect(
     result,
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: ExpectedArray(\"key\", \"integer\") at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: ExpectedArray(\"key\", \"integer\") at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }"))
     ),
   ) // Expected error
 }

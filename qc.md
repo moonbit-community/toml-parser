@@ -45,6 +45,16 @@ classDiagram
 
 ## QuickCheck Components
 
+The test package now keeps the QuickCheck plumbing in test-only files:
+
+- `internal/qc_model/gen_test.mbt` defines the generators.
+- `internal/qc_model/shrink_test.mbt` defines the shrink helpers.
+- `internal/qc_model/roundtrip_test.mbt` defines the TOML conversion and property.
+- `internal/qc_model/qc_model_test.mbt` runs the property test.
+
+These helpers are no longer exported from `internal/qc_model`; the package only
+keeps the simplified model types used by the test.
+
 The test implements four key pieces required by the quickcheck framework:
 
 ### 1. Generators (`@qc.Gen`)
@@ -88,15 +98,15 @@ Key generator patterns used:
 | `.array_with_size(n)` | `gen.array_with_size(len)` | Generate fixed-size arrays |
 | `@qc.sized(fn)` | `sized(fn(size) { ... })` | Access the current size |
 
-### 2. Shrinker (`@qc.Shrink`)
+### 2. Shrinker (`(@qc_model.SimpleValue) -> Iter[@qc_model.SimpleValue]`)
 
-When a test fails, quickcheck uses shrinkers to find the **minimal** failing case. The shrinker tries:
+When a test fails, quickcheck uses shrinkers to find the **minimal** failing case. The helper shrinker tries:
 - Removing individual entries from tables
 - Shrinking individual values within entries
 
 ```moonbit
-impl @qc.Shrink for SimpleValue with shrink(self) {
-  match self {
+fn shrink_simple_value(value : @qc_model.SimpleValue) -> Iter[@qc_model.SimpleValue] {
+  match value {
     SString(value) => @qc.Shrink::shrink(value).map(fn(next) { SString(next) })
     STable(fields) =>
       shrink_table_entries(fields.to_array()).map(fn(next_entries) {
@@ -112,8 +122,8 @@ impl @qc.Shrink for SimpleValue with shrink(self) {
 The property combines the roundtrip check with classification labels for coverage reporting:
 
 ```moonbit
-fn simple_document_roundtrip_property(doc : SimpleDocument) -> @qc.Property {
-  let rendered = doc.to_toml_value().to_string()
+fn roundtrip_property(doc : @qc_model.SimpleDocument) -> @qc.Property {
+  let rendered = simple_document_to_toml(doc).to_string()
   let checked = simple_document_roundtrip_check(doc, rendered)
   @qc.counterexample(
     @qc.classify(checked, doc.contains_table(), "contains-table"),
@@ -132,12 +142,12 @@ test "quickcheck simple document roundtrip" {
   inspect(
     @qc.quick_check_silence(
       @qc.forall_shrink(
-        simple_document_gen(),       // generator
-        SimpleDocument::shrink,       // shrinker
-        simple_document_roundtrip_property, // property
+        simple_document_gen(),   // generator
+        shrink_simple_document,  // shrinker
+        roundtrip_property,      // property
       ),
-      max_success=2000,  // run 2000 random cases
-      max_size=12,        // control max complexity
+      max_success=2000, // run 2000 random cases
+      max_size=12,      // control max complexity
     ),
     content=...,
   )
