@@ -97,6 +97,21 @@ test "parse array" {
 }
 
 ///|
+test "parse array ending with exponent float" {
+  let result = try? @toml.parse(
+    (
+      #|numbers = [-1e2]
+    ),
+  )
+  debug_inspect(
+    result,
+    content=(
+      #|Ok(TomlTable({ "numbers": TomlArray([TomlFloat(-100)]) }))
+    ),
+  )
+}
+
+///|
 test "parse inline table" {
   let inline_table_toml =
     #|person = {name = "Bob", age = 25}
@@ -116,7 +131,7 @@ test "test parser expect method failure" {
   debug_inspect(
     try? @toml.parse("key = [missing_bracket"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 8 }, end: { line: 1, column: 23 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 8 }, end: { line: 1, column: 23 } }"))
     ),
   )
 }
@@ -136,7 +151,7 @@ test "test parser EOF handling in advance" {
   debug_inspect(
     try? @toml.parse("key ="),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 6 }, end: { line: 1, column: 6 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 6 }, end: { line: 1, column: 6 } }"))
     ),
   )
 }
@@ -146,7 +161,7 @@ test "test parser rejects dash-starting identifier as value" {
   debug_inspect(
     try? @toml.parse("key = -abc"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 11 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 11 } }"))
     ),
   )
 }
@@ -166,7 +181,7 @@ test "test inline table invalid syntax" {
   debug_inspect(
     try? @toml.parse("table = {key value}"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected '=' at { start: { line: 1, column: 14 }, end: { line: 1, column: 19 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected '=' at { start: { line: 1, column: 14 }, end: { line: 1, column: 19 } }"))
     ),
   )
 }
@@ -176,7 +191,7 @@ test "test inline table missing comma or closing brace" {
   debug_inspect(
     try? @toml.parse("table = {key = \"value\" invalid}"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or '}' in inline table at { start: { line: 1, column: 24 }, end: { line: 1, column: 31 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected ',' or '}' in inline table at { start: { line: 1, column: 24 }, end: { line: 1, column: 31 } }"))
     ),
   )
 }
@@ -274,7 +289,7 @@ test "test duplicate table redefinition" {
   debug_inspect(
     try? @toml.parse(duplicate_table_toml),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Duplicate table definition: [table] at { start: { line: 3, column: 8 }, end: { line: 4, column: 1 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Duplicate table definition: [table] at { start: { line: 3, column: 8 }, end: { line: 4, column: 1 } }"))
     ),
   )
 }
@@ -289,7 +304,7 @@ test "test table name conflicts with existing value" {
   debug_inspect(
     try? @toml.parse(conflicting_table_toml),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: ExpectedTable(\"table\", \"string\") at { start: { line: 2, column: 8 }, end: { line: 3, column: 1 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: ExpectedTable(\"table\", \"string\") at { start: { line: 2, column: 8 }, end: { line: 3, column: 1 } }"))
     ),
   )
 }

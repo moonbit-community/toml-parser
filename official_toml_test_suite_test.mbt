@@ -565,7 +565,7 @@ test "inf failure" {
   debug_inspect(
     try? @toml.parse(inf_failure_toml2),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 12 }, end: { line: 1, column: 13 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 12 }, end: { line: 1, column: 13 } }"))
     ),
   )
   let table_failure =
@@ -574,7 +574,7 @@ test "inf failure" {
   debug_inspect(
     try? @toml.parse(table_failure),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }"))
     ),
   )
 

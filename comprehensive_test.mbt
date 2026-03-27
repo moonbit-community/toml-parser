@@ -424,14 +424,14 @@ test "error handling" {
   debug_inspect(
     try? @toml.parse("key ="),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 6 }, end: { line: 1, column: 6 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 6 }, end: { line: 1, column: 6 } }"))
     ),
   )
   // Missing key
   debug_inspect(
     try? @toml.parse("= \"value\""),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }"))
     ),
   )
 
@@ -447,7 +447,7 @@ test "error handling" {
   debug_inspect(
     try? @toml.parse("key = [1, 2"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }"))
     ),
   )
 
@@ -455,7 +455,7 @@ test "error handling" {
   debug_inspect(
     try? @toml.parse(" = \"value\""),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 2 }, end: { line: 1, column: 3 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 2 }, end: { line: 1, column: 3 } }"))
     ),
   )
 }
@@ -468,7 +468,7 @@ test "error location tracking" {
   debug_inspect(
     try? @toml.parse("=missing_key"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }"))
     ),
   )
 
@@ -476,7 +476,7 @@ test "error location tracking" {
   debug_inspect(
     try? @toml.parse("valid_key = "),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 13 }, end: { line: 1, column: 13 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 13 }, end: { line: 1, column: 13 } }"))
     ),
   )
 
@@ -484,7 +484,7 @@ test "error location tracking" {
   debug_inspect(
     try? @toml.parse("   key = "),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 10 }, end: { line: 1, column: 10 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 10 }, end: { line: 1, column: 10 } }"))
     ),
   )
 
@@ -492,7 +492,7 @@ test "error location tracking" {
   debug_inspect(
     try? @toml.parse("key \"value\""),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected '=' at { start: { line: 1, column: 5 }, end: { line: 1, column: 12 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected '=' at { start: { line: 1, column: 5 }, end: { line: 1, column: 12 } }"))
     ),
   )
 
@@ -500,7 +500,7 @@ test "error location tracking" {
   debug_inspect(
     try? @toml.parse("key = invalid_unquoted"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 23 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 23 } }"))
     ),
   )
 }
@@ -517,7 +517,7 @@ test "multiline error locations" {
   debug_inspect(
     try? @toml.parse(multiline_test1),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 2, column: 8 }, end: { line: 3, column: 1 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 2, column: 8 }, end: { line: 3, column: 1 } }"))
     ),
   )
 
@@ -530,7 +530,7 @@ test "multiline error locations" {
   debug_inspect(
     try? @toml.parse(multiline_test2),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 3, column: 1 }, end: { line: 3, column: 2 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected key at { start: { line: 3, column: 1 }, end: { line: 3, column: 2 } }"))
     ),
   )
 
@@ -542,7 +542,7 @@ test "multiline error locations" {
   debug_inspect(
     try? @toml.parse(multiline_test3),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 2, column: 15 }, end: { line: 3, column: 1 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 2, column: 15 }, end: { line: 3, column: 1 } }"))
     ),
   )
 
@@ -557,7 +557,7 @@ test "multiline error locations" {
   debug_inspect(
     try? @toml.parse(multiline_test4),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 5, column: 1 }, end: { line: 5, column: 2 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected key at { start: { line: 5, column: 1 }, end: { line: 5, column: 2 } }"))
     ),
   )
 }
@@ -570,7 +570,7 @@ test "array error locations" {
   debug_inspect(
     try? @toml.parse("arr = [1, 2, 3"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }"))
     ),
   )
 
@@ -578,7 +578,7 @@ test "array error locations" {
   debug_inspect(
     try? @toml.parse("arr = [1 2]"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }"))
     ),
   )
 
@@ -586,7 +586,7 @@ test "array error locations" {
   debug_inspect(
     try? @toml.parse("arr = [1, invalid, 3]"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 11 }, end: { line: 1, column: 18 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 11 }, end: { line: 1, column: 18 } }"))
     ),
   )
 
@@ -594,7 +594,7 @@ test "array error locations" {
   debug_inspect(
     try? @toml.parse("arr = [[1, 2], [3, ]"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }"))
     ),
   )
 
@@ -609,7 +609,7 @@ test "array error locations" {
   debug_inspect(
     try? @toml.parse(array_multiline),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 3, column: 5 }, end: { line: 4, column: 1 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 3, column: 5 }, end: { line: 4, column: 1 } }"))
     ),
   )
 }
@@ -622,7 +622,7 @@ test "inline table error locations" {
   debug_inspect(
     try? @toml.parse("table = {key = \"value\""),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or '}' in inline table at { start: { line: 1, column: 23 }, end: { line: 1, column: 23 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected ',' or '}' in inline table at { start: { line: 1, column: 23 }, end: { line: 1, column: 23 } }"))
     ),
   )
 
@@ -630,7 +630,7 @@ test "inline table error locations" {
   debug_inspect(
     try? @toml.parse("table = {= \"value\"}"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }"))
     ),
   )
 
@@ -638,7 +638,7 @@ test "inline table error locations" {
   debug_inspect(
     try? @toml.parse("table = {key = }"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 16 }, end: { line: 1, column: 17 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 16 }, end: { line: 1, column: 17 } }"))
     ),
   )
 
@@ -646,7 +646,7 @@ test "inline table error locations" {
   debug_inspect(
     try? @toml.parse("table = {key \"value\"}"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected '=' at { start: { line: 1, column: 14 }, end: { line: 1, column: 21 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected '=' at { start: { line: 1, column: 14 }, end: { line: 1, column: 21 } }"))
     ),
   )
 
@@ -667,7 +667,7 @@ test "table header error locations" {
   debug_inspect(
     try? @toml.parse("[table_name"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ']' at { start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected ']' at { start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }"))
     ),
   )
 
@@ -675,7 +675,7 @@ test "table header error locations" {
   debug_inspect(
     try? @toml.parse("[]"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 2 }, end: { line: 1, column: 3 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 2 }, end: { line: 1, column: 3 } }"))
     ),
   )
 
@@ -683,7 +683,7 @@ test "table header error locations" {
   debug_inspect(
     try? @toml.parse("[[table_name]"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ']]' at { start: { line: 1, column: 13 }, end: { line: 1, column: 14 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected ']]' at { start: { line: 1, column: 13 }, end: { line: 1, column: 14 } }"))
     ),
   )
 
@@ -691,7 +691,7 @@ test "table header error locations" {
   debug_inspect(
     try? @toml.parse("[[]]"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 3 }, end: { line: 1, column: 4 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 3 }, end: { line: 1, column: 4 } }"))
     ),
   )
 
@@ -699,7 +699,7 @@ test "table header error locations" {
   debug_inspect(
     try? @toml.parse("[#invalid]"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 11 }, end: { line: 1, column: 11 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 11 }, end: { line: 1, column: 11 } }"))
     ),
   )
 }
@@ -712,7 +712,7 @@ test "precise column tracking" {
   debug_inspect(
     try? @toml.parse("\tkey ="),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 7 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 7 } }"))
     ),
   )
 
@@ -720,7 +720,7 @@ test "precise column tracking" {
   debug_inspect(
     try? @toml.parse("  key1 = \"val\"  key2 = "),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 17 }, end: { line: 1, column: 21 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 17 }, end: { line: 1, column: 21 } }"))
     ),
   )
 
@@ -728,7 +728,7 @@ test "precise column tracking" {
   debug_inspect(
     try? @toml.parse("very_long_key_name_here = "),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 27 }, end: { line: 1, column: 27 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 27 }, end: { line: 1, column: 27 } }"))
     ),
   )
 
@@ -744,7 +744,7 @@ test "precise column tracking" {
   debug_inspect(
     try? @toml.parse("key = = \"value\""),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }"))
     ),
   )
 }
@@ -766,7 +766,7 @@ test "complex error location scenarios" {
   debug_inspect(
     try? @toml.parse(deep_nested),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 4, column: 13 }, end: { line: 5, column: 1 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 4, column: 13 }, end: { line: 5, column: 1 } }"))
     ),
   )
 
@@ -774,7 +774,7 @@ test "complex error location scenarios" {
   debug_inspect(
     try? @toml.parse("key = [1, 2, 3"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }"))
     ),
   )
 
@@ -797,7 +797,7 @@ test "complex error location scenarios" {
   debug_inspect(
     try? @toml.parse(aot_error),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 5, column: 8 }, end: { line: 6, column: 1 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 5, column: 8 }, end: { line: 6, column: 1 } }"))
     ),
   )
 
@@ -810,7 +810,7 @@ test "complex error location scenarios" {
   debug_inspect(
     try? @toml.parse(trailing_ws),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 2, column: 11 }, end: { line: 3, column: 1 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 2, column: 11 }, end: { line: 3, column: 1 } }"))
     ),
   )
 }
@@ -823,7 +823,7 @@ test "location tracking with special cases" {
   debug_inspect(
     try? @toml.parse("key = # comment"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 16 }, end: { line: 1, column: 16 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 16 }, end: { line: 1, column: 16 } }"))
     ),
   )
 
@@ -831,7 +831,7 @@ test "location tracking with special cases" {
   debug_inspect(
     try? @toml.parse("key1 = \"value\"\r\nkey2 = "),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }"))
     ),
   )
 
@@ -839,7 +839,7 @@ test "location tracking with special cases" {
   debug_inspect(
     try? @toml.parse("   = \"value\""),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 4 }, end: { line: 1, column: 5 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 4 }, end: { line: 1, column: 5 } }"))
     ),
   )
 
@@ -854,7 +854,7 @@ test "location tracking with special cases" {
   debug_inspect(
     try? @toml.parse(complex_array),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 4, column: 17 }, end: { line: 4, column: 30 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 4, column: 17 }, end: { line: 4, column: 30 } }"))
     ),
   )
 
@@ -863,7 +863,7 @@ test "location tracking with special cases" {
   debug_inspect(
     try? @toml.parse(long_line),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 63 }, end: { line: 1, column: 63 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 63 }, end: { line: 1, column: 63 } }"))
     ),
   )
 }
@@ -948,7 +948,7 @@ test "newline significate" {
   debug_inspect(
     try? @toml.parse(data),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 8 }, end: { line: 2, column: 1 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 8 }, end: { line: 2, column: 1 } }"))
     ),
   )
   // This should fail, inline table does not cross newline according to the spec
@@ -959,7 +959,7 @@ test "newline significate" {
   debug_inspect(
     try? @toml.parse(data2),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 18 }, end: { line: 2, column: 1 } }"))
+      #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 18 }, end: { line: 2, column: 1 } }"))
     ),
   )
 

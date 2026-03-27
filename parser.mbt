@@ -101,6 +101,14 @@ fn Parser::parse_value(
       self.update_view(rest)
       TomlFloat(0.0 / 0.0) // NaN
     }
+    [Identifier(name, ..), .. rest] =>
+      match parse_exponent_like_identifier(name) {
+        Some(value) => {
+          self.update_view(rest)
+          TomlFloat(value)
+        }
+        None => self.error("Expected value")
+      }
     _ => self.error("Expected value")
   }
 }
@@ -394,5 +402,18 @@ fn cleanup_value_markers(value : TomlValue) -> Unit {
         cleanup_value_markers(item)
       }
     _ => ()
+  }
+}
+
+///|
+fn parse_exponent_like_identifier(name : String) -> Double? {
+  if name.contains("e") || name.contains("E") {
+    let parsed = try? @string.parse_double(name)
+    match parsed {
+      Ok(value) => Some(value)
+      Err(_) => None
+    }
+  } else {
+    None
   }
 }
