@@ -906,11 +906,11 @@ fn Lexer::read_number_with_loc(
   let end_pos = self.get_loc()
   let loc = make_loc(start_pos, end_pos)
   if is_float {
-    FloatToken(@strconv.parse_double(s), loc~) catch {
+    FloatToken(@string.parse_double(s), loc~) catch {
       _ => fail("Invalid float: \{s}")
     }
   } else {
-    IntegerToken(@strconv.parse_int64(s), loc~) catch {
+    IntegerToken(@string.parse_int64(s), loc~) catch {
       _ => fail("Invalid integer: \{s}")
     }
   }
