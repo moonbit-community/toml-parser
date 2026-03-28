@@ -208,10 +208,10 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
       // Use the raw source text so dotted numeric keys like "1.2" split
       // correctly and tokens like -10e-1 are preserved verbatim.
       self.update_view(rest)
-      match raw.find(".") {
-        Some(i) => {
-          path.push(raw[:i].to_string())
-          path.push(raw[i + 1:].to_string())
+      match raw.split_once(".") {
+        Some((left, right)) => {
+          path.push(left.to_string())
+          path.push(right.to_string())
         }
         None => path.push(raw)
       }
@@ -232,10 +232,10 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
         [FloatToken(_, raw~, ..), .. rest2] => {
           self.update_view(rest2)
           let float_str = raw
-          match float_str.find(".") {
-            Some(i) => {
-              path.push(float_str[:i].to_string())
-              path.push(float_str[i + 1:].to_string())
+          match float_str.split_once(".") {
+            Some((left, right)) => {
+              path.push(left.to_string())
+              path.push(right.to_string())
             }
             None => path.push(float_str)
           }
