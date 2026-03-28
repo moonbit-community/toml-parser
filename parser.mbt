@@ -66,7 +66,18 @@ fn Parser::parse_value(
       self.update_view(rest)
       TomlInteger(i)
     }
-    [FloatToken(f, ..), .. rest] => {
+    [FloatToken(f, raw~, ..), .. rest] => {
+      // Reject overflow: non-finite values are only valid with the
+      // canonical spellings inf/nan/+inf/-inf/+nan/-nan.
+      if (f.is_inf() || f.is_nan()) &&
+        raw != "inf" &&
+        raw != "-inf" &&
+        raw != "+inf" &&
+        raw != "nan" &&
+        raw != "-nan" &&
+        raw != "+nan" {
+        self.error("Invalid float: \{raw}")
+      }
       self.update_view(rest)
       TomlFloat(f)
     }
