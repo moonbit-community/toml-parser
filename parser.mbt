@@ -34,17 +34,12 @@ fn Parser::try_parse_single_key(self : Parser) -> String? {
       self.update_view(rest)
       Some(if b { "true" } else { "false" })
     }
-    [FloatToken(f, ..), .. rest] =>
-      // inf and nan are valid bare keys
-      if f.is_inf() {
-        self.update_view(rest)
-        Some(if f < 0.0 { "-inf" } else { "inf" })
-      } else if f.is_nan() {
-        self.update_view(rest)
-        Some("nan")
-      } else {
-        None
-      }
+    [FloatToken(_, raw~, ..), .. rest] => {
+      // Use the raw source text so that tokens like -10e-1 (which the
+      // lexer parses as a float) can still serve as bare keys.
+      self.update_view(rest)
+      Some(raw)
+    }
     [DateTimeToken(LocalDate(s), ..), .. rest] => {
       // Only LocalDate (YYYY-MM-DD) is valid as a bare key — it only
       // contains digits and dashes. Other datetime variants contain
@@ -198,24 +193,17 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
 
   // Parse first key - handle the case where the tokenizer saw a float like "1.2"
   match self.view() {
-    [FloatToken(f), .. rest] if !f.is_inf() && !f.is_nan() => {
-      // Handle float tokens that represent dotted numeric keys like "1.2"
+    [FloatToken(_, raw~, ..), .. rest] => {
+      // Use the raw source text so dotted numeric keys like "1.2" split
+      // correctly and tokens like -10e-1 are preserved verbatim.
       self.update_view(rest)
-      let float_str = f.to_string()
-
-      // Split the float string on the dot to create dotted keys
-      let dot_index = match float_str.find(".") {
-        Some(i) => i
-        None => {
-          // No dot found, treat as single key
-          path.push(float_str)
-          return path
+      match raw.find(".") {
+        Some(i) => {
+          path.push(raw[:i].to_string())
+          path.push(raw[i + 1:].to_string())
         }
+        None => path.push(raw)
       }
-      let first_part = float_str[:dot_index].to_string()
-      let second_part = float_str[dot_index + 1:].to_string()
-      path.push(first_part)
-      path.push(second_part)
     }
     _ =>
       match self.try_parse_single_key() {
@@ -230,9 +218,9 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
       self.update_view(rest)
       // Check for float token (e.g. 1.2 → keys "1" and "2")
       match self.view() {
-        [FloatToken(f, ..), .. rest2] if !f.is_inf() && !f.is_nan() => {
+        [FloatToken(_, raw~, ..), .. rest2] => {
           self.update_view(rest2)
-          let float_str = f.to_string()
+          let float_str = raw
           match float_str.find(".") {
             Some(i) => {
               path.push(float_str[:i].to_string())

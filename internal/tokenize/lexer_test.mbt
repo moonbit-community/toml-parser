@@ -71,6 +71,7 @@ test "tokenize float" {
       #|  FloatToken(
       #|    3.14,
       #|    loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 10 } },
+      #|    raw="3.14",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 10 } }),
       #|]
@@ -500,6 +501,7 @@ test "tokenize numbers with underscores" {
       #|  FloatToken(
       #|    3.14159,
       #|    loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 21 } },
+      #|    raw="3.14_159",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }),
       #|]
@@ -641,7 +643,8 @@ test "test invalid characters" {
   debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:1275:17-1275:54@bobzhang/toml FAILED: Unexpected character: '@'\")"
+      #|"Failure(\"internal/tokenize/tokenize.mbt:1282:17-1282:54@bobzhang/toml FAILED: Unexpected character: '@'\")"
+
     ),
   ) // Should fail with unexpected character
 }
@@ -1235,6 +1238,7 @@ test "invalid float error" {
       #|  FloatToken(
       #|    3.14,
       #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 11 } },
+      #|    raw="3.14",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 11 }, end: { line: 1, column: 11 } }),
       #|]
@@ -1458,22 +1462,26 @@ test "multiline string opening CRLF" {
 }
 
 ///|
-/// Test invalid float that could trigger parse error
+/// Test very large float that overflows to infinity
 test "very large invalid float" {
-  // Create a huge number that might overflow during parsing
+  // A huge number that overflows to infinity during parsing
   let huge_number = "999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.9999"
-  let maybe_tokens = try? @tokenize.tokenize(
+  let tokens = @tokenize.tokenize(
     (
-      #|key = 
+      #|key =
     ) +
     huge_number,
   )
-  // This should trigger the "Invalid float" error, covering that line
-  let error_msg = maybe_tokens.unwrap_err().to_string()
-  match error_msg.strip_prefix("Invalid float: ") {
-    Some(_) => debug_inspect(true, content="true") // Error message started with "Invalid float: "
-    None => debug_inspect(false, content="false") // Unexpected error message
-  }
+  // Overflow produces infinity; verify we get a FloatToken rather than an error
+  let has_float = tokens
+    .iter()
+    .any(fn(tok) {
+      match tok {
+        @tokenize.FloatToken(f, ..) => f.is_inf()
+        _ => false
+      }
+    })
+  debug_inspect(has_float, content="true")
 }
 
 ///|

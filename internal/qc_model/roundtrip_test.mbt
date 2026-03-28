@@ -1,5 +1,4 @@
 ///|
-#cfg(false)
 fn simple_value_to_toml(value : @qc_model.SimpleValue) -> @toml.TomlValue {
   match value {
     SString(s) => @toml.TomlString(s)
@@ -30,7 +29,6 @@ fn simple_value_to_toml(value : @qc_model.SimpleValue) -> @toml.TomlValue {
 }
 
 ///|
-#cfg(false)
 fn simple_document_to_toml(doc : @qc_model.SimpleDocument) -> @toml.TomlValue {
   @toml.TomlTable(
     Map::from_array(
@@ -152,7 +150,6 @@ fn simple_value_from_toml(value : @toml.TomlValue) -> @qc_model.SimpleValue? {
 }
 
 ///|
-#cfg(false)
 fn simple_document_from_toml(
   value : @toml.TomlValue,
 ) -> @qc_model.SimpleDocument? {
@@ -168,7 +165,6 @@ fn simple_document_from_toml(
 }
 
 ///|
-#cfg(false)
 fn simple_document_roundtrip_check(
   doc : @qc_model.SimpleDocument,
   rendered : String,
@@ -198,7 +194,6 @@ fn simple_document_roundtrip_check(
 }
 
 ///|
-#cfg(false)
 fn roundtrip_property(doc : @qc_model.SimpleDocument) -> @qc.Property {
   let rendered = simple_document_to_toml(doc).to_string()
   let checked = simple_document_roundtrip_check(doc, rendered)

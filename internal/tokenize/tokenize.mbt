@@ -906,9 +906,16 @@ fn Lexer::read_number_with_loc(
   let end_pos = self.get_loc()
   let loc = make_loc(start_pos, end_pos)
   if is_float {
-    FloatToken(@string.parse_double(s), loc~) catch {
-      _ => fail("Invalid float: \{s}")
-    }
+    FloatToken(
+      @string.parse_double(s) catch {
+        // Overflow (e.g. -31e368) → ±infinity, matching IEEE 754 behaviour.
+        // The raw string is preserved so the parser can still use this token
+        // as a bare key.
+        _ => if s.length() > 0 && s[0] == '-' { -1.0 / 0.0 } else { 1.0 / 0.0 }
+      },
+      loc~,
+      raw=raw_s,
+    )
   } else {
     IntegerToken(@string.parse_int64(s), loc~) catch {
       _ => fail("Invalid integer: \{s}")
@@ -1236,27 +1243,27 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
       self.update_view(rest)
       self.validate_special_value_termination()
       let end_pos = self.get_loc()
-      FloatToken(-1.0 / 0.0, loc=make_loc(start_pos, end_pos)) // negative infinity
+      FloatToken(-1.0 / 0.0, loc=make_loc(start_pos, end_pos), raw="-inf") // negative infinity
     }
     ['-', 'n', 'a', 'n', .. rest] => {
       self.update_view(rest)
       self.validate_special_value_termination()
       let end_pos = self.get_loc()
-      FloatToken(0.0 / 0.0, loc=make_loc(start_pos, end_pos)) // NaN
+      FloatToken(0.0 / 0.0, loc=make_loc(start_pos, end_pos), raw="-nan") // NaN
     }
 
-    // Handle positive special float values (+inf, +nan) 
+    // Handle positive special float values (+inf, +nan)
     ['+', 'i', 'n', 'f', .. rest] => {
       self.update_view(rest)
       self.validate_special_value_termination()
       let end_pos = self.get_loc()
-      FloatToken(1.0 / 0.0, loc=make_loc(start_pos, end_pos)) // positive infinity
+      FloatToken(1.0 / 0.0, loc=make_loc(start_pos, end_pos), raw="+inf") // positive infinity
     }
     ['+', 'n', 'a', 'n', .. rest] => {
       self.update_view(rest)
       self.validate_special_value_termination()
       let end_pos = self.get_loc()
-      FloatToken(0.0 / 0.0, loc=make_loc(start_pos, end_pos)) // NaN
+      FloatToken(0.0 / 0.0, loc=make_loc(start_pos, end_pos), raw="+nan") // NaN
     }
 
     // Identifiers and keywords (bare keys: A-Za-z0-9_-)

@@ -409,7 +409,6 @@ fn simple_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
 }
 
 ///|
-#cfg(false)
 fn simple_document_gen() -> @qc.Gen[@qc_model.SimpleDocument] {
   @qc.sized(fn(size) {
     let max_fields = capped_size(size + 1, 5)
