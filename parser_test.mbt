@@ -224,6 +224,83 @@ test "test table header numeric name" {
   )
 }
 
+///|
+test "tokenize exponent-like bare keys" {
+  // Each line shows how the tokenizer sees an exponent-like key followed by `= "val"`
+  debug_inspect(
+    @tokenize.tokenize("10e-1 = \"a\""),
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "10e-1",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 6 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }),
+      #|  StringToken(
+      #|    "a",
+      #|    loc={ start: { line: 1, column: 9 }, end: { line: 1, column: 12 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }),
+      #|]
+    ),
+  )
+  debug_inspect(
+    @tokenize.tokenize("10e1 = \"b\""),
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "10e1",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  StringToken(
+      #|    "b",
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 11 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 11 }, end: { line: 1, column: 11 } }),
+      #|]
+    ),
+  )
+  debug_inspect(
+    @tokenize.tokenize("-e-1 = \"c\""),
+    content=(
+      #|[
+      #|  Identifier(
+      #|    "-e-1",
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|  StringToken(
+      #|    "c",
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 11 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 11 }, end: { line: 1, column: 11 } }),
+      #|]
+    ),
+  )
+  debug_inspect(
+    @tokenize.tokenize("-10e-1 = \"d\""),
+    content=(
+      #|[
+      #|  FloatToken(
+      #|    -1,
+      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 7 } },
+      #|  ),
+      #|  Equals(loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 9 } }),
+      #|  StringToken(
+      #|    "d",
+      #|    loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 13 } },
+      #|    multiline=false,
+      #|  ),
+      #|  EOF(loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 13 } }),
+      #|]
+    ),
+  )
+}
+
 // TODO: fix parsing of negative exponent-like bare keys (e.g. "-10e-1")
 
 ///|
