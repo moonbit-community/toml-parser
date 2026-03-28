@@ -644,7 +644,6 @@ test "test invalid characters" {
     maybe_tokens.unwrap_err().to_string(),
     content=(
       #|"Failure(\"internal/tokenize/tokenize.mbt:1282:17-1282:54@bobzhang/toml FAILED: Unexpected character: '@'\")"
-
     ),
   ) // Should fail with unexpected character
 }
