@@ -124,7 +124,7 @@ test "parse_dotted_key - float token without dot" {
   debug_inspect(
     result,
     content=(
-      #|["42"]
+      #|["42", "0"]
     ),
   )
 }
@@ -234,7 +234,7 @@ test "parse_dotted_key - zero values" {
   debug_inspect(
     result,
     content=(
-      #|["0"]
+      #|["0", "0", "config"]
     ),
   )
 }

@@ -288,6 +288,7 @@ test "tokenize exponent-like bare keys" {
       #|  FloatToken(
       #|    -1,
       #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 7 } },
+      #|    raw="-10e-1",
       #|  ),
       #|  Equals(loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 9 } }),
       #|  StringToken(
@@ -301,10 +302,7 @@ test "tokenize exponent-like bare keys" {
   )
 }
 
-// TODO: fix parsing of negative exponent-like bare keys (e.g. "-10e-1")
-
 ///|
-#cfg(false)
 test "test exponent-like bare keys" {
   let exponent_like_keys_toml =
     #|10e-1 = "a"
@@ -329,10 +327,7 @@ test "test exponent-like bare keys" {
   )
 }
 
-// TODO: fix parsing of negative exponent-like bare table headers (e.g. [-10e-1])
-
 ///|
-#cfg(false)
 test "test exponent-like bare table headers" {
   let exponent_like_table_names_toml =
     #|[10e-1]

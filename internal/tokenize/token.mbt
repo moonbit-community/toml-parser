@@ -13,7 +13,7 @@ pub(all) enum Token {
   // Literals
   StringToken(String, loc~ : Loc, multiline~ : Bool)
   IntegerToken(Int64, loc~ : Loc)
-  FloatToken(Double, loc~ : Loc)
+  FloatToken(Double, loc~ : Loc, raw~ : String)
   BooleanToken(Bool, loc~ : Loc)
   DateTimeToken(TomlDateTime, loc~ : Loc)
 
@@ -83,7 +83,7 @@ pub fn Token::loc(self : Self) -> Loc {
   match self {
     StringToken(_, loc~, ..) => loc
     IntegerToken(_, loc~) => loc
-    FloatToken(_, loc~) => loc
+    FloatToken(_, loc~, ..) => loc
     BooleanToken(_, loc~) => loc
     DateTimeToken(_, loc~) => loc
     LeftBracket(loc~) => loc

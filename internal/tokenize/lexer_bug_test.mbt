@@ -18,6 +18,7 @@ test "test invalid float parsing" {
       #|    FloatToken(
       #|      1.2,
       #|      loc={ start: { line: 1, column: 11 }, end: { line: 1, column: 14 } },
+      #|      raw="1.2",
       #|    ),
       #|    Dot(loc={ start: { line: 1, column: 14 }, end: { line: 1, column: 15 } }),
       #|    IntegerToken(
