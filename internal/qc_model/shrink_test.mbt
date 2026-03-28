@@ -86,6 +86,7 @@ fn shrink_table_entries(
 }
 
 ///|
+#cfg(false)
 fn shrink_simple_document(
   doc : @qc_model.SimpleDocument,
 ) -> Iter[@qc_model.SimpleDocument] {
