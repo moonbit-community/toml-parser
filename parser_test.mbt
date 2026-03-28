@@ -357,6 +357,72 @@ test "test exponent-like bare table headers" {
 }
 
 ///|
+test "overflow float rejected in value position" {
+  // 1e100000 overflows Double but should NOT silently become infinity.
+  // TOML reserves inf/nan as the only valid non-finite spellings.
+  inspect(
+    parse_expect_to_fail("x = 1e100000\n"),
+    content="Invalid float: 1e100000 at { start: { line: 1, column: 5 }, end: { line: 1, column: 13 } }",
+  )
+  inspect(
+    parse_expect_to_fail("x = -31e368\n"),
+    content="Invalid float: -31e368 at { start: { line: 1, column: 5 }, end: { line: 1, column: 12 } }",
+  )
+}
+
+///|
+test "overflow float accepted as bare key" {
+  // The same overflow token is valid as a bare key (all chars are A-Za-z0-9_-)
+  debug_inspect(
+    try? @toml.parse("-31e368 = \"ok\"\n"),
+    content=(
+      #|Ok(TomlTable({ "-31e368": TomlString("ok") }))
+    ),
+  )
+}
+
+///|
+test "special float keywords as keys" {
+  // inf, nan, +inf, -inf, etc. are valid bare keys in TOML
+  debug_inspect(
+    try? @toml.parse("+inf = 1\n"),
+    content=(
+      #|Ok(TomlTable({ "+inf": TomlInteger(1) }))
+    ),
+  )
+  debug_inspect(
+    try? @toml.parse("-inf = 2\n"),
+    content=(
+      #|Ok(TomlTable({ "-inf": TomlInteger(2) }))
+    ),
+  )
+  debug_inspect(
+    try? @toml.parse("nan = 3\n"),
+    content=(
+      #|Ok(TomlTable({ "nan": TomlInteger(3) }))
+    ),
+  )
+}
+
+///|
+test "dotted key with float-like segments" {
+  // Float token with dot in raw string should split into dotted keys
+  debug_inspect(
+    try? @toml.parse("1.2 = \"a\"\n"),
+    content=(
+      #|Ok(TomlTable({ "1": TomlTable({ "2": TomlString("a") }) }))
+    ),
+  )
+  // Float-like key followed by dotted sub-key
+  debug_inspect(
+    try? @toml.parse("[-80e-2.sub]\nval = 1\n"),
+    content=(
+      #|Ok(TomlTable({ "-80e-2": TomlTable({ "sub": TomlTable({ "val": TomlInteger(1) }) }) }))
+    ),
+  )
+}
+
+///|
 test "test duplicate table redefinition" {
   let duplicate_table_toml =
     #|[table]
