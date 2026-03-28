@@ -206,8 +206,8 @@ fn float_values_equal(a : Map[String, Json], b : Map[String, Json]) -> Bool {
     return va_neg_zero == vb_neg_zero
   }
   // Parse and compare numerically
-  let fa = try? @strconv.parse_double(va)
-  let fb = try? @strconv.parse_double(vb)
+  let fa = try? @string.parse_double(va)
+  let fb = try? @string.parse_double(vb)
   match (fa, fb) {
     (Ok(a), Ok(b)) => a == b
     _ => false

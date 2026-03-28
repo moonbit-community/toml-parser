@@ -3,8 +3,8 @@ import {
   "bobzhang/toml",
   "moonbitlang/core/json",
   "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/string",
   "moonbitlang/async",
-  "moonbitlang/core/strconv",
 }
 
 warnings = "-unused_package"
