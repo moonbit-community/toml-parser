@@ -911,7 +911,7 @@ fn Lexer::read_number_with_loc(
         // Overflow (e.g. -31e368) → ±infinity, matching IEEE 754 behaviour.
         // The raw string is preserved so the parser can still use this token
         // as a bare key.
-        _ => if s.length() > 0 && s[0] == '-' { -1.0 / 0.0 } else { 1.0 / 0.0 }
+        _ => if s is ['-', ..] { -1.0 / 0.0 } else { 1.0 / 0.0 }
       },
       loc~,
       raw=raw_s,
@@ -932,8 +932,10 @@ fn validate_float_string(s : String, raw : String) -> Unit raise {
     raise Failure::Failure("Invalid float: trailing dot")
   }
   // Check for dot followed immediately by 'e' (e.g. "1.e2")
-  for i = 0; i < s.length() - 1; i = i + 1 {
-    if s[i] == '.' && (s[i + 1] == 'e' || s[i + 1] == 'E') {
+  // FIXME 0.. < s.length() - 1
+  // weird error message 
+  for i in 0..<(s.length() - 1) {
+    if s[i] is '.' && s[i + 1] is ('e' | 'E') {
       raise Failure::Failure("Invalid float: no digits after decimal point")
     }
   }
