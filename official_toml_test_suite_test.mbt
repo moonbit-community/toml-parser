@@ -544,37 +544,37 @@ test "inf failure" {
   let inf_failure_toml =
     #|inf = -infx
     #|
-  debug_inspect(
-    try? @toml.parse(inf_failure_toml),
+  inspect(
+    parse_expect_to_fail(inf_failure_toml),
     content=(
-      #|Err(Failure("internal/tokenize/tokenize.mbt:58:7-58:72@bobzhang/toml FAILED: Invalid character 'x' after special value at line 1, column 11"))
+      #|Invalid character 'x' after special value at line 1, column 11
     ),
   )
   let inf_failure_toml2 =
     #|inf = -infx=2
     #|
-  debug_inspect(
-    try? @toml.parse(inf_failure_toml2),
+  inspect(
+    parse_expect_to_fail(inf_failure_toml2),
     content=(
-      #|Err(Failure("internal/tokenize/tokenize.mbt:58:7-58:72@bobzhang/toml FAILED: Invalid character 'x' after special value at line 1, column 11"))
+      #|Invalid character 'x' after special value at line 1, column 11
     ),
   )
   let inf_failure_toml2 =
     #|inf = -inf x=2
     #|
-  debug_inspect(
-    try? @toml.parse(inf_failure_toml2),
+  inspect(
+    parse_expect_to_fail(inf_failure_toml2),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 12 }, end: { line: 1, column: 13 } }"))
+      #|Expected newline or end of file after key-value pair at { start: { line: 1, column: 12 }, end: { line: 1, column: 13 } }
     ),
   )
   let table_failure =
     #|a = 3 b = 2
     #|
-  debug_inspect(
-    try? @toml.parse(table_failure),
+  inspect(
+    parse_expect_to_fail(table_failure),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }"))
+      #|Expected newline or end of file after key-value pair at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }
     ),
   )
 

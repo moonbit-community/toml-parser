@@ -421,41 +421,41 @@ test "microservice configuration" {
 test "error handling" {
 
   // Missing value
-  debug_inspect(
-    try? @toml.parse("key ="),
+  inspect(
+    parse_expect_to_fail("key ="),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 6 }, end: { line: 1, column: 6 } }"))
+      #|Expected value at { start: { line: 1, column: 6 }, end: { line: 1, column: 6 } }
     ),
   )
   // Missing key
-  debug_inspect(
-    try? @toml.parse("= \"value\""),
+  inspect(
+    parse_expect_to_fail("= \"value\""),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }"))
+      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }
     ),
   )
 
   // Unterminated string
-  debug_inspect(
-    try? @toml.parse("key = \"unterminated"),
+  inspect(
+    parse_expect_to_fail("key = \"unterminated"),
     content=(
-      #|Err(Failure("internal/tokenize/tokenize.mbt:247:11-247:50@bobzhang/toml FAILED: Unterminated string at line 1, column 8"))
+      #|Unterminated string at line 1, column 8
     ),
   )
 
   // Invalid syntax - incomplete array
-  debug_inspect(
-    try? @toml.parse("key = [1, 2"),
+  inspect(
+    parse_expect_to_fail("key = [1, 2"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }"))
+      #|Expected ',' or ']' in array at { start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }
     ),
   )
 
   // Empty key
-  debug_inspect(
-    try? @toml.parse(" = \"value\""),
+  inspect(
+    parse_expect_to_fail(" = \"value\""),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 2 }, end: { line: 1, column: 3 } }"))
+      #|Expected key at { start: { line: 1, column: 2 }, end: { line: 1, column: 3 } }
     ),
   )
 }
@@ -465,42 +465,42 @@ test "error handling" {
 test "error location tracking" {
 
   // Test 1: Error at beginning of line
-  debug_inspect(
-    try? @toml.parse("=missing_key"),
+  inspect(
+    parse_expect_to_fail("=missing_key"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }"))
+      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }
     ),
   )
 
   // Test 2: Error in the middle of a line
-  debug_inspect(
-    try? @toml.parse("valid_key = "),
+  inspect(
+    parse_expect_to_fail("valid_key = "),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 13 }, end: { line: 1, column: 13 } }"))
+      #|Expected value at { start: { line: 1, column: 13 }, end: { line: 1, column: 13 } }
     ),
   )
 
   // Test 3: Error with spaces before it
-  debug_inspect(
-    try? @toml.parse("   key = "),
+  inspect(
+    parse_expect_to_fail("   key = "),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 10 }, end: { line: 1, column: 10 } }"))
+      #|Expected value at { start: { line: 1, column: 10 }, end: { line: 1, column: 10 } }
     ),
   )
 
   // Test 4: Missing equals sign
-  debug_inspect(
-    try? @toml.parse("key \"value\""),
+  inspect(
+    parse_expect_to_fail("key \"value\""),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected '=' at { start: { line: 1, column: 5 }, end: { line: 1, column: 12 } }"))
+      #|Expected '=' at { start: { line: 1, column: 5 }, end: { line: 1, column: 12 } }
     ),
   )
 
   // Test 5: Invalid value type
-  debug_inspect(
-    try? @toml.parse("key = invalid_unquoted"),
+  inspect(
+    parse_expect_to_fail("key = invalid_unquoted"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 23 } }"))
+      #|Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 23 } }
     ),
   )
 }
@@ -512,12 +512,12 @@ test "multiline error locations" {
   // Test 1: Error on second line
   let multiline_test1 =
     #|key1 = "valid"
-    #|key2 = 
+    #|key2 =
     #|
-  debug_inspect(
-    try? @toml.parse(multiline_test1),
+  inspect(
+    parse_expect_to_fail(multiline_test1),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 2, column: 8 }, end: { line: 3, column: 1 } }"))
+      #|Expected value at { start: { line: 2, column: 7 }, end: { line: 3, column: 1 } }
     ),
   )
 
@@ -527,22 +527,22 @@ test "multiline error locations" {
     #|key2 = "also_valid"
     #|= missing_key
     #|
-  debug_inspect(
-    try? @toml.parse(multiline_test2),
+  inspect(
+    parse_expect_to_fail(multiline_test2),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 3, column: 1 }, end: { line: 3, column: 2 } }"))
+      #|Expected key at { start: { line: 3, column: 1 }, end: { line: 3, column: 2 } }
     ),
   )
 
   // Test 3: Array error on second line
   let multiline_test3 =
     #|key1 = "valid"
-    #|key2 = [1, 2, 
+    #|key2 = [1, 2,
     #|
-  debug_inspect(
-    try? @toml.parse(multiline_test3),
+  inspect(
+    parse_expect_to_fail(multiline_test3),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 2, column: 15 }, end: { line: 3, column: 1 } }"))
+      #|Expected value at { start: { line: 2, column: 14 }, end: { line: 3, column: 1 } }
     ),
   )
 
@@ -551,13 +551,13 @@ test "multiline error locations" {
     #|# Comment line
     #|
     #|key1 = "valid"
-    #|   
+    #|
     #|= error_here
     #|
-  debug_inspect(
-    try? @toml.parse(multiline_test4),
+  inspect(
+    parse_expect_to_fail(multiline_test4),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 5, column: 1 }, end: { line: 5, column: 2 } }"))
+      #|Expected key at { start: { line: 5, column: 1 }, end: { line: 5, column: 2 } }
     ),
   )
 }
@@ -567,34 +567,34 @@ test "multiline error locations" {
 test "array error locations" {
 
   // Test 1: Missing closing bracket at specific position
-  debug_inspect(
-    try? @toml.parse("arr = [1, 2, 3"),
+  inspect(
+    parse_expect_to_fail("arr = [1, 2, 3"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }"))
+      #|Expected ',' or ']' in array at { start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }
     ),
   )
 
   // Test 2: Missing comma between elements
-  debug_inspect(
-    try? @toml.parse("arr = [1 2]"),
+  inspect(
+    parse_expect_to_fail("arr = [1 2]"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }"))
+      #|Expected ',' or ']' in array at { start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }
     ),
   )
 
   // Test 3: Invalid value in array
-  debug_inspect(
-    try? @toml.parse("arr = [1, invalid, 3]"),
+  inspect(
+    parse_expect_to_fail("arr = [1, invalid, 3]"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 11 }, end: { line: 1, column: 18 } }"))
+      #|Expected value at { start: { line: 1, column: 11 }, end: { line: 1, column: 18 } }
     ),
   )
 
   // Test 4: Nested array error
-  debug_inspect(
-    try? @toml.parse("arr = [[1, 2], [3, ]"),
+  inspect(
+    parse_expect_to_fail("arr = [[1, 2], [3, ]"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }"))
+      #|Expected ',' or ']' in array at { start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }
     ),
   )
 
@@ -606,10 +606,10 @@ test "array error locations" {
     #|  invalid_value
     #|]
     #|
-  debug_inspect(
-    try? @toml.parse(array_multiline),
+  inspect(
+    parse_expect_to_fail(array_multiline),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 3, column: 5 }, end: { line: 4, column: 1 } }"))
+      #|Expected value at { start: { line: 3, column: 5 }, end: { line: 4, column: 1 } }
     ),
   )
 }
@@ -619,34 +619,34 @@ test "array error locations" {
 test "inline table error locations" {
 
   // Test 1: Missing closing brace
-  debug_inspect(
-    try? @toml.parse("table = {key = \"value\""),
+  inspect(
+    parse_expect_to_fail("table = {key = \"value\""),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or '}' in inline table at { start: { line: 1, column: 23 }, end: { line: 1, column: 23 } }"))
+      #|Expected ',' or '}' in inline table at { start: { line: 1, column: 23 }, end: { line: 1, column: 23 } }
     ),
   )
 
   // Test 2: Missing key in inline table
-  debug_inspect(
-    try? @toml.parse("table = {= \"value\"}"),
+  inspect(
+    parse_expect_to_fail("table = {= \"value\"}"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }"))
+      #|Expected key at { start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }
     ),
   )
 
-  // Test 3: Missing value in inline table  
-  debug_inspect(
-    try? @toml.parse("table = {key = }"),
+  // Test 3: Missing value in inline table
+  inspect(
+    parse_expect_to_fail("table = {key = }"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 16 }, end: { line: 1, column: 17 } }"))
+      #|Expected value at { start: { line: 1, column: 16 }, end: { line: 1, column: 17 } }
     ),
   )
 
   // Test 4: Missing equals in inline table
-  debug_inspect(
-    try? @toml.parse("table = {key \"value\"}"),
+  inspect(
+    parse_expect_to_fail("table = {key \"value\"}"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected '=' at { start: { line: 1, column: 14 }, end: { line: 1, column: 21 } }"))
+      #|Expected '=' at { start: { line: 1, column: 14 }, end: { line: 1, column: 21 } }
     ),
   )
 
@@ -664,42 +664,42 @@ test "inline table error locations" {
 test "table header error locations" {
 
   // Test 1: Missing closing bracket in table header
-  debug_inspect(
-    try? @toml.parse("[table_name"),
+  inspect(
+    parse_expect_to_fail("[table_name"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ']' at { start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }"))
+      #|Expected ']' at { start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }
     ),
   )
 
   // Test 2: Missing table name
-  debug_inspect(
-    try? @toml.parse("[]"),
+  inspect(
+    parse_expect_to_fail("[]"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 2 }, end: { line: 1, column: 3 } }"))
+      #|Expected key at { start: { line: 1, column: 2 }, end: { line: 1, column: 3 } }
     ),
   )
 
   // Test 3: Array of tables missing second bracket
-  debug_inspect(
-    try? @toml.parse("[[table_name]"),
+  inspect(
+    parse_expect_to_fail("[[table_name]"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ']]' at { start: { line: 1, column: 13 }, end: { line: 1, column: 14 } }"))
+      #|Expected ']]' at { start: { line: 1, column: 13 }, end: { line: 1, column: 14 } }
     ),
   )
 
   // Test 4: Array of tables missing table name
-  debug_inspect(
-    try? @toml.parse("[[]]"),
+  inspect(
+    parse_expect_to_fail("[[]]"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 3 }, end: { line: 1, column: 4 } }"))
+      #|Expected key at { start: { line: 1, column: 3 }, end: { line: 1, column: 4 } }
     ),
   )
 
   // Test 5: Invalid character in table name position
-  debug_inspect(
-    try? @toml.parse("[#invalid]"),
+  inspect(
+    parse_expect_to_fail("[#invalid]"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 11 }, end: { line: 1, column: 11 } }"))
+      #|Expected key at { start: { line: 1, column: 11 }, end: { line: 1, column: 11 } }
     ),
   )
 }
@@ -709,42 +709,42 @@ test "table header error locations" {
 test "precise column tracking" {
 
   // Test 1: Error at specific column with tabs (assuming tab = 1 column)
-  debug_inspect(
-    try? @toml.parse("\tkey ="),
+  inspect(
+    parse_expect_to_fail("\tkey ="),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 7 } }"))
+      #|Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 7 } }
     ),
   )
 
   // Test 2: Error with mixed spaces and content (should fail due to missing newline)
-  debug_inspect(
-    try? @toml.parse("  key1 = \"val\"  key2 = "),
+  inspect(
+    parse_expect_to_fail("  key1 = \"val\"  key2 = "),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected newline or end of file after key-value pair at { start: { line: 1, column: 17 }, end: { line: 1, column: 21 } }"))
+      #|Expected newline or end of file after key-value pair at { start: { line: 1, column: 17 }, end: { line: 1, column: 21 } }
     ),
   )
 
   // Test 3: Long key name error position
-  debug_inspect(
-    try? @toml.parse("very_long_key_name_here = "),
+  inspect(
+    parse_expect_to_fail("very_long_key_name_here = "),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 27 }, end: { line: 1, column: 27 } }"))
+      #|Expected value at { start: { line: 1, column: 27 }, end: { line: 1, column: 27 } }
     ),
   )
 
   // Test 4: Error position after unicode characters
-  debug_inspect(
-    try? @toml.parse("café = "),
+  inspect(
+    parse_expect_to_fail("café = "),
     content=(
-      #|Err(Failure("internal/tokenize/tokenize.mbt:1275:17-1275:54@bobzhang/toml FAILED: Unexpected character: 'é'"))
+      #|Unexpected character: 'é'
     ),
   )
 
   // Test 5: Multiple equals signs - error on second one
-  debug_inspect(
-    try? @toml.parse("key = = \"value\""),
+  inspect(
+    parse_expect_to_fail("key = = \"value\""),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }"))
+      #|Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }
     ),
   )
 }
@@ -758,59 +758,59 @@ test "complex error location scenarios" {
     #|outer = {
     #|  middle = {
     #|    inner = {
-    #|      key = 
+    #|      key =
     #|    }
     #|  }
     #|}
     #|
-  debug_inspect(
-    try? @toml.parse(deep_nested),
+  inspect(
+    parse_expect_to_fail(deep_nested),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 4, column: 13 }, end: { line: 5, column: 1 } }"))
+      #|Expected value at { start: { line: 4, column: 12 }, end: { line: 5, column: 1 } }
     ),
   )
 
   // Test 2: Error at end of file
-  debug_inspect(
-    try? @toml.parse("key = [1, 2, 3"),
+  inspect(
+    parse_expect_to_fail("key = [1, 2, 3"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected ',' or ']' in array at { start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }"))
+      #|Expected ',' or ']' in array at { start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }
     ),
   )
 
   // Test 3: Error with different quote types
-  debug_inspect(
-    try? @toml.parse("key = 'unterminated"),
+  inspect(
+    parse_expect_to_fail("key = 'unterminated"),
     content=(
-      #|Err(Failure("internal/tokenize/tokenize.mbt:272:11-272:50@bobzhang/toml FAILED: Unterminated string at line 1, column 8"))
+      #|Unterminated string at line 1, column 8
     ),
   )
 
-  // Test 4: Error in array of tables with location  
+  // Test 4: Error in array of tables with location
   let aot_error =
     #|[[servers]]
     #|name = "server1"
     #|
     #|[[servers]]
-    #|name = 
+    #|name =
     #|
-  debug_inspect(
-    try? @toml.parse(aot_error),
+  inspect(
+    parse_expect_to_fail(aot_error),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 5, column: 8 }, end: { line: 6, column: 1 } }"))
+      #|Expected value at { start: { line: 5, column: 7 }, end: { line: 6, column: 1 } }
     ),
   )
 
   // Test 5: Error with trailing whitespace and newlines
   let trailing_ws =
-    #|key1 = "value"   
-    #|key2 =    
-    #|   
+    #|key1 = "value"
+    #|key2 =
     #|
-  debug_inspect(
-    try? @toml.parse(trailing_ws),
+    #|
+  inspect(
+    parse_expect_to_fail(trailing_ws),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 2, column: 11 }, end: { line: 3, column: 1 } }"))
+      #|Expected value at { start: { line: 2, column: 7 }, end: { line: 3, column: 1 } }
     ),
   )
 }
@@ -820,26 +820,26 @@ test "complex error location scenarios" {
 test "location tracking with special cases" {
 
   // Test 1: Error after comment on same line (should fail since comments aren't implemented)
-  debug_inspect(
-    try? @toml.parse("key = # comment"),
+  inspect(
+    parse_expect_to_fail("key = # comment"),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 16 }, end: { line: 1, column: 16 } }"))
+      #|Expected value at { start: { line: 1, column: 16 }, end: { line: 1, column: 16 } }
     ),
   )
 
   // Test 2: Error with windows-style line endings (if supported)
-  debug_inspect(
-    try? @toml.parse("key1 = \"value\"\r\nkey2 = "),
+  inspect(
+    parse_expect_to_fail("key1 = \"value\"\r\nkey2 = "),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }"))
+      #|Expected value at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }
     ),
   )
 
   // Test 3: Error with just spaces as a key
-  debug_inspect(
-    try? @toml.parse("   = \"value\""),
+  inspect(
+    parse_expect_to_fail("   = \"value\""),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 4 }, end: { line: 1, column: 5 } }"))
+      #|Expected key at { start: { line: 1, column: 4 }, end: { line: 1, column: 5 } }
     ),
   )
 
@@ -851,19 +851,19 @@ test "location tracking with special cases" {
     #|  [true, false, invalid_token]
     #|]
     #|
-  debug_inspect(
-    try? @toml.parse(complex_array),
+  inspect(
+    parse_expect_to_fail(complex_array),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 4, column: 17 }, end: { line: 4, column: 30 } }"))
+      #|Expected value at { start: { line: 4, column: 17 }, end: { line: 4, column: 30 } }
     ),
   )
 
   // Test 5: Very long line with error at the end
   let long_line = "very_long_key_name_that_goes_on_and_on_and_on_and_on_and_on = "
-  debug_inspect(
-    try? @toml.parse(long_line),
+  inspect(
+    parse_expect_to_fail(long_line),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 63 }, end: { line: 1, column: 63 } }"))
+      #|Expected value at { start: { line: 1, column: 63 }, end: { line: 1, column: 63 } }
     ),
   )
 }
@@ -941,14 +941,14 @@ test "edge cases" {
 
 ///|
 test "newline significate" {
-  // this should fail  
+  // this should fail
   let data =
-    #|key1 = 
+    #|key1 =
     #|  3
-  debug_inspect(
-    try? @toml.parse(data),
+  inspect(
+    parse_expect_to_fail(data),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 8 }, end: { line: 2, column: 1 } }"))
+      #|Expected value at { start: { line: 1, column: 7 }, end: { line: 2, column: 1 } }
     ),
   )
   // This should fail, inline table does not cross newline according to the spec
@@ -956,10 +956,10 @@ test "newline significate" {
     #| server = {host =
     #|   "localhost"
     #| }
-  debug_inspect(
-    try? @toml.parse(data2),
+  inspect(
+    parse_expect_to_fail(data2),
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 18 }, end: { line: 2, column: 1 } }"))
+      #|Expected value at { start: { line: 1, column: 18 }, end: { line: 2, column: 1 } }
     ),
   )
 

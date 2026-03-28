@@ -87,15 +87,14 @@ test "array_of_tables_path_with_integer_key" {
 ///|
 /// Test invalid Unicode escape sequences to trigger error paths
 test "invalid_unicode_escapes" {
-  let result = try? @toml.parse(
-    (
-      #|key = "\uZZZZ"
+  inspect(
+    parse_expect_to_fail(
+      (
+        #|key = "\uZZZZ"
+      ),
     ),
-  )
-  debug_inspect(
-    result,
     content=(
-      #|Err(Failure("internal/tokenize/tokenize.mbt:111:7-111:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10"))
+      #|Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10
     ),
   ) // Expected error
 }
@@ -103,15 +102,14 @@ test "invalid_unicode_escapes" {
 ///|
 /// Test invalid 8-byte Unicode escape
 test "invalid_8byte_unicode_escape" {
-  let result = try? @toml.parse(
-    (
-      #|key = "\U00200000"
+  inspect(
+    parse_expect_to_fail(
+      (
+        #|key = "\U00200000"
+      ),
     ),
-  ) // Invalid code point > 0x10FFFF
-  debug_inspect(
-    result,
     content=(
-      #|Err(Failure("internal/tokenize/tokenize.mbt:158:5-158:60@bobzhang/toml FAILED: Invalid Unicode code point: 2097152 at line 1, column 18"))
+      #|Invalid Unicode code point: 2097152 at line 1, column 18
     ),
   ) // Expected error
 }
@@ -119,15 +117,14 @@ test "invalid_8byte_unicode_escape" {
 ///|
 /// Test unterminated multiline string
 test "unterminated_multiline_string" {
-  let result = try? @toml.parse(
-    (
-      #|key = """This is unterminated
+  inspect(
+    parse_expect_to_fail(
+      (
+        #|key = """This is unterminated
+      ),
     ),
-  )
-  debug_inspect(
-    result,
     content=(
-      #|Err(Failure("internal/tokenize/tokenize.mbt:416:11-416:60@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 30"))
+      #|Unterminated multiline string at line 1, column 30
     ),
   ) // Expected error
 }
@@ -182,16 +179,15 @@ test "nested_validation_failure_in_array" {
 ///|
 /// Test table path conflict error  
 test "table_path_conflict_error" {
-  let result = try? @toml.parse(
-    (
-      #|key = 42
-      #|[key]
+  inspect(
+    parse_expect_to_fail(
+      (
+        #|key = 42
+        #|[key]
+      ),
     ),
-  )
-  debug_inspect(
-    result,
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: ExpectedTable(\"key\", \"integer\") at { start: { line: 2, column: 6 }, end: { line: 2, column: 6 } }"))
+      #|ExpectedTable(\"key\", \"integer\") at { start: { line: 2, column: 6 }, end: { line: 2, column: 6 } }
     ),
   ) // Expected error
 }
@@ -199,16 +195,15 @@ test "table_path_conflict_error" {
 ///|
 /// Test array of tables path conflict error
 test "array_of_tables_path_conflict_error" {
-  let result = try? @toml.parse(
-    (
-      #|key = 42
-      #|[[key]]
+  inspect(
+    parse_expect_to_fail(
+      (
+        #|key = 42
+        #|[[key]]
+      ),
     ),
-  )
-  debug_inspect(
-    result,
     content=(
-      #|Err(Failure("parser.mbt:189:20-189:70@bobzhang/toml FAILED: ExpectedArray(\"key\", \"integer\") at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }"))
+      #|ExpectedArray(\"key\", \"integer\") at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }
     ),
   ) // Expected error
 }
@@ -446,15 +441,14 @@ test "negative_number_parsing" {
 ///|
 /// Test error handling with invalid characters
 test "invalid_character_error" {
-  let result = try? @toml.parse(
-    (
-      #|key = @invalid
+  inspect(
+    parse_expect_to_fail(
+      (
+        #|key = @invalid
+      ),
     ),
-  )
-  debug_inspect(
-    result,
     content=(
-      #|Err(Failure("internal/tokenize/tokenize.mbt:1275:17-1275:54@bobzhang/toml FAILED: Unexpected character: '@'"))
+      #|Unexpected character: '@'
     ),
   ) // Expected error
 }
