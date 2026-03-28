@@ -1,7 +1,8 @@
 import {
-  "moonbitlang/quickcheck" @qc,
+  "bobzhang/toml/internal/tokenize" @tokenize,
 }
 
 import {
+  "moonbitlang/quickcheck" @qc,
   "bobzhang/toml" @toml,
 } for "test"
