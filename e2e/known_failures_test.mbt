@@ -25,7 +25,6 @@ test "fixed: leading underscore value rejected (not infinite loop)" {
     result,
     content=(
       #|Err(Failure("parser.mbt:197:20-197:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 7 } }"))
-
     ),
   )
 }
