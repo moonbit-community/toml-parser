@@ -100,7 +100,6 @@ test "test edge case number formats for error paths" {
     tokens,
     content=(
       #|Err(Failure("internal/tokenize/tokenize.mbt:947:12-947:41@bobzhang/toml FAILED: Invalid integer: 999999999999999999999999999999999999999"))
-
     ),
   )
 }
