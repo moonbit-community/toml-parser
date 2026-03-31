@@ -168,83 +168,85 @@ fn Lexer::read_unicode_8_escape(self : Lexer) -> Char raise {
 fn Lexer::read_basic_string(self : Lexer) -> String raise {
   self.advance() // consume opening quote
   let sb = StringBuilder::new()
-  let next_view = loop self.view() {
-    ['"', .. rest] => rest // exit
-    ['\\', peeked, .. rest] as current =>
-      match peeked {
-        'n' => {
-          sb.write_char('\n')
-          continue rest
+  let next_view = for view = self.view() {
+    match view {
+      ['"', .. rest] => break rest // exit
+      ['\\', peeked, .. rest] as current =>
+        match peeked {
+          'n' => {
+            sb.write_char('\n')
+            continue rest
+          }
+          't' => {
+            sb.write_char('\t')
+            continue rest
+          }
+          'r' => {
+            sb.write_char('\r')
+            continue rest
+          }
+          '\\' => {
+            sb.write_char('\\')
+            continue rest
+          }
+          '"' => {
+            sb.write_char('"')
+            continue rest
+          }
+          '\'' => {
+            sb.write_char('\'')
+            continue rest
+          }
+          'b' => {
+            sb.write_char('\u0008')
+            continue rest
+          }
+          'f' => {
+            sb.write_char('\u000C')
+            continue rest
+          }
+          'e' => {
+            sb.write_char('\u001B') // ESC
+            continue rest
+          }
+          'x' => {
+            self.update_view(rest)
+            sb.write_char(self.read_hex_2_escape())
+            continue self.view()
+          }
+          'u' => {
+            self.update_view(rest)
+            sb.write_char(self.read_unicode_4_escape())
+            continue self.view()
+          }
+          'U' => {
+            self.update_view(rest)
+            // this may affect error message about location
+            // we may fix this by storing the beginnning position
+            // of the string
+            sb.write_char(self.read_unicode_8_escape())
+            continue self.view()
+          }
+          _ => {
+            // fix the error message location
+            self.update_view(current)
+            fail(self.error("Invalid escape sequence: \\\{peeked}"))
+          }
         }
-        't' => {
-          sb.write_char('\t')
-          continue rest
-        }
-        'r' => {
-          sb.write_char('\r')
-          continue rest
-        }
-        '\\' => {
-          sb.write_char('\\')
-          continue rest
-        }
-        '"' => {
-          sb.write_char('"')
-          continue rest
-        }
-        '\'' => {
-          sb.write_char('\'')
-          continue rest
-        }
-        'b' => {
-          sb.write_char('\u0008')
-          continue rest
-        }
-        'f' => {
-          sb.write_char('\u000C')
-          continue rest
-        }
-        'e' => {
-          sb.write_char('\u001B') // ESC
-          continue rest
-        }
-        'x' => {
+      [ch, .. rest] => {
+        if is_control_char(ch) {
           self.update_view(rest)
-          sb.write_char(self.read_hex_2_escape())
-          continue self.view()
+          fail(
+            self.error(
+              "Invalid control character in basic string: U+\{ch.to_int().to_string().pad_start(4, '0')}",
+            ),
+          )
         }
-        'u' => {
-          self.update_view(rest)
-          sb.write_char(self.read_unicode_4_escape())
-          continue self.view()
-        }
-        'U' => {
-          self.update_view(rest)
-          // this may affect error message about location
-          // we may fix this by storing the beginnning position
-          // of the string
-          sb.write_char(self.read_unicode_8_escape())
-          continue self.view()
-        }
-        _ => {
-          // fix the error message location
-          self.update_view(current)
-          fail(self.error("Invalid escape sequence: \\\{peeked}"))
-        }
+        sb.write_char(ch)
+        continue rest
       }
-    [ch, .. rest] => {
-      if is_control_char(ch) {
-        self.update_view(rest)
-        fail(
-          self.error(
-            "Invalid control character in basic string: U+\{ch.to_int().to_string().pad_start(4, '0')}",
-          ),
-        )
-      }
-      sb.write_char(ch)
-      continue rest
+      [] => fail(self.error("Unterminated string"))
     }
-    [] => fail(self.error("Unterminated string"))
   }
   self.update_view(next_view)
   sb.to_string()
@@ -255,21 +257,23 @@ fn Lexer::read_basic_string(self : Lexer) -> String raise {
 fn Lexer::read_literal_string(self : Lexer) -> String raise {
   self.advance() // consume opening quote
   let sb = StringBuilder::new()
-  let next = loop self.view() {
-    ['\'', .. rest] => rest
-    [ch, .. rest] => {
-      if is_control_char(ch) {
-        self.update_view(rest)
-        fail(
-          self.error(
-            "Invalid control character in literal string: U+\{ch.to_int().to_string().pad_start(4, '0')}",
-          ),
-        )
+  let next = for view = self.view() {
+    match view {
+      ['\'', .. rest] => break rest
+      [ch, .. rest] => {
+        if is_control_char(ch) {
+          self.update_view(rest)
+          fail(
+            self.error(
+              "Invalid control character in literal string: U+\{ch.to_int().to_string().pad_start(4, '0')}",
+            ),
+          )
+        }
+        sb.write_char(ch)
+        continue rest
       }
-      sb.write_char(ch)
-      continue rest
+      [] => fail(self.error("Unterminated string"))
     }
-    [] => fail(self.error("Unterminated string"))
   }
   self.update_view(next)
   sb.to_string()
@@ -281,139 +285,149 @@ fn Lexer::read_literal_string(self : Lexer) -> String raise {
 fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
   self.skip_single_newline()
   let sb = StringBuilder::new()
-  loop self.view() {
-    [.. "\"\"\"\"\"", .. rest] => {
-      // 5 quotes: 2 content quotes + closing triple quotes
-      sb.write_string("\"\"")
-      self.update_view(rest)
-      break sb.to_string()
-    }
-    [.. "\"\"\"\"", .. rest] => {
-      // 4 quotes: 1 content quote + closing triple quotes
-      sb.write_char('"')
-      self.update_view(rest)
-      break sb.to_string()
-    }
-    [.. "\"\"\"", .. rest] => {
-      // Closing triple quotes
-      self.update_view(rest)
-      break sb.to_string()
-    }
-    ['\\', escaped, .. rest] => {
-      self.update_view(rest) // consume escaped character
-      match escaped {
-        'n' => sb.write_char('\n')
-        't' => sb.write_char('\t')
-        'r' => sb.write_char('\r')
-        '\\' => sb.write_char('\\')
-        '"' => sb.write_char('"')
-        '\'' => sb.write_char('\'')
-        'b' => sb.write_char('\u0008')
-        'f' => sb.write_char('\u000C')
-        'e' => sb.write_char('\u001B') // ESC
-        'x' => sb.write_char(self.read_hex_2_escape())
-        'u' => sb.write_char(self.read_unicode_4_escape())
-        'U' => sb.write_char(self.read_unicode_8_escape())
-        // Line ending backslash: \ at end of line trims newline + whitespace
-        '\n' => {
-          self.new_line()
-          // Skip all whitespace and newlines until non-whitespace content
-          let next_view = loop self.view() {
-            ['\n', .. rest] => {
-              self.new_line()
-              continue rest
-            }
-            ['\r', '\n', .. rest] => {
-              self.new_line()
-              continue rest
-            }
-            [' ' | '\t' | '\r', .. rest] => continue rest
-            rest => rest
-          }
-          self.update_view(next_view)
-        }
-        '\r' => {
-          self.new_line()
-          match self.view() {
-            ['\n', .. rest] => self.update_view(rest)
-            _ => ()
-          }
-          let next_view = loop self.view() {
-            ['\n', .. rest] => {
-              self.new_line()
-              continue rest
-            }
-            ['\r', '\n', .. rest] => {
-              self.new_line()
-              continue rest
-            }
-            [' ' | '\t' | '\r', .. rest] => continue rest
-            rest => rest
-          }
-          self.update_view(next_view)
-        }
-        ' ' | '\t' => {
-          // \ followed by space/tab: must be followed by only whitespace then newline
-          let found_newline = loop self.view() {
-            [' ' | '\t', .. rest] => continue rest
-            ['\n', ..] | ['\r', ..] => true
-            _ => false
-          }
-          if !found_newline {
-            fail(
-              self.error(
-                "Invalid escape: backslash followed by whitespace but no newline",
-              ),
-            )
-          }
-          // Now consume the newline and following whitespace
-          let next_view = loop self.view() {
-            ['\n', .. rest] => {
-              self.new_line()
-              continue rest
-            }
-            ['\r', '\n', .. rest] => {
-              self.new_line()
-              continue rest
-            }
-            [' ' | '\t' | '\r', .. rest] => continue rest
-            rest => rest
-          }
-          self.update_view(next_view)
-        }
-        _ => fail(self.error("Invalid escape sequence: \\\{escaped}"))
-      }
-      continue self.view()
-    }
-    ['\\'] => {
-      self.advance()
-      fail(self.error("Unexpected end of input after escape character"))
-    }
-    ['\r', '\n', .. rest] => {
-      // CRLF in multiline string
-      self.update_view(rest)
-      sb.write_char('\n')
-      self.new_line()
-      continue self.view()
-    }
-    [ch, .. rest] => {
-      // Allow \n in multiline strings, reject bare \r and other control chars
-      if ch != '\n' && is_control_char(ch) {
+  for view = self.view() {
+    match view {
+      [.. "\"\"\"\"\"", .. rest] => {
+        // 5 quotes: 2 content quotes + closing triple quotes
+        sb.write_string("\"\"")
         self.update_view(rest)
-        fail(
-          self.error(
-            "Invalid control character in multiline string: U+\{ch.to_int().to_string().pad_start(4, '0')}",
-          ),
-        )
+        break sb.to_string()
       }
-      self.update_view(rest)
-      sb.write_char(ch)
-      if ch == '\n' {
+      [.. "\"\"\"\"", .. rest] => {
+        // 4 quotes: 1 content quote + closing triple quotes
+        sb.write_char('"')
+        self.update_view(rest)
+        break sb.to_string()
+      }
+      [.. "\"\"\"", .. rest] => {
+        // Closing triple quotes
+        self.update_view(rest)
+        break sb.to_string()
+      }
+      ['\\', escaped, .. rest] => {
+        self.update_view(rest) // consume escaped character
+        match escaped {
+          'n' => sb.write_char('\n')
+          't' => sb.write_char('\t')
+          'r' => sb.write_char('\r')
+          '\\' => sb.write_char('\\')
+          '"' => sb.write_char('"')
+          '\'' => sb.write_char('\'')
+          'b' => sb.write_char('\u0008')
+          'f' => sb.write_char('\u000C')
+          'e' => sb.write_char('\u001B') // ESC
+          'x' => sb.write_char(self.read_hex_2_escape())
+          'u' => sb.write_char(self.read_unicode_4_escape())
+          'U' => sb.write_char(self.read_unicode_8_escape())
+          // Line ending backslash: \ at end of line trims newline + whitespace
+          '\n' => {
+            self.new_line()
+            // Skip all whitespace and newlines until non-whitespace content
+            let next_view = for v = self.view() {
+              match v {
+                ['\n', .. rest] => {
+                  self.new_line()
+                  continue rest
+                }
+                ['\r', '\n', .. rest] => {
+                  self.new_line()
+                  continue rest
+                }
+                [' ' | '\t' | '\r', .. rest] => continue rest
+                rest => break rest
+              }
+            }
+            self.update_view(next_view)
+          }
+          '\r' => {
+            self.new_line()
+            match self.view() {
+              ['\n', .. rest] => self.update_view(rest)
+              _ => ()
+            }
+            let next_view = for v = self.view() {
+              match v {
+                ['\n', .. rest] => {
+                  self.new_line()
+                  continue rest
+                }
+                ['\r', '\n', .. rest] => {
+                  self.new_line()
+                  continue rest
+                }
+                [' ' | '\t' | '\r', .. rest] => continue rest
+                rest => break rest
+              }
+            }
+            self.update_view(next_view)
+          }
+          ' ' | '\t' => {
+            // \ followed by space/tab: must be followed by only whitespace then newline
+            let found_newline = for v = self.view() {
+              match v {
+                [' ' | '\t', .. rest] => continue rest
+                ['\n', ..] | ['\r', ..] => break true
+                _ => break false
+              }
+            }
+            if !found_newline {
+              fail(
+                self.error(
+                  "Invalid escape: backslash followed by whitespace but no newline",
+                ),
+              )
+            }
+            // Now consume the newline and following whitespace
+            let next_view = for v = self.view() {
+              match v {
+                ['\n', .. rest] => {
+                  self.new_line()
+                  continue rest
+                }
+                ['\r', '\n', .. rest] => {
+                  self.new_line()
+                  continue rest
+                }
+                [' ' | '\t' | '\r', .. rest] => continue rest
+                rest => break rest
+              }
+            }
+            self.update_view(next_view)
+          }
+          _ => fail(self.error("Invalid escape sequence: \\\{escaped}"))
+        }
+        continue self.view()
+      }
+      ['\\'] => {
+        self.advance()
+        fail(self.error("Unexpected end of input after escape character"))
+      }
+      ['\r', '\n', .. rest] => {
+        // CRLF in multiline string
+        self.update_view(rest)
+        sb.write_char('\n')
         self.new_line()
+        continue self.view()
       }
-      continue self.view()
+      [ch, .. rest] => {
+        // Allow \n in multiline strings, reject bare \r and other control chars
+        if ch != '\n' && is_control_char(ch) {
+          self.update_view(rest)
+          fail(
+            self.error(
+              "Invalid control character in multiline string: U+\{ch.to_int().to_string().pad_start(4, '0')}",
+            ),
+          )
+        }
+        self.update_view(rest)
+        sb.write_char(ch)
+        if ch == '\n' {
+          self.new_line()
+        }
+        continue self.view()
+      }
+      [] => fail(self.error("Unterminated multiline string"))
     }
-    [] => fail(self.error("Unterminated multiline string"))
   }
 }
 
@@ -434,51 +448,53 @@ fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
     _ => ()
   }
   let sb = StringBuilder::new()
-  loop self.view() {
-    [.. "'''''", .. rest] => {
-      // 5 quotes: 2 content quotes + closing triple quotes
-      sb.write_string("''")
-      self.update_view(rest)
-      break sb.to_string()
-    }
-    [.. "''''", .. rest] => {
-      // 4 quotes: 1 content quote + closing triple quotes
-      sb.write_char('\'')
-      self.update_view(rest)
-      break sb.to_string()
-    }
-    [.. "'''", .. rest] => {
-      // finish reading the string
-      self.update_view(rest)
-      break sb.to_string()
-    }
-    [.. "\r\n", .. rest] => {
-      sb.write_string("\r\n")
-      self.update_view(rest)
-      self.new_line()
-      continue self.view()
-    }
-    // TODO: support .. ("\n"|"\r\n")
-    // CR: zhangyu
-
-    [ch, .. rest] => {
-      // Allow \n in multiline literal strings, reject bare \r and other control chars
-      if ch != '\n' && is_control_char(ch) {
+  for view = self.view() {
+    match view {
+      [.. "'''''", .. rest] => {
+        // 5 quotes: 2 content quotes + closing triple quotes
+        sb.write_string("''")
         self.update_view(rest)
-        fail(
-          self.error(
-            "Invalid control character in multiline literal string: U+\{ch.to_int().to_string().pad_start(4, '0')}",
-          ),
-        )
+        break sb.to_string()
       }
-      if ch is '\n' {
+      [.. "''''", .. rest] => {
+        // 4 quotes: 1 content quote + closing triple quotes
+        sb.write_char('\'')
+        self.update_view(rest)
+        break sb.to_string()
+      }
+      [.. "'''", .. rest] => {
+        // finish reading the string
+        self.update_view(rest)
+        break sb.to_string()
+      }
+      [.. "\r\n", .. rest] => {
+        sb.write_string("\r\n")
+        self.update_view(rest)
         self.new_line()
+        continue self.view()
       }
-      self.update_view(rest)
-      sb.write_char(ch)
-      continue self.view()
+      // TODO: support .. ("\n"|"\r\n")
+      // CR: zhangyu
+
+      [ch, .. rest] => {
+        // Allow \n in multiline literal strings, reject bare \r and other control chars
+        if ch != '\n' && is_control_char(ch) {
+          self.update_view(rest)
+          fail(
+            self.error(
+              "Invalid control character in multiline literal string: U+\{ch.to_int().to_string().pad_start(4, '0')}",
+            ),
+          )
+        }
+        if ch is '\n' {
+          self.new_line()
+        }
+        self.update_view(rest)
+        sb.write_char(ch)
+        continue self.view()
+      }
+      [] => fail(self.error("Unterminated multiline literal string"))
     }
-    [] => fail(self.error("Unterminated multiline literal string"))
   }
 }
 
@@ -772,15 +788,17 @@ fn Lexer::read_number_with_loc(
   if is_negative {
     raw.write_char('-')
   }
-  let next_view = loop self.view() {
-    ['0'..='9' | '_' as ch, .. rest] => {
-      raw.write_char(ch)
-      if ch != '_' {
-        sb.write_char(ch)
+  let next_view = for view = self.view() {
+    match view {
+      ['0'..='9' | '_' as ch, .. rest] => {
+        raw.write_char(ch)
+        if ch != '_' {
+          sb.write_char(ch)
+        }
+        continue rest
       }
-      continue rest
+      rest => break rest
     }
-    rest => rest
   }
   self.update_view(next_view)
 
@@ -804,15 +822,17 @@ fn Lexer::read_number_with_loc(
       self.update_view(rest)
       sb.write_char('.')
       raw.write_char('.')
-      let next_view = loop self.view() {
-        ['0'..='9' | '_' as ch, .. rest] => {
-          raw.write_char(ch)
-          if ch != '_' {
-            sb.write_char(ch)
+      let next_view = for view = self.view() {
+        match view {
+          ['0'..='9' | '_' as ch, .. rest] => {
+            raw.write_char(ch)
+            if ch != '_' {
+              sb.write_char(ch)
+            }
+            continue rest
           }
-          continue rest
+          rest => break rest
         }
-        rest => rest
       }
       self.update_view(next_view)
     }
@@ -841,15 +861,17 @@ fn Lexer::read_number_with_loc(
         _ => ()
       }
       // Consume exponent digits
-      let next_view = loop self.view() {
-        ['0'..='9' | '_' as ch, .. rest] => {
-          raw.write_char(ch)
-          if ch != '_' {
-            sb.write_char(ch)
+      let next_view = for view = self.view() {
+        match view {
+          ['0'..='9' | '_' as ch, .. rest] => {
+            raw.write_char(ch)
+            if ch != '_' {
+              sb.write_char(ch)
+            }
+            continue rest
           }
-          continue rest
+          rest => break rest
         }
-        rest => rest
       }
       self.update_view(next_view)
     }
@@ -860,12 +882,14 @@ fn Lexer::read_number_with_loc(
   // Use raw string (preserves underscores) for the identifier.
   match self.view() {
     ['a'..='z' | 'A'..='Z' | '_' | '-', ..] if !is_negative => {
-      let next_view = loop self.view() {
-        ['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' as ch, .. rest] => {
-          raw.write_char(ch)
-          continue rest
+      let next_view = for view = self.view() {
+        match view {
+          ['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' as ch, .. rest] => {
+            raw.write_char(ch)
+            continue rest
+          }
+          rest => break rest
         }
-        rest => rest
       }
       self.update_view(next_view)
       let end_pos = self.get_loc()
@@ -881,12 +905,14 @@ fn Lexer::read_number_with_loc(
   // (underscores, exponent notation), produce an Identifier to preserve the text.
   let has_lossy_chars = raw_s != s || (is_float && !raw_s.contains("."))
   if !is_negative && !has_sign && has_lossy_chars {
-    let is_key = loop self.view() {
-      [' ' | '\t', .. rest] => continue rest
-      ['=' | '.', ..] => true // key = value or dotted.key
-      // ] followed by newline/EOF indicates table header [key], not array
-      [']', '\n' | '\r', ..] | [']'] => true
-      _ => false
+    let is_key = for view = self.view() {
+      match view {
+        [' ' | '\t', .. rest] => continue rest
+        ['=' | '.', ..] => break true // key = value or dotted.key
+        // ] followed by newline/EOF indicates table header [key], not array
+        [']', '\n' | '\r', ..] | [']'] => break true
+        _ => break false
+      }
     }
     if is_key {
       let end_pos = self.get_loc()
@@ -1093,26 +1119,30 @@ test "read_number" {
 ///|
 /// Skip comments and whitespace but not newline characters
 fn Lexer::skip_comments_or_whitespace(self : Lexer) -> Unit raise {
-  let next = loop self.view() {
-    ['\r', '\n', ..] | ['\n', ..] | [] as rest => rest
-    [' ' | '\t', .. rest] => continue rest
-    ['\r', ..] as rest => rest // bare \r stops here, will be rejected by next_token
-    ['#', .. next] =>
-      loop next {
-        ['\r', '\n', ..] | ['\n', ..] | [] as rest => rest
-        [ch, .. rest] => {
-          if is_control_char(ch) {
-            self.update_view(rest)
-            fail(
-              self.error(
-                "Invalid control character in comment: U+\{ch.to_int().to_string().pad_start(4, '0')}",
-              ),
-            )
+  let next = for view = self.view() {
+    match view {
+      ['\r', '\n', ..] | ['\n', ..] | [] as rest => break rest
+      [' ' | '\t', .. rest] => continue rest
+      ['\r', ..] as rest => break rest // bare \r stops here, will be rejected by next_token
+      ['#', .. next] =>
+        break for v = next {
+          match v {
+            ['\r', '\n', ..] | ['\n', ..] | [] as rest => break rest
+            [ch, .. rest] => {
+              if is_control_char(ch) {
+                self.update_view(rest)
+                fail(
+                  self.error(
+                    "Invalid control character in comment: U+\{ch.to_int().to_string().pad_start(4, '0')}",
+                  ),
+                )
+              }
+              continue rest
+            }
           }
-          continue rest
         }
-      }
-    rest => rest
+      rest => break rest
+    }
   }
   self.update_view(next)
 }
@@ -1221,11 +1251,13 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
     // (followed by = or ]) should be rejected.
     ['+', '0'..='9', ..] => {
       // Peek ahead: skip digits/underscores, then check for key indicators
-      let is_key_context = loop self.view()[1:] {
-        ['0'..='9' | '_', .. rest] => continue rest
-        [' ' | '\t', .. rest] => continue rest
-        ['=' | ']', ..] => true // +num= or [+num] are both invalid
-        _ => false
+      let is_key_context = for view = self.view()[1:] {
+        match view {
+          ['0'..='9' | '_', .. rest] => continue rest
+          [' ' | '\t', .. rest] => continue rest
+          ['=' | ']', ..] => break true // +num= or [+num] are both invalid
+          _ => break false
+        }
       }
       if is_key_context {
         fail("Unexpected character: '+'")
@@ -1290,17 +1322,16 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
 pub fn tokenize(input : String) -> Array[Token] raise {
   let lexer = Lexer::new(input)
   let tokens = Array::new()
-  let mut current_token = lexer.next_token()
-  loop current_token {
-    EOF(_) as t => {
-      tokens.push(t)
-      break tokens
-    }
-    _ as t => {
-      tokens.push(t)
-      let next_token = lexer.next_token()
-      current_token = next_token
-      continue next_token
+  for current_token = lexer.next_token() {
+    match current_token {
+      EOF(_) as t => {
+        tokens.push(t)
+        break tokens
+      }
+      _ as t => {
+        tokens.push(t)
+        continue lexer.next_token()
+      }
     }
   }
 }
