@@ -37,9 +37,11 @@ pub fn Parser::view(
   skip_newlines? : Bool = false,
 ) -> ArrayView[Token] {
   if skip_newlines {
-    loop self.view() {
-      [Newline(..), .. rest] => continue rest
-      rest => rest
+    for view = self.view() {
+      match view {
+        [Newline(..), .. rest] => continue rest
+        rest => break rest
+      }
     }
   } else {
     self.tokens[self.position:]

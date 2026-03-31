@@ -4,9 +4,11 @@ using @tokenize {tokenize, type Token, type TomlDateTime}
 ///|
 /// Skip newline tokens
 fn Parser::skip_newlines(self : Parser) -> Unit {
-  let next_view = loop self.view() {
-    [Newline(..), .. rest] => continue rest
-    rest => rest
+  let next_view = for view = self.view() {
+    match view {
+      [Newline(..), .. rest] => continue rest
+      rest => break rest
+    }
   }
   self.update_view(next_view)
 }
@@ -224,31 +226,33 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
   }
 
   // Parse additional keys separated by dots
-  let next_view = loop self.view() {
-    [Dot(..), .. rest] => {
-      self.update_view(rest)
-      // Check for float token (e.g. 1.2 → keys "1" and "2")
-      match self.view() {
-        [FloatToken(_, raw~, ..), .. rest2] => {
-          self.update_view(rest2)
-          let float_str = raw
-          match float_str.split_once(".") {
-            Some((left, right)) => {
-              path.push(left.to_string())
-              path.push(right.to_string())
+  let next_view = for view = self.view() {
+    match view {
+      [Dot(..), .. rest] => {
+        self.update_view(rest)
+        // Check for float token (e.g. 1.2 → keys "1" and "2")
+        match self.view() {
+          [FloatToken(_, raw~, ..), .. rest2] => {
+            self.update_view(rest2)
+            let float_str = raw
+            match float_str.split_once(".") {
+              Some((left, right)) => {
+                path.push(left.to_string())
+                path.push(right.to_string())
+              }
+              None => path.push(float_str)
             }
-            None => path.push(float_str)
           }
+          _ =>
+            match self.try_parse_single_key() {
+              Some(k) => path.push(k)
+              None => self.error("Expected key after dot")
+            }
         }
-        _ =>
-          match self.try_parse_single_key() {
-            Some(k) => path.push(k)
-            None => self.error("Expected key after dot")
-          }
+        continue self.view()
       }
-      continue self.view()
+      rest => break rest
     }
-    rest => rest
   }
   self.update_view(next_view)
   path

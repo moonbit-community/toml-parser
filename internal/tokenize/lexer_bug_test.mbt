@@ -42,7 +42,8 @@ test "test invalid hex digit error" {
   debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:495:5-495:50@bobzhang/toml FAILED: Invalid hex number format at line 1, column 7\")"
+      #|"Failure(\"internal/tokenize/tokenize.mbt:511:5-511:50@bobzhang/toml FAILED: Invalid hex number format at line 1, column 7\")"
+
     ),
   )
 }
@@ -57,7 +58,8 @@ test "test octal without digits" {
   debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:537:5-537:52@bobzhang/toml FAILED: Invalid octal number format at line 1, column 8\")"
+      #|"Failure(\"internal/tokenize/tokenize.mbt:553:5-553:52@bobzhang/toml FAILED: Invalid octal number format at line 1, column 8\")"
+
     ),
   )
 }
@@ -72,7 +74,8 @@ test "test binary without digits" {
   debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:586:5-586:53@bobzhang/toml FAILED: Invalid binary number format at line 1, column 8\")"
+      #|"Failure(\"internal/tokenize/tokenize.mbt:602:5-602:53@bobzhang/toml FAILED: Invalid binary number format at line 1, column 8\")"
+
     ),
   )
 }
@@ -87,7 +90,8 @@ test "test hex with invalid delimiter" {
   debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:518:9-522:10@bobzhang/toml FAILED: Invalid char 'X', expected whitespace, comma, or end of input after 0x... at line 1, column 12\")"
+      #|"Failure(\"internal/tokenize/tokenize.mbt:534:9-538:10@bobzhang/toml FAILED: Invalid char 'X', expected whitespace, comma, or end of input after 0x... at line 1, column 12\")"
+
     ),
   )
 }
@@ -183,7 +187,8 @@ test "test octal with invalid digits" {
   debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:554:9-558:10@bobzhang/toml FAILED: Invalid char '8', expected whitespace, comma, or end of input after 0o... at line 1, column 10\")"
+      #|"Failure(\"internal/tokenize/tokenize.mbt:570:9-574:10@bobzhang/toml FAILED: Invalid char '8', expected whitespace, comma, or end of input after 0o... at line 1, column 10\")"
+
     ),
   )
 }
@@ -253,7 +258,8 @@ test "test binary with invalid digits" {
   debug_inspect(
     maybe_tokens.unwrap_err().to_string(),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:603:9-607:10@bobzhang/toml FAILED: Invalid char '2', expected whitespace, comma, or end of input after 0b... at line 1, column 12\")"
+      #|"Failure(\"internal/tokenize/tokenize.mbt:619:9-623:10@bobzhang/toml FAILED: Invalid char '2', expected whitespace, comma, or end of input after 0b... at line 1, column 12\")"
+
     ),
   )
 }
