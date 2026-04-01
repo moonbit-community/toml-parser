@@ -9,6 +9,9 @@ pub fn default_loc() -> Loc {
 }
 
 ///|
+const START : Regex = re"^"
+
+///|
 /// Create a location from lexer positions
 fn make_loc(start_pos : @lexer.Position, end_pos : @lexer.Position) -> Loc {
   { start: start_pos, end: end_pos }
@@ -20,9 +23,12 @@ fn Lexer::read_identifier(self : Lexer) -> String {
 
   // TODO(upstream): error message improved for `longest` with 
   // empty branches or single branch with _ => ... 
-  if self.view()
+  if (self.view()
     // TODO(upstream): allow `(` `)`
-    lexmatch? (("[a-zA-Z_\-]" "[a-zA-Z0-9_\-]*") as identifier, rest) {
+     =~ (
+      (START + re"[a-zA-Z_\-]" + re"[a-zA-Z0-9_\-]*") as identifier,
+      after=rest
+    )) {
     self.update_view(rest)
     identifier.to_string()
   } else {
@@ -506,8 +512,12 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
   // TODO(upstream): support non capturing group
   let mut result = 0L
   // 0xA__FF_12 is invalid according to spec
-  guard self.view()
-    lexmatch? ("0[xX]" ("[0-9a-fA-F]+(_[0-9a-fA-F]+)*" as hex_digits), rest) else {
+  guard (self.view() =~ (
+    re"^" +
+    re"0[xX]" +
+    (re"[0-9a-fA-F]+(_[0-9a-fA-F]+)*" as hex_digits),
+    after=rest
+  )) else {
     fail(self.error("Invalid hex number format"))
   }
   for ch in hex_digits {
@@ -548,8 +558,12 @@ fn Lexer::read_octal_number(self : Lexer) -> Int64 raise {
   // TODO(upstream): support non capturing group
   let mut result = 0L
   // 0o7__55_44 is invalid according to spec
-  guard self.view()
-    lexmatch? ("0[oO]" ("[0-7]+(_[0-7]+)*" as octal_digits), rest) else {
+  guard (self.view() =~ (
+    re"^" +
+    re"0[oO]" +
+    (re"[0-7]+(_[0-7]+)*" as octal_digits),
+    after=rest
+  )) else {
     fail(self.error("Invalid octal number format"))
   }
   for ch in octal_digits {
@@ -597,8 +611,12 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
   // `match self` directly
   let mut result = 0L
   // 0b1__00_11 is invalid according to spec
-  guard self.view()
-    lexmatch? ("0[bB]" ("[01]+(_[01]+)*" as binary_digits), rest) else {
+  guard (self.view() =~ (
+    re"^" +
+    re"0[bB]" +
+    (re"[01]+(_[01]+)*" as binary_digits),
+    after=rest
+  )) else {
     fail(self.error("Invalid binary number format"))
   }
   for ch in binary_digits {
@@ -677,26 +695,27 @@ fn Lexer::read_datetime_with_loc(
       let date_str = date.to_string()
       validate_date(date_str)
       // Check for time component: T/t/space followed by HH:MM[:SS[.fff]]
-      if self.view()
-        lexmatch? (
-          ("[Tt ][0-9]{2}:[0-9]{2}" "(:[0-9]{2})?(\.[0-9]+)?") as time_with_t,
-          rest2
-        ) {
+      if (self.view() =~ (
+          (re"^" + re"[Tt ][0-9]{2}:[0-9]{2}" + re"(:[0-9]{2})?(\.[0-9]+)?") as time_with_t,
+          after=rest2
+        )) {
         self.update_view(rest2)
         let time_part = time_with_t.to_string()
         // Validate time portion (skip the T/t/space separator)
         validate_time(time_part[1:].to_string())
         let datetime_str = "\{date_str}\{time_part}"
         // Check for timezone: Z or ±HH:MM
-        if self.view() lexmatch? ("[Zz]", rest3) {
+        if (self.view() =~ (re"^" + re"[Zz]", after=rest3)) {
           self.update_view(rest3)
           let end_pos = self.get_loc()
           DateTimeToken(
             OffsetDateTime("\{datetime_str}Z"),
             loc=make_loc(start_pos, end_pos),
           )
-        } else if self.view()
-          lexmatch? ("[+\-][0-9]{2}:[0-9]{2}" as offset, rest3) {
+        } else if (self.view() =~ (
+            (re"^" + re"[+\-][0-9]{2}:[0-9]{2}") as offset,
+            after=rest3
+          )) {
           self.update_view(rest3)
           let offset_str = offset.to_string()
           validate_timezone_offset(offset_str)
