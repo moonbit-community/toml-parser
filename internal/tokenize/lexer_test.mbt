@@ -594,9 +594,9 @@ test "test invalid escape sequence error" {
   )
   // TODO: ArgsLoc no absolute loc
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:239:13-239:69@bobzhang/toml FAILED: Invalid escape sequence: \\\\z at line 1, column 12\")"
+      #|"Invalid escape sequence: \\\\z at line 1, column 12"
     ),
   ) // Should fail with invalid escape sequence
 }
@@ -610,9 +610,9 @@ test "test unterminated string error" {
   )
   // TODO: ArgsLoc no absolute loc
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:254:13-254:52@bobzhang/toml FAILED: Unterminated string at line 1, column 8\")"
+      #|"Unterminated string at line 1, column 8"
     ),
   ) // Should fail with unterminated string
 }
@@ -626,9 +626,9 @@ test "test unexpected end after escape" {
   )
   // TODO: ArgsLoc no absolute loc
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:254:13-254:52@bobzhang/toml FAILED: Unterminated string at line 1, column 8\")"
+      #|"Unterminated string at line 1, column 8"
     ),
   ) // Should fail with unexpected end after escape
 }
@@ -641,9 +641,9 @@ test "test invalid characters" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:1335:17-1335:54@bobzhang/toml FAILED: Unexpected character: '@'\")"
+      #|"Unexpected character: '@'"
     ),
   ) // Should fail with unexpected character
 }
@@ -710,9 +710,9 @@ test "lexer expect_string failure" {
   )
   let maybe_result = try? lexer.expect_string("goodbye")
   debug_inspect(
-    maybe_result.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_result.unwrap_err()),
     content=(
-      #|"Failure(\"lexer.mbt:174:7-174:65@bobzhang/lexer FAILED: Expected string: goodbye at line 1, column 1\")"
+      #|"Expected string: goodbye at line 1, column 1"
     ),
   )
 }
@@ -782,9 +782,9 @@ test "unicode 4 escape invalid hex" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:117:7-117:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10\")"
+      #|"Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10"
     ),
   )
 }
@@ -798,9 +798,9 @@ test "unicode 4 escape incomplete" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:117:7-117:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10\")"
+      #|"Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10"
     ),
   )
 }
@@ -814,9 +814,9 @@ test "unicode 4 escape invalid code point" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:121:13-121:68@bobzhang/toml FAILED: Invalid Unicode code point: 55296 at line 1, column 14\")"
+      #|"Invalid Unicode code point: 55296 at line 1, column 14"
     ),
   )
 }
@@ -886,9 +886,9 @@ test "unicode 8 escape invalid hex" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:161:7-161:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10\")"
+      #|"Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10"
     ),
   )
 }
@@ -902,9 +902,9 @@ test "unicode 8 escape incomplete" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:161:7-161:81@bobzhang/toml FAILED: Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10\")"
+      #|"Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10"
     ),
   )
 }
@@ -918,9 +918,9 @@ test "unicode 8 escape invalid code point large" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:164:5-164:60@bobzhang/toml FAILED: Invalid Unicode code point: 1114112 at line 1, column 18\")"
+      #|"Invalid Unicode code point: 1114112 at line 1, column 18"
     ),
   )
 }
@@ -934,9 +934,9 @@ test "unicode 8 escape invalid code point surrogate" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:164:5-164:60@bobzhang/toml FAILED: Invalid Unicode code point: 55296 at line 1, column 18\")"
+      #|"Invalid Unicode code point: 55296 at line 1, column 18"
     ),
   )
 }
@@ -950,9 +950,9 @@ test "unicode 8 escape invalid conversion" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:164:5-164:60@bobzhang/toml FAILED: Invalid Unicode code point: 2147483647 at line 1, column 18\")"
+      #|"Invalid Unicode code point: 2147483647 at line 1, column 18"
     ),
   )
 }
@@ -1103,9 +1103,9 @@ test "multiline basic string invalid escape" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:403:16-403:73@bobzhang/toml FAILED: Invalid escape sequence: \\\\z at line 1, column 12\")"
+      #|"Invalid escape sequence: \\\\z at line 1, column 12"
     ),
   )
 }
@@ -1119,9 +1119,9 @@ test "multiline basic string unexpected end after escape" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:409:9-409:75@bobzhang/toml FAILED: Unexpected end of input after escape character at line 1, column 11\")"
+      #|"Unexpected end of input after escape character at line 1, column 11"
     ),
   )
 }
@@ -1135,9 +1135,9 @@ test "multiline basic string unterminated" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:435:13-435:62@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 20\")"
+      #|"Unterminated multiline string at line 1, column 20"
     ),
   )
 }
@@ -1151,9 +1151,9 @@ test "multiline basic string early termination" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:435:13-435:62@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 14\")"
+      #|"Unterminated multiline string at line 1, column 14"
     ),
   )
 }
@@ -1191,9 +1191,9 @@ test "multiline literal string unterminated" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:502:13-502:70@bobzhang/toml FAILED: Unterminated multiline literal string at line 1, column 20\")"
+      #|"Unterminated multiline literal string at line 1, column 20"
     ),
   )
 }
@@ -1208,9 +1208,9 @@ test "hex number invalid digit error path" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:521:5-521:50@bobzhang/toml FAILED: Invalid hex number format at line 1, column 7\")"
+      #|"Invalid hex number format at line 1, column 7"
     ),
   )
 }
@@ -1367,9 +1367,9 @@ test "multiline basic string none peek" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:435:13-435:62@bobzhang/toml FAILED: Unterminated multiline string at line 1, column 27\")"
+      #|"Unterminated multiline string at line 1, column 27"
     ),
   )
 }
@@ -1619,9 +1619,9 @@ test "trailing _ in binary number" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:637:9-641:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 14\")"
+      #|"Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 14"
     ),
   )
 }
@@ -1635,9 +1635,9 @@ test "consequence _ in binary number" {
   )
   // according to spec, this should fail
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:637:9-641:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 11\")"
+      #|"Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 11"
     ),
   )
 }
@@ -1650,9 +1650,9 @@ test "trailing _ in hex number" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:544:9-548:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 14\")"
+      #|"Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 14"
     ),
   )
 }
@@ -1666,9 +1666,9 @@ test "consecutive _ in hex number" {
   )
   // according to spec, this should fail
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:544:9-548:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 11\")"
+      #|"Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 11"
     ),
   )
 }
@@ -1681,9 +1681,9 @@ test "trailing _ in octal number" {
     ),
   )
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:584:9-588:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 12\")"
+      #|"Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 12"
     ),
   )
 }
@@ -1697,9 +1697,9 @@ test "consecutive _ in octal number" {
   )
   // according to spec, this should fail
   debug_inspect(
-    maybe_tokens.unwrap_err().to_string(),
+    unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Failure(\"internal/tokenize/tokenize.mbt:584:9-588:10@bobzhang/toml FAILED: Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 10\")"
+      #|"Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 10"
     ),
   )
 }
