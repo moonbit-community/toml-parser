@@ -30,14 +30,7 @@ pub impl Show for SimpleValue with output(self, logger) {
 ///|
 pub fn SimpleValue::contains_table(self : SimpleValue) -> Bool {
   match self {
-    STable(fields) =>
-      true ||
-      fields
-      .to_array()
-      .any(fn(entry) {
-        let (_key, value) = entry
-        value.contains_table()
-      })
+    STable(_) => true
     _ => false
   }
 }
@@ -50,13 +43,7 @@ pub fn SimpleValue::contains_array(self : SimpleValue) -> Bool {
     | SIntegerArray(_)
     | SBooleanArray(_)
     | SDateTimeArray(_) => true
-    STable(fields) =>
-      fields
-      .to_array()
-      .any(fn(entry) {
-        let (_key, value) = entry
-        value.contains_array()
-      })
+    STable(fields) => fields.values().any(value => value.contains_array())
     _ => false
   }
 }
@@ -65,13 +52,7 @@ pub fn SimpleValue::contains_array(self : SimpleValue) -> Bool {
 pub fn SimpleValue::contains_string(self : SimpleValue) -> Bool {
   match self {
     SString(_) | SStringArray(_) => true
-    STable(fields) =>
-      fields
-      .to_array()
-      .any(fn(entry) {
-        let (_key, value) = entry
-        value.contains_string()
-      })
+    STable(fields) => fields.values().any(value => value.contains_string())
     _ => false
   }
 }
@@ -81,12 +62,7 @@ pub fn SimpleValue::contains_datetime(self : SimpleValue) -> Bool {
   match self {
     SDateTime(_) | SDateTimeArray(_) => true
     STable(fields) =>
-      fields
-      .to_array()
-      .any(fn(entry) {
-        let (_key, value) = entry
-        value.contains_datetime()
-      })
+      fields.values().any(value => value.contains_datetime())
     _ => false
   }
 }
@@ -102,146 +78,96 @@ fn datetime_has_fractional_seconds(datetime : @tokenize.TomlDateTime) -> Bool {
 }
 
 ///|
-pub fn SimpleValue::contains_datetime_array(self : SimpleValue) -> Bool {
+fn SimpleValue::contains_datetime_array(self : SimpleValue) -> Bool {
   match self {
     SDateTimeArray(_) => true
     STable(fields) =>
-      fields.to_array().any(fn(entry) { entry.1.contains_datetime_array() })
+      fields.values().any(value => value.contains_datetime_array())
     _ => false
   }
 }
 
 ///|
-pub fn SimpleValue::contains_fractional_datetime(self : SimpleValue) -> Bool {
+fn SimpleValue::contains_fractional_datetime(self : SimpleValue) -> Bool {
   match self {
     SDateTime(datetime) => datetime_has_fractional_seconds(datetime)
     SDateTimeArray(values) => values.any(datetime_has_fractional_seconds)
     STable(fields) =>
-      fields
-      .to_array()
-      .any(fn(entry) { entry.1.contains_fractional_datetime() })
+      fields.values().any(value => value.contains_fractional_datetime())
     _ => false
   }
 }
 
 ///|
-pub fn SimpleValue::contains_complex_key(self : SimpleValue) -> Bool {
+fn SimpleValue::contains_complex_key(self : SimpleValue) -> Bool {
   match self {
     STable(fields) =>
-      fields
-      .to_array()
-      .any(fn(entry) {
-        let (key, value) = entry
-        !is_bare_key(key) || value.contains_complex_key()
-      })
+      fields.iter().any(entry => !is_bare_key(entry.0) || entry.1.contains_complex_key())
     _ => false
   }
 }
 
 ///|
-pub fn SimpleValue::contains_negative_exponent_like_key(
-  self : SimpleValue,
-) -> Bool {
+fn SimpleValue::contains_negative_exponent_like_key(self : SimpleValue) -> Bool {
   match self {
     STable(fields) =>
-      fields
-      .to_array()
-      .any(fn(entry) {
-        let (key, value) = entry
-        is_negative_exponent_like_key(key) ||
-        value.contains_negative_exponent_like_key()
-      })
+      fields.iter().any(entry =>
+        is_negative_exponent_like_key(entry.0) ||
+        entry.1.contains_negative_exponent_like_key()
+      )
     _ => false
   }
 }
 
 ///|
 pub fn SimpleDocument::contains_table(self : SimpleDocument) -> Bool {
-  self.fields
-  .to_array()
-  .any(fn(entry) {
-    let (_key, value) = entry
-    value.contains_table()
-  })
+  self.fields.values().any(value => value.contains_table())
 }
 
 ///|
 pub fn SimpleDocument::contains_array(self : SimpleDocument) -> Bool {
-  self.fields
-  .to_array()
-  .any(fn(entry) {
-    let (_key, value) = entry
-    value.contains_array()
-  })
+  self.fields.values().any(value => value.contains_array())
 }
 
 ///|
 pub fn SimpleDocument::contains_string(self : SimpleDocument) -> Bool {
-  self.fields
-  .to_array()
-  .any(fn(entry) {
-    let (_key, value) = entry
-    value.contains_string()
-  })
+  self.fields.values().any(value => value.contains_string())
 }
 
 ///|
 pub fn SimpleDocument::contains_datetime(self : SimpleDocument) -> Bool {
-  self.fields
-  .to_array()
-  .any(fn(entry) {
-    let (_key, value) = entry
-    value.contains_datetime()
-  })
+  self.fields.values().any(value => value.contains_datetime())
 }
 
 ///|
 pub fn SimpleDocument::contains_datetime_array(self : SimpleDocument) -> Bool {
-  self.fields
-  .to_array()
-  .any(fn(entry) {
-    let (_key, value) = entry
-    value.contains_datetime_array()
-  })
+  self.fields.values().any(value => value.contains_datetime_array())
 }
 
 ///|
 pub fn SimpleDocument::contains_fractional_datetime(
   self : SimpleDocument,
 ) -> Bool {
-  self.fields
-  .to_array()
-  .any(fn(entry) {
-    let (_key, value) = entry
-    value.contains_fractional_datetime()
-  })
+  self.fields.values().any(value => value.contains_fractional_datetime())
 }
 
 ///|
 pub fn SimpleDocument::contains_complex_key(self : SimpleDocument) -> Bool {
-  self.fields
-  .to_array()
-  .any(fn(entry) {
-    let (key, value) = entry
-    !is_bare_key(key) || value.contains_complex_key()
-  })
+  self.fields.iter().any(entry => !is_bare_key(entry.0) || entry.1.contains_complex_key())
 }
 
 ///|
 pub fn SimpleDocument::contains_negative_exponent_like_key(
   self : SimpleDocument,
 ) -> Bool {
-  self.fields
-  .to_array()
-  .any(fn(entry) {
-    let (key, value) = entry
-    is_negative_exponent_like_key(key) ||
-    value.contains_negative_exponent_like_key()
-  })
+  self.fields.iter().any(entry =>
+    is_negative_exponent_like_key(entry.0) ||
+    entry.1.contains_negative_exponent_like_key()
+  )
 }
 
 ///|
-pub fn is_bare_key(key : String) -> Bool {
+fn is_bare_key(key : String) -> Bool {
   if key.is_empty() {
     false
   } else {
