@@ -28,7 +28,7 @@ pub impl Show for SimpleValue with output(self, logger) {
 }
 
 ///|
-pub fn SimpleValue::contains_table(self : SimpleValue) -> Bool {
+fn SimpleValue::contains_table(self : SimpleValue) -> Bool {
   match self {
     STable(_) => true
     _ => false
@@ -36,7 +36,7 @@ pub fn SimpleValue::contains_table(self : SimpleValue) -> Bool {
 }
 
 ///|
-pub fn SimpleValue::contains_array(self : SimpleValue) -> Bool {
+fn SimpleValue::contains_array(self : SimpleValue) -> Bool {
   match self {
     SEmptyArray
     | SStringArray(_)
@@ -49,7 +49,7 @@ pub fn SimpleValue::contains_array(self : SimpleValue) -> Bool {
 }
 
 ///|
-pub fn SimpleValue::contains_string(self : SimpleValue) -> Bool {
+fn SimpleValue::contains_string(self : SimpleValue) -> Bool {
   match self {
     SString(_) | SStringArray(_) => true
     STable(fields) => fields.values().any(value => value.contains_string())
@@ -58,7 +58,7 @@ pub fn SimpleValue::contains_string(self : SimpleValue) -> Bool {
 }
 
 ///|
-pub fn SimpleValue::contains_datetime(self : SimpleValue) -> Bool {
+fn SimpleValue::contains_datetime(self : SimpleValue) -> Bool {
   match self {
     SDateTime(_) | SDateTimeArray(_) => true
     STable(fields) => fields.values().any(value => value.contains_datetime())
