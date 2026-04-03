@@ -2,6 +2,7 @@
 package "bobzhang/toml/internal/qc_model"
 
 import {
+  "bobzhang/toml",
   "bobzhang/toml/internal/tokenize",
   "moonbitlang/core/debug",
 }
@@ -22,6 +23,8 @@ pub fn SimpleDocument::contains_fractional_datetime(Self) -> Bool
 pub fn SimpleDocument::contains_negative_exponent_like_key(Self) -> Bool
 pub fn SimpleDocument::contains_string(Self) -> Bool
 pub fn SimpleDocument::contains_table(Self) -> Bool
+pub fn SimpleDocument::from_toml(@toml.TomlValue) -> Self?
+pub fn SimpleDocument::to_toml(Self) -> @toml.TomlValue
 pub impl Show for SimpleDocument
 
 pub(all) enum SimpleValue {
@@ -36,6 +39,8 @@ pub(all) enum SimpleValue {
   SBooleanArray(Array[Bool])
   STable(Map[String, SimpleValue])
 } derive(Eq, @debug.Debug)
+pub fn SimpleValue::from_toml(@toml.TomlValue) -> Self?
+pub fn SimpleValue::to_toml(Self) -> @toml.TomlValue
 pub impl Show for SimpleValue
 
 // Type aliases
