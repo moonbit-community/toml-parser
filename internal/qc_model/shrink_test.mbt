@@ -89,7 +89,7 @@ fn shrink_table_entries(
 fn shrink_simple_document(
   doc : @qc_model.SimpleDocument,
 ) -> Iter[@qc_model.SimpleDocument] {
-  shrink_table_entries(doc.fields.to_array()).map(fn(next_entries) {
-    @qc_model.SimpleDocument::{ fields: Map::from_array(next_entries[:]) }
+  shrink_table_entries(doc.fields.to_array()).map(next_entries => {
+    fields: Map::from_array(next_entries),
   })
 }
