@@ -14,7 +14,7 @@ pub fn is_bare_key(String) -> Bool
 // Types and methods
 pub(all) struct SimpleDocument {
   fields : Map[String, SimpleValue]
-} derive(Eq, Show, @debug.Debug)
+} derive(Eq, @debug.Debug)
 pub fn SimpleDocument::contains_array(Self) -> Bool
 pub fn SimpleDocument::contains_complex_key(Self) -> Bool
 pub fn SimpleDocument::contains_datetime(Self) -> Bool
@@ -23,6 +23,7 @@ pub fn SimpleDocument::contains_fractional_datetime(Self) -> Bool
 pub fn SimpleDocument::contains_negative_exponent_like_key(Self) -> Bool
 pub fn SimpleDocument::contains_string(Self) -> Bool
 pub fn SimpleDocument::contains_table(Self) -> Bool
+pub impl Show for SimpleDocument
 
 pub(all) enum SimpleValue {
   SString(String)
@@ -35,7 +36,7 @@ pub(all) enum SimpleValue {
   SIntegerArray(Array[Int64])
   SBooleanArray(Array[Bool])
   STable(Map[String, SimpleValue])
-} derive(Eq, Show, @debug.Debug)
+} derive(Eq, @debug.Debug)
 pub fn SimpleValue::contains_array(Self) -> Bool
 pub fn SimpleValue::contains_complex_key(Self) -> Bool
 pub fn SimpleValue::contains_datetime(Self) -> Bool
@@ -44,6 +45,7 @@ pub fn SimpleValue::contains_fractional_datetime(Self) -> Bool
 pub fn SimpleValue::contains_negative_exponent_like_key(Self) -> Bool
 pub fn SimpleValue::contains_string(Self) -> Bool
 pub fn SimpleValue::contains_table(Self) -> Bool
+pub impl Show for SimpleValue
 
 // Type aliases
 

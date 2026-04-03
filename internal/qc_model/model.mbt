@@ -1,7 +1,7 @@
 ///|
 pub(all) struct SimpleDocument {
   fields : Map[String, SimpleValue]
-} derive(Eq, Show, Debug)
+} derive(Eq, Debug)
 
 ///|
 pub(all) enum SimpleValue {
@@ -15,7 +15,17 @@ pub(all) enum SimpleValue {
   SIntegerArray(Array[Int64])
   SBooleanArray(Array[Bool])
   STable(Map[String, SimpleValue])
-} derive(Eq, Show, Debug)
+} derive(Eq, Debug)
+
+///|
+pub impl Show for SimpleDocument with output(self, logger) {
+  Debug::to_repr(self).output(logger)
+}
+
+///|
+pub impl Show for SimpleValue with output(self, logger) {
+  Debug::to_repr(self).output(logger)
+}
 
 ///|
 pub fn SimpleValue::contains_table(self : SimpleValue) -> Bool {
