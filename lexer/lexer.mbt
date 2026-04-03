@@ -4,7 +4,7 @@
 pub(all) struct Position {
   line : Int
   column : Int
-} derive(Eq, Show, Debug)
+} derive(Eq, Debug)
 
 ///|
 /// Lexer state with position tracking for better error reporting
