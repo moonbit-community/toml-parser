@@ -61,8 +61,7 @@ pub fn SimpleValue::contains_string(self : SimpleValue) -> Bool {
 pub fn SimpleValue::contains_datetime(self : SimpleValue) -> Bool {
   match self {
     SDateTime(_) | SDateTimeArray(_) => true
-    STable(fields) =>
-      fields.values().any(value => value.contains_datetime())
+    STable(fields) => fields.values().any(value => value.contains_datetime())
     _ => false
   }
 }
@@ -102,7 +101,9 @@ fn SimpleValue::contains_fractional_datetime(self : SimpleValue) -> Bool {
 fn SimpleValue::contains_complex_key(self : SimpleValue) -> Bool {
   match self {
     STable(fields) =>
-      fields.iter().any(entry => !is_bare_key(entry.0) || entry.1.contains_complex_key())
+      fields
+      .iter()
+      .any(entry => !is_bare_key(entry.0) || entry.1.contains_complex_key())
     _ => false
   }
 }
@@ -111,10 +112,12 @@ fn SimpleValue::contains_complex_key(self : SimpleValue) -> Bool {
 fn SimpleValue::contains_negative_exponent_like_key(self : SimpleValue) -> Bool {
   match self {
     STable(fields) =>
-      fields.iter().any(entry =>
+      fields
+      .iter()
+      .any(entry => {
         is_negative_exponent_like_key(entry.0) ||
         entry.1.contains_negative_exponent_like_key()
-      )
+      })
     _ => false
   }
 }
@@ -153,17 +156,21 @@ pub fn SimpleDocument::contains_fractional_datetime(
 
 ///|
 pub fn SimpleDocument::contains_complex_key(self : SimpleDocument) -> Bool {
-  self.fields.iter().any(entry => !is_bare_key(entry.0) || entry.1.contains_complex_key())
+  self.fields
+  .iter()
+  .any(entry => !is_bare_key(entry.0) || entry.1.contains_complex_key())
 }
 
 ///|
 pub fn SimpleDocument::contains_negative_exponent_like_key(
   self : SimpleDocument,
 ) -> Bool {
-  self.fields.iter().any(entry =>
+  self.fields
+  .iter()
+  .any(entry => {
     is_negative_exponent_like_key(entry.0) ||
     entry.1.contains_negative_exponent_like_key()
-  )
+  })
 }
 
 ///|
