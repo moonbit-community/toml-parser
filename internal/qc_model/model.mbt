@@ -28,6 +28,149 @@ pub impl Show for SimpleValue with output(self, logger) {
 }
 
 ///|
+pub fn SimpleValue::to_toml(self : SimpleValue) -> @toml.TomlValue {
+  match self {
+    SString(s) => @toml.TomlString(s)
+    SInteger(n) => @toml.TomlInteger(n)
+    SBoolean(b) => @toml.TomlBoolean(b)
+    SDateTime(value) => @toml.TomlDateTime(value)
+    SDateTimeArray(values) =>
+      @toml.TomlArray(values.map(value => @toml.TomlDateTime(value)))
+    SEmptyArray => @toml.TomlArray([])
+    SStringArray(values) =>
+      @toml.TomlArray(values.map(v => @toml.TomlString(v)))
+    SIntegerArray(values) =>
+      @toml.TomlArray(values.map(v => @toml.TomlInteger(v)))
+    SBooleanArray(values) =>
+      @toml.TomlArray(values.map(v => @toml.TomlBoolean(v)))
+    STable(fields) =>
+      @toml.TomlTable(
+        Map::from_array(
+          fields.to_array().map(entry => (entry.0, entry.1.to_toml()))[:],
+        ),
+      )
+  }
+}
+
+///|
+pub fn SimpleDocument::to_toml(self : SimpleDocument) -> @toml.TomlValue {
+  @toml.TomlTable(
+    Map::from_array(
+      self.fields.to_array().map(entry => (entry.0, entry.1.to_toml()))[:],
+    ),
+  )
+}
+
+///|
+fn[A] collect_toml_array(
+  values : ArrayView[@toml.TomlValue],
+  project : (@toml.TomlValue) -> A?,
+) -> Array[A]? {
+  match values {
+    [] => Some([])
+    [value, .. rest] =>
+      match (project(value), collect_toml_array(rest, project)) {
+        (Some(projected), Some(next)) => Some([projected, ..next])
+        _ => None
+      }
+  }
+}
+
+///|
+fn project_datetime(value : @toml.TomlValue) -> @tokenize.TomlDateTime? {
+  match value {
+    @toml.TomlDateTime(dt) => Some(dt)
+    _ => None
+  }
+}
+
+///|
+fn project_string(value : @toml.TomlValue) -> String? {
+  match value {
+    @toml.TomlString(s) => Some(s)
+    _ => None
+  }
+}
+
+///|
+fn project_integer(value : @toml.TomlValue) -> Int64? {
+  match value {
+    @toml.TomlInteger(n) => Some(n)
+    _ => None
+  }
+}
+
+///|
+fn project_boolean(value : @toml.TomlValue) -> Bool? {
+  match value {
+    @toml.TomlBoolean(b) => Some(b)
+    _ => None
+  }
+}
+
+///|
+pub fn SimpleValue::from_toml(value : @toml.TomlValue) -> SimpleValue? {
+  match value {
+    @toml.TomlString(text) => Some(SString(text))
+    @toml.TomlInteger(number) => Some(SInteger(number))
+    @toml.TomlBoolean(boolean) => Some(SBoolean(boolean))
+    @toml.TomlDateTime(datetime) => Some(SDateTime(datetime))
+    @toml.TomlArray(values) =>
+      match values {
+        [] => Some(SEmptyArray)
+        [@toml.TomlDateTime(_), ..] =>
+          collect_toml_array(values[:], project_datetime).map(items =>
+            SDateTimeArray(items)
+          )
+        [@toml.TomlString(_), ..] =>
+          collect_toml_array(values[:], project_string).map(items =>
+            SStringArray(items)
+          )
+        [@toml.TomlInteger(_), ..] =>
+          collect_toml_array(values[:], project_integer).map(items =>
+            SIntegerArray(items)
+          )
+        [@toml.TomlBoolean(_), ..] =>
+          collect_toml_array(values[:], project_boolean).map(items =>
+            SBooleanArray(items)
+          )
+        _ => None
+      }
+    @toml.TomlTable(fields) =>
+      simple_table_entries_from_toml(fields.to_array()[:]).map(entries =>
+        STable(Map::from_array(entries[:]))
+      )
+    _ => None
+  }
+}
+
+///|
+fn simple_table_entries_from_toml(
+  entries : ArrayView[(String, @toml.TomlValue)],
+) -> Array[(String, SimpleValue)]? {
+  match entries {
+    [] => Some([])
+    [(key, value), .. rest] =>
+      match
+        (SimpleValue::from_toml(value), simple_table_entries_from_toml(rest)) {
+        (Some(simple), Some(next)) => Some([(key, simple), ..next])
+        _ => None
+      }
+  }
+}
+
+///|
+pub fn SimpleDocument::from_toml(value : @toml.TomlValue) -> SimpleDocument? {
+  match value {
+    @toml.TomlTable(fields) =>
+      simple_table_entries_from_toml(fields.to_array()[:]).map(entries =>
+        { fields: Map::from_array(entries[:]) }
+      )
+    _ => None
+  }
+}
+
+///|
 fn SimpleValue::contains_table(self : SimpleValue) -> Bool {
   match self {
     STable(_) => true
