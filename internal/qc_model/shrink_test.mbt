@@ -45,7 +45,7 @@ fn shrink_simple_value(
       })
     STable(fields) =>
       shrink_table_entries(fields.to_array()).map(fn(next_entries) {
-        @qc_model.STable(Map::from_array(next_entries[:]))
+        @qc_model.STable(Map::from_array(next_entries))
       })
   }
 }
