@@ -394,7 +394,7 @@ fn table_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
   @qc.int_range(0, max_fields + 1).bind(fn(field_count) {
     simple_entry_gen(next_size)
     .array_with_size(field_count)
-    .fmap(fn(entries) { @qc_model.STable(Map::from_array(entries[:])) })
+    .fmap(fn(entries) { @qc_model.STable(Map::from_array(entries)) })
   })
 }
 
@@ -416,7 +416,7 @@ fn simple_document_gen() -> @qc.Gen[@qc_model.SimpleDocument] {
       simple_entry_gen(size)
       .array_with_size(field_count)
       .fmap(fn(entries) {
-        @qc_model.SimpleDocument::{ fields: Map::from_array(entries[:]) }
+        @qc_model.SimpleDocument::{ fields: Map::from_array(entries) }
       })
     })
   })

@@ -62,7 +62,7 @@ pub fn run_single_valid_test(toml_path : String) -> String? raise @fs.IOError {
 pub fn run_single_invalid_test(toml_path : String) -> String? raise @fs.IOError {
   let toml_bytes = @fs.read_file_to_bytes(toml_path)
   // Try decoding as UTF-8, skip non-UTF-8 files (they should fail anyway)
-  let toml_content = @utf8.decode(toml_bytes[:]) catch {
+  let toml_content = @utf8.decode(toml_bytes) catch {
     // Non-UTF-8 file: parser would reject this, count as pass
     _ => return None
   }

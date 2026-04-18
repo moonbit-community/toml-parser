@@ -46,7 +46,7 @@ pub fn SimpleValue::to_toml(self : SimpleValue) -> @toml.TomlValue {
     STable(fields) =>
       @toml.TomlTable(
         Map::from_array(
-          fields.to_array().map(entry => (entry.0, entry.1.to_toml()))[:],
+          fields.to_array().map(entry => (entry.0, entry.1.to_toml())),
         ),
       )
   }
@@ -56,7 +56,7 @@ pub fn SimpleValue::to_toml(self : SimpleValue) -> @toml.TomlValue {
 pub fn SimpleDocument::to_toml(self : SimpleDocument) -> @toml.TomlValue {
   @toml.TomlTable(
     Map::from_array(
-      self.fields.to_array().map(entry => (entry.0, entry.1.to_toml()))[:],
+      self.fields.to_array().map(entry => (entry.0, entry.1.to_toml())),
     ),
   )
 }
@@ -119,26 +119,26 @@ pub fn SimpleValue::from_toml(value : @toml.TomlValue) -> SimpleValue? {
       match values {
         [] => Some(SEmptyArray)
         [@toml.TomlDateTime(_), ..] =>
-          collect_toml_array(values[:], project_datetime).map(items => {
+          collect_toml_array(values, project_datetime).map(items => {
             SDateTimeArray(items)
           })
         [@toml.TomlString(_), ..] =>
-          collect_toml_array(values[:], project_string).map(items => {
+          collect_toml_array(values, project_string).map(items => {
             SStringArray(items)
           })
         [@toml.TomlInteger(_), ..] =>
-          collect_toml_array(values[:], project_integer).map(items => {
+          collect_toml_array(values, project_integer).map(items => {
             SIntegerArray(items)
           })
         [@toml.TomlBoolean(_), ..] =>
-          collect_toml_array(values[:], project_boolean).map(items => {
+          collect_toml_array(values, project_boolean).map(items => {
             SBooleanArray(items)
           })
         _ => None
       }
     @toml.TomlTable(fields) =>
-      simple_table_entries_from_toml(fields.to_array()[:]).map(entries => {
-        STable(Map::from_array(entries[:]))
+      simple_table_entries_from_toml(fields.to_array()).map(entries => {
+        STable(Map::from_array(entries))
       })
     _ => None
   }
@@ -163,8 +163,8 @@ fn simple_table_entries_from_toml(
 pub fn SimpleDocument::from_toml(value : @toml.TomlValue) -> SimpleDocument? {
   match value {
     @toml.TomlTable(fields) =>
-      simple_table_entries_from_toml(fields.to_array()[:]).map(entries => {
-        fields: Map::from_array(entries[:]),
+      simple_table_entries_from_toml(fields.to_array()).map(entries => {
+        fields: Map::from_array(entries),
       })
     _ => None
   }
