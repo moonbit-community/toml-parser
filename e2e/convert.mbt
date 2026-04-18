@@ -18,12 +18,11 @@ pub fn to_test_json(value : @toml.TomlValue) -> Json {
         _ => typed_value("date-local", s)
       }
     }
-    @toml.TomlArray(arr) => Json::array(arr.map(to_test_json))
-    @toml.TomlTable(table) => {
-      let obj : Map[String, Json] = {}
-      table.each(fn(k, v) { obj[k] = to_test_json(v) })
-      Json::object(obj)
-    }
+    @toml.TomlArray(arr) => Json::array([ for v in arr => to_test_json(v) ])
+    @toml.TomlTable(table) =>
+      Json::object(
+        Map::from_array([ for k, v in table => (k, to_test_json(v)) ]),
+      )
   }
 }
 

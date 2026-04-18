@@ -35,19 +35,17 @@ pub fn SimpleValue::to_toml(self : SimpleValue) -> @toml.TomlValue {
     SBoolean(b) => @toml.TomlBoolean(b)
     SDateTime(value) => @toml.TomlDateTime(value)
     SDateTimeArray(values) =>
-      @toml.TomlArray(values.map(value => @toml.TomlDateTime(value)))
+      @toml.TomlArray([ for v in values => @toml.TomlDateTime(v) ])
     SEmptyArray => @toml.TomlArray([])
     SStringArray(values) =>
-      @toml.TomlArray(values.map(v => @toml.TomlString(v)))
+      @toml.TomlArray([ for v in values => @toml.TomlString(v) ])
     SIntegerArray(values) =>
-      @toml.TomlArray(values.map(v => @toml.TomlInteger(v)))
+      @toml.TomlArray([ for v in values => @toml.TomlInteger(v) ])
     SBooleanArray(values) =>
-      @toml.TomlArray(values.map(v => @toml.TomlBoolean(v)))
+      @toml.TomlArray([ for v in values => @toml.TomlBoolean(v) ])
     STable(fields) =>
       @toml.TomlTable(
-        Map::from_array(
-          fields.to_array().map(entry => (entry.0, entry.1.to_toml())),
-        ),
+        Map::from_array([ for k, v in fields => (k, v.to_toml()) ]),
       )
   }
 }
@@ -55,9 +53,7 @@ pub fn SimpleValue::to_toml(self : SimpleValue) -> @toml.TomlValue {
 ///|
 pub fn SimpleDocument::to_toml(self : SimpleDocument) -> @toml.TomlValue {
   @toml.TomlTable(
-    Map::from_array(
-      self.fields.to_array().map(entry => (entry.0, entry.1.to_toml())),
-    ),
+    Map::from_array([ for k, v in self.fields => (k, v.to_toml()) ]),
   )
 }
 
