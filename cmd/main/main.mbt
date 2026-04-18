@@ -13,10 +13,11 @@ fn main {
 
   // Demo 2: Array example
   println("\n--- Array Example ---")
-  let arr = Array::new()
-  arr.push(@toml.TomlInteger(1L))
-  arr.push(@toml.TomlInteger(2L))
-  arr.push(@toml.TomlInteger(3L))
+  let arr = [
+    @toml.TomlInteger(1L),
+    @toml.TomlInteger(2L),
+    @toml.TomlInteger(3L),
+  ]
   let array_val = @toml.TomlArray(arr)
   println("Array value: \{array_val}")
 

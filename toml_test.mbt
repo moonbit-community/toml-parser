@@ -52,10 +52,11 @@ test "toml boolean value" {
 
 ///|
 test "toml array value" {
-  let arr = Array::new()
-  arr.push(@toml.TomlInteger(1L))
-  arr.push(@toml.TomlInteger(2L))
-  arr.push(@toml.TomlInteger(3L))
+  let arr = [
+    @toml.TomlInteger(1L),
+    @toml.TomlInteger(2L),
+    @toml.TomlInteger(3L),
+  ]
   let value = @toml.TomlArray(arr)
   debug_inspect(
     value.to_string(),
@@ -248,11 +249,12 @@ test "toml datetime equality" {
 ///|
 /// Tests for mixed datetime array
 test "toml mixed datetime array" {
-  let arr = Array::new()
-  arr.push(@toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z")))
-  arr.push(@toml.TomlDateTime(LocalDateTime("1979-05-27T07:32:00")))
-  arr.push(@toml.TomlDateTime(LocalDate("1979-05-27")))
-  arr.push(@toml.TomlDateTime(LocalTime("07:32:00")))
+  let arr = [
+    @toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z")),
+    @toml.TomlDateTime(LocalDateTime("1979-05-27T07:32:00")),
+    @toml.TomlDateTime(LocalDate("1979-05-27")),
+    @toml.TomlDateTime(LocalTime("07:32:00")),
+  ]
   let value = @toml.TomlArray(arr)
   let str_repr = value.to_string()
 
@@ -334,11 +336,12 @@ test "toml datetime edge cases" {
 ///|
 /// Tests for parser creation  
 test "parser creation" {
-  let tokens = Array::new()
   let loc = @tokenize.default_loc()
-  tokens.push(@tokenize.Identifier("key", loc~))
-  tokens.push(@tokenize.Equals(loc~))
-  tokens.push(@tokenize.StringToken("value", loc~, multiline=false))
+  let tokens = [
+    @tokenize.Identifier("key", loc~),
+    @tokenize.Equals(loc~),
+    @tokenize.StringToken("value", loc~, multiline=false),
+  ]
   let parser = @toml.Parser::new(tokens)
   debug_inspect(parser.position, content="0")
   debug_inspect(parser.tokens.length(), content="3")
@@ -380,43 +383,43 @@ test "datetime token creation" {
 /// Tests for array homogeneity validation
 test "array homogeneity validation" {
   // Homogeneous arrays (should be valid)
-  let int_array = Array::new()
-  int_array.push(@toml.TomlInteger(1L))
-  int_array.push(@toml.TomlInteger(2L))
-  int_array.push(@toml.TomlInteger(3L))
+  let int_array = [
+    @toml.TomlInteger(1L),
+    @toml.TomlInteger(2L),
+    @toml.TomlInteger(3L),
+  ]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(int_array),
     content="true",
   )
-  let string_array = Array::new()
-  string_array.push(@toml.TomlString("a"))
-  string_array.push(@toml.TomlString("b"))
-  string_array.push(@toml.TomlString("c"))
+  let string_array = [
+    @toml.TomlString("a"),
+    @toml.TomlString("b"),
+    @toml.TomlString("c"),
+  ]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(string_array),
     content="true",
   )
-  let datetime_array = Array::new()
-  datetime_array.push(
+  let datetime_array = [
     @toml.TomlDateTime(OffsetDateTime("2023-01-01T00:00:00Z")),
-  )
-  datetime_array.push(@toml.TomlDateTime(LocalDateTime("2023-01-02T00:00:00")))
-  datetime_array.push(@toml.TomlDateTime(LocalDate("2023-01-03")))
+    @toml.TomlDateTime(LocalDateTime("2023-01-02T00:00:00")),
+    @toml.TomlDateTime(LocalDate("2023-01-03")),
+  ]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(datetime_array),
     content="true",
   )
 
   // Empty array (should be valid)
-  let empty_array = Array::new()
+  let empty_array : Array[@toml.TomlValue] = []
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(empty_array),
     content="true",
   )
 
   // Single element array (should be valid)
-  let single_array = Array::new()
-  single_array.push(@toml.TomlBoolean(true))
+  let single_array = [@toml.TomlBoolean(true)]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(single_array),
     content="true",
@@ -427,28 +430,28 @@ test "array homogeneity validation" {
 /// Tests for heterogeneous arrays (should be invalid)
 test "array heterogeneity detection" {
   // Mixed types (should be invalid)
-  let mixed_array = Array::new()
-  mixed_array.push(@toml.TomlInteger(1L))
-  mixed_array.push(@toml.TomlString("hello"))
-  mixed_array.push(@toml.TomlBoolean(true))
+  let mixed_array = [
+    @toml.TomlInteger(1L),
+    @toml.TomlString("hello"),
+    @toml.TomlBoolean(true),
+  ]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(mixed_array),
     content="false",
   )
 
   // Numbers with different types (should be invalid in TOML)
-  let mixed_numbers = Array::new()
-  mixed_numbers.push(@toml.TomlInteger(1L))
-  mixed_numbers.push(@toml.TomlFloat(2.5))
+  let mixed_numbers = [@toml.TomlInteger(1L), @toml.TomlFloat(2.5)]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(mixed_numbers),
     content="false",
   )
 
   // Mixed datetime and string (should be invalid)
-  let mixed_dt_string = Array::new()
-  mixed_dt_string.push(@toml.TomlDateTime(LocalDate("2023-01-01")))
-  mixed_dt_string.push(@toml.TomlString("not a date"))
+  let mixed_dt_string = [
+    @toml.TomlDateTime(LocalDate("2023-01-01")),
+    @toml.TomlString("not a date"),
+  ]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(mixed_dt_string),
     content="false",
@@ -459,24 +462,18 @@ test "array heterogeneity detection" {
 /// Tests for TomlValue validation
 test "toml value validation" {
   // Valid homogeneous array
-  let valid_array = Array::new()
-  valid_array.push(@toml.TomlInteger(1L))
-  valid_array.push(@toml.TomlInteger(2L))
+  let valid_array = [@toml.TomlInteger(1L), @toml.TomlInteger(2L)]
   let valid_toml_array = @toml.TomlArray(valid_array)
   debug_inspect(valid_toml_array.validate(), content="true")
 
   // Invalid heterogeneous array
-  let invalid_array = Array::new()
-  invalid_array.push(@toml.TomlInteger(1L))
-  invalid_array.push(@toml.TomlString("mixed"))
+  let invalid_array = [@toml.TomlInteger(1L), @toml.TomlString("mixed")]
   let invalid_toml_array = @toml.TomlArray(invalid_array)
   debug_inspect(invalid_toml_array.validate(), content="false")
 
   // Valid nested structure
   let valid_table : Map[String, @toml.TomlValue] = Map::new()
-  let nested_array = Array::new()
-  nested_array.push(@toml.TomlString("item1"))
-  nested_array.push(@toml.TomlString("item2"))
+  let nested_array = [@toml.TomlString("item1"), @toml.TomlString("item2")]
   valid_table["items"] = @toml.TomlArray(nested_array)
   valid_table["count"] = @toml.TomlInteger(2L)
   let valid_nested = @toml.TomlTable(valid_table)
@@ -484,9 +481,10 @@ test "toml value validation" {
 
   // Invalid nested structure (contains invalid array)
   let invalid_table : Map[String, @toml.TomlValue] = Map::new()
-  let bad_nested_array = Array::new()
-  bad_nested_array.push(@toml.TomlString("item1"))
-  bad_nested_array.push(@toml.TomlInteger(42L)) // Mixed types
+  let bad_nested_array = [
+    @toml.TomlString("item1"),
+    @toml.TomlInteger(42L), // Mixed types
+  ]
   invalid_table["items"] = @toml.TomlArray(bad_nested_array)
   invalid_table["count"] = @toml.TomlInteger(2L)
   let invalid_nested = @toml.TomlTable(invalid_table)

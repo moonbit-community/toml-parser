@@ -103,16 +103,11 @@ test "toml spec local time examples" {
 /// Test datetime arrays (homogeneous and mixed)
 test "datetime arrays validation" {
   // Array of same datetime type (should be valid in TOML)
-  let offset_array = Array::new()
-  offset_array.push(
+  let offset_array = [
     @toml.TomlDateTime(@tokenize.OffsetDateTime("2023-01-01T00:00:00Z")),
-  )
-  offset_array.push(
     @toml.TomlDateTime(@tokenize.OffsetDateTime("2023-01-02T00:00:00Z")),
-  )
-  offset_array.push(
     @toml.TomlDateTime(@tokenize.OffsetDateTime("2023-01-03T00:00:00Z")),
-  )
+  ]
   let offset_arr_value = @toml.TomlArray(offset_array)
   let offset_str = offset_arr_value.to_string()
   debug_inspect(offset_str.contains("2023-01-01T00:00:00Z"), content="true")
@@ -120,10 +115,11 @@ test "datetime arrays validation" {
   debug_inspect(offset_str.contains("2023-01-03T00:00:00Z"), content="true")
 
   // Array of local dates
-  let date_array = Array::new()
-  date_array.push(@toml.TomlDateTime(@tokenize.LocalDate("2023-01-01")))
-  date_array.push(@toml.TomlDateTime(@tokenize.LocalDate("2023-01-02")))
-  date_array.push(@toml.TomlDateTime(@tokenize.LocalDate("2023-01-03")))
+  let date_array = [
+    @toml.TomlDateTime(@tokenize.LocalDate("2023-01-01")),
+    @toml.TomlDateTime(@tokenize.LocalDate("2023-01-02")),
+    @toml.TomlDateTime(@tokenize.LocalDate("2023-01-03")),
+  ]
   let date_arr_value = @toml.TomlArray(date_array)
   let date_str = date_arr_value.to_string()
   debug_inspect(date_str.contains("2023-01-01"), content="true")
@@ -409,16 +405,11 @@ test "realistic datetime scenarios" {
   config["backup_time"] = @toml.TomlDateTime(@tokenize.LocalTime("03:00:00"))
 
   // Array of maintenance windows
-  let maintenance_windows = Array::new()
-  maintenance_windows.push(
+  let maintenance_windows = [
     @toml.TomlDateTime(@tokenize.LocalDateTime("2023-06-20T02:00:00")),
-  )
-  maintenance_windows.push(
     @toml.TomlDateTime(@tokenize.LocalDateTime("2023-07-20T02:00:00")),
-  )
-  maintenance_windows.push(
     @toml.TomlDateTime(@tokenize.LocalDateTime("2023-08-20T02:00:00")),
-  )
+  ]
   config["maintenance_schedule"] = @toml.TomlArray(maintenance_windows)
   let config_value = @toml.TomlTable(config)
   let config_str = config_value.to_string()
