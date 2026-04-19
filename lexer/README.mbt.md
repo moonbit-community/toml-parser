@@ -23,8 +23,9 @@ moon add bobzhang/lexer
 
 The `Position` struct tracks location information in the input:
 
-```moonbit check
+```moonbit nocheck
 ///|
+#valtype
 pub(all) struct Position {
   line : Int
   column : Int
