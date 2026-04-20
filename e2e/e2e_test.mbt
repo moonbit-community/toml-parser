@@ -20,22 +20,21 @@ async test "valid toml-test suite" {
         continue
       }
     }
-    let parsed = try? @toml.parse(toml_content)
-    match parsed {
-      Err(e) => {
+    try
+      let value = @toml.parse(toml_content)
+      let actual = to_test_json(value)
+      if !json_equal(actual, expected) {
+        failures.push(
+          "[MISMATCH] \{toml_path}\n    expected: \{expected.stringify()}\n    actual:   \{actual.stringify()}",
+        )
+        failed += 1
+      } else {
+        passed += 1
+      }
+    catch {
+      e => {
         failures.push("[PARSE-ERROR] \{toml_path}: \{e}")
         failed += 1
-      }
-      Ok(value) => {
-        let actual = to_test_json(value)
-        if !json_equal(actual, expected) {
-          failures.push(
-            "[MISMATCH] \{toml_path}\n    expected: \{expected.stringify()}\n    actual:   \{actual.stringify()}",
-          )
-          failed += 1
-        } else {
-          passed += 1
-        }
       }
     }
   }
