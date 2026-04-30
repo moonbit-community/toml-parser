@@ -212,8 +212,8 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
       self.update_view(rest)
       match raw.split_once(".") {
         Some((left, right)) => {
-          path.push(left.to_string())
-          path.push(right.to_string())
+          path.push(left.to_owned())
+          path.push(right.to_owned())
         }
         None => path.push(raw)
       }
@@ -237,8 +237,8 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
             let float_str = raw
             match float_str.split_once(".") {
               Some((left, right)) => {
-                path.push(left.to_string())
-                path.push(right.to_string())
+                path.push(left.to_owned())
+                path.push(right.to_owned())
               }
               None => path.push(float_str)
             }

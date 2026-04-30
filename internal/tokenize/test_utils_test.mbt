@@ -4,8 +4,8 @@ fn unwrap_failure_message(error : Error) -> String {
   match s.after("FAILED: ") {
     Some(rest) =>
       match rest.rev_before("\")") {
-        Some(clean) => clean.to_string()
-        None => rest.to_string()
+        Some(clean) => clean.to_owned()
+        None => rest.to_owned()
       }
     None => s
   }

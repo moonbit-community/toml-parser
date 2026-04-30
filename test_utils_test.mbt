@@ -9,8 +9,8 @@ fn parse_expect_to_fail(input : String) -> String {
         Some(rest) =>
           // Remove trailing ") left over from Failure("...") wrapping
           match rest.rev_before("\")") {
-            Some(clean) => clean.to_string()
-            None => rest.to_string()
+            Some(clean) => clean.to_owned()
+            None => rest.to_owned()
           }
         None => s
       }
