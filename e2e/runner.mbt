@@ -31,7 +31,7 @@ pub fn collect_toml_files(
 /// Run a single valid test: parse .toml, convert to test JSON, compare with .json.
 /// Returns None on success, Some(error_message) on failure.
 pub fn run_single_valid_test(toml_path : String) -> String? raise @fs.IOError {
-  let json_path = toml_path[:toml_path.length() - 5].to_owned() + ".json"
+  let json_path = "\{toml_path[:toml_path.length() - 5]}.json"
   if !@fs.path_exists(json_path) {
     return None
   }
@@ -166,13 +166,9 @@ fn normalize_frac_seconds(s : String) -> String {
   }
   if trimmed_end == dot_pos + 1 {
     // All fractional digits were zeros — remove the dot too
-    let before = s[:dot_pos].to_owned()
-    let after = s[frac_end:].to_owned()
-    "\{before}\{after}"
+    "\{s[:dot_pos]}\{s[frac_end:]}"
   } else if trimmed_end < frac_end {
-    let before = s[:trimmed_end].to_owned()
-    let after = s[frac_end:].to_owned()
-    "\{before}\{after}"
+    "\{s[:trimmed_end]}\{s[frac_end:]}"
   } else {
     s
   }

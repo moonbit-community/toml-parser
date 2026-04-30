@@ -7,7 +7,7 @@ async test "valid toml-test suite" {
   let mut failed = 0
   let failures : Array[String] = []
   for toml_path in files {
-    let json_path = toml_path[:toml_path.length() - 5].to_owned() + ".json"
+    let json_path = "\{toml_path[:toml_path.length() - 5]}.json"
     if !@fs.path_exists(json_path) {
       continue
     }
