@@ -230,7 +230,7 @@ test "skip whitespace with position tracking" {
   let lexer = Lexer::new("  \t\rH")
   lexer.skip_whitespace()
   inspect(lexer.get_loc().column, content="5") // moved past 4 whitespace chars
-  inspect(lexer.peek(), content="Some('H')")
+  debug_inspect(lexer.peek(), content="Some('H')")
 }
 
 ///|
