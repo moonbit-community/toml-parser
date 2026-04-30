@@ -104,9 +104,7 @@ fn normalize_time_seconds(s : String) -> String {
   }
   if colons == 1 {
     // HH:MM without seconds, insert :00 after MM (at time_end)
-    let before = s[:time_end].to_owned()
-    let after = s[time_end:].to_owned()
-    "\{before}:00\{after}"
+    "\{s[:time_end]}:00\{s[time_end:]}"
   } else {
     s
   }
