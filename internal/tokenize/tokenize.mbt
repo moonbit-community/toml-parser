@@ -30,7 +30,7 @@ fn Lexer::read_identifier(self : Lexer) -> String {
       after=rest,
     ) {
     self.update_view(rest)
-    identifier.to_string()
+    identifier.to_owned()
   } else {
     ""
   } //  never going to happen
@@ -684,7 +684,7 @@ fn Lexer::read_datetime_with_loc(
     // LocalTime: HH:MM[:SS[.fff]] - must check first (2-digit start vs 4-digit)
     (("[0-9]{2}:[0-9]{2}" "(:[0-9]{2})?(\.[0-9]+)?") as time, rest) => {
       self.update_view(rest)
-      let time_str = time.to_string()
+      let time_str = time.to_owned()
       validate_time(time_str)
       let end_pos = self.get_loc()
       DateTimeToken(LocalTime(time_str), loc=make_loc(start_pos, end_pos))
@@ -692,7 +692,7 @@ fn Lexer::read_datetime_with_loc(
     // Date-based patterns: lex YYYY-MM-DD first, then check continuation
     ("[0-9]{4}-[0-9]{2}-[0-9]{2}" as date, rest) => {
       self.update_view(rest)
-      let date_str = date.to_string()
+      let date_str = date.to_owned()
       validate_date(date_str)
       // Check for time component: T/t/space followed by HH:MM[:SS[.fff]]
       if self.view() =~ (
@@ -700,9 +700,9 @@ fn Lexer::read_datetime_with_loc(
           after=rest2,
         ) {
         self.update_view(rest2)
-        let time_part = time_with_t.to_string()
+        let time_part = time_with_t.to_owned()
         // Validate time portion (skip the T/t/space separator)
-        validate_time(time_part[1:].to_string())
+        validate_time(time_part[1:].to_owned())
         let datetime_str = "\{date_str}\{time_part}"
         // Check for timezone: Z or ±HH:MM
         if self.view() =~ (re"^" + re"[Zz]", after=rest3) {
@@ -717,7 +717,7 @@ fn Lexer::read_datetime_with_loc(
             after=rest3,
           ) {
           self.update_view(rest3)
-          let offset_str = offset.to_string()
+          let offset_str = offset.to_owned()
           validate_timezone_offset(offset_str)
           let end_pos = self.get_loc()
           DateTimeToken(

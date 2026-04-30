@@ -104,8 +104,8 @@ fn normalize_time_seconds(s : String) -> String {
   }
   if colons == 1 {
     // HH:MM without seconds, insert :00 after MM (at time_end)
-    let before = s[:time_end].to_string()
-    let after = s[time_end:].to_string()
+    let before = s[:time_end].to_owned()
+    let after = s[time_end:].to_owned()
     "\{before}:00\{after}"
   } else {
     s
@@ -131,7 +131,7 @@ fn format_test_float(f : Double) -> String {
   let s = f.to_string()
   // Remove trailing .0 for integer-like floats
   if s.has_suffix(".0") {
-    return s[:s.length() - 2].to_string()
+    return s[:s.length() - 2].to_owned()
   }
   s
 }
