@@ -167,9 +167,9 @@ test "core methods example" {
 ///|
 test "character access example" {
   let lexer = Lexer::new("Hello")
-  inspect(lexer.peek(), content="Some('H')")
+  debug_inspect(lexer.peek(), content="Some('H')")
   lexer.advance()
-  inspect(lexer.peek(), content="Some('e')")
+  debug_inspect(lexer.peek(), content="Some('e')")
 }
 ```
 
@@ -185,7 +185,7 @@ test "string views example" {
     [.. "😈x", .. rest] => lexer.update_view(rest)
     _ => ()
   }
-  inspect(lexer.peek(), content="Some('中')")
+  debug_inspect(lexer.peek(), content="Some('中')")
 }
 ```
 
@@ -196,7 +196,7 @@ test "string views example" {
 test "whitespace handling example" {
   let lexer = Lexer::new("  \t\rHello, world!")
   lexer.skip_whitespace()
-  inspect(lexer.peek(), content="Some('H')")
+  debug_inspect(lexer.peek(), content="Some('H')")
 }
 ```
 
@@ -233,7 +233,7 @@ test "unicode support example" {
   inspect(lexer.get_position(), content="0")
   lexer.advance() // Correctly advances past the 2-byte emoji
   inspect(lexer.get_position(), content="2") // 2 bytes for emoji
-  inspect(lexer.peek(), content="Some('x')")
+  debug_inspect(lexer.peek(), content="Some('x')")
 }
 ```
 
