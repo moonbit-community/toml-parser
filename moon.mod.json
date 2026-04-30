@@ -1,6 +1,6 @@
 {
   "name": "bobzhang/toml",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "deps": {
     "bobzhang/lexer": "0.1.3",
     "moonbitlang/quickcheck": "0.11.2"
