@@ -647,7 +647,7 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
 /// Check if the current input matches a datetime pattern without consuming characters
 fn Lexer::is_datetime_pattern(self : Lexer) -> Bool {
   // Check for datetime patterns using regex
-  lexmatch self.view() {
+  lexmatch self.view() with longest {
     (
       "[0-9]{2}:[0-9]{2}"
       "(:[0-9]{2})?(\.[0-9]+)?",
@@ -675,12 +675,12 @@ fn Lexer::read_datetime_with_loc(
   self : Lexer,
   start_pos : @lexer.Position,
 ) -> Token raise {
-  // Try patterns in order - no need for `with longest` since patterns are
-  // naturally disambiguated by structure:
+  // Try patterns in order. Patterns are naturally disambiguated by
+  // structure, so first-match and longest-match produce the same result:
   // - LocalTime: HH:MM:SS (starts with 2 digits, has colons)
   // - Date-based: YYYY-MM-DD (starts with 4 digits)
   //   - Check what follows T to determine: LocalDate, LocalDateTime, or OffsetDateTime
-  lexmatch self.view() {
+  lexmatch self.view() with longest {
     // LocalTime: HH:MM[:SS[.fff]] - must check first (2-digit start vs 4-digit)
     (("[0-9]{2}:[0-9]{2}" "(:[0-9]{2})?(\.[0-9]+)?") as time, rest) => {
       self.update_view(rest)
