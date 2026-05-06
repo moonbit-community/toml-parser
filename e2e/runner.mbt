@@ -40,19 +40,18 @@ pub fn run_single_valid_test(toml_path : String) -> String? raise @fs.IOError {
   let expected : Json = @json.parse(expected_json_str) catch {
     e => return Some("\{toml_path}: failed to parse expected JSON: \{e}")
   }
-  let parsed = try? @toml.parse(toml_content)
-  match parsed {
-    Err(e) => Some("[PARSE-ERROR] \{toml_path}: \{e}")
-    Ok(value) => {
-      let actual = to_test_json(value)
-      if !json_equal(actual, expected) {
-        Some(
-          "[MISMATCH] \{toml_path}\n    expected: \{expected.stringify()}\n    actual:   \{actual.stringify()}",
-        )
-      } else {
-        None
-      }
+  try
+    let value = @toml.parse(toml_content)
+    let actual = to_test_json(value)
+    if !json_equal(actual, expected) {
+      Some(
+        "[MISMATCH] \{toml_path}\n    expected: \{expected.stringify()}\n    actual:   \{actual.stringify()}",
+      )
+    } else {
+      None
     }
+  catch {
+    e => Some("[PARSE-ERROR] \{toml_path}: \{e}")
   }
 }
 
@@ -66,10 +65,11 @@ pub fn run_single_invalid_test(toml_path : String) -> String? raise @fs.IOError 
     // Non-UTF-8 file: parser would reject this, count as pass
     _ => return None
   }
-  let parsed = try? @toml.parse(toml_content)
-  match parsed {
-    Ok(_) => Some("[PASS-BUT-SHOULD-FAIL] \{toml_path}")
-    Err(_) => None
+  try
+    let _ = @toml.parse(toml_content)
+    Some("[PASS-BUT-SHOULD-FAIL] \{toml_path}")
+  catch {
+    _ => None
   }
 }
 
