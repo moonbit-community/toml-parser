@@ -307,7 +307,7 @@ let map : Map[String, Int] = { "a": 1, "b": 2, "c": 3 }
 
 ///|
 // Empty map
-let empty : Map[String, Int] = Map::new()
+let empty : Map[String, Int] = Map([])
 
 ///|
 /// From array of pairs

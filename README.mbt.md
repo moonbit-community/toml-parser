@@ -209,7 +209,7 @@ test {
   // Error handling with try-catch
   let invalid_toml = "invalid = [unclosed"
   let config = @toml.parse(invalid_toml) catch {
-    _ => @toml.TomlTable(Map::new()) // Return default value on error
+    _ => @toml.TomlTable(Map([])) // Return default value on error
   }
   guard config is TomlTable(table) else { fail("Expected table") }
   assert_eq(table.length(), 0) // Empty table from error handler

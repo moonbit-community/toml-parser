@@ -32,7 +32,7 @@ fn create_nested_table(
         if current_table.contains("\u0000__inline__") {
           raise InlineTableImmutable(key)
         }
-        let new_table = Map::new()
+        let new_table = Map([])
         current_table[key] = TomlTable(new_table)
         current_table = new_table
       }
@@ -133,7 +133,7 @@ fn create_array_of_tables(
         }
       Some(value) => raise ExpectedTable(key, value)
       None => {
-        let new_table = Map::new()
+        let new_table = Map([])
         current_table[key] = TomlTable(new_table)
         current_table = new_table
       }
@@ -264,7 +264,7 @@ test "create_array_of_tables - nested path creation" {
 ///|
 test "create_array_of_tables - mixed with regular tables" {
   // Test array of tables mixed with regular tables
-  let root_table : Map[String, TomlValue] = Map::new()
+  let root_table : Map[String, TomlValue] = Map([])
 
   // First create a regular table structure
   set_dotted_key_value(root_table, ["owner", "name"], TomlString("Tom"))
@@ -301,7 +301,7 @@ test "create_array_of_tables - mixed with regular tables" {
 #skip("error message is not correct")
 test "create_array_of_tables - path conflicts with non-table" {
   // Test error when intermediate path conflicts with non-table value
-  let root_table : Map[String, TomlValue] = Map::new()
+  let root_table : Map[String, TomlValue] = Map([])
 
   // Set a string value at "products"
   root_table["products"] = TomlString("not a table")
@@ -321,7 +321,7 @@ test "create_array_of_tables - path conflicts with non-table" {
 #skip("error message is not correct")
 test "create_array_of_tables - final key conflicts with non-array" {
   // Test error when final key exists but is not an array
-  let root_table : Map[String, TomlValue] = Map::new()
+  let root_table : Map[String, TomlValue] = Map([])
 
   // Create a regular table at servers.alpha
   set_dotted_key_value(
@@ -343,7 +343,7 @@ test "create_array_of_tables - final key conflicts with non-array" {
 ///|
 test "create_array_of_tables - multiple nested arrays" {
   // Test creating multiple different arrays of tables
-  let root_table : Map[String, TomlValue] = Map::new()
+  let root_table : Map[String, TomlValue] = Map([])
 
   // Create first [[fruits]]
   let fruit1 = create_array_of_tables(root_table, ["fruits"])
@@ -384,7 +384,7 @@ test "create_array_of_tables - multiple nested arrays" {
 ///|
 test "create_array_of_tables - empty table in array" {
   // Test that empty tables are correctly added to arrays
-  let root_table : Map[String, TomlValue] = Map::new()
+  let root_table : Map[String, TomlValue] = Map([])
 
   // Create empty table in array
   let _empty_table1 = create_array_of_tables(root_table, ["empty", "tables"])
@@ -457,7 +457,7 @@ fn set_dotted_key_value(
       Some(value) => raise ExpectedTable(key, value)
       None => {
         // Create new nested table
-        let new_table = Map::new()
+        let new_table = Map([])
         if mark_implicit {
           new_table["\u0000__defined__"] = TomlBoolean(true)
         }
@@ -478,7 +478,7 @@ fn set_dotted_key_value(
 ///|
 test "set dotted key value - simple key" {
   // Test setting a simple key (path length 1)
-  let table : Map[String, TomlValue] = Map::new()
+  let table : Map[String, TomlValue] = Map([])
   set_dotted_key_value(table, ["name"], TomlString("Alice"))
   debug_inspect(
     table,
@@ -491,7 +491,7 @@ test "set dotted key value - simple key" {
 ///|
 test "set dotted key value - nested keys creating tables" {
   // Test creating nested tables automatically
-  let table : Map[String, TomlValue] = Map::new()
+  let table : Map[String, TomlValue] = Map([])
   set_dotted_key_value(table, ["server", "host"], TomlString("localhost"))
   set_dotted_key_value(table, ["server", "port"], TomlInteger(8080))
   debug_inspect(
@@ -505,7 +505,7 @@ test "set dotted key value - nested keys creating tables" {
 ///|
 test "set dotted key value - deep nesting" {
   // Test deep nested table creation
-  let table : Map[String, TomlValue] = Map::new()
+  let table : Map[String, TomlValue] = Map([])
   set_dotted_key_value(
     table,
     ["a", "b", "c", "d", "e"],
@@ -522,7 +522,7 @@ test "set dotted key value - deep nesting" {
 ///|
 test "set dotted key value - multiple values same nested table" {
   // Test adding multiple values to the same nested table
-  let table : Map[String, TomlValue] = Map::new()
+  let table : Map[String, TomlValue] = Map([])
 
   // Add multiple values at different levels
   set_dotted_key_value(table, ["database", "server"], TomlString("postgres"))
@@ -557,7 +557,7 @@ test "set dotted key value - multiple values same nested table" {
 
 ///|
 test "set dotted key value - reject duplicate key" {
-  let table : Map[String, TomlValue] = Map::new()
+  let table : Map[String, TomlValue] = Map([])
   set_dotted_key_value(table, ["config", "timeout"], TomlInteger(30))
   // Duplicate key should be rejected
   let result = try? set_dotted_key_value(
@@ -571,7 +571,7 @@ test "set dotted key value - reject duplicate key" {
 ///|
 test "set dotted key value - add to existing table" {
   // Test adding values to an already existing table
-  let table : Map[String, TomlValue] = Map::new()
+  let table : Map[String, TomlValue] = Map([])
 
   // Create initial structure
   set_dotted_key_value(table, ["app", "name"], TomlString("MyApp"))
@@ -623,7 +623,7 @@ test "set dotted key value - conflict with non-table value" {
 ///|
 test "set dotted key value - mixed types in path" {
   // Test with different value types at different levels
-  let table : Map[String, TomlValue] = Map::new()
+  let table : Map[String, TomlValue] = Map([])
   set_dotted_key_value(
     table,
     ["root", "array"],
@@ -661,7 +661,7 @@ test "set dotted key value - mixed types in path" {
 #skip("empty path edge case to fix later")
 test "set dotted key value - empty path edge case" {
   // Test with empty path (edge case)
-  let table : Map[String, TomlValue] = Map::new()
+  let table : Map[String, TomlValue] = Map([])
 
   // Set a value first
   set_dotted_key_value(table, ["key"], TomlString("value"))
