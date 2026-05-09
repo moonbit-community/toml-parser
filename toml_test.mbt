@@ -68,7 +68,7 @@ test "toml array value" {
 
 ///|
 test "toml table value" {
-  let table : Map[String, @toml.TomlValue] = Map::new()
+  let table : Map[String, @toml.TomlValue] = Map([])
   table["key1"] = @toml.TomlString("value1")
   table["key2"] = @toml.TomlInteger(42L)
   let value = @toml.TomlTable(table)
@@ -268,7 +268,7 @@ test "toml mixed datetime array" {
 ///|
 /// Tests for datetime in table
 test "toml datetime in table" {
-  let table : Map[String, @toml.TomlValue] = Map::new()
+  let table : Map[String, @toml.TomlValue] = Map([])
   table["created_at"] = @toml.TomlDateTime(
     OffsetDateTime("2023-01-01T00:00:00Z"),
   )
@@ -472,7 +472,7 @@ test "toml value validation" {
   debug_inspect(invalid_toml_array.validate(), content="false")
 
   // Valid nested structure
-  let valid_table : Map[String, @toml.TomlValue] = Map::new()
+  let valid_table : Map[String, @toml.TomlValue] = Map([])
   let nested_array = [@toml.TomlString("item1"), @toml.TomlString("item2")]
   valid_table["items"] = @toml.TomlArray(nested_array)
   valid_table["count"] = @toml.TomlInteger(2L)
@@ -480,7 +480,7 @@ test "toml value validation" {
   debug_inspect(valid_nested.validate(), content="true")
 
   // Invalid nested structure (contains invalid array)
-  let invalid_table : Map[String, @toml.TomlValue] = Map::new()
+  let invalid_table : Map[String, @toml.TomlValue] = Map([])
   let bad_nested_array = [
     @toml.TomlString("item1"),
     @toml.TomlInteger(42L), // Mixed types

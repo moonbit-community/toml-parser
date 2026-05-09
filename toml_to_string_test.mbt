@@ -323,7 +323,7 @@ test "serialize table with special key names" {
 ///|
 test "serialize empty structures" {
   inspect(@toml.TomlArray([]), content="[]")
-  inspect(@toml.TomlTable(Map::new()), content="")
+  inspect(@toml.TomlTable(Map([])), content="")
 }
 
 ///|

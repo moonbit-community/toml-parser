@@ -140,8 +140,8 @@ test "homogeneous_array_with_floats" {
 ///|
 /// Test homogeneous array with TomlTable
 test "homogeneous_array_with_tables" {
-  let table1 = Map::new()
-  let table2 = Map::new()
+  let table1 = Map([])
+  let table2 = Map([])
   let arr = [@toml.TomlTable(table1), @toml.TomlTable(table2)]
   let result = @toml.TomlValue::is_homogeneous_array(arr)
   debug_inspect(result, content="true")
@@ -158,7 +158,7 @@ test "homogeneous_array_type_check_boolean" {
 ///|
 /// Test homogeneous array type checking with TomlTable vs other
 test "homogeneous_array_type_check_table_vs_other" {
-  let table = Map::new()
+  let table = Map([])
   let arr = [@toml.TomlTable(table), @toml.TomlInteger(42L)]
   let result = @toml.TomlValue::is_homogeneous_array(arr)
   debug_inspect(result, content="false")
