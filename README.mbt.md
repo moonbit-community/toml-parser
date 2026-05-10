@@ -151,14 +151,10 @@ You can construct `TomlValue` directly in code:
 test {
   // Constructing TomlValue programmatically
   let table : Map[String, @toml.TomlValue] = {
-    "name": @toml.TomlString("Alice"),
-    "age": @toml.TomlInteger(30L),
-    "active": @toml.TomlBoolean(true),
-    "scores": @toml.TomlArray([
-      @toml.TomlInteger(95L),
-      @toml.TomlInteger(87L),
-      @toml.TomlInteger(92L),
-    ]),
+    "name": TomlString("Alice"),
+    "age": TomlInteger(30L),
+    "active": TomlBoolean(true),
+    "scores": TomlArray([TomlInteger(95L), TomlInteger(87L), TomlInteger(92L)]),
   }
   let value = @toml.TomlTable(table)
 
@@ -209,7 +205,7 @@ test {
   // Error handling with try-catch
   let invalid_toml = "invalid = [unclosed"
   let config = @toml.parse(invalid_toml) catch {
-    _ => @toml.TomlTable(Map([])) // Return default value on error
+    _ => TomlTable(Map([])) // Return default value on error
   }
   guard config is TomlTable(table) else { fail("Expected table") }
   assert_eq(table.length(), 0) // Empty table from error handler

@@ -354,8 +354,8 @@ test "validation comprehensive" {
 
   // Valid nested structure
   let valid_nested_array = [
-    @toml.TomlArray([@toml.TomlInteger(1L), @toml.TomlInteger(2L)]),
-    @toml.TomlArray([@toml.TomlInteger(3L), @toml.TomlInteger(4L)]),
+    @toml.TomlArray([TomlInteger(1L), TomlInteger(2L)]),
+    TomlArray([TomlInteger(3L), TomlInteger(4L)]),
   ]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(valid_nested_array),
@@ -364,8 +364,8 @@ test "validation comprehensive" {
 
   // Invalid nested structure - outer array contains arrays but inner arrays have different types
   let invalid_nested_array = [
-    @toml.TomlArray([@toml.TomlInteger(1L), @toml.TomlInteger(2L)]),
-    @toml.TomlArray([@toml.TomlString("hello"), @toml.TomlString("world")]),
+    @toml.TomlArray([TomlInteger(1L), TomlInteger(2L)]),
+    TomlArray([TomlString("hello"), TomlString("world")]),
   ]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(invalid_nested_array),

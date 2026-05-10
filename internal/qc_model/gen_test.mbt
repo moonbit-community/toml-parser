@@ -133,19 +133,19 @@ fn string_value_gen() -> @qc.Gen[@qc_model.SimpleValue] {
   let strings : @qc.Gen[String] = @qc.Gen::spawn()
   strings
   .scale(fn(size) { capped_size(size, 8) })
-  .fmap(fn(value) { @qc_model.SString(value) })
+  .fmap(fn(value) { SString(value) })
 }
 
 ///|
 fn integer_value_gen() -> @qc.Gen[@qc_model.SimpleValue] {
   let integers : @qc.Gen[Int64] = @qc.Gen::spawn()
-  integers.fmap(fn(value) { @qc_model.SInteger(value) })
+  integers.fmap(fn(value) { SInteger(value) })
 }
 
 ///|
 fn boolean_value_gen() -> @qc.Gen[@qc_model.SimpleValue] {
   let booleans : @qc.Gen[Bool] = @qc.Gen::spawn()
-  booleans.fmap(fn(value) { @qc_model.SBoolean(value) })
+  booleans.fmap(fn(value) { SBoolean(value) })
 }
 
 ///|
@@ -271,20 +271,18 @@ fn offset_suffix_gen() -> @qc.Gen[String] {
 
 ///|
 fn local_date_gen() -> @qc.Gen[@tokenize.TomlDateTime] {
-  date_string_gen().fmap(fn(value) { @tokenize.LocalDate(value) })
+  date_string_gen().fmap(fn(value) { LocalDate(value) })
 }
 
 ///|
 fn local_time_gen() -> @qc.Gen[@tokenize.TomlDateTime] {
-  time_string_gen().fmap(fn(value) { @tokenize.LocalTime(value) })
+  time_string_gen().fmap(fn(value) { LocalTime(value) })
 }
 
 ///|
 fn local_datetime_gen() -> @qc.Gen[@tokenize.TomlDateTime] {
   @qc.liftA2(
-    fn(date : String, time : String) {
-      @tokenize.LocalDateTime("\{date}T\{time}")
-    },
+    fn(date : String, time : String) { LocalDateTime("\{date}T\{time}") },
     date_string_gen(),
     time_string_gen(),
   )
@@ -294,7 +292,7 @@ fn local_datetime_gen() -> @qc.Gen[@tokenize.TomlDateTime] {
 fn offset_datetime_gen() -> @qc.Gen[@tokenize.TomlDateTime] {
   @qc.liftA3(
     fn(date : String, time : String, offset : String) {
-      @tokenize.OffsetDateTime("\{date}T\{time}\{offset}")
+      OffsetDateTime("\{date}T\{time}\{offset}")
     },
     date_string_gen(),
     time_string_gen(),
@@ -314,7 +312,7 @@ fn toml_datetime_gen() -> @qc.Gen[@tokenize.TomlDateTime] {
 
 ///|
 fn datetime_value_gen() -> @qc.Gen[@qc_model.SimpleValue] {
-  toml_datetime_gen().fmap(fn(value) { @qc_model.SDateTime(value) })
+  toml_datetime_gen().fmap(fn(value) { SDateTime(value) })
 }
 
 ///|
@@ -322,7 +320,7 @@ fn datetime_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
   non_empty_length_gen(size).bind(fn(len) {
     toml_datetime_gen()
     .array_with_size(len)
-    .fmap(fn(values) { @qc_model.SDateTimeArray(values) })
+    .fmap(fn(values) { SDateTimeArray(values) })
   })
 }
 
@@ -337,9 +335,7 @@ fn string_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
   let strings : @qc.Gen[String] = @qc.Gen::spawn()
   let strings = strings.scale(fn(n) { capped_size(n, 8) })
   non_empty_length_gen(size).bind(fn(len) {
-    strings
-    .array_with_size(len)
-    .fmap(fn(values) { @qc_model.SStringArray(values) })
+    strings.array_with_size(len).fmap(fn(values) { SStringArray(values) })
   })
 }
 
@@ -347,9 +343,7 @@ fn string_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
 fn integer_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
   let integers : @qc.Gen[Int64] = @qc.Gen::spawn()
   non_empty_length_gen(size).bind(fn(len) {
-    integers
-    .array_with_size(len)
-    .fmap(fn(values) { @qc_model.SIntegerArray(values) })
+    integers.array_with_size(len).fmap(fn(values) { SIntegerArray(values) })
   })
 }
 
@@ -357,9 +351,7 @@ fn integer_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
 fn boolean_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
   let booleans : @qc.Gen[Bool] = @qc.Gen::spawn()
   non_empty_length_gen(size).bind(fn(len) {
-    booleans
-    .array_with_size(len)
-    .fmap(fn(values) { @qc_model.SBooleanArray(values) })
+    booleans.array_with_size(len).fmap(fn(values) { SBooleanArray(values) })
   })
 }
 
@@ -370,7 +362,7 @@ fn scalar_or_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
     (2U, integer_value_gen()),
     (2U, boolean_value_gen()),
     (2U, datetime_value_gen()),
-    (1U, @qc.pure(@qc_model.SEmptyArray)),
+    (1U, @qc.pure(SEmptyArray)),
     (2U, string_array_value_gen(size)),
     (2U, integer_array_value_gen(size)),
     (2U, boolean_array_value_gen(size)),
@@ -394,7 +386,7 @@ fn table_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
   @qc.int_range(0, max_fields + 1).bind(fn(field_count) {
     simple_entry_gen(next_size)
     .array_with_size(field_count)
-    .fmap(fn(entries) { @qc_model.STable(Map::from_array(entries)) })
+    .fmap(fn(entries) { STable(Map::from_array(entries)) })
   })
 }
 
@@ -415,9 +407,7 @@ fn simple_document_gen() -> @qc.Gen[@qc_model.SimpleDocument] {
     @qc.int_range(0, max_fields + 1).bind(fn(field_count) {
       simple_entry_gen(size)
       .array_with_size(field_count)
-      .fmap(fn(entries) {
-        @qc_model.SimpleDocument::{ fields: Map::from_array(entries) }
-      })
+      .fmap(fn(entries) { { fields: Map::from_array(entries) } })
     })
   })
 }

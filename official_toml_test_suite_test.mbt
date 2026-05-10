@@ -619,8 +619,8 @@ test "heterogeneous arrays should be invalid" {
   // which is required by the TOML specification
   let mixed_array = [
     @toml.TomlInteger(1L),
-    @toml.TomlString("hello"),
-    @toml.TomlBoolean(true),
+    TomlString("hello"),
+    TomlBoolean(true),
   ]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(mixed_array),

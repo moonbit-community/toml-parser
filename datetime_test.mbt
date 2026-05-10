@@ -4,18 +4,14 @@
 /// Test TOML 1.0 spec examples for Offset Date-Time
 test "toml spec offset datetime examples" {
   // RFC 3339 examples from TOML spec
-  let odt1 = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("1979-05-27T07:32:00Z"),
-  )
+  let odt1 = @toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z"))
   debug_inspect(
     odt1.to_string(),
     content=(
       #|"1979-05-27T07:32:00Z"
     ),
   )
-  let odt2 = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("1979-05-27T00:32:00-07:00"),
-  )
+  let odt2 = @toml.TomlDateTime(OffsetDateTime("1979-05-27T00:32:00-07:00"))
   debug_inspect(
     odt2.to_string(),
     content=(
@@ -23,7 +19,7 @@ test "toml spec offset datetime examples" {
     ),
   )
   let odt3 = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("1979-05-27T00:32:00.999999-07:00"),
+    OffsetDateTime("1979-05-27T00:32:00.999999-07:00"),
   )
   debug_inspect(
     odt3.to_string(),
@@ -36,16 +32,14 @@ test "toml spec offset datetime examples" {
 ///|
 /// Test TOML 1.0 spec examples for Local Date-Time  
 test "toml spec local datetime examples" {
-  let ldt1 = @toml.TomlDateTime(@tokenize.LocalDateTime("1979-05-27T07:32:00"))
+  let ldt1 = @toml.TomlDateTime(LocalDateTime("1979-05-27T07:32:00"))
   debug_inspect(
     ldt1.to_string(),
     content=(
       #|"1979-05-27T07:32:00"
     ),
   )
-  let ldt2 = @toml.TomlDateTime(
-    @tokenize.LocalDateTime("1979-05-27T00:32:00.999999"),
-  )
+  let ldt2 = @toml.TomlDateTime(LocalDateTime("1979-05-27T00:32:00.999999"))
   debug_inspect(
     ldt2.to_string(),
     content=(
@@ -57,21 +51,21 @@ test "toml spec local datetime examples" {
 ///|
 /// Test TOML 1.0 spec examples for Local Date
 test "toml spec local date examples" {
-  let ld1 = @toml.TomlDateTime(@tokenize.LocalDate("1979-05-27"))
+  let ld1 = @toml.TomlDateTime(LocalDate("1979-05-27"))
   debug_inspect(
     ld1.to_string(),
     content=(
       #|"1979-05-27"
     ),
   )
-  let ld2 = @toml.TomlDateTime(@tokenize.LocalDate("2023-12-31"))
+  let ld2 = @toml.TomlDateTime(LocalDate("2023-12-31"))
   debug_inspect(
     ld2.to_string(),
     content=(
       #|"2023-12-31"
     ),
   )
-  let ld3 = @toml.TomlDateTime(@tokenize.LocalDate("1900-01-01"))
+  let ld3 = @toml.TomlDateTime(LocalDate("1900-01-01"))
   debug_inspect(
     ld3.to_string(),
     content=(
@@ -83,14 +77,14 @@ test "toml spec local date examples" {
 ///|
 /// Test TOML 1.0 spec examples for Local Time
 test "toml spec local time examples" {
-  let lt1 = @toml.TomlDateTime(@tokenize.LocalTime("07:32:00"))
+  let lt1 = @toml.TomlDateTime(LocalTime("07:32:00"))
   debug_inspect(
     lt1.to_string(),
     content=(
       #|"07:32:00"
     ),
   )
-  let lt2 = @toml.TomlDateTime(@tokenize.LocalTime("00:32:00.999999"))
+  let lt2 = @toml.TomlDateTime(LocalTime("00:32:00.999999"))
   debug_inspect(
     lt2.to_string(),
     content=(
@@ -104,9 +98,9 @@ test "toml spec local time examples" {
 test "datetime arrays validation" {
   // Array of same datetime type (should be valid in TOML)
   let offset_array = [
-    @toml.TomlDateTime(@tokenize.OffsetDateTime("2023-01-01T00:00:00Z")),
-    @toml.TomlDateTime(@tokenize.OffsetDateTime("2023-01-02T00:00:00Z")),
-    @toml.TomlDateTime(@tokenize.OffsetDateTime("2023-01-03T00:00:00Z")),
+    @toml.TomlDateTime(OffsetDateTime("2023-01-01T00:00:00Z")),
+    TomlDateTime(OffsetDateTime("2023-01-02T00:00:00Z")),
+    TomlDateTime(OffsetDateTime("2023-01-03T00:00:00Z")),
   ]
   let offset_arr_value = @toml.TomlArray(offset_array)
   let offset_str = offset_arr_value.to_string()
@@ -116,9 +110,9 @@ test "datetime arrays validation" {
 
   // Array of local dates
   let date_array = [
-    @toml.TomlDateTime(@tokenize.LocalDate("2023-01-01")),
-    @toml.TomlDateTime(@tokenize.LocalDate("2023-01-02")),
-    @toml.TomlDateTime(@tokenize.LocalDate("2023-01-03")),
+    @toml.TomlDateTime(LocalDate("2023-01-01")),
+    TomlDateTime(LocalDate("2023-01-02")),
+    TomlDateTime(LocalDate("2023-01-03")),
   ]
   let date_arr_value = @toml.TomlArray(date_array)
   let date_str = date_arr_value.to_string()
@@ -131,30 +125,26 @@ test "datetime arrays validation" {
 /// Test datetime in complex nested structures
 test "datetime in nested structures" {
   let event_table : Map[String, @toml.TomlValue] = Map([])
-  event_table["name"] = @toml.TomlString("Conference 2023")
-  event_table["start_date"] = @toml.TomlDateTime(
-    @tokenize.LocalDate("2023-06-15"),
-  )
-  event_table["start_time"] = @toml.TomlDateTime(
-    @tokenize.LocalTime("09:00:00"),
-  )
-  event_table["end_datetime"] = @toml.TomlDateTime(
-    @tokenize.LocalDateTime("2023-06-17T17:00:00"),
+  event_table["name"] = TomlString("Conference 2023")
+  event_table["start_date"] = TomlDateTime(LocalDate("2023-06-15"))
+  event_table["start_time"] = TomlDateTime(LocalTime("09:00:00"))
+  event_table["end_datetime"] = TomlDateTime(
+    LocalDateTime("2023-06-17T17:00:00"),
   )
   let sessions = Array::new()
   let session1 : Map[String, @toml.TomlValue] = Map([])
-  session1["title"] = @toml.TomlString("Opening Keynote")
-  session1["scheduled_at"] = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("2023-06-15T09:00:00+00:00"),
+  session1["title"] = TomlString("Opening Keynote")
+  session1["scheduled_at"] = TomlDateTime(
+    OffsetDateTime("2023-06-15T09:00:00+00:00"),
   )
   sessions.push(@toml.TomlTable(session1))
   let session2 : Map[String, @toml.TomlValue] = Map([])
-  session2["title"] = @toml.TomlString("Technical Workshop")
-  session2["scheduled_at"] = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("2023-06-15T14:00:00+00:00"),
+  session2["title"] = TomlString("Technical Workshop")
+  session2["scheduled_at"] = TomlDateTime(
+    OffsetDateTime("2023-06-15T14:00:00+00:00"),
   )
-  sessions.push(@toml.TomlTable(session2))
-  event_table["sessions"] = @toml.TomlArray(sessions)
+  sessions.push(TomlTable(session2))
+  event_table["sessions"] = TomlArray(sessions)
   let event_value = @toml.TomlTable(event_table)
   let event_str = event_value.to_string()
 
@@ -170,7 +160,7 @@ test "datetime in nested structures" {
 /// Test edge cases for datetime formats
 test "datetime format edge cases" {
   // Leap year dates
-  let leap_year = @toml.TomlDateTime(@tokenize.LocalDate("2024-02-29"))
+  let leap_year = @toml.TomlDateTime(LocalDate("2024-02-29"))
   debug_inspect(
     leap_year.to_string(),
     content=(
@@ -179,9 +169,7 @@ test "datetime format edge cases" {
   )
 
   // End of year
-  let new_years_eve = @toml.TomlDateTime(
-    @tokenize.LocalDateTime("2023-12-31T23:59:59"),
-  )
+  let new_years_eve = @toml.TomlDateTime(LocalDateTime("2023-12-31T23:59:59"))
   debug_inspect(
     new_years_eve.to_string(),
     content=(
@@ -190,9 +178,7 @@ test "datetime format edge cases" {
   )
 
   // Start of year  
-  let new_years_day = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("2024-01-01T00:00:00Z"),
-  )
+  let new_years_day = @toml.TomlDateTime(OffsetDateTime("2024-01-01T00:00:00Z"))
   debug_inspect(
     new_years_day.to_string(),
     content=(
@@ -202,7 +188,7 @@ test "datetime format edge cases" {
 
   // Maximum precision fractional seconds
   let max_precision = @toml.TomlDateTime(
-    @tokenize.LocalDateTime("2023-01-01T12:00:00.123456789"),
+    LocalDateTime("2023-01-01T12:00:00.123456789"),
   )
   debug_inspect(
     max_precision.to_string(),
@@ -213,7 +199,7 @@ test "datetime format edge cases" {
 
   // Various timezone offsets
   let tz_positive = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("2023-01-01T12:00:00+14:00"),
+    OffsetDateTime("2023-01-01T12:00:00+14:00"),
   )
   debug_inspect(
     tz_positive.to_string(),
@@ -222,7 +208,7 @@ test "datetime format edge cases" {
     ),
   )
   let tz_negative = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("2023-01-01T12:00:00-12:00"),
+    OffsetDateTime("2023-01-01T12:00:00-12:00"),
   )
   debug_inspect(
     tz_negative.to_string(),
@@ -231,7 +217,7 @@ test "datetime format edge cases" {
     ),
   )
   let tz_half_hour = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("2023-01-01T12:00:00+05:30"),
+    OffsetDateTime("2023-01-01T12:00:00+05:30"),
   )
   debug_inspect(
     tz_half_hour.to_string(),
@@ -269,21 +255,17 @@ test "datetime serialization consistency" {
 /// Test datetime comparison and equality  
 test "datetime comparison" {
   // Same datetime different representations should be equal
-  let dt1 = @toml.TomlDateTime(@tokenize.OffsetDateTime("2023-01-01T12:00:00Z"))
-  let dt2 = @toml.TomlDateTime(@tokenize.OffsetDateTime("2023-01-01T12:00:00Z"))
+  let dt1 = @toml.TomlDateTime(OffsetDateTime("2023-01-01T12:00:00Z"))
+  let dt2 = @toml.TomlDateTime(OffsetDateTime("2023-01-01T12:00:00Z"))
   debug_inspect(dt1 == dt2, content="true")
 
   // Different datetimes should not be equal
-  let dt3 = @toml.TomlDateTime(@tokenize.OffsetDateTime("2023-01-01T12:00:01Z"))
+  let dt3 = @toml.TomlDateTime(OffsetDateTime("2023-01-01T12:00:01Z"))
   debug_inspect(dt1 == dt3, content="false")
 
   // Different datetime types should not be equal even with same time
-  let local_dt = @toml.TomlDateTime(
-    @tokenize.LocalDateTime("2023-01-01T12:00:00"),
-  )
-  let offset_dt = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("2023-01-01T12:00:00Z"),
-  )
+  let local_dt = @toml.TomlDateTime(LocalDateTime("2023-01-01T12:00:00"))
+  let offset_dt = @toml.TomlDateTime(OffsetDateTime("2023-01-01T12:00:00Z"))
   debug_inspect(local_dt == offset_dt, content="false")
 }
 
@@ -291,16 +273,14 @@ test "datetime comparison" {
 /// Test historical and future dates
 test "datetime historical and future dates" {
   // Historical dates
-  let unix_epoch = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("1970-01-01T00:00:00Z"),
-  )
+  let unix_epoch = @toml.TomlDateTime(OffsetDateTime("1970-01-01T00:00:00Z"))
   debug_inspect(
     unix_epoch.to_string(),
     content=(
       #|"1970-01-01T00:00:00Z"
     ),
   )
-  let pre_unix = @toml.TomlDateTime(@tokenize.LocalDate("1969-12-31"))
+  let pre_unix = @toml.TomlDateTime(LocalDate("1969-12-31"))
   debug_inspect(
     pre_unix.to_string(),
     content=(
@@ -309,7 +289,7 @@ test "datetime historical and future dates" {
   )
 
   // Far future dates
-  let far_future = @toml.TomlDateTime(@tokenize.LocalDate("3000-01-01"))
+  let far_future = @toml.TomlDateTime(LocalDate("3000-01-01"))
   debug_inspect(
     far_future.to_string(),
     content=(
@@ -318,7 +298,7 @@ test "datetime historical and future dates" {
   )
 
   // Y2K
-  let y2k = @toml.TomlDateTime(@tokenize.LocalDateTime("2000-01-01T00:00:00"))
+  let y2k = @toml.TomlDateTime(LocalDateTime("2000-01-01T00:00:00"))
   debug_inspect(
     y2k.to_string(),
     content=(
@@ -331,14 +311,10 @@ test "datetime historical and future dates" {
 /// Test timezone boundary cases
 test "timezone boundary cases" {
   // UTC variants
-  let utc_z = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("2023-01-01T12:00:00Z"),
-  )
-  let utc_plus = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("2023-01-01T12:00:00+00:00"),
-  )
+  let utc_z = @toml.TomlDateTime(OffsetDateTime("2023-01-01T12:00:00Z"))
+  let utc_plus = @toml.TomlDateTime(OffsetDateTime("2023-01-01T12:00:00+00:00"))
   let utc_minus = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("2023-01-01T12:00:00-00:00"),
+    OffsetDateTime("2023-01-01T12:00:00-00:00"),
   )
   debug_inspect(
     utc_z.to_string(),
@@ -361,10 +337,10 @@ test "timezone boundary cases" {
 
   // Extreme timezone offsets (valid in spec)
   let max_positive = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("2023-01-01T12:00:00+14:00"),
+    OffsetDateTime("2023-01-01T12:00:00+14:00"),
   )
   let max_negative = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("2023-01-01T12:00:00-12:00"),
+    OffsetDateTime("2023-01-01T12:00:00-12:00"),
   )
   debug_inspect(
     max_positive.to_string(),
@@ -387,30 +363,28 @@ test "realistic datetime scenarios" {
   let config : Map[String, @toml.TomlValue] = Map([])
 
   // Deployment timestamp (offset datetime)
-  config["deployed_at"] = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("2023-06-15T14:30:00+00:00"),
+  config["deployed_at"] = TomlDateTime(
+    OffsetDateTime("2023-06-15T14:30:00+00:00"),
   )
 
   // Scheduled maintenance (local datetime - timezone agnostic)
-  config["maintenance_window"] = @toml.TomlDateTime(
-    @tokenize.LocalDateTime("2023-06-20T02:00:00"),
+  config["maintenance_window"] = TomlDateTime(
+    LocalDateTime("2023-06-20T02:00:00"),
   )
 
   // License expiry (date only)
-  config["license_expires"] = @toml.TomlDateTime(
-    @tokenize.LocalDate("2024-12-31"),
-  )
+  config["license_expires"] = TomlDateTime(LocalDate("2024-12-31"))
 
   // Daily backup time (time only)
-  config["backup_time"] = @toml.TomlDateTime(@tokenize.LocalTime("03:00:00"))
+  config["backup_time"] = TomlDateTime(LocalTime("03:00:00"))
 
   // Array of maintenance windows
   let maintenance_windows = [
-    @toml.TomlDateTime(@tokenize.LocalDateTime("2023-06-20T02:00:00")),
-    @toml.TomlDateTime(@tokenize.LocalDateTime("2023-07-20T02:00:00")),
-    @toml.TomlDateTime(@tokenize.LocalDateTime("2023-08-20T02:00:00")),
+    @toml.TomlDateTime(LocalDateTime("2023-06-20T02:00:00")),
+    TomlDateTime(LocalDateTime("2023-07-20T02:00:00")),
+    TomlDateTime(LocalDateTime("2023-08-20T02:00:00")),
   ]
-  config["maintenance_schedule"] = @toml.TomlArray(maintenance_windows)
+  config["maintenance_schedule"] = TomlArray(maintenance_windows)
   let config_value = @toml.TomlTable(config)
   let config_str = config_value.to_string()
 

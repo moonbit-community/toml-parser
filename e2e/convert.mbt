@@ -4,12 +4,11 @@
 /// Tables become plain JSON objects, arrays become JSON arrays.
 pub fn to_test_json(value : @toml.TomlValue) -> Json {
   match value {
-    @toml.TomlString(s) => typed_value("string", s)
-    @toml.TomlInteger(i) => typed_value("integer", i.to_string())
-    @toml.TomlFloat(f) => typed_value("float", format_test_float(f))
-    @toml.TomlBoolean(b) =>
-      typed_value("bool", if b { "true" } else { "false" })
-    @toml.TomlDateTime(_) => {
+    TomlString(s) => typed_value("string", s)
+    TomlInteger(i) => typed_value("integer", i.to_string())
+    TomlFloat(f) => typed_value("float", format_test_float(f))
+    TomlBoolean(b) => typed_value("bool", if b { "true" } else { "false" })
+    TomlDateTime(_) => {
       let (kind, s) = value.datetime_info().unwrap()
       match kind {
         "OffsetDateTime" => typed_value("datetime", normalize_datetime(s))
@@ -18,8 +17,8 @@ pub fn to_test_json(value : @toml.TomlValue) -> Json {
         _ => typed_value("date-local", s)
       }
     }
-    @toml.TomlArray(arr) => Json::array([ for v in arr => to_test_json(v) ])
-    @toml.TomlTable(table) =>
+    TomlArray(arr) => Json::array([ for v in arr => to_test_json(v) ])
+    TomlTable(table) =>
       Json::object(
         Map::from_array([ for k, v in table => (k, to_test_json(v)) ]),
       )

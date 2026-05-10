@@ -52,11 +52,7 @@ test "toml boolean value" {
 
 ///|
 test "toml array value" {
-  let arr = [
-    @toml.TomlInteger(1L),
-    @toml.TomlInteger(2L),
-    @toml.TomlInteger(3L),
-  ]
+  let arr = [@toml.TomlInteger(1L), TomlInteger(2L), TomlInteger(3L)]
   let value = @toml.TomlArray(arr)
   debug_inspect(
     value.to_string(),
@@ -69,8 +65,8 @@ test "toml array value" {
 ///|
 test "toml table value" {
   let table : Map[String, @toml.TomlValue] = Map([])
-  table["key1"] = @toml.TomlString("value1")
-  table["key2"] = @toml.TomlInteger(42L)
+  table["key1"] = TomlString("value1")
+  table["key2"] = TomlInteger(42L)
   let value = @toml.TomlTable(table)
   // Note: Map iteration order might vary, we'll test the contains functionality
   let str_repr = value.to_string()
@@ -251,9 +247,9 @@ test "toml datetime equality" {
 test "toml mixed datetime array" {
   let arr = [
     @toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z")),
-    @toml.TomlDateTime(LocalDateTime("1979-05-27T07:32:00")),
-    @toml.TomlDateTime(LocalDate("1979-05-27")),
-    @toml.TomlDateTime(LocalTime("07:32:00")),
+    TomlDateTime(LocalDateTime("1979-05-27T07:32:00")),
+    TomlDateTime(LocalDate("1979-05-27")),
+    TomlDateTime(LocalTime("07:32:00")),
   ]
   let value = @toml.TomlArray(arr)
   let str_repr = value.to_string()
@@ -269,12 +265,10 @@ test "toml mixed datetime array" {
 /// Tests for datetime in table
 test "toml datetime in table" {
   let table : Map[String, @toml.TomlValue] = Map([])
-  table["created_at"] = @toml.TomlDateTime(
-    OffsetDateTime("2023-01-01T00:00:00Z"),
-  )
-  table["updated_at"] = @toml.TomlDateTime(LocalDateTime("2023-01-02T12:30:45"))
-  table["birth_date"] = @toml.TomlDateTime(LocalDate("1990-05-15"))
-  table["meeting_time"] = @toml.TomlDateTime(LocalTime("14:30:00"))
+  table["created_at"] = TomlDateTime(OffsetDateTime("2023-01-01T00:00:00Z"))
+  table["updated_at"] = TomlDateTime(LocalDateTime("2023-01-02T12:30:45"))
+  table["birth_date"] = TomlDateTime(LocalDate("1990-05-15"))
+  table["meeting_time"] = TomlDateTime(LocalTime("14:30:00"))
   let value = @toml.TomlTable(table)
   let str_repr = value.to_string()
 
@@ -339,8 +333,8 @@ test "parser creation" {
   let loc = @tokenize.default_loc()
   let tokens = [
     @tokenize.Identifier("key", loc~),
-    @tokenize.Equals(loc~),
-    @tokenize.StringToken("value", loc~, multiline=false),
+    Equals(loc~),
+    StringToken("value", loc~, multiline=false),
   ]
   let parser = @toml.Parser::new(tokens)
   debug_inspect(parser.position, content="0")
@@ -352,59 +346,41 @@ test "parser creation" {
 test "datetime token creation" {
   let loc = @tokenize.default_loc()
   let offset_dt_token = @tokenize.DateTimeToken(
-    @tokenize.OffsetDateTime("1979-05-27T07:32:00Z"),
+    OffsetDateTime("1979-05-27T07:32:00Z"),
     loc~,
   )
   let local_dt_token = @tokenize.DateTimeToken(
-    @tokenize.LocalDateTime("1979-05-27T07:32:00"),
+    LocalDateTime("1979-05-27T07:32:00"),
     loc~,
   )
-  let local_date_token = @tokenize.DateTimeToken(
-    @tokenize.LocalDate("1979-05-27"),
-    loc~,
-  )
-  let local_time_token = @tokenize.DateTimeToken(
-    @tokenize.LocalTime("07:32:00"),
-    loc~,
-  )
+  let local_date_token = @tokenize.DateTimeToken(LocalDate("1979-05-27"), loc~)
+  let local_time_token = @tokenize.DateTimeToken(LocalTime("07:32:00"), loc~)
 
   // Test that tokens can be created (basic instantiation test)
-  guard offset_dt_token
-    is @tokenize.DateTimeToken(@tokenize.OffsetDateTime("1979-05-27T07:32:00Z"))
-  guard local_dt_token
-    is @tokenize.DateTimeToken(@tokenize.LocalDateTime("1979-05-27T07:32:00"))
-  guard local_date_token
-    is @tokenize.DateTimeToken(@tokenize.LocalDate("1979-05-27"))
-  guard local_time_token
-    is @tokenize.DateTimeToken(@tokenize.LocalTime("07:32:00"))
+  guard offset_dt_token is DateTimeToken(OffsetDateTime("1979-05-27T07:32:00Z"))
+  guard local_dt_token is DateTimeToken(LocalDateTime("1979-05-27T07:32:00"))
+  guard local_date_token is DateTimeToken(LocalDate("1979-05-27"))
+  guard local_time_token is DateTimeToken(LocalTime("07:32:00"))
 }
 
 ///|
 /// Tests for array homogeneity validation
 test "array homogeneity validation" {
   // Homogeneous arrays (should be valid)
-  let int_array = [
-    @toml.TomlInteger(1L),
-    @toml.TomlInteger(2L),
-    @toml.TomlInteger(3L),
-  ]
+  let int_array = [@toml.TomlInteger(1L), TomlInteger(2L), TomlInteger(3L)]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(int_array),
     content="true",
   )
-  let string_array = [
-    @toml.TomlString("a"),
-    @toml.TomlString("b"),
-    @toml.TomlString("c"),
-  ]
+  let string_array = [@toml.TomlString("a"), TomlString("b"), TomlString("c")]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(string_array),
     content="true",
   )
   let datetime_array = [
     @toml.TomlDateTime(OffsetDateTime("2023-01-01T00:00:00Z")),
-    @toml.TomlDateTime(LocalDateTime("2023-01-02T00:00:00")),
-    @toml.TomlDateTime(LocalDate("2023-01-03")),
+    TomlDateTime(LocalDateTime("2023-01-02T00:00:00")),
+    TomlDateTime(LocalDate("2023-01-03")),
   ]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(datetime_array),
@@ -432,8 +408,8 @@ test "array heterogeneity detection" {
   // Mixed types (should be invalid)
   let mixed_array = [
     @toml.TomlInteger(1L),
-    @toml.TomlString("hello"),
-    @toml.TomlBoolean(true),
+    TomlString("hello"),
+    TomlBoolean(true),
   ]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(mixed_array),
@@ -441,7 +417,7 @@ test "array heterogeneity detection" {
   )
 
   // Numbers with different types (should be invalid in TOML)
-  let mixed_numbers = [@toml.TomlInteger(1L), @toml.TomlFloat(2.5)]
+  let mixed_numbers = [@toml.TomlInteger(1L), TomlFloat(2.5)]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(mixed_numbers),
     content="false",
@@ -450,7 +426,7 @@ test "array heterogeneity detection" {
   // Mixed datetime and string (should be invalid)
   let mixed_dt_string = [
     @toml.TomlDateTime(LocalDate("2023-01-01")),
-    @toml.TomlString("not a date"),
+    TomlString("not a date"),
   ]
   debug_inspect(
     @toml.TomlValue::is_homogeneous_array(mixed_dt_string),
@@ -462,20 +438,20 @@ test "array heterogeneity detection" {
 /// Tests for TomlValue validation
 test "toml value validation" {
   // Valid homogeneous array
-  let valid_array = [@toml.TomlInteger(1L), @toml.TomlInteger(2L)]
+  let valid_array = [@toml.TomlInteger(1L), TomlInteger(2L)]
   let valid_toml_array = @toml.TomlArray(valid_array)
   debug_inspect(valid_toml_array.validate(), content="true")
 
   // Invalid heterogeneous array
-  let invalid_array = [@toml.TomlInteger(1L), @toml.TomlString("mixed")]
+  let invalid_array = [@toml.TomlInteger(1L), TomlString("mixed")]
   let invalid_toml_array = @toml.TomlArray(invalid_array)
   debug_inspect(invalid_toml_array.validate(), content="false")
 
   // Valid nested structure
   let valid_table : Map[String, @toml.TomlValue] = Map([])
-  let nested_array = [@toml.TomlString("item1"), @toml.TomlString("item2")]
-  valid_table["items"] = @toml.TomlArray(nested_array)
-  valid_table["count"] = @toml.TomlInteger(2L)
+  let nested_array = [@toml.TomlString("item1"), TomlString("item2")]
+  valid_table["items"] = TomlArray(nested_array)
+  valid_table["count"] = TomlInteger(2L)
   let valid_nested = @toml.TomlTable(valid_table)
   debug_inspect(valid_nested.validate(), content="true")
 
@@ -483,10 +459,10 @@ test "toml value validation" {
   let invalid_table : Map[String, @toml.TomlValue] = Map([])
   let bad_nested_array = [
     @toml.TomlString("item1"),
-    @toml.TomlInteger(42L), // Mixed types
+    TomlInteger(42L), // Mixed types
   ]
-  invalid_table["items"] = @toml.TomlArray(bad_nested_array)
-  invalid_table["count"] = @toml.TomlInteger(2L)
+  invalid_table["items"] = TomlArray(bad_nested_array)
+  invalid_table["count"] = TomlInteger(2L)
   let invalid_nested = @toml.TomlTable(invalid_table)
   debug_inspect(invalid_nested.validate(), content="false")
 

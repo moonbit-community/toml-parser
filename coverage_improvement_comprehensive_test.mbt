@@ -132,7 +132,7 @@ test "unterminated_multiline_string" {
 ///|
 /// Test homogeneous array with TomlFloat
 test "homogeneous_array_with_floats" {
-  let arr = [@toml.TomlFloat(1.0), @toml.TomlFloat(2.0)]
+  let arr = [@toml.TomlFloat(1.0), TomlFloat(2.0)]
   let result = @toml.TomlValue::is_homogeneous_array(arr)
   debug_inspect(result, content="true")
 }
@@ -142,7 +142,7 @@ test "homogeneous_array_with_floats" {
 test "homogeneous_array_with_tables" {
   let table1 = Map([])
   let table2 = Map([])
-  let arr = [@toml.TomlTable(table1), @toml.TomlTable(table2)]
+  let arr = [@toml.TomlTable(table1), TomlTable(table2)]
   let result = @toml.TomlValue::is_homogeneous_array(arr)
   debug_inspect(result, content="true")
 }
@@ -150,7 +150,7 @@ test "homogeneous_array_with_tables" {
 ///|
 /// Test homogeneous array type checking with TomlBoolean
 test "homogeneous_array_type_check_boolean" {
-  let arr = [@toml.TomlBoolean(true), @toml.TomlInteger(42L)]
+  let arr = [@toml.TomlBoolean(true), TomlInteger(42L)]
   let result = @toml.TomlValue::is_homogeneous_array(arr)
   debug_inspect(result, content="false")
 }
@@ -159,7 +159,7 @@ test "homogeneous_array_type_check_boolean" {
 /// Test homogeneous array type checking with TomlTable vs other
 test "homogeneous_array_type_check_table_vs_other" {
   let table = Map([])
-  let arr = [@toml.TomlTable(table), @toml.TomlInteger(42L)]
+  let arr = [@toml.TomlTable(table), TomlInteger(42L)]
   let result = @toml.TomlValue::is_homogeneous_array(arr)
   debug_inspect(result, content="false")
 }
@@ -168,7 +168,7 @@ test "homogeneous_array_type_check_table_vs_other" {
 /// Test nested validation failure in arrays
 test "nested_validation_failure_in_array" {
   // Create a heterogeneous nested array (which should be invalid)
-  let nested_arr = [@toml.TomlInteger(1L), @toml.TomlString("test")]
+  let nested_arr = [@toml.TomlInteger(1L), TomlString("test")]
   let invalid_nested = @toml.TomlArray(nested_arr)
   let outer_arr = [invalid_nested]
   let outer_array_value = @toml.TomlArray(outer_arr)
@@ -243,9 +243,7 @@ test "toml_value_to_string_coverage" {
   debug_inspect(float_str.contains("3.14"), content="true")
 
   // Test datetime to_string variants
-  let offset_dt = @toml.TomlDateTime(
-    @tokenize.OffsetDateTime("2023-05-15T10:30:00Z"),
-  )
+  let offset_dt = @toml.TomlDateTime(OffsetDateTime("2023-05-15T10:30:00Z"))
   let offset_str = offset_dt.to_string()
   debug_inspect(
     offset_str,
@@ -253,9 +251,7 @@ test "toml_value_to_string_coverage" {
       #|"2023-05-15T10:30:00Z"
     ),
   )
-  let local_dt = @toml.TomlDateTime(
-    @tokenize.LocalDateTime("2023-05-15T10:30:00"),
-  )
+  let local_dt = @toml.TomlDateTime(LocalDateTime("2023-05-15T10:30:00"))
   let local_str = local_dt.to_string()
   debug_inspect(
     local_str,
@@ -263,7 +259,7 @@ test "toml_value_to_string_coverage" {
       #|"2023-05-15T10:30:00"
     ),
   )
-  let local_date = @toml.TomlDateTime(@tokenize.LocalDate("2023-05-15"))
+  let local_date = @toml.TomlDateTime(LocalDate("2023-05-15"))
   let date_str = local_date.to_string()
   debug_inspect(
     date_str,
@@ -271,7 +267,7 @@ test "toml_value_to_string_coverage" {
       #|"2023-05-15"
     ),
   )
-  let local_time = @toml.TomlDateTime(@tokenize.LocalTime("10:30:00"))
+  let local_time = @toml.TomlDateTime(LocalTime("10:30:00"))
   let time_str = local_time.to_string()
   debug_inspect(
     time_str,
@@ -336,11 +332,7 @@ test "main_function_components_coverage" {
   )
 
   // Create and manipulate arrays like in main
-  let arr = [
-    @toml.TomlInteger(1L),
-    @toml.TomlInteger(2L),
-    @toml.TomlInteger(3L),
-  ]
+  let arr = [@toml.TomlInteger(1L), TomlInteger(2L), TomlInteger(3L)]
   let array_val = @toml.TomlArray(arr)
   debug_inspect(
     array_val.to_string(),

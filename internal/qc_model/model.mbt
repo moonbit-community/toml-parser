@@ -30,31 +30,23 @@ pub impl Show for SimpleValue with output(self, logger) {
 ///|
 pub fn SimpleValue::to_toml(self : SimpleValue) -> @toml.TomlValue {
   match self {
-    SString(s) => @toml.TomlString(s)
-    SInteger(n) => @toml.TomlInteger(n)
-    SBoolean(b) => @toml.TomlBoolean(b)
-    SDateTime(value) => @toml.TomlDateTime(value)
-    SDateTimeArray(values) =>
-      @toml.TomlArray([ for v in values => @toml.TomlDateTime(v) ])
-    SEmptyArray => @toml.TomlArray([])
-    SStringArray(values) =>
-      @toml.TomlArray([ for v in values => @toml.TomlString(v) ])
-    SIntegerArray(values) =>
-      @toml.TomlArray([ for v in values => @toml.TomlInteger(v) ])
-    SBooleanArray(values) =>
-      @toml.TomlArray([ for v in values => @toml.TomlBoolean(v) ])
+    SString(s) => TomlString(s)
+    SInteger(n) => TomlInteger(n)
+    SBoolean(b) => TomlBoolean(b)
+    SDateTime(value) => TomlDateTime(value)
+    SDateTimeArray(values) => TomlArray([ for v in values => TomlDateTime(v) ])
+    SEmptyArray => TomlArray([])
+    SStringArray(values) => TomlArray([ for v in values => TomlString(v) ])
+    SIntegerArray(values) => TomlArray([ for v in values => TomlInteger(v) ])
+    SBooleanArray(values) => TomlArray([ for v in values => TomlBoolean(v) ])
     STable(fields) =>
-      @toml.TomlTable(
-        Map::from_array([ for k, v in fields => (k, v.to_toml()) ]),
-      )
+      TomlTable(Map::from_array([ for k, v in fields => (k, v.to_toml()) ]))
   }
 }
 
 ///|
 pub fn SimpleDocument::to_toml(self : SimpleDocument) -> @toml.TomlValue {
-  @toml.TomlTable(
-    Map::from_array([ for k, v in self.fields => (k, v.to_toml()) ]),
-  )
+  TomlTable(Map::from_array([ for k, v in self.fields => (k, v.to_toml()) ]))
 }
 
 ///|
@@ -75,7 +67,7 @@ fn[A] collect_toml_array(
 ///|
 fn project_datetime(value : @toml.TomlValue) -> @tokenize.TomlDateTime? {
   match value {
-    @toml.TomlDateTime(dt) => Some(dt)
+    TomlDateTime(dt) => Some(dt)
     _ => None
   }
 }
@@ -83,7 +75,7 @@ fn project_datetime(value : @toml.TomlValue) -> @tokenize.TomlDateTime? {
 ///|
 fn project_string(value : @toml.TomlValue) -> String? {
   match value {
-    @toml.TomlString(s) => Some(s)
+    TomlString(s) => Some(s)
     _ => None
   }
 }
@@ -91,7 +83,7 @@ fn project_string(value : @toml.TomlValue) -> String? {
 ///|
 fn project_integer(value : @toml.TomlValue) -> Int64? {
   match value {
-    @toml.TomlInteger(n) => Some(n)
+    TomlInteger(n) => Some(n)
     _ => None
   }
 }
@@ -99,7 +91,7 @@ fn project_integer(value : @toml.TomlValue) -> Int64? {
 ///|
 fn project_boolean(value : @toml.TomlValue) -> Bool? {
   match value {
-    @toml.TomlBoolean(b) => Some(b)
+    TomlBoolean(b) => Some(b)
     _ => None
   }
 }
@@ -107,32 +99,32 @@ fn project_boolean(value : @toml.TomlValue) -> Bool? {
 ///|
 pub fn SimpleValue::from_toml(value : @toml.TomlValue) -> SimpleValue? {
   match value {
-    @toml.TomlString(text) => Some(SString(text))
-    @toml.TomlInteger(number) => Some(SInteger(number))
-    @toml.TomlBoolean(boolean) => Some(SBoolean(boolean))
-    @toml.TomlDateTime(datetime) => Some(SDateTime(datetime))
-    @toml.TomlArray(values) =>
+    TomlString(text) => Some(SString(text))
+    TomlInteger(number) => Some(SInteger(number))
+    TomlBoolean(boolean) => Some(SBoolean(boolean))
+    TomlDateTime(datetime) => Some(SDateTime(datetime))
+    TomlArray(values) =>
       match values {
         [] => Some(SEmptyArray)
-        [@toml.TomlDateTime(_), ..] =>
+        [TomlDateTime(_), ..] =>
           collect_toml_array(values, project_datetime).map(items => {
             SDateTimeArray(items)
           })
-        [@toml.TomlString(_), ..] =>
+        [TomlString(_), ..] =>
           collect_toml_array(values, project_string).map(items => {
             SStringArray(items)
           })
-        [@toml.TomlInteger(_), ..] =>
+        [TomlInteger(_), ..] =>
           collect_toml_array(values, project_integer).map(items => {
             SIntegerArray(items)
           })
-        [@toml.TomlBoolean(_), ..] =>
+        [TomlBoolean(_), ..] =>
           collect_toml_array(values, project_boolean).map(items => {
             SBooleanArray(items)
           })
         _ => None
       }
-    @toml.TomlTable(fields) =>
+    TomlTable(fields) =>
       simple_table_entries_from_toml(fields.to_array()).map(entries => {
         STable(Map::from_array(entries))
       })
@@ -158,7 +150,7 @@ fn simple_table_entries_from_toml(
 ///|
 pub fn SimpleDocument::from_toml(value : @toml.TomlValue) -> SimpleDocument? {
   match value {
-    @toml.TomlTable(fields) =>
+    TomlTable(fields) =>
       simple_table_entries_from_toml(fields.to_array()).map(entries => {
         fields: Map::from_array(entries),
       })
@@ -208,10 +200,9 @@ fn SimpleValue::contains_datetime(self : SimpleValue) -> Bool {
 ///|
 fn datetime_has_fractional_seconds(datetime : @tokenize.TomlDateTime) -> Bool {
   match datetime {
-    @tokenize.OffsetDateTime(text)
-    | @tokenize.LocalDateTime(text)
-    | @tokenize.LocalTime(text) => text.contains(".")
-    @tokenize.LocalDate(_) => false
+    OffsetDateTime(text) | LocalDateTime(text) | LocalTime(text) =>
+      text.contains(".")
+    LocalDate(_) => false
   }
 }
 

@@ -1476,7 +1476,7 @@ test "very large invalid float" {
     .iter()
     .any(fn(tok) {
       match tok {
-        @tokenize.FloatToken(f, ..) => f.is_inf()
+        FloatToken(f, ..) => f.is_inf()
         _ => false
       }
     })

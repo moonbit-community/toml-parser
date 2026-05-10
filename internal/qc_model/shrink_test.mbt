@@ -3,49 +3,46 @@ fn shrink_simple_value(
   value : @qc_model.SimpleValue,
 ) -> Iter[@qc_model.SimpleValue] {
   match value {
-    SString(s) =>
-      @qc.Shrink::shrink(s).map(fn(next) { @qc_model.SString(next) })
-    SInteger(n) =>
-      @qc.Shrink::shrink(n).map(fn(next) { @qc_model.SInteger(next) })
-    SBoolean(b) =>
-      @qc.Shrink::shrink(b).map(fn(next) { @qc_model.SBoolean(next) })
+    SString(s) => @qc.Shrink::shrink(s).map(fn(next) { SString(next) })
+    SInteger(n) => @qc.Shrink::shrink(n).map(fn(next) { SInteger(next) })
+    SBoolean(b) => @qc.Shrink::shrink(b).map(fn(next) { SBoolean(next) })
     SDateTime(_) => Iter::empty()
     SDateTimeArray(values) =>
       shrink_datetime_values(values).map(fn(next_values) {
         if next_values.is_empty() {
-          @qc_model.SEmptyArray
+          SEmptyArray
         } else {
-          @qc_model.SDateTimeArray(next_values)
+          SDateTimeArray(next_values)
         }
       })
     SEmptyArray => Iter::empty()
     SStringArray(values) =>
       @qc.Shrink::shrink(values).map(fn(next_values) {
         if next_values.is_empty() {
-          @qc_model.SEmptyArray
+          SEmptyArray
         } else {
-          @qc_model.SStringArray(next_values)
+          SStringArray(next_values)
         }
       })
     SIntegerArray(values) =>
       @qc.Shrink::shrink(values).map(fn(next_values) {
         if next_values.is_empty() {
-          @qc_model.SEmptyArray
+          SEmptyArray
         } else {
-          @qc_model.SIntegerArray(next_values)
+          SIntegerArray(next_values)
         }
       })
     SBooleanArray(values) =>
       @qc.Shrink::shrink(values).map(fn(next_values) {
         if next_values.is_empty() {
-          @qc_model.SEmptyArray
+          SEmptyArray
         } else {
-          @qc_model.SBooleanArray(next_values)
+          SBooleanArray(next_values)
         }
       })
     STable(fields) =>
       shrink_table_entries(fields.to_array()).map(fn(next_entries) {
-        @qc_model.STable(Map::from_array(next_entries))
+        STable(Map::from_array(next_entries))
       })
   }
 }

@@ -46,47 +46,38 @@ test "serialize booleans" {
 ///|
 test "serialize datetime values" {
   inspect(
-    @toml.TomlDateTime(@tokenize.OffsetDateTime("1979-05-27T07:32:00Z")),
+    @toml.TomlDateTime(OffsetDateTime("1979-05-27T07:32:00Z")),
     content="1979-05-27T07:32:00Z",
   )
   inspect(
-    @toml.TomlDateTime(@tokenize.LocalDateTime("1979-05-27T07:32:00")),
+    @toml.TomlDateTime(LocalDateTime("1979-05-27T07:32:00")),
     content="1979-05-27T07:32:00",
   )
-  inspect(
-    @toml.TomlDateTime(@tokenize.LocalDate("1979-05-27")),
-    content="1979-05-27",
-  )
-  inspect(
-    @toml.TomlDateTime(@tokenize.LocalTime("07:32:00")),
-    content="07:32:00",
-  )
+  inspect(@toml.TomlDateTime(LocalDate("1979-05-27")), content="1979-05-27")
+  inspect(@toml.TomlDateTime(LocalTime("07:32:00")), content="07:32:00")
 }
 
 ///|
 test "serialize inline array" {
   let array = @toml.TomlArray([
-    @toml.TomlInteger(1L),
-    @toml.TomlInteger(2L),
-    @toml.TomlInteger(3L),
+    TomlInteger(1L),
+    TomlInteger(2L),
+    TomlInteger(3L),
   ])
   inspect(array, content="[1, 2, 3]")
 }
 
 ///|
 test "serialize mixed type inline array" {
-  let array = @toml.TomlArray([
-    @toml.TomlString("hello"),
-    @toml.TomlString("world"),
-  ])
+  let array = @toml.TomlArray([TomlString("hello"), TomlString("world")])
   inspect(array, content="[\"hello\", \"world\"]")
 }
 
 ///|
 test "serialize nested array" {
   let array = @toml.TomlArray([
-    @toml.TomlArray([@toml.TomlInteger(1L), @toml.TomlInteger(2L)]),
-    @toml.TomlArray([@toml.TomlInteger(3L), @toml.TomlInteger(4L)]),
+    TomlArray([TomlInteger(1L), TomlInteger(2L)]),
+    TomlArray([TomlInteger(3L), TomlInteger(4L)]),
   ])
   inspect(array, content="[[1, 2], [3, 4]]")
 }
@@ -94,12 +85,12 @@ test "serialize nested array" {
 ///|
 test "serialize multiline array" {
   let array = @toml.TomlArray([
-    @toml.TomlInteger(1L),
-    @toml.TomlInteger(2L),
-    @toml.TomlInteger(3L),
-    @toml.TomlInteger(4L),
-    @toml.TomlInteger(5L),
-    @toml.TomlInteger(6L),
+    TomlInteger(1L),
+    TomlInteger(2L),
+    TomlInteger(3L),
+    TomlInteger(4L),
+    TomlInteger(5L),
+    TomlInteger(6L),
   ])
   inspect(
     array,
@@ -120,8 +111,8 @@ test "serialize multiline array" {
 test "serialize simple table" {
   let table = Map::from_array([
     ("name", @toml.TomlString("Alice")),
-    ("age", @toml.TomlInteger(30L)),
-    ("active", @toml.TomlBoolean(true)),
+    ("age", TomlInteger(30L)),
+    ("active", TomlBoolean(true)),
   ])
   inspect(
     @toml.TomlTable(table),
@@ -138,14 +129,7 @@ test "serialize simple table" {
 test "serialize table with arrays" {
   let table = Map::from_array([
     ("title", @toml.TomlString("Example")),
-    (
-      "numbers",
-      @toml.TomlArray([
-        @toml.TomlInteger(1L),
-        @toml.TomlInteger(2L),
-        @toml.TomlInteger(3L),
-      ]),
-    ),
+    ("numbers", TomlArray([TomlInteger(1L), TomlInteger(2L), TomlInteger(3L)])),
   ])
   inspect(
     @toml.TomlTable(table),
@@ -162,11 +146,11 @@ test "serialize table with arrays" {
 test "serialize nested table" {
   let inner_table = Map::from_array([
     ("x", @toml.TomlInteger(1L)),
-    ("y", @toml.TomlInteger(2L)),
+    ("y", TomlInteger(2L)),
   ])
   let outer_table = Map::from_array([
     ("name", @toml.TomlString("test")),
-    ("position", @toml.TomlTable(inner_table)),
+    ("position", TomlTable(inner_table)),
   ])
   inspect(
     @toml.TomlTable(outer_table),
@@ -187,7 +171,7 @@ test "serialize deeply nested tables" {
   let level2 = Map::from_array([("nested", @toml.TomlTable(level3))])
   let level1 = Map::from_array([
     ("top", @toml.TomlString("level")),
-    ("sub", @toml.TomlTable(level2)),
+    ("sub", TomlTable(level2)),
   ])
   inspect(
     @toml.TomlTable(level1),
@@ -206,18 +190,15 @@ test "serialize deeply nested tables" {
 test "serialize array of tables" {
   let table1 = Map::from_array([
     ("name", @toml.TomlString("Alice")),
-    ("score", @toml.TomlInteger(100L)),
+    ("score", TomlInteger(100L)),
   ])
   let table2 = Map::from_array([
     ("name", @toml.TomlString("Bob")),
-    ("score", @toml.TomlInteger(95L)),
+    ("score", TomlInteger(95L)),
   ])
   let root = Map::from_array([
     ("title", @toml.TomlString("High Scores")),
-    (
-      "players",
-      @toml.TomlArray([@toml.TomlTable(table1), @toml.TomlTable(table2)]),
-    ),
+    ("players", TomlArray([TomlTable(table1), TomlTable(table2)])),
   ])
   inspect(
     @toml.TomlTable(root),
@@ -240,33 +221,33 @@ test "serialize array of tables" {
 test "serialize complex nested structure" {
   let database = Map::from_array([
     ("host", @toml.TomlString("localhost")),
-    ("port", @toml.TomlInteger(5432L)),
-    ("username", @toml.TomlString("admin")),
-    ("password", @toml.TomlString("secret123")),
+    ("port", TomlInteger(5432L)),
+    ("username", TomlString("admin")),
+    ("password", TomlString("secret123")),
   ])
   let server = Map::from_array([
     ("ip", @toml.TomlString("0.0.0.0")),
-    ("port", @toml.TomlInteger(8080L)),
-    ("timeout", @toml.TomlInteger(30L)),
+    ("port", TomlInteger(8080L)),
+    ("timeout", TomlInteger(30L)),
   ])
   let staging = Map::from_array([
     ("url", @toml.TomlString("https://staging.example.com")),
-    ("debug", @toml.TomlBoolean(true)),
+    ("debug", TomlBoolean(true)),
   ])
   let production = Map::from_array([
     ("url", @toml.TomlString("https://example.com")),
-    ("debug", @toml.TomlBoolean(false)),
+    ("debug", TomlBoolean(false)),
   ])
   let environments = Map::from_array([
     ("staging", @toml.TomlTable(staging)),
-    ("production", @toml.TomlTable(production)),
+    ("production", TomlTable(production)),
   ])
   let root = Map::from_array([
     ("title", @toml.TomlString("Application Config")),
-    ("version", @toml.TomlString("1.0.0")),
-    ("database", @toml.TomlTable(database)),
-    ("server", @toml.TomlTable(server)),
-    ("environments", @toml.TomlTable(environments)),
+    ("version", TomlString("1.0.0")),
+    ("database", TomlTable(database)),
+    ("server", TomlTable(server)),
+    ("environments", TomlTable(environments)),
   ])
   inspect(
     @toml.TomlTable(root),
@@ -302,10 +283,10 @@ test "serialize complex nested structure" {
 test "serialize table with special key names" {
   let table = Map::from_array([
     ("normal-key", @toml.TomlString("value1")),
-    ("key with spaces", @toml.TomlString("value2")),
-    ("key.with.dots", @toml.TomlString("value3")),
-    ("key\"with\"quotes", @toml.TomlString("value4")),
-    ("key#with#hash", @toml.TomlString("value5")),
+    ("key with spaces", TomlString("value2")),
+    ("key.with.dots", TomlString("value3")),
+    ("key\"with\"quotes", TomlString("value4")),
+    ("key#with#hash", TomlString("value5")),
   ])
   inspect(
     @toml.TomlTable(table),
@@ -329,7 +310,7 @@ test "serialize empty structures" {
 ///|
 test "serialize array with tables should be multiline" {
   let table1 = Map::from_array([("a", @toml.TomlInteger(1L))])
-  let array = @toml.TomlArray([@toml.TomlTable(table1), @toml.TomlInteger(2L)])
+  let array = @toml.TomlArray([TomlTable(table1), TomlInteger(2L)])
   inspect(
     array,
     content=(
@@ -346,18 +327,15 @@ test "serialize array with tables should be multiline" {
 test "serialize table with multiple array of tables" {
   let product1 = Map::from_array([
     ("name", @toml.TomlString("Hammer")),
-    ("sku", @toml.TomlInteger(738594937L)),
+    ("sku", TomlInteger(738594937L)),
   ])
   let product2 = Map::from_array([
     ("name", @toml.TomlString("Nail")),
-    ("sku", @toml.TomlInteger(284758393L)),
-    ("color", @toml.TomlString("gray")),
+    ("sku", TomlInteger(284758393L)),
+    ("color", TomlString("gray")),
   ])
   let root = Map::from_array([
-    (
-      "products",
-      @toml.TomlArray([@toml.TomlTable(product1), @toml.TomlTable(product2)]),
-    ),
+    ("products", @toml.TomlArray([TomlTable(product1), TomlTable(product2)])),
   ])
   inspect(
     @toml.TomlTable(root),
@@ -469,14 +447,10 @@ test "roundtrip special floats" {
     ),
   )
   // Verify non-NaN values match
-  guard roundtripped is @toml.TomlTable(t) else { fail("expected table") }
-  guard t.get("pos_inf") is Some(@toml.TomlFloat(f)) else {
-    fail("expected float")
-  }
+  guard roundtripped is TomlTable(t) else { fail("expected table") }
+  guard t.get("pos_inf") is Some(TomlFloat(f)) else { fail("expected float") }
   assert_true(f.is_inf() && f > 0.0)
-  guard t.get("nan_val") is Some(@toml.TomlFloat(n)) else {
-    fail("expected float")
-  }
+  guard t.get("nan_val") is Some(TomlFloat(n)) else { fail("expected float") }
   assert_true(n.is_nan())
 }
 
@@ -522,37 +496,32 @@ test "roundtrip simple example" {
     ("title", @toml.TomlString("TOML Example")),
     (
       "owner",
-      @toml.TomlTable(
+      TomlTable(
         Map::from_array([
-          ("name", @toml.TomlString("Tom Preston-Werner")),
-          (
-            "dob",
-            @toml.TomlDateTime(
-              @tokenize.OffsetDateTime("1979-05-27T07:32:00-08:00"),
-            ),
-          ),
+          ("name", TomlString("Tom Preston-Werner")),
+          ("dob", TomlDateTime(OffsetDateTime("1979-05-27T07:32:00-08:00"))),
         ]),
       ),
     ),
     (
       "database",
-      @toml.TomlTable(
+      TomlTable(
         Map::from_array([
-          ("enabled", @toml.TomlBoolean(true)),
+          ("enabled", TomlBoolean(true)),
           (
             "ports",
-            @toml.TomlArray([
-              @toml.TomlInteger(8000L),
-              @toml.TomlInteger(8001L),
-              @toml.TomlInteger(8002L),
+            TomlArray([
+              TomlInteger(8000L),
+              TomlInteger(8001L),
+              TomlInteger(8002L),
             ]),
           ),
           (
             "temp_targets",
-            @toml.TomlTable(
+            TomlTable(
               Map::from_array([
-                ("cpu", @toml.TomlFloat(79.5)),
-                ("case", @toml.TomlFloat(72.0)),
+                ("cpu", TomlFloat(79.5)),
+                ("case", TomlFloat(72.0)),
               ]),
             ),
           ),

@@ -634,7 +634,7 @@ test "set dotted key value - mixed types in path" {
   set_dotted_key_value(
     table,
     ["root", "nested", "datetime"],
-    TomlDateTime(@tokenize.TomlDateTime::OffsetDateTime("2024-01-01T12:00:00Z")),
+    TomlDateTime(OffsetDateTime("2024-01-01T12:00:00Z")),
   )
   debug_inspect(
     table,
