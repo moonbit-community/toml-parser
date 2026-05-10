@@ -1,7 +1,4 @@
 ///|
-using @tokenize {tokenize, type Token, type TomlDateTime}
-
-///|
 /// Skip newline tokens
 fn Parser::skip_newlines(self : Parser) -> Unit {
   let next_view = for view = self.view() {
@@ -291,7 +288,7 @@ let header_defined_marker : String = "\u0000__header__"
 
 ///|
 pub fn parse(input : String) -> TomlValue raise {
-  let tokens = tokenize(input)
+  let tokens = @tokenize.tokenize(input)
   let parser = Parser::new(tokens)
   let main_table = {}
   for current_table = main_table {

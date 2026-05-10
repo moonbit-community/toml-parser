@@ -1,7 +1,4 @@
 ///|
-using @lexer {type Lexer}
-
-///|
 /// Default location for testing and compatibility
 pub fn default_loc() -> Loc {
   let pos : @lexer.Position = { line: 1, column: 1 }
@@ -19,7 +16,7 @@ fn make_loc(start_pos : @lexer.Position, end_pos : @lexer.Position) -> Loc {
 
 ///|
 /// Parse an identifier or keyword
-fn Lexer::read_identifier(self : Lexer) -> String {
+fn @lexer.Lexer::read_identifier(self : @lexer.Lexer) -> String {
 
   // TODO(upstream): error message improved for `longest` with 
   // empty branches or single branch with _ => ... 
@@ -56,7 +53,9 @@ fn is_valid_separator(ch : Char) -> Bool {
 
 ///|
 /// Validate that a special value token (inf, nan) is properly terminated
-fn Lexer::validate_special_value_termination(self : Lexer) -> Unit raise {
+fn @lexer.Lexer::validate_special_value_termination(
+  self : @lexer.Lexer,
+) -> Unit raise {
   match self.view() {
     [] => () // EOF is valid
     [ch, ..] if is_valid_separator(ch) => () // Valid separator
@@ -79,7 +78,7 @@ fn Char::is_hex(ch : Char) -> Int? {
 ///|
 /// Parse Unicode escape sequence \uXXXX
 /// Parse hex escape sequence \xHH (TOML 1.1)
-fn Lexer::read_hex_2_escape(self : Lexer) -> Char raise {
+fn @lexer.Lexer::read_hex_2_escape(self : @lexer.Lexer) -> Char raise {
   let code = match self.view() {
     [a0, a1, .. rest] if a0.is_hex() is Some(a0) && a1.is_hex() is Some(a1) => {
       self.update_view(rest)
@@ -95,7 +94,7 @@ fn Lexer::read_hex_2_escape(self : Lexer) -> Char raise {
 
 ///|
 /// Parse Unicode escape sequence \uXXXX
-fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
+fn @lexer.Lexer::read_unicode_4_escape(self : @lexer.Lexer) -> Char raise {
   let code = match self.view() {
     [
       // '\\',
@@ -124,7 +123,7 @@ fn Lexer::read_unicode_4_escape(self : Lexer) -> Char raise {
 
 ///|
 /// Parse Unicode escape sequence \UXXXXXXXX
-fn Lexer::read_unicode_8_escape(self : Lexer) -> Char raise {
+fn @lexer.Lexer::read_unicode_8_escape(self : @lexer.Lexer) -> Char raise {
   let code = match self.view() {
     [
       // '\\',
@@ -171,7 +170,7 @@ fn Lexer::read_unicode_8_escape(self : Lexer) -> Char raise {
 
 ///|
 /// Parse a basic string (double quotes) with escape sequences
-fn Lexer::read_basic_string(self : Lexer) -> String raise {
+fn @lexer.Lexer::read_basic_string(self : @lexer.Lexer) -> String raise {
   self.advance() // consume opening quote
   let sb = StringBuilder::new()
   let next_view = for view = self.view() {
@@ -260,7 +259,7 @@ fn Lexer::read_basic_string(self : Lexer) -> String raise {
 
 ///|
 /// Parse a literal string (single quotes) without escape sequences
-fn Lexer::read_literal_string(self : Lexer) -> String raise {
+fn @lexer.Lexer::read_literal_string(self : @lexer.Lexer) -> String raise {
   self.advance() // consume opening quote
   let sb = StringBuilder::new()
   let next = for view = self.view() {
@@ -288,7 +287,9 @@ fn Lexer::read_literal_string(self : Lexer) -> String raise {
 ///|
 /// Parse a multi-line basic string (triple double quotes) with escape sequences
 /// The openining triple quotes are already consumed by the caller
-fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
+fn @lexer.Lexer::read_multiline_basic_string(
+  self : @lexer.Lexer,
+) -> String raise {
   self.skip_single_newline()
   let sb = StringBuilder::new()
   for view = self.view() {
@@ -439,7 +440,9 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
 
 ///|
 /// Parse a multi-line literal string (triple single quotes) without escape sequences
-fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
+fn @lexer.Lexer::read_multiline_literal_string(
+  self : @lexer.Lexer,
+) -> String raise {
   // consume opening triple quotes
   // strip the newline following the opening delimiter immediately
   match self.view() {
@@ -506,7 +509,7 @@ fn Lexer::read_multiline_literal_string(self : Lexer) -> String raise {
 
 ///|
 /// Parse hexadecimal number
-fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
+fn @lexer.Lexer::read_hex_number(self : @lexer.Lexer) -> Int64 raise {
 
   // (?:[0-9a-fA-F][0-9a-fA-F]*)(?:_[0-9a-fA-F][0-9a-fA-F]*)*
   // TODO(upstream): support non capturing group
@@ -552,7 +555,7 @@ fn Lexer::read_hex_number(self : Lexer) -> Int64 raise {
 
 ///|
 /// Parse octal number
-fn Lexer::read_octal_number(self : Lexer) -> Int64 raise {
+fn @lexer.Lexer::read_octal_number(self : @lexer.Lexer) -> Int64 raise {
 
   // (?:[0-7][0-7]*)(?:_[0-7][0-7]*)*
   // TODO(upstream): support non capturing group
@@ -603,7 +606,7 @@ test {
 
 ///|
 /// Parse binary number
-fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
+fn @lexer.Lexer::read_binary_number(self : @lexer.Lexer) -> Int64 raise {
 
   // (?:[01][01]*)(?:_[01][01]*)*
   // TODO(upstream): support non capturing group
@@ -645,7 +648,7 @@ fn Lexer::read_binary_number(self : Lexer) -> Int64 raise {
 
 ///|
 /// Check if the current input matches a datetime pattern without consuming characters
-fn Lexer::is_datetime_pattern(self : Lexer) -> Bool {
+fn @lexer.Lexer::is_datetime_pattern(self : @lexer.Lexer) -> Bool {
   // Check for datetime patterns using regex
   lexmatch self.view() with longest {
     (
@@ -671,8 +674,8 @@ fn check_datetime_terminator_string(view : StringView) -> Bool {
 
 ///|
 /// Read a complete datetime token
-fn Lexer::read_datetime_with_loc(
-  self : Lexer,
+fn @lexer.Lexer::read_datetime_with_loc(
+  self : @lexer.Lexer,
   start_pos : @lexer.Position,
 ) -> Token raise {
   // Try patterns in order. Patterns are naturally disambiguated by
@@ -748,8 +751,8 @@ fn Lexer::read_datetime_with_loc(
 
 ///|
 /// Parse a number (integer or float), with optional negative sign
-fn Lexer::read_number_with_loc(
-  self : Lexer,
+fn @lexer.Lexer::read_number_with_loc(
+  self : @lexer.Lexer,
   is_negative : Bool,
   start_pos : @lexer.Position,
   has_sign? : Bool = false,
@@ -1116,14 +1119,17 @@ fn validate_underscores(raw : String) -> Unit raise {
 
 ///|
 /// Backward compatibility wrapper for read_number
-fn Lexer::read_number(self : Lexer, is_negative : Bool) -> Token raise {
+fn @lexer.Lexer::read_number(
+  self : @lexer.Lexer,
+  is_negative : Bool,
+) -> Token raise {
   let start_pos = self.get_loc()
   self.read_number_with_loc(is_negative, start_pos)
 }
 
 ///|
 test "read_number" {
-  let lexer = Lexer::new("123")
+  let lexer = @lexer.Lexer::new("123")
   debug_inspect(
     lexer.read_number(false),
     content=(
@@ -1137,7 +1143,7 @@ test "read_number" {
 
 ///|
 /// Skip comments and whitespace but not newline characters
-fn Lexer::skip_comments_or_whitespace(self : Lexer) -> Unit raise {
+fn @lexer.Lexer::skip_comments_or_whitespace(self : @lexer.Lexer) -> Unit raise {
   let next = for view = self.view() {
     match view {
       ['\r', '\n', ..] | ['\n', ..] | [] as rest => break rest
@@ -1168,7 +1174,7 @@ fn Lexer::skip_comments_or_whitespace(self : Lexer) -> Unit raise {
 
 ///|
 /// Get the next token
-fn Lexer::next_token(self : Lexer) -> Token raise {
+fn @lexer.Lexer::next_token(self : @lexer.Lexer) -> Token raise {
   self.skip_comments_or_whitespace()
   let start_pos = self.get_loc()
   match self.view() {
@@ -1339,7 +1345,7 @@ fn Lexer::next_token(self : Lexer) -> Token raise {
 ///|
 /// Tokenize entire input
 pub fn tokenize(input : String) -> Array[Token] raise {
-  let lexer = Lexer::new(input)
+  let lexer = @lexer.Lexer::new(input)
   let tokens = Array::new()
   for current_token = lexer.next_token() {
     match current_token {
@@ -1358,7 +1364,7 @@ pub fn tokenize(input : String) -> Array[Token] raise {
 ///|
 /// Test read_number
 test "read_number 2" {
-  let lexer = Lexer::new("123")
+  let lexer = @lexer.Lexer::new("123")
   debug_inspect(
     lexer.read_number(false),
     content=(
@@ -1373,7 +1379,7 @@ test "read_number 2" {
 ///|
 /// Test Unicode escape sequences
 test "unicode escape sequences" {
-  let lexer1 = Lexer::new("\"\\u0041\"") // 'A'
+  let lexer1 = @lexer.Lexer::new("\"\\u0041\"") // 'A'
   let result1 = lexer1.read_basic_string()
   debug_inspect(
     result1,
@@ -1381,7 +1387,7 @@ test "unicode escape sequences" {
       #|"A"
     ),
   )
-  let lexer2 = Lexer::new("\"\\U00000041\"") // 'A'
+  let lexer2 = @lexer.Lexer::new("\"\\U00000041\"") // 'A'
   let result2 = lexer2.read_basic_string()
   debug_inspect(
     result2,
@@ -1394,7 +1400,7 @@ test "unicode escape sequences" {
 ///|
 /// Test multiline basic string
 test "multiline basic string" {
-  let lexer = Lexer::new("\"\"\"line1\nline2\"\"\"")
+  let lexer = @lexer.Lexer::new("\"\"\"line1\nline2\"\"\"")
   lexer.expect_string("\"\"\"")
   let result = lexer.read_multiline_basic_string()
   debug_inspect(
@@ -1408,7 +1414,7 @@ test "multiline basic string" {
 ///|
 /// Test multiline literal string
 test "multiline literal string" {
-  let lexer = Lexer::new("'''line1\nline2'''")
+  let lexer = @lexer.Lexer::new("'''line1\nline2'''")
   lexer.expect_string("'''")
   let result = lexer.read_multiline_literal_string()
   debug_inspect(
@@ -1422,7 +1428,7 @@ test "multiline literal string" {
 ///|
 /// Test line ending backslash in multiline string
 test "line ending backslash" {
-  let lexer = Lexer::new("\"\"\"line1\\\n   line2\"\"\"")
+  let lexer = @lexer.Lexer::new("\"\"\"line1\\\n   line2\"\"\"")
   lexer.expect_string("\"\"\"")
   let result = lexer.read_multiline_basic_string()
   debug_inspect(
@@ -1436,7 +1442,7 @@ test "line ending backslash" {
 ///|
 /// Test basic string parsing
 test "basic string parsing" {
-  let lexer = Lexer::new("\"Hello, \\\"world\\\"!\"")
+  let lexer = @lexer.Lexer::new("\"Hello, \\\"world\\\"!\"")
   let result = lexer.read_basic_string()
   debug_inspect(
     result,
@@ -1449,7 +1455,7 @@ test "basic string parsing" {
 ///|
 /// Test literal string parsing  
 test "literal string parsing" {
-  let lexer = Lexer::new("'Hello, world!'")
+  let lexer = @lexer.Lexer::new("'Hello, world!'")
   let result = lexer.read_literal_string()
   debug_inspect(
     result,
@@ -1462,7 +1468,7 @@ test "literal string parsing" {
 ///|
 /// Test identifier parsing
 test "identifier parsing" {
-  let lexer = Lexer::new("hello-world_123")
+  let lexer = @lexer.Lexer::new("hello-world_123")
   let result = lexer.read_identifier()
   debug_inspect(
     result,
@@ -1475,7 +1481,7 @@ test "identifier parsing" {
 ///|
 /// Test hex number parsing
 test "hex number parsing" {
-  let lexer = Lexer::new("0xDEADBEEF")
+  let lexer = @lexer.Lexer::new("0xDEADBEEF")
   let result = lexer.read_hex_number()
   debug_inspect(result, content="3735928559")
 }
@@ -1483,7 +1489,7 @@ test "hex number parsing" {
 ///|
 /// Test octal number parsing  
 test "octal number parsing" {
-  let lexer = Lexer::new("0o755")
+  let lexer = @lexer.Lexer::new("0o755")
   let result = lexer.read_octal_number()
   debug_inspect(result, content="493")
 }
@@ -1491,7 +1497,7 @@ test "octal number parsing" {
 ///|
 /// Test binary number parsing
 test "binary number parsing" {
-  let lexer = Lexer::new("0b1010")
+  let lexer = @lexer.Lexer::new("0b1010")
   let result = lexer.read_binary_number()
   debug_inspect(result, content="10")
 }

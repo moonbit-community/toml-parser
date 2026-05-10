@@ -1,10 +1,7 @@
 ///|
-using @lexer {type Position}
-
-///|
 pub(all) struct Loc {
-  start : Position
-  end : Position
+  start : @lexer.Position
+  end : @lexer.Position
 } derive(Eq, Debug)
 
 ///|

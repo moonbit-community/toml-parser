@@ -7,7 +7,7 @@ pub(all) enum TomlValue {
   TomlBoolean(Bool)
   TomlArray(Array[TomlValue])
   TomlTable(Map[String, TomlValue])
-  TomlDateTime(TomlDateTime)
+  TomlDateTime(@tokenize.TomlDateTime)
 } derive(Eq, Debug)
 
 ///|
@@ -27,7 +27,7 @@ pub fn TomlValue::datetime_info(self : TomlValue) -> (String, String)? {
 ///|
 /// Parser state (will implement methods later)
 pub struct Parser {
-  tokens : Array[Token]
+  tokens : Array[@tokenize.Token]
   mut position : Int
 }
 
@@ -35,7 +35,7 @@ pub struct Parser {
 pub fn Parser::view(
   self : Self,
   skip_newlines? : Bool = false,
-) -> ArrayView[Token] {
+) -> ArrayView[@tokenize.Token] {
   if skip_newlines {
     for view = self.view() {
       match view {
@@ -53,14 +53,17 @@ pub fn Parser::view(
 fn[T] ArrayView::start(self : ArrayView[T]) -> Int = "%arrayview.start"
 
 ///|
-pub fn Parser::update_view(self : Parser, view : ArrayView[Token]) -> Unit {
+pub fn Parser::update_view(
+  self : Parser,
+  view : ArrayView[@tokenize.Token],
+) -> Unit {
   let new_offset = view.start() // consistent
   self.position = new_offset
 }
 
 ///|
 /// Create a new parser
-pub fn Parser::new(tokens : Array[Token]) -> Parser {
+pub fn Parser::new(tokens : Array[@tokenize.Token]) -> Parser {
   { tokens, position: 0 }
 }
 
