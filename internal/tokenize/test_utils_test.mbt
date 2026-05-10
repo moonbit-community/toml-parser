@@ -13,7 +13,7 @@ fn unwrap_failure_message(error : Error) -> String {
 
 ///|
 fn lexer_expect_to_fail(input : String) -> String {
-  try tokenize(input) catch {
+  try @tokenize.tokenize(input) catch {
     error => unwrap_failure_message(error)
   } noraise {
     _ => abort("Expected lexer failure but tokenize succeeded")

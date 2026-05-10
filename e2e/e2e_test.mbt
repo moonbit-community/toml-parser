@@ -1,7 +1,7 @@
 ///|
 async test "valid toml-test suite" {
   let files : Array[String] = []
-  collect_toml_files("e2e/testdata/valid", files)
+  @e2e.collect_toml_files("e2e/testdata/valid", files)
   files.sort()
   let mut passed = 0
   let mut failed = 0
@@ -27,8 +27,8 @@ async test "valid toml-test suite" {
         failed += 1
       }
       Ok(value) => {
-        let actual = to_test_json(value)
-        if !json_equal(actual, expected) {
+        let actual = @e2e.to_test_json(value)
+        if !@e2e.json_equal(actual, expected) {
           failures.push(
             "[MISMATCH] \{toml_path}\n    expected: \{expected.stringify()}\n    actual:   \{actual.stringify()}",
           )
@@ -57,13 +57,13 @@ async test "valid toml-test suite" {
 ///|
 async test "invalid toml-test suite" {
   let files : Array[String] = []
-  collect_toml_files("e2e/testdata/invalid", files)
+  @e2e.collect_toml_files("e2e/testdata/invalid", files)
   files.sort()
   let mut passed = 0
   let mut failed = 0
   let failures : Array[String] = []
   for toml_path in files {
-    match run_single_invalid_test(toml_path) {
+    match @e2e.run_single_invalid_test(toml_path) {
       None => passed += 1
       Some(msg) => {
         failures.push(msg)
