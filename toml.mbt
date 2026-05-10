@@ -32,6 +32,13 @@ pub struct Parser {
 }
 
 ///|
+/// Return a view of the tokens from the current position to end of input.
+///
+/// When `skip_newlines` is true, leading `Newline` tokens are dropped from
+/// the returned view; this is convenient at grammar boundaries where line
+/// breaks are insignificant (e.g. between top-level statements). The
+/// parser's position is not advanced — callers commit progress by passing
+/// the consumed tail back through `update_view`.
 pub fn Parser::view(
   self : Self,
   skip_newlines? : Bool = false,
@@ -53,6 +60,13 @@ pub fn Parser::view(
 fn[T] ArrayView::start(self : ArrayView[T]) -> Int = "%arrayview.start"
 
 ///|
+/// Commit a parsed prefix by recording where the remaining `view` starts.
+///
+/// Pattern: a parsing helper takes a `view`, matches a prefix, then hands
+/// the trailing slice back here so the next call to `Parser::view` resumes
+/// from that point. The new position is read from the view's start offset
+/// in the underlying token array, so the input must be a slice of
+/// `self.tokens`.
 pub fn Parser::update_view(
   self : Parser,
   view : ArrayView[@tokenize.Token],

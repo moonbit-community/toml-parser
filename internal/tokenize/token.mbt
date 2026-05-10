@@ -1,4 +1,11 @@
 ///|
+/// Half-open source span `[start, end)` measured in lexer `Position`s.
+///
+/// `start` is the position of the first character of the lexeme and `end`
+/// is the position immediately after its last character. Two locations are
+/// `adjacent` (no gap) when one's `end` equals the other's `start`, which
+/// the parser uses to distinguish e.g. `[[` (array-of-tables) from `[ [`
+/// (a nested array literal opening a normal table header).
 pub(all) struct Loc {
   start : @lexer.Position
   end : @lexer.Position
@@ -76,6 +83,11 @@ pub fn Loc::adjacent(self : Loc, other : Loc) -> Bool {
 }
 
 ///|
+/// Return the source `Loc` carried by this token.
+///
+/// Every `Token` variant records the span of the lexeme it was produced
+/// from, so error messages can point back into the original input
+/// regardless of which alternative matched.
 pub fn Token::loc(self : Self) -> Loc {
   match self {
     StringToken(_, loc~, ..) => loc

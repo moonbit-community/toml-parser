@@ -82,6 +82,12 @@ pub fn Lexer::skip_whitespace(self : Lexer) -> Unit {
 }
 
 ///|
+/// Consume one line terminator if the cursor is sitting on one.
+///
+/// Both `\n` and `\r\n` are treated as a single newline, and the line
+/// counter is advanced. If the next character is not a newline this is a
+/// no-op, which makes the call safe to use after constructs that may or
+/// may not have left a trailing newline behind (e.g. comments at EOF).
 pub fn Lexer::skip_single_newline(self : Lexer) -> Unit {
   match self.view() {
     ['\r', '\n', .. rest] | ['\n', .. rest] => {
@@ -106,6 +112,12 @@ pub fn Lexer::peek(self : Lexer) -> Char? {
 }
 
 ///|
+/// Return the raw UTF-16 code unit at the cursor without advancing.
+///
+/// Unlike `peek`, which decodes a full `Char` (and so may span a surrogate
+/// pair), this returns the underlying 16-bit unit directly. Useful in hot
+/// paths where the lexer only needs to test ASCII bytes and wants to skip
+/// the UTF-decoding cost. Returns `None` at end of input.
 pub fn Lexer::peek_charcode(self : Lexer) -> UInt16? {
   if self.position < self.input.length() {
     Some(self.input.unsafe_get(self.position))
@@ -115,6 +127,11 @@ pub fn Lexer::peek_charcode(self : Lexer) -> UInt16? {
 }
 
 ///|
+/// Return the current 1-based `(line, column)` position.
+///
+/// Use this to capture the start of a lexeme before consuming it; pair the
+/// captured position with the post-consumption value to build the half-open
+/// span attached to the resulting token.
 pub fn Lexer::get_loc(self : Lexer) -> Position {
   { line: self.line, column: self.column }
 }

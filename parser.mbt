@@ -287,6 +287,16 @@ let inline_table_marker : String = "\u0000__inline__"
 let header_defined_marker : String = "\u0000__header__"
 
 ///|
+/// Parse a TOML document and return its root table as a `TomlValue`.
+///
+/// On success the result is always a `TomlTable` whose contents reflect the
+/// document's top-level keys, `[section]` headers, and `[[array]]` of
+/// tables. Standard TOML 1.0 plus 1.1 features (optional seconds, `\xHH`
+/// escapes, inline-table newlines) are accepted.
+///
+/// On any lexical or syntactic error, `parse` raises with a message
+/// containing the source location. Wrap the call in `try?` to receive a
+/// `Result[TomlValue, Error]` instead.
 pub fn parse(input : String) -> TomlValue raise {
   let tokens = @tokenize.tokenize(input)
   let parser = Parser::new(tokens)

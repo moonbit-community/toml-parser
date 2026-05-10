@@ -1,4 +1,9 @@
 ///|
+/// Aggregate of a test-suite run: counts and per-failure messages.
+///
+/// `failures` carries one entry per failing case (typically including the
+/// fixture path and a short reason) so that the test harness can print a
+/// summary at the end without re-walking the corpus.
 pub struct TestResult {
   passed : Int
   failed : Int
@@ -6,6 +11,7 @@ pub struct TestResult {
 }
 
 ///|
+/// Create an empty `TestResult` with zero counts and no failures recorded.
 pub fn TestResult::new() -> TestResult {
   { passed: 0, failed: 0, failures: [] }
 }
