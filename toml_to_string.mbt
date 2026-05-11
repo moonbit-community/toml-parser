@@ -136,12 +136,12 @@ fn TomlValue::write_toml(
     TomlFloat(f) =>
       // Handle special float values
       if f.is_nan() {
-        output.write_string("nan")
+        output <+ "nan"
       } else if f.is_inf() {
         if f < 0.0 {
-          output.write_string("-inf")
+          output <+ "-inf"
         } else {
-          output.write_string("inf")
+          output <+ "inf"
         }
       } else {
         // Ensure floats always have decimal point
@@ -161,14 +161,14 @@ fn TomlValue::write_toml(
     TomlArray(arr) =>
       if should_format_inline(arr) {
         // Inline array
-        output.write_string("[")
+        output <+ "["
         for i = 0; i < arr.length(); i = i + 1 {
           if i > 0 {
-            output.write_string(", ")
+            output <+ ", "
           }
           arr[i].write_toml(output, path)
         }
-        output.write_string("]")
+        output <+ "]"
       } else {
         // Multiline array
         output.write_string("[\n")
