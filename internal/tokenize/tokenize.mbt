@@ -296,7 +296,7 @@ fn @lexer.Lexer::read_multiline_basic_string(
     match view {
       [.. "\"\"\"\"\"", .. rest] => {
         // 5 quotes: 2 content quotes + closing triple quotes
-        sb.write_string("\"\"")
+        sb <+ "\"\""
         self.update_view(rest)
         break sb.to_string()
       }
@@ -461,7 +461,7 @@ fn @lexer.Lexer::read_multiline_literal_string(
     match view {
       [.. "'''''", .. rest] => {
         // 5 quotes: 2 content quotes + closing triple quotes
-        sb.write_string("''")
+        sb <+ "''"
         self.update_view(rest)
         break sb.to_string()
       }
@@ -477,7 +477,7 @@ fn @lexer.Lexer::read_multiline_literal_string(
         break sb.to_string()
       }
       [.. "\r\n", .. rest] => {
-        sb.write_string("\r\n")
+        sb <+ "\r\n"
         self.update_view(rest)
         self.new_line()
         continue self.view()
