@@ -53,30 +53,22 @@ priv suberror TableConflicts {
 /// Show impl for error messages
 impl Show for TableConflicts with output(self, logger) {
   match self {
-    ExpectedTable(key, value) => {
-      logger <+ "ExpectedTable(\""
-      logger.write_string(key)
-      logger <+ "\", \""
-      logger.write_string(value.type_name())
-      logger <+ "\")"
-    }
-    ExpectedArray(key, value) => {
-      logger <+ "ExpectedArray(\""
-      logger.write_string(key)
-      logger <+ "\", \""
-      logger.write_string(value.type_name())
-      logger <+ "\")"
-    }
-    DuplicateKey(key) => {
-      logger <+ "DuplicateKey(\""
-      logger.write_string(key)
-      logger <+ "\")"
-    }
-    InlineTableImmutable(key) => {
-      logger <+ "InlineTableImmutable(\""
-      logger.write_string(key)
-      logger <+ "\")"
-    }
+    ExpectedTable(key, value) =>
+      logger
+        <+
+        $|ExpectedTable("\{key}", "\{value.type_name()}")
+    ExpectedArray(key, value) =>
+      logger
+        <+
+        $|ExpectedArray("\{key}", "\{value.type_name()}")
+    DuplicateKey(key) =>
+      logger
+        <+
+        $|DuplicateKey("\{key}")
+    InlineTableImmutable(key) =>
+      logger
+        <+
+        $|InlineTableImmutable("\{key}")
   }
 }
 
