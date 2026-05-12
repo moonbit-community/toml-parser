@@ -54,28 +54,28 @@ priv suberror TableConflicts {
 impl Show for TableConflicts with output(self, logger) {
   match self {
     ExpectedTable(key, value) => {
-      logger.write_string("ExpectedTable(\"")
+      logger <+ "ExpectedTable(\""
       logger.write_string(key)
-      logger.write_string("\", \"")
+      logger <+ "\", \""
       logger.write_string(value.type_name())
-      logger.write_string("\")")
+      logger <+ "\")"
     }
     ExpectedArray(key, value) => {
-      logger.write_string("ExpectedArray(\"")
+      logger <+ "ExpectedArray(\""
       logger.write_string(key)
-      logger.write_string("\", \"")
+      logger <+ "\", \""
       logger.write_string(value.type_name())
-      logger.write_string("\")")
+      logger <+ "\")"
     }
     DuplicateKey(key) => {
-      logger.write_string("DuplicateKey(\"")
+      logger <+ "DuplicateKey(\""
       logger.write_string(key)
-      logger.write_string("\")")
+      logger <+ "\")"
     }
     InlineTableImmutable(key) => {
-      logger.write_string("InlineTableImmutable(\"")
+      logger <+ "InlineTableImmutable(\""
       logger.write_string(key)
-      logger.write_string("\")")
+      logger <+ "\")"
     }
   }
 }

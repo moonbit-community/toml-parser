@@ -52,24 +52,24 @@ pub(all) enum TomlDateTime {
 pub impl Show for TomlDateTime with output(self, logger) {
   match self {
     OffsetDateTime(s) => {
-      logger.write_string("OffsetDateTime(\"")
+      logger <+ "OffsetDateTime(\""
       logger.write_string(s)
-      logger.write_string("\")")
+      logger <+ "\")"
     }
     LocalDateTime(s) => {
-      logger.write_string("LocalDateTime(\"")
+      logger <+ "LocalDateTime(\""
       logger.write_string(s)
-      logger.write_string("\")")
+      logger <+ "\")"
     }
     LocalDate(s) => {
-      logger.write_string("LocalDate(\"")
+      logger <+ "LocalDate(\""
       logger.write_string(s)
-      logger.write_string("\")")
+      logger <+ "\")"
     }
     LocalTime(s) => {
-      logger.write_string("LocalTime(\"")
+      logger <+ "LocalTime(\""
       logger.write_string(s)
-      logger.write_string("\")")
+      logger <+ "\")"
     }
   }
 }
