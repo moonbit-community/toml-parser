@@ -4,16 +4,16 @@ fn escape_toml_string(s : String) -> String {
   let result = StringBuilder::new()
   for char in s {
     match char {
-      '\b' => result.write_string("\\b")
-      '\t' => result.write_string("\\t")
-      '\n' => result.write_string("\\n")
-      '\f' => result.write_string("\\f")
-      '\r' => result.write_string("\\r")
-      '"' => result.write_string("\\\"")
-      '\\' => result.write_string("\\\\")
+      '\b' => result <+ "\\b"
+      '\t' => result <+ "\\t"
+      '\n' => result <+ "\\n"
+      '\f' => result <+ "\\f"
+      '\r' => result <+ "\\r"
+      '"' => result <+ "\\\""
+      '\\' => result <+ "\\\\"
       // Control characters (U+0000 to U+001F) except the above
       c if c >= '\u0000' && c <= '\u001F' => {
-        result.write_string("\\u")
+        result <+ "\\u"
         let code = c.to_int()
         // Format as 4-digit hex manually
         let hex = StringBuilder::new()
@@ -25,10 +25,10 @@ fn escape_toml_string(s : String) -> String {
             hex.write_char(Int::unsafe_to_char('A'.to_int() + digit - 10))
           }
         }
-        result.write_string(hex.to_string())
+        result <+ "\{hex}"
       }
       // DEL character (U+007F)
-      '\u007F' => result.write_string("\\u007F")
+      '\u007F' => result <+ "\\u007F"
       c => result.write_char(c)
     }
   }
@@ -131,8 +131,8 @@ fn TomlValue::write_toml(
   path : Array[String], // Current table path for nested tables
 ) -> Unit {
   match self {
-    TomlString(s) => output.write_string("\"\{escape_toml_string(s)}\"")
-    TomlInteger(i) => output.write_string(i.to_string())
+    TomlString(s) => output <+ "\"\{escape_toml_string(s)}\""
+    TomlInteger(i) => output <+ "\{i}"
     TomlFloat(f) =>
       // Handle special float values
       if f.is_nan() {
@@ -147,16 +147,16 @@ fn TomlValue::write_toml(
         // Ensure floats always have decimal point
         let s = f.to_string()
         if !s.contains(".") && !s.contains("e") && !s.contains("E") {
-          output.write_string(s + ".0")
+          output <+ "\{s}.0"
         } else {
-          output.write_string(s)
+          output <+ "\{s}"
         }
       }
-    TomlBoolean(b) => output.write_string(if b { "true" } else { "false" })
+    TomlBoolean(b) => if b { output <+ "true" } else { output <+ "false" }
     TomlDateTime(dt) =>
       match dt {
         OffsetDateTime(s) | LocalDateTime(s) | LocalDate(s) | LocalTime(s) =>
-          output.write_string(s)
+          output <+ "\{s}"
       }
     TomlArray(arr) =>
       if should_format_inline(arr) {
@@ -171,16 +171,16 @@ fn TomlValue::write_toml(
         output <+ "]"
       } else {
         // Multiline array
-        output.write_string("[\n")
+        output <+ "[\n"
         for i = 0; i < arr.length(); i = i + 1 {
-          output.write_string("  ")
+          output <+ "  "
           arr[i].write_toml(output, path)
           if i < arr.length() - 1 {
-            output.write_string(",")
+            output <+ ","
           }
-          output.write_string("\n")
+          output <+ "\n"
         }
-        output.write_string("]")
+        output <+ "]"
       }
     TomlTable(table) =>
       if path.is_empty() {
@@ -233,44 +233,41 @@ fn write_table_contents(
   // Write simple key-value pairs first
   for i = 0; i < simple_pairs.length(); i = i + 1 {
     let (key, value) = simple_pairs[i]
-    output.write_string(format_toml_key(key))
-    output.write_string(" = ")
+    output <+ "\{format_toml_key(key)} = "
     value.write_toml(output, path)
-    output.write_string("\n")
+    output <+ "\n"
   }
 
   // Write arrays
   for i = 0; i < array_pairs.length(); i = i + 1 {
     let (key, value) = array_pairs[i]
     if i > 0 || simple_pairs.length() > 0 {
-      output.write_string("\n")
+      output <+ "\n"
     }
-    output.write_string(format_toml_key(key))
-    output.write_string(" = ")
+    output <+ "\{format_toml_key(key)} = "
     value.write_toml(output, path)
-    output.write_string("\n")
+    output <+ "\n"
   }
 
   // Write nested tables
   for i = 0; i < table_pairs.length(); i = i + 1 {
     let (key, value) = table_pairs[i]
     if i > 0 || simple_pairs.length() > 0 || array_pairs.length() > 0 {
-      output.write_string("\n")
+      output <+ "\n"
     }
     match value {
       TomlArray(arr) =>
         // Array of tables
         for j = 0; j < arr.length(); j = j + 1 {
           if j > 0 {
-            output.write_string("\n")
+            output <+ "\n"
           }
-          output.write_string("[[")
+          output <+ "[["
           write_table_path(path, output)
           if path.length() > 0 {
-            output.write_string(".")
+            output <+ "."
           }
-          output.write_string(format_toml_key(key))
-          output.write_string("]]\n")
+          output <+ "\{format_toml_key(key)}]]\n"
           match arr[j] {
             TomlTable(t) => {
               let new_path = path.copy()
@@ -282,13 +279,12 @@ fn write_table_contents(
         }
       TomlTable(t) => {
         // Regular nested table
-        output.write_string("[")
+        output <+ "["
         write_table_path(path, output)
         if path.length() > 0 {
-          output.write_string(".")
+          output <+ "."
         }
-        output.write_string(format_toml_key(key))
-        output.write_string("]\n")
+        output <+ "\{format_toml_key(key)}]\n"
         let new_path = path.copy()
         new_path.push(key)
         write_table_contents(t, output, new_path)
@@ -304,15 +300,14 @@ fn write_inline_table(
   table : Map[String, TomlValue],
   output : StringBuilder,
 ) -> Unit {
-  output.write_string("{ ")
+  output <+ "{ "
   let mut first = true
   table.each(fn(key, value) {
     if !first {
-      output.write_string(", ")
+      output <+ ", "
     }
     first = false
-    output.write_string(format_toml_key(key))
-    output.write_string(" = ")
+    output <+ "\{format_toml_key(key)} = "
 
     // For inline tables, nested tables should also be inline
     match value {
@@ -320,7 +315,7 @@ fn write_inline_table(
       _ => value.write_toml(output, [])
     }
   })
-  output.write_string(" }")
+  output <+ " }"
 }
 
 ///|
@@ -328,8 +323,8 @@ fn write_inline_table(
 fn write_table_path(path : Array[String], output : StringBuilder) -> Unit {
   for i = 0; i < path.length(); i = i + 1 {
     if i > 0 {
-      output.write_string(".")
+      output <+ "."
     }
-    output.write_string(format_toml_key(path[i]))
+    output <+ "\{format_toml_key(path[i])}"
   }
 }
