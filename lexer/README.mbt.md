@@ -295,7 +295,7 @@ test "custom lexer implementation example" {
       Some(_) => lexer.advance() // skip unknown characters
     }
   }
-  inspect(tokens, content="[\"ID:a\", \"EQUALS\", \"ID:b\"]")
+  debug_inspect(tokens, content="[\"ID:a\", \"EQUALS\", \"ID:b\"]")
 }
 ```
 
