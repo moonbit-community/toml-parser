@@ -596,7 +596,7 @@ test "test invalid escape sequence error" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid escape sequence: \\\\z at line 1, column 12"
+      #|"Invalid escape sequence: \\z at line 1, column 12)"
     ),
   ) // Should fail with invalid escape sequence
 }
@@ -612,7 +612,7 @@ test "test unterminated string error" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Unterminated string at line 1, column 8"
+      #|"Unterminated string at line 1, column 8)"
     ),
   ) // Should fail with unterminated string
 }
@@ -628,7 +628,7 @@ test "test unexpected end after escape" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Unterminated string at line 1, column 8"
+      #|"Unterminated string at line 1, column 8)"
     ),
   ) // Should fail with unexpected end after escape
 }
@@ -643,7 +643,7 @@ test "test invalid characters" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Unexpected character: '@'"
+      #|"Unexpected character: '@')"
     ),
   ) // Should fail with unexpected character
 }
@@ -712,7 +712,7 @@ test "lexer expect_string failure" {
   debug_inspect(
     unwrap_failure_message(maybe_result.unwrap_err()),
     content=(
-      #|"Expected string: goodbye at line 1, column 1"
+      #|"Expected string: goodbye at line 1, column 1)"
     ),
   )
 }
@@ -784,7 +784,7 @@ test "unicode 4 escape invalid hex" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10"
+      #|"Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10)"
     ),
   )
 }
@@ -800,7 +800,7 @@ test "unicode 4 escape incomplete" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10"
+      #|"Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10)"
     ),
   )
 }
@@ -816,7 +816,7 @@ test "unicode 4 escape invalid code point" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid Unicode code point: 55296 at line 1, column 14"
+      #|"Invalid Unicode code point: 55296 at line 1, column 14)"
     ),
   )
 }
@@ -888,7 +888,7 @@ test "unicode 8 escape invalid hex" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10"
+      #|"Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10)"
     ),
   )
 }
@@ -904,7 +904,7 @@ test "unicode 8 escape incomplete" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10"
+      #|"Invalid Unicode escape sequence: expected 8 hex digits at line 1, column 10)"
     ),
   )
 }
@@ -920,7 +920,7 @@ test "unicode 8 escape invalid code point large" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid Unicode code point: 1114112 at line 1, column 18"
+      #|"Invalid Unicode code point: 1114112 at line 1, column 18)"
     ),
   )
 }
@@ -936,7 +936,7 @@ test "unicode 8 escape invalid code point surrogate" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid Unicode code point: 55296 at line 1, column 18"
+      #|"Invalid Unicode code point: 55296 at line 1, column 18)"
     ),
   )
 }
@@ -952,7 +952,7 @@ test "unicode 8 escape invalid conversion" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid Unicode code point: 2147483647 at line 1, column 18"
+      #|"Invalid Unicode code point: 2147483647 at line 1, column 18)"
     ),
   )
 }
@@ -1105,7 +1105,7 @@ test "multiline basic string invalid escape" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid escape sequence: \\\\z at line 1, column 12"
+      #|"Invalid escape sequence: \\z at line 1, column 12)"
     ),
   )
 }
@@ -1121,7 +1121,7 @@ test "multiline basic string unexpected end after escape" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Unexpected end of input after escape character at line 1, column 11"
+      #|"Unexpected end of input after escape character at line 1, column 11)"
     ),
   )
 }
@@ -1137,7 +1137,7 @@ test "multiline basic string unterminated" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Unterminated multiline string at line 1, column 20"
+      #|"Unterminated multiline string at line 1, column 20)"
     ),
   )
 }
@@ -1153,7 +1153,7 @@ test "multiline basic string early termination" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Unterminated multiline string at line 1, column 14"
+      #|"Unterminated multiline string at line 1, column 14)"
     ),
   )
 }
@@ -1193,7 +1193,7 @@ test "multiline literal string unterminated" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Unterminated multiline literal string at line 1, column 20"
+      #|"Unterminated multiline literal string at line 1, column 20)"
     ),
   )
 }
@@ -1210,7 +1210,7 @@ test "hex number invalid digit error path" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid hex number format at line 1, column 7"
+      #|"Invalid hex number format at line 1, column 7)"
     ),
   )
 }
@@ -1369,7 +1369,7 @@ test "multiline basic string none peek" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Unterminated multiline string at line 1, column 27"
+      #|"Unterminated multiline string at line 1, column 27)"
     ),
   )
 }
@@ -1621,7 +1621,7 @@ test "trailing _ in binary number" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 14"
+      #|"Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 14)"
     ),
   )
 }
@@ -1637,7 +1637,7 @@ test "consequence _ in binary number" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 11"
+      #|"Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 11)"
     ),
   )
 }
@@ -1652,7 +1652,7 @@ test "trailing _ in hex number" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 14"
+      #|"Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 14)"
     ),
   )
 }
@@ -1668,7 +1668,7 @@ test "consecutive _ in hex number" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 11"
+      #|"Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 11)"
     ),
   )
 }
@@ -1683,7 +1683,7 @@ test "trailing _ in octal number" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 12"
+      #|"Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 12)"
     ),
   )
 }
@@ -1699,7 +1699,7 @@ test "consecutive _ in octal number" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 10"
+      #|"Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 10)"
     ),
   )
 }

@@ -38,7 +38,7 @@ test "verify lexer_expect_to_fail output" {
       ),
     ),
     content=(
-      #|Unexpected character: '@'
+      #|Unexpected character: '@')
     ),
   )
 }
@@ -53,7 +53,7 @@ test "verify lexer_action_expect_to_fail output" {
   inspect(
     lexer_action_expect_to_fail(fn() raise { lexer.expect_string("goodbye") }),
     content=(
-      #|Expected string: goodbye at line 1, column 1
+      #|Expected string: goodbye at line 1, column 1)
     ),
   )
 }

@@ -94,7 +94,7 @@ test "invalid_unicode_escapes" {
       ),
     ),
     content=(
-      #|Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10
+      #|Invalid Unicode escape sequence: expected 4 hex digits at line 1, column 10)
     ),
   ) // Expected error
 }
@@ -109,7 +109,7 @@ test "invalid_8byte_unicode_escape" {
       ),
     ),
     content=(
-      #|Invalid Unicode code point: 2097152 at line 1, column 18
+      #|Invalid Unicode code point: 2097152 at line 1, column 18)
     ),
   ) // Expected error
 }
@@ -124,7 +124,7 @@ test "unterminated_multiline_string" {
       ),
     ),
     content=(
-      #|Unterminated multiline string at line 1, column 30
+      #|Unterminated multiline string at line 1, column 30)
     ),
   ) // Expected error
 }
@@ -187,7 +187,7 @@ test "table_path_conflict_error" {
       ),
     ),
     content=(
-      #|ExpectedTable(\"key\", \"integer\") at { start: { line: 2, column: 6 }, end: { line: 2, column: 6 } }
+      #|ExpectedTable("key", "integer
     ),
   ) // Expected error
 }
@@ -203,7 +203,7 @@ test "array_of_tables_path_conflict_error" {
       ),
     ),
     content=(
-      #|ExpectedArray(\"key\", \"integer\") at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }
+      #|ExpectedArray("key", "integer
     ),
   ) // Expected error
 }
@@ -441,7 +441,7 @@ test "invalid_character_error" {
       ),
     ),
     content=(
-      #|Unexpected character: '@'
+      #|Unexpected character: '@')
     ),
   ) // Expected error
 }

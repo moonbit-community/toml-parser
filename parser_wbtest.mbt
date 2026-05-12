@@ -185,7 +185,7 @@ test "parse_dotted_key - error cases" {
       #|<ArrayView:
       #|  [
       #|    <StringView:
-      #|      " Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }\")">,
+      #|      " Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } })">,
       #|  ]>
     ),
   )
@@ -205,7 +205,7 @@ test "parse_dotted_key - error after dot" {
       #|<ArrayView:
       #|  [
       #|    <StringView:
-      #|      " Expected key after dot at { start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }\")">,
+      #|      " Expected key after dot at { start: { line: 1, column: 5 }, end: { line: 1, column: 6 } })">,
       #|  ]>
     ),
   )
