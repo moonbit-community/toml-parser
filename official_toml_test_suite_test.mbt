@@ -547,7 +547,7 @@ test "inf failure" {
   inspect(
     parse_expect_to_fail(inf_failure_toml),
     content=(
-      #|Invalid character 'x' after special value at line 1, column 11
+      #|Invalid character 'x' after special value at line 1, column 11)
     ),
   )
   let inf_failure_toml2 =
@@ -556,7 +556,7 @@ test "inf failure" {
   inspect(
     parse_expect_to_fail(inf_failure_toml2),
     content=(
-      #|Invalid character 'x' after special value at line 1, column 11
+      #|Invalid character 'x' after special value at line 1, column 11)
     ),
   )
   let inf_failure_toml2 =
@@ -565,7 +565,7 @@ test "inf failure" {
   inspect(
     parse_expect_to_fail(inf_failure_toml2),
     content=(
-      #|Expected newline or end of file after key-value pair at { start: { line: 1, column: 12 }, end: { line: 1, column: 13 } }
+      #|Expected newline or end of file after key-value pair at { start: { line: 1, column: 12 }, end: { line: 1, column: 13 } })
     ),
   )
   let table_failure =
@@ -574,7 +574,7 @@ test "inf failure" {
   inspect(
     parse_expect_to_fail(table_failure),
     content=(
-      #|Expected newline or end of file after key-value pair at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }
+      #|Expected newline or end of file after key-value pair at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } })
     ),
   )
 

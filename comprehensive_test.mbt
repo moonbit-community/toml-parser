@@ -424,14 +424,14 @@ test "error handling" {
   inspect(
     parse_expect_to_fail("key ="),
     content=(
-      #|Expected value at { start: { line: 1, column: 6 }, end: { line: 1, column: 6 } }
+      #|Expected value at { start: { line: 1, column: 6 }, end: { line: 1, column: 6 } })
     ),
   )
   // Missing key
   inspect(
     parse_expect_to_fail("= \"value\""),
     content=(
-      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }
+      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } })
     ),
   )
 
@@ -439,7 +439,7 @@ test "error handling" {
   inspect(
     parse_expect_to_fail("key = \"unterminated"),
     content=(
-      #|Unterminated string at line 1, column 8
+      #|Unterminated string at line 1, column 8)
     ),
   )
 
@@ -447,7 +447,7 @@ test "error handling" {
   inspect(
     parse_expect_to_fail("key = [1, 2"),
     content=(
-      #|Expected ',' or ']' in array at { start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }
+      #|Expected ',' or ']' in array at { start: { line: 1, column: 12 }, end: { line: 1, column: 12 } })
     ),
   )
 
@@ -455,7 +455,7 @@ test "error handling" {
   inspect(
     parse_expect_to_fail(" = \"value\""),
     content=(
-      #|Expected key at { start: { line: 1, column: 2 }, end: { line: 1, column: 3 } }
+      #|Expected key at { start: { line: 1, column: 2 }, end: { line: 1, column: 3 } })
     ),
   )
 }
@@ -468,7 +468,7 @@ test "error location tracking" {
   inspect(
     parse_expect_to_fail("=missing_key"),
     content=(
-      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } }
+      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } })
     ),
   )
 
@@ -476,7 +476,7 @@ test "error location tracking" {
   inspect(
     parse_expect_to_fail("valid_key = "),
     content=(
-      #|Expected value at { start: { line: 1, column: 13 }, end: { line: 1, column: 13 } }
+      #|Expected value at { start: { line: 1, column: 13 }, end: { line: 1, column: 13 } })
     ),
   )
 
@@ -484,7 +484,7 @@ test "error location tracking" {
   inspect(
     parse_expect_to_fail("   key = "),
     content=(
-      #|Expected value at { start: { line: 1, column: 10 }, end: { line: 1, column: 10 } }
+      #|Expected value at { start: { line: 1, column: 10 }, end: { line: 1, column: 10 } })
     ),
   )
 
@@ -492,7 +492,7 @@ test "error location tracking" {
   inspect(
     parse_expect_to_fail("key \"value\""),
     content=(
-      #|Expected '=' at { start: { line: 1, column: 5 }, end: { line: 1, column: 12 } }
+      #|Expected '=' at { start: { line: 1, column: 5 }, end: { line: 1, column: 12 } })
     ),
   )
 
@@ -500,7 +500,7 @@ test "error location tracking" {
   inspect(
     parse_expect_to_fail("key = invalid_unquoted"),
     content=(
-      #|Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 23 } }
+      #|Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 23 } })
     ),
   )
 }
@@ -517,7 +517,7 @@ test "multiline error locations" {
   inspect(
     parse_expect_to_fail(multiline_test1),
     content=(
-      #|Expected value at { start: { line: 2, column: 7 }, end: { line: 3, column: 1 } }
+      #|Expected value at { start: { line: 2, column: 7 }, end: { line: 3, column: 1 } })
     ),
   )
 
@@ -530,7 +530,7 @@ test "multiline error locations" {
   inspect(
     parse_expect_to_fail(multiline_test2),
     content=(
-      #|Expected key at { start: { line: 3, column: 1 }, end: { line: 3, column: 2 } }
+      #|Expected key at { start: { line: 3, column: 1 }, end: { line: 3, column: 2 } })
     ),
   )
 
@@ -542,7 +542,7 @@ test "multiline error locations" {
   inspect(
     parse_expect_to_fail(multiline_test3),
     content=(
-      #|Expected value at { start: { line: 2, column: 14 }, end: { line: 3, column: 1 } }
+      #|Expected value at { start: { line: 2, column: 14 }, end: { line: 3, column: 1 } })
     ),
   )
 
@@ -557,7 +557,7 @@ test "multiline error locations" {
   inspect(
     parse_expect_to_fail(multiline_test4),
     content=(
-      #|Expected key at { start: { line: 5, column: 1 }, end: { line: 5, column: 2 } }
+      #|Expected key at { start: { line: 5, column: 1 }, end: { line: 5, column: 2 } })
     ),
   )
 }
@@ -570,7 +570,7 @@ test "array error locations" {
   inspect(
     parse_expect_to_fail("arr = [1, 2, 3"),
     content=(
-      #|Expected ',' or ']' in array at { start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }
+      #|Expected ',' or ']' in array at { start: { line: 1, column: 15 }, end: { line: 1, column: 15 } })
     ),
   )
 
@@ -578,7 +578,7 @@ test "array error locations" {
   inspect(
     parse_expect_to_fail("arr = [1 2]"),
     content=(
-      #|Expected ',' or ']' in array at { start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }
+      #|Expected ',' or ']' in array at { start: { line: 1, column: 10 }, end: { line: 1, column: 11 } })
     ),
   )
 
@@ -586,7 +586,7 @@ test "array error locations" {
   inspect(
     parse_expect_to_fail("arr = [1, invalid, 3]"),
     content=(
-      #|Expected value at { start: { line: 1, column: 11 }, end: { line: 1, column: 18 } }
+      #|Expected value at { start: { line: 1, column: 11 }, end: { line: 1, column: 18 } })
     ),
   )
 
@@ -594,7 +594,7 @@ test "array error locations" {
   inspect(
     parse_expect_to_fail("arr = [[1, 2], [3, ]"),
     content=(
-      #|Expected ',' or ']' in array at { start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }
+      #|Expected ',' or ']' in array at { start: { line: 1, column: 21 }, end: { line: 1, column: 21 } })
     ),
   )
 
@@ -609,7 +609,7 @@ test "array error locations" {
   inspect(
     parse_expect_to_fail(array_multiline),
     content=(
-      #|Expected value at { start: { line: 3, column: 5 }, end: { line: 4, column: 1 } }
+      #|Expected value at { start: { line: 3, column: 5 }, end: { line: 4, column: 1 } })
     ),
   )
 }
@@ -622,7 +622,7 @@ test "inline table error locations" {
   inspect(
     parse_expect_to_fail("table = {key = \"value\""),
     content=(
-      #|Expected ',' or '}' in inline table at { start: { line: 1, column: 23 }, end: { line: 1, column: 23 } }
+      #|Expected ',' or '}' in inline table at { start: { line: 1, column: 23 }, end: { line: 1, column: 23 } })
     ),
   )
 
@@ -630,7 +630,7 @@ test "inline table error locations" {
   inspect(
     parse_expect_to_fail("table = {= \"value\"}"),
     content=(
-      #|Expected key at { start: { line: 1, column: 10 }, end: { line: 1, column: 11 } }
+      #|Expected key at { start: { line: 1, column: 10 }, end: { line: 1, column: 11 } })
     ),
   )
 
@@ -638,7 +638,7 @@ test "inline table error locations" {
   inspect(
     parse_expect_to_fail("table = {key = }"),
     content=(
-      #|Expected value at { start: { line: 1, column: 16 }, end: { line: 1, column: 17 } }
+      #|Expected value at { start: { line: 1, column: 16 }, end: { line: 1, column: 17 } })
     ),
   )
 
@@ -646,7 +646,7 @@ test "inline table error locations" {
   inspect(
     parse_expect_to_fail("table = {key \"value\"}"),
     content=(
-      #|Expected '=' at { start: { line: 1, column: 14 }, end: { line: 1, column: 21 } }
+      #|Expected '=' at { start: { line: 1, column: 14 }, end: { line: 1, column: 21 } })
     ),
   )
 
@@ -667,7 +667,7 @@ test "table header error locations" {
   inspect(
     parse_expect_to_fail("[table_name"),
     content=(
-      #|Expected ']' at { start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }
+      #|Expected ']' at { start: { line: 1, column: 12 }, end: { line: 1, column: 12 } })
     ),
   )
 
@@ -675,7 +675,7 @@ test "table header error locations" {
   inspect(
     parse_expect_to_fail("[]"),
     content=(
-      #|Expected key at { start: { line: 1, column: 2 }, end: { line: 1, column: 3 } }
+      #|Expected key at { start: { line: 1, column: 2 }, end: { line: 1, column: 3 } })
     ),
   )
 
@@ -683,7 +683,7 @@ test "table header error locations" {
   inspect(
     parse_expect_to_fail("[[table_name]"),
     content=(
-      #|Expected ']]' at { start: { line: 1, column: 13 }, end: { line: 1, column: 14 } }
+      #|Expected ']]' at { start: { line: 1, column: 13 }, end: { line: 1, column: 14 } })
     ),
   )
 
@@ -691,7 +691,7 @@ test "table header error locations" {
   inspect(
     parse_expect_to_fail("[[]]"),
     content=(
-      #|Expected key at { start: { line: 1, column: 3 }, end: { line: 1, column: 4 } }
+      #|Expected key at { start: { line: 1, column: 3 }, end: { line: 1, column: 4 } })
     ),
   )
 
@@ -699,7 +699,7 @@ test "table header error locations" {
   inspect(
     parse_expect_to_fail("[#invalid]"),
     content=(
-      #|Expected key at { start: { line: 1, column: 11 }, end: { line: 1, column: 11 } }
+      #|Expected key at { start: { line: 1, column: 11 }, end: { line: 1, column: 11 } })
     ),
   )
 }
@@ -712,7 +712,7 @@ test "precise column tracking" {
   inspect(
     parse_expect_to_fail("\tkey ="),
     content=(
-      #|Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 7 } }
+      #|Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 7 } })
     ),
   )
 
@@ -720,7 +720,7 @@ test "precise column tracking" {
   inspect(
     parse_expect_to_fail("  key1 = \"val\"  key2 = "),
     content=(
-      #|Expected newline or end of file after key-value pair at { start: { line: 1, column: 17 }, end: { line: 1, column: 21 } }
+      #|Expected newline or end of file after key-value pair at { start: { line: 1, column: 17 }, end: { line: 1, column: 21 } })
     ),
   )
 
@@ -728,7 +728,7 @@ test "precise column tracking" {
   inspect(
     parse_expect_to_fail("very_long_key_name_here = "),
     content=(
-      #|Expected value at { start: { line: 1, column: 27 }, end: { line: 1, column: 27 } }
+      #|Expected value at { start: { line: 1, column: 27 }, end: { line: 1, column: 27 } })
     ),
   )
 
@@ -736,7 +736,7 @@ test "precise column tracking" {
   inspect(
     parse_expect_to_fail("café = "),
     content=(
-      #|Unexpected character: 'é'
+      #|Unexpected character: 'é')
     ),
   )
 
@@ -744,7 +744,7 @@ test "precise column tracking" {
   inspect(
     parse_expect_to_fail("key = = \"value\""),
     content=(
-      #|Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }
+      #|Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 8 } })
     ),
   )
 }
@@ -766,7 +766,7 @@ test "complex error location scenarios" {
   inspect(
     parse_expect_to_fail(deep_nested),
     content=(
-      #|Expected value at { start: { line: 4, column: 12 }, end: { line: 5, column: 1 } }
+      #|Expected value at { start: { line: 4, column: 12 }, end: { line: 5, column: 1 } })
     ),
   )
 
@@ -774,7 +774,7 @@ test "complex error location scenarios" {
   inspect(
     parse_expect_to_fail("key = [1, 2, 3"),
     content=(
-      #|Expected ',' or ']' in array at { start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }
+      #|Expected ',' or ']' in array at { start: { line: 1, column: 15 }, end: { line: 1, column: 15 } })
     ),
   )
 
@@ -782,7 +782,7 @@ test "complex error location scenarios" {
   inspect(
     parse_expect_to_fail("key = 'unterminated"),
     content=(
-      #|Unterminated string at line 1, column 8
+      #|Unterminated string at line 1, column 8)
     ),
   )
 
@@ -797,7 +797,7 @@ test "complex error location scenarios" {
   inspect(
     parse_expect_to_fail(aot_error),
     content=(
-      #|Expected value at { start: { line: 5, column: 7 }, end: { line: 6, column: 1 } }
+      #|Expected value at { start: { line: 5, column: 7 }, end: { line: 6, column: 1 } })
     ),
   )
 
@@ -810,7 +810,7 @@ test "complex error location scenarios" {
   inspect(
     parse_expect_to_fail(trailing_ws),
     content=(
-      #|Expected value at { start: { line: 2, column: 7 }, end: { line: 3, column: 1 } }
+      #|Expected value at { start: { line: 2, column: 7 }, end: { line: 3, column: 1 } })
     ),
   )
 }
@@ -823,7 +823,7 @@ test "location tracking with special cases" {
   inspect(
     parse_expect_to_fail("key = # comment"),
     content=(
-      #|Expected value at { start: { line: 1, column: 16 }, end: { line: 1, column: 16 } }
+      #|Expected value at { start: { line: 1, column: 16 }, end: { line: 1, column: 16 } })
     ),
   )
 
@@ -831,7 +831,7 @@ test "location tracking with special cases" {
   inspect(
     parse_expect_to_fail("key1 = \"value\"\r\nkey2 = "),
     content=(
-      #|Expected value at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } }
+      #|Expected value at { start: { line: 2, column: 8 }, end: { line: 2, column: 8 } })
     ),
   )
 
@@ -839,7 +839,7 @@ test "location tracking with special cases" {
   inspect(
     parse_expect_to_fail("   = \"value\""),
     content=(
-      #|Expected key at { start: { line: 1, column: 4 }, end: { line: 1, column: 5 } }
+      #|Expected key at { start: { line: 1, column: 4 }, end: { line: 1, column: 5 } })
     ),
   )
 
@@ -854,7 +854,7 @@ test "location tracking with special cases" {
   inspect(
     parse_expect_to_fail(complex_array),
     content=(
-      #|Expected value at { start: { line: 4, column: 17 }, end: { line: 4, column: 30 } }
+      #|Expected value at { start: { line: 4, column: 17 }, end: { line: 4, column: 30 } })
     ),
   )
 
@@ -863,7 +863,7 @@ test "location tracking with special cases" {
   inspect(
     parse_expect_to_fail(long_line),
     content=(
-      #|Expected value at { start: { line: 1, column: 63 }, end: { line: 1, column: 63 } }
+      #|Expected value at { start: { line: 1, column: 63 }, end: { line: 1, column: 63 } })
     ),
   )
 }
@@ -948,7 +948,7 @@ test "newline significate" {
   inspect(
     parse_expect_to_fail(data),
     content=(
-      #|Expected value at { start: { line: 1, column: 7 }, end: { line: 2, column: 1 } }
+      #|Expected value at { start: { line: 1, column: 7 }, end: { line: 2, column: 1 } })
     ),
   )
   // This should fail, inline table does not cross newline according to the spec
@@ -959,7 +959,7 @@ test "newline significate" {
   inspect(
     parse_expect_to_fail(data2),
     content=(
-      #|Expected value at { start: { line: 1, column: 18 }, end: { line: 2, column: 1 } }
+      #|Expected value at { start: { line: 1, column: 18 }, end: { line: 2, column: 1 } })
     ),
   )
 
