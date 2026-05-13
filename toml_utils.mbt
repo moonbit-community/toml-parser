@@ -565,7 +565,7 @@ test "set dotted key value - reject duplicate key" {
     ["config", "timeout"],
     TomlInteger(60),
   )
-  inspect(result, content="Err(DuplicateKey(\"timeout\"))")
+  debug_inspect(result, content="Err(DuplicateKey(\"timeout\"))")
 }
 
 ///|

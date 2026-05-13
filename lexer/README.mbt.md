@@ -295,7 +295,10 @@ test "custom lexer implementation example" {
       Some(_) => lexer.advance() // skip unknown characters
     }
   }
-  inspect(tokens, content="[\"ID:a\", \"EQUALS\", \"ID:b\"]")
+  inspect(tokens.length(), content="3")
+  inspect(tokens[0], content="ID:a")
+  inspect(tokens[1], content="EQUALS")
+  inspect(tokens[2], content="ID:b")
 }
 ```
 
