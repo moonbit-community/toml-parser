@@ -1,0 +1,13 @@
+name = "bobzhang/toml-e2e"
+
+version = "0.1.0"
+
+import {
+  "bobzhang/toml@0.2.0",
+  "moonbitlang/x@0.4.41",
+  "moonbitlang/async@0.16.8",
+}
+
+options(
+  source: ".",
+)

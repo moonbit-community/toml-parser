@@ -52,8 +52,8 @@ test "toml spec local datetime examples" {
 /// Test TOML 1.0 spec examples for Local Date
 test "toml spec local date examples" {
   let ld1 = @toml.TomlDateTime(LocalDate("1979-05-27"))
-  debug_inspect(
-    ld1.to_string(),
+  inspect(
+    ld1,
     content=(
       #|"1979-05-27"
     ),
