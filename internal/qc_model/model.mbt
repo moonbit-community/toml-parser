@@ -32,12 +32,12 @@ pub(all) enum SimpleValue {
 } derive(Eq, Debug)
 
 ///|
-pub impl Show for SimpleDocument with output(self, logger) {
+pub impl Show for SimpleDocument with fn output(self, logger) {
   Debug::to_repr(self).output(logger)
 }
 
 ///|
-pub impl Show for SimpleValue with output(self, logger) {
+pub impl Show for SimpleValue with fn output(self, logger) {
   Debug::to_repr(self).output(logger)
 }
 
