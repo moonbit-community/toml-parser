@@ -1,6 +1,6 @@
 import {
-  "bobzhang/toml/internal/tokenize" @tokenize,
-  "bobzhang/toml" @toml,
+  "bobzhang/toml/internal/tokenize",
+  "bobzhang/toml",
 }
 
 import {

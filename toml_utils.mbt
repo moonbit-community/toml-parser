@@ -51,23 +51,19 @@ priv suberror TableConflicts {
 
 ///|
 /// Show impl for error messages
-impl Show for TableConflicts with output(self, logger) {
+impl Show for TableConflicts with fn output(self, logger) {
   match self {
     ExpectedTable(key, value) =>
-      logger
-        <+
+      logger <+
         $|ExpectedTable("\{key}", "\{value.type_name()}")
     ExpectedArray(key, value) =>
-      logger
-        <+
+      logger <+
         $|ExpectedArray("\{key}", "\{value.type_name()}")
     DuplicateKey(key) =>
-      logger
-        <+
+      logger <+
         $|DuplicateKey("\{key}")
     InlineTableImmutable(key) =>
-      logger
-        <+
+      logger <+
         $|InlineTableImmutable("\{key}")
   }
 }

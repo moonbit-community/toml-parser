@@ -49,23 +49,19 @@ pub(all) enum TomlDateTime {
 
 ///|
 /// Show impl for TomlDateTime - provides human-readable format
-pub impl Show for TomlDateTime with output(self, logger) {
+pub impl Show for TomlDateTime with fn output(self, logger) {
   match self {
     OffsetDateTime(s) =>
-      logger
-        <+
+      logger <+
         $|OffsetDateTime("\{s}")
     LocalDateTime(s) =>
-      logger
-        <+
+      logger <+
         $|LocalDateTime("\{s}")
     LocalDate(s) =>
-      logger
-        <+
+      logger <+
         $|LocalDate("\{s}")
     LocalTime(s) =>
-      logger
-        <+
+      logger <+
         $|LocalTime("\{s}")
   }
 }
