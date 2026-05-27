@@ -1,58 +1,91 @@
 ///|
+let version : String = "0.2.3"
+
+///|
+let usage : String =
+  #|toml 0.2.3
+  #|
+  #|Usage:
+  #|  toml format <file>
+  #|  toml check <file>
+  #|  toml <file>
+  #|
+  #|Commands:
+  #|  format <file>  Parse TOML and print normalized TOML.
+  #|  check <file>   Validate TOML without printing parsed output.
+  #|
+  #|Options:
+  #|  -h, --help     Show this help.
+  #|  --version      Show the CLI version.
+
+///|
 fn main {
-  println("TOML Parser Demo")
-
-  // Demo 1: Basic value types
-  println("\n--- Basic Value Types ---")
-  let str_val = @toml.TomlString("Hello, TOML!")
-  let int_val = @toml.TomlInteger(42L)
-  let bool_val = @toml.TomlBoolean(true)
-  println("String value: \{str_val}")
-  println("Integer value: \{int_val}")
-  println("Boolean value: \{bool_val}")
-
-  // Demo 2: Array example
-  println("\n--- Array Example ---")
-  let arr = [@toml.TomlInteger(1L), TomlInteger(2L), TomlInteger(3L)]
-  let array_val = @toml.TomlArray(arr)
-  println("Array value: \{array_val}")
-
-  // Demo 3: Parse simple TOML
-  println("\n--- Parse Simple TOML ---")
-  let toml_input = "name = \"John Doe\"\nage = 30\nenabled = true"
-  println("Input TOML:")
-  println(toml_input)
-  try {
-    let result = @toml.parse(toml_input)
-    println("\nParsed result:")
-    println(result.to_string())
-  } catch {
-    msg => println("Parse error: \{msg}")
+  let code = run(@env.args()[1:])
+  if code != 0 {
+    @sys.exit(code)
   }
+}
 
-  // Demo 4: Parse with array
-  println("\n--- Parse TOML with Array ---")
-  let toml_array = "numbers = [1, 2, 3, 4, 5]"
-  println("Input TOML:")
-  println(toml_array)
-  try {
-    let result = @toml.parse(toml_array)
-    println("\nParsed result:")
-    println(result.to_string())
-  } catch {
-    msg => println("Parse error: \{msg}")
+///|
+fn run(args : ArrayView[String]) -> Int {
+  match args {
+    [] | ["help"] | ["-h"] | ["--help"] => {
+      println(usage)
+      0
+    }
+    ["--version"] | ["version"] => {
+      println("toml \{version}")
+      0
+    }
+    ["format"] => usage_error("missing file for `format`")
+    ["check"] => usage_error("missing file for `check`")
+    ["format", path] | [path] => format_file(path)
+    ["check", path] => check_file(path)
+    [command, ..] =>
+      usage_error("unknown command or extra arguments: `\{command}`")
   }
+}
 
-  // Demo 5: Parse with inline table
-  println("\n--- Parse TOML with Inline Table ---")
-  let toml_table = "person = {name = \"Alice\", age = 25}"
-  println("Input TOML:")
-  println(toml_table)
-  try {
-    let result = @toml.parse(toml_table)
-    println("\nParsed result:")
-    println(result.to_string())
-  } catch {
-    msg => println("Parse error: \{msg}")
+///|
+fn format_file(path : String) -> Int {
+  let source = @fs.read_file_to_string(path) catch {
+    err => {
+      println("error: failed to read \{path}: \{err}")
+      return 1
+    }
   }
+  let value = @toml.parse(source) catch {
+    err => {
+      println("error: failed to parse \{path}: \{err}")
+      return 1
+    }
+  }
+  println(value.to_string())
+  0
+}
+
+///|
+fn check_file(path : String) -> Int {
+  let source = @fs.read_file_to_string(path) catch {
+    err => {
+      println("error: failed to read \{path}: \{err}")
+      return 1
+    }
+  }
+  let _ = @toml.parse(source) catch {
+    err => {
+      println("error: failed to parse \{path}: \{err}")
+      return 1
+    }
+  }
+  println("\{path}: OK")
+  0
+}
+
+///|
+fn usage_error(message : String) -> Int {
+  println("error: \{message}")
+  println("")
+  println(usage)
+  2
 }
