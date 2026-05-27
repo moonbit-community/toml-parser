@@ -65,14 +65,31 @@ Add this parser to your MoonBit project:
 moon add bobzhang/toml
 ```
 
-Then add it directly to your `moon.mod.json`:
+Then add it directly to your `moon.mod`:
 
-```json
-{
-  "deps": {
-    "bobzhang/toml": "^0.2.0"
-  }
+```moonbit nocheck
+import {
+  "bobzhang/toml@0.2.3",
 }
+```
+
+## Command-Line Usage
+
+The module includes a native `toml` CLI in `cmd/main` for validating and
+normalizing TOML files:
+
+```bash
+moon run --target native cmd/main -- --help
+moon run --target native cmd/main -- check config.toml
+moon run --target native cmd/main -- format config.toml
+```
+
+For release-style CLI testing, build the native binary and run the Moon Cram
+transcript tests:
+
+```bash
+moon build --target native --release
+TOML_CLI="$PWD/_build/native/release/build/bobzhang/toml/cmd/main/main.exe" moon cram test tests/cram
 ```
 
 ## Quick Start
