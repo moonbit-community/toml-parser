@@ -2,21 +2,43 @@
 let version : String = "0.2.3"
 
 ///|
-let usage : String =
-  #|toml 0.2.3
-  #|
-  #|Usage:
-  #|  toml format <file>
-  #|  toml check <file>
-  #|  toml <file>
-  #|
-  #|Commands:
-  #|  format <file>  Parse TOML and print normalized TOML.
-  #|  check <file>   Validate TOML without printing parsed output.
-  #|
-  #|Options:
-  #|  -h, --help     Show this help.
-  #|  --version      Show the CLI version.
+fn toml_command() -> @argparse.Command {
+  @argparse.Command(
+    "toml",
+    about="Parse, validate, and format TOML files.",
+    version~,
+    positionals=[
+      @argparse.PositionArg(
+        "file",
+        about="Parse TOML and print normalized TOML.",
+      ),
+    ],
+    subcommands=[
+      @argparse.Command(
+        "format",
+        about="Parse TOML and print normalized TOML.",
+        positionals=[
+          @argparse.PositionArg(
+            "file",
+            about="TOML file to format.",
+            num_args=@argparse.ValueRange::single(),
+          ),
+        ],
+      ),
+      @argparse.Command(
+        "check",
+        about="Validate TOML without printing parsed output.",
+        positionals=[
+          @argparse.PositionArg(
+            "file",
+            about="TOML file to validate.",
+            num_args=@argparse.ValueRange::single(),
+          ),
+        ],
+      ),
+    ],
+  )
+}
 
 ///|
 fn main {
@@ -28,21 +50,36 @@ fn main {
 
 ///|
 fn run(args : ArrayView[String]) -> Int {
-  match args {
-    [] | ["help"] | ["-h"] | ["--help"] => {
-      println(usage)
-      0
+  let command = toml_command()
+  if args.is_empty() {
+    println(command.render_help())
+    return 0
+  }
+  let matches = command.parse(argv=args, env={}) catch {
+    err => {
+      println(err)
+      return 2
     }
-    ["--version"] | ["version"] => {
-      println("toml \{version}")
-      0
+  }
+  match matches.subcommand {
+    Some(("format", child)) => dispatch_file(child, format_file)
+    Some(("check", child)) => dispatch_file(child, check_file)
+    Some((name, _)) => {
+      println("error: unsupported command `\{name}`")
+      2
     }
-    ["format"] => usage_error("missing file for `format`")
-    ["check"] => usage_error("missing file for `check`")
-    ["format", path] | [path] => format_file(path)
-    ["check", path] => check_file(path)
-    [command, ..] =>
-      usage_error("unknown command or extra arguments: `\{command}`")
+    None => dispatch_file(matches, format_file)
+  }
+}
+
+///|
+fn dispatch_file(matches : @argparse.Matches, action : (String) -> Int) -> Int {
+  match matches.values.get("file") {
+    Some([path]) => action(path)
+    _ => {
+      println(toml_command().render_help())
+      2
+    }
   }
 }
 
@@ -80,12 +117,4 @@ fn check_file(path : String) -> Int {
   }
   println("\{path}: OK")
   0
-}
-
-///|
-fn usage_error(message : String) -> Int {
-  println("error: \{message}")
-  println("")
-  println(usage)
-  2
 }

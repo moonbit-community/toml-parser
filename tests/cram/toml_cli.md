@@ -12,25 +12,26 @@ TOML_CLI="$PWD/_build/native/release/build/bobzhang/toml/cmd/main/main.exe" moon
 
 ```mooncram
 $ "$TOML_CLI" --version
-toml 0.2.3
+0.2.3
 ```
 
 ```mooncram
 $ "$TOML_CLI" --help
-toml 0.2.3
+Usage: toml [file] [command]
 
-Usage:
-  toml format <file>
-  toml check <file>
-  toml <file>
+Parse, validate, and format TOML files.
 
 Commands:
-  format <file>  Parse TOML and print normalized TOML.
-  check <file>   Validate TOML without printing parsed output.
+  format  Parse TOML and print normalized TOML.
+  check   Validate TOML without printing parsed output.
+  help    Print help for the subcommand(s).
+
+Arguments:
+  file  Parse TOML and print normalized TOML.
 
 Options:
-  -h, --help     Show this help.
-  --version      Show the CLI version.
+  -h, --help     Show help information.
+  -V, --version  Show version information.
 ```
 
 ## Format A File
