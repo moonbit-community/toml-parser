@@ -17,6 +17,28 @@ test "serialize string with control characters" {
 }
 
 ///|
+test "roundtrip string with escaped control characters" {
+  let original = @toml.TomlTable(
+    Map::from_array([
+      ("nul", TomlString("\u0000")),
+      ("bell", TomlString("\u0007")),
+      ("delete", TomlString("\u007F")),
+    ]),
+  )
+  let serialized = original.to_string()
+  inspect(
+    serialized,
+    content=(
+      #|nul = "\u0000"
+      #|bell = "\u0007"
+      #|delete = "\u007F"
+      #|
+    ),
+  )
+  assert_eq(@toml.parse(serialized), original)
+}
+
+///|
 test "serialize integers" {
   inspect(@toml.TomlInteger(42L), content="42")
   inspect(@toml.TomlInteger(-1234L), content="-1234")
