@@ -3,40 +3,29 @@ let version : String = "0.2.3"
 
 ///|
 fn toml_command() -> @argparse.Command {
-  @argparse.Command(
+  Command(
     "toml",
     about="Parse, validate, and format TOML files.",
     version~,
     arg_required_else_help=true,
     positionals=[
-      @argparse.PositionArg(
-        "file",
-        about="Parse TOML and print normalized TOML.",
-      ),
+      PositionArg("file", about="Parse TOML and print normalized TOML."),
     ],
     subcommands=[
-      @argparse.Command(
-        "format",
-        about="Parse TOML and print normalized TOML.",
-        positionals=[
-          @argparse.PositionArg(
-            "file",
-            about="TOML file to format.",
-            num_args=@argparse.ValueRange::single(),
-          ),
-        ],
-      ),
-      @argparse.Command(
-        "check",
-        about="Validate TOML without printing parsed output.",
-        positionals=[
-          @argparse.PositionArg(
-            "file",
-            about="TOML file to validate.",
-            num_args=@argparse.ValueRange::single(),
-          ),
-        ],
-      ),
+      Command("format", about="Parse TOML and print normalized TOML.", positionals=[
+        PositionArg(
+          "file",
+          about="TOML file to format.",
+          num_args=@argparse.ValueRange::single(),
+        ),
+      ]),
+      Command("check", about="Validate TOML without printing parsed output.", positionals=[
+        PositionArg(
+          "file",
+          about="TOML file to validate.",
+          num_args=@argparse.ValueRange::single(),
+        ),
+      ]),
     ],
   )
 }
