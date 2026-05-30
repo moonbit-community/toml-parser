@@ -1,22 +1,21 @@
 # TOML CLI Cram Tests
 
-These Moon Cram tests document the native `toml` executable. Set `TOML_CLI` to
-the native release binary before running them:
+These Moon Cram tests document the native `toml` executable. `moon cram` builds
+the native CLI and puts `toml.exe` on `PATH`:
 
 ```bash
-moon build --target native --release
-TOML_CLI="$PWD/_build/native/release/build/bobzhang/toml/cmd/main/main.exe" moon cram test tests/cram
+moon cram test --release tests/cram
 ```
 
 ## Help And Version
 
 ```mooncram
-$ "$TOML_CLI" --version
+$ toml.exe --version
 0.2.3
 ```
 
 ```mooncram
-$ "$TOML_CLI" --help
+$ toml.exe --help
 Usage: toml [file] [command]
 
 Parse, validate, and format TOML files.
@@ -35,7 +34,7 @@ Options:
 ```
 
 ```mooncram
-$ "$TOML_CLI"
+$ toml.exe
 Usage: toml [file] [command]
 
 Parse, validate, and format TOML files.
@@ -62,7 +61,7 @@ $ cat > sample.toml <<'EOF'
 > [server]
 > enabled = true
 > EOF
-> "$TOML_CLI" format sample.toml
+> toml.exe format sample.toml
 title = "MoonBit"
 
 ports = [8000, 8001]
@@ -79,7 +78,7 @@ $ cat > valid.toml <<'EOF'
 > package = "toml"
 > version = "0.2.3"
 > EOF
-> "$TOML_CLI" check valid.toml
+> toml.exe check valid.toml
 valid.toml: OK
 ```
 
@@ -89,7 +88,7 @@ valid.toml: OK
 $ cat > invalid.toml <<'EOF'
 > key =
 > EOF
-> "$TOML_CLI" check invalid.toml
+> toml.exe check invalid.toml
 error: failed to parse invalid.toml: Failure(parser.mbt:*@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 6 }, end: { line: 2, column: 1 } }) (glob)
 [1]
 ```

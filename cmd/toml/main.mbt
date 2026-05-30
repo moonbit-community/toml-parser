@@ -73,7 +73,7 @@ fn format_file(path : String) -> Int {
       return 1
     }
   }
-  let value = @toml.parse(source) catch {
+  let value = @toml_lib.parse(source) catch {
     err => {
       println("error: failed to parse \{path}: \{err}")
       return 1
@@ -91,7 +91,7 @@ fn check_file(path : String) -> Int {
       return 1
     }
   }
-  let _ = @toml.parse(source) catch {
+  let _ = @toml_lib.parse(source) catch {
     err => {
       println("error: failed to parse \{path}: \{err}")
       return 1
