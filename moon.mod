@@ -17,3 +17,5 @@ license = "Apache-2.0"
 keywords = [ "toml", "parser", "config" ]
 
 description = "A TOML parser implementation in MoonBit"
+
+warnings = "+unnecessary_annotation"
