@@ -75,21 +75,20 @@ import {
 
 ## Command-Line Usage
 
-The module includes a native `toml` CLI in `cmd/main` for validating and
+The module includes a native `toml` CLI in `cmd/toml` for validating and
 normalizing TOML files:
 
 ```bash
-moon run --target native cmd/main -- --help
-moon run --target native cmd/main -- check config.toml
-moon run --target native cmd/main -- format config.toml
+moon run --target native cmd/toml -- --help
+moon run --target native cmd/toml -- check config.toml
+moon run --target native cmd/toml -- format config.toml
 ```
 
-For release-style CLI testing, build the native binary and run the Moon Cram
-transcript tests:
+For release-style CLI testing, run the Moon Cram transcript tests. `moon cram`
+builds the native CLI and puts `toml.exe` on `PATH`:
 
 ```bash
-moon build --target native --release
-TOML_CLI="$PWD/_build/native/release/build/bobzhang/toml/cmd/main/main.exe" moon cram test tests/cram
+moon cram test --release tests/cram
 ```
 
 ## Quick Start
@@ -562,7 +561,7 @@ toml-parser/
 - **Core Parser** (`toml.mbt`, `parser.mbt`) - Main TOML parsing implementation with full TOML 1.0 specification support, recursive descent parser with error recovery
 - **Tokenizer** (`internal/tokenize/`) - Lexical analysis and tokenization engine supporting all TOML tokens including special float values (inf, nan)
 - **Utilities** (`toml_utils.mbt`) - Helper functions for table creation, dotted key handling, and nested structure management
-- **Demo Application** (`cmd/main/`) - Interactive command-line examples demonstrating parser capabilities
+- **CLI Application** (`cmd/toml/`) - Command-line validation and formatting for TOML files
 - **Comprehensive Test Suite** (8000+ lines) - Extensive coverage including:
   - Unit tests for all data types and features
   - Official TOML specification compliance tests
@@ -683,10 +682,10 @@ moon test                              # unit tests (224 tests)
 moon test e2e -v --target native       # e2e toml-test suite (745 tests)
 ```
 
-### Running the Demo
+### Running the CLI
 
 ```bash
-moon run cmd/main
+moon run cmd/toml
 ```
 
 ### Building

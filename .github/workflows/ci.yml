@@ -45,9 +45,7 @@ jobs:
 
       - name: moon cram (native CLI)
         if: matrix.channel == 'nightly'
-        run: |
-          moon build --target native --release
-          TOML_CLI="$PWD/_build/native/release/build/bobzhang/toml/cmd/main/main.exe" moon cram test tests/cram
+        run: moon cram test --release tests/cram
 
       # - name: moon test
       #   run: moon test --enable-coverage

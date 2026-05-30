@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/toml/cmd/main"
+package "bobzhang/toml/cmd/toml"
 
 // Values
 
