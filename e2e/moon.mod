@@ -7,3 +7,5 @@ import {
   "moonbitlang/x@0.4.41",
   "moonbitlang/async@0.16.8",
 }
+
+warnings = "+test_unqualified_package"
