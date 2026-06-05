@@ -22,7 +22,11 @@ test "test complex TOML with all token types" {
     #|
   // This now successfully parses with nested tables support
   debug_inspect(
-    try? @toml.parse(complex_toml),
+    try @toml.parse(complex_toml) catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(
       #|  TomlTable(
@@ -93,9 +97,13 @@ test "test tokenizer unreachable path coverage" {
 test "test edge case number formats for error paths" {
   // Try to trigger integer parsing errors
 
-  let tokens = try? @tokenize.tokenize(
-    "huge = 999999999999999999999999999999999999999",
-  )
+  let tokens = try
+    @tokenize.tokenize("huge = 999999999999999999999999999999999999999")
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     tokens,
     content=(
@@ -141,7 +149,11 @@ test "test various escape sequences coverage" {
     #|quote = "say \"hello\""
     #|
   debug_inspect(
-    try? @toml.parse(toml_with_escapes),
+    try @toml.parse(toml_with_escapes) catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(
       #|  TomlTable(
@@ -167,7 +179,11 @@ test "test whitespace and comment skipping" {
     #|key2 = "value2"
     #|
   debug_inspect(
-    try? @toml.parse(toml_with_whitespace),
+    try @toml.parse(toml_with_whitespace) catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "key1": TomlString("value1"), "key2": TomlString("value2") }))
     ),

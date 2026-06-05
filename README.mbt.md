@@ -227,13 +227,21 @@ test {
   assert_eq(table.length(), 0) // Empty table from error handler
 
   // Error handling with try? - converts to Result type
-  let result = try? @toml.parse("key = \"value\"")
+  let result = try @toml.parse("key = \"value\"") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   guard result is Ok(TomlTable({ "key": _, .. })) else {
     fail("Should have parsed successfully with key")
   }
 
   // Parsing error example
-  let bad_result = try? @toml.parse("bad syntax here")
+  let bad_result = try @toml.parse("bad syntax here") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   assert_true(bad_result is Err(_))
 }
 ```

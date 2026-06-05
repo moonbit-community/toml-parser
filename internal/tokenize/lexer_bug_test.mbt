@@ -1,10 +1,16 @@
 ///|
 test "test invalid float parsing" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|invalid = 1.2.3
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|invalid = 1.2.3
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     maybe_tokens,
     content=(
@@ -34,11 +40,17 @@ test "test invalid float parsing" {
 
 ///|
 test "test invalid hex digit error" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|hex = 0xGHI
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|hex = 0xGHI
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -49,11 +61,17 @@ test "test invalid hex digit error" {
 
 ///|
 test "test octal without digits" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|test = 0o
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|test = 0o
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -64,11 +82,17 @@ test "test octal without digits" {
 
 ///|
 test "test binary without digits" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|test = 0b
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|test = 0b
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -79,11 +103,17 @@ test "test binary without digits" {
 
 ///|
 test "test hex with invalid delimiter" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|hex = 0x123XYZ
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|hex = 0x123XYZ
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -94,11 +124,17 @@ test "test hex with invalid delimiter" {
 
 ///|
 test "test hex regex is anchored to current view" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|hex = 0xG0x10
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|hex = 0xG0x10
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -139,11 +175,17 @@ test "test datetime timezone regex is anchored to current view" {
 
 ///|
 test "test octal regex is anchored to current view" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|oct = 0o80o7
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|oct = 0o80o7
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -154,11 +196,17 @@ test "test octal regex is anchored to current view" {
 
 ///|
 test "test binary regex is anchored to current view" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|bin = 0b20b10
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|bin = 0b20b10
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -250,11 +298,17 @@ test "test hex case variations" {
 
 ///|
 test "test octal with invalid digits" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|oct = 0o789
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|oct = 0o789
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -320,11 +374,17 @@ test "test octal with valid delimiters" {
 
 ///|
 test "test binary with invalid digits" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|bin = 0b1012
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|bin = 0b1012
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(

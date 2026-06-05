@@ -296,7 +296,13 @@ test "create_array_of_tables - path conflicts with non-table" {
 
   // Try to create array of tables at ["products", "items"]
   // This should fail because "products" is not a table
-  let result = try? create_array_of_tables(root_table, ["products", "items"])
+  let result = try
+    create_array_of_tables(root_table, ["products", "items"])
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -319,7 +325,13 @@ test "create_array_of_tables - final key conflicts with non-array" {
   )
 
   // Try to treat servers.alpha as array of tables
-  let result = try? create_array_of_tables(root_table, ["servers", "alpha"])
+  let result = try
+    create_array_of_tables(root_table, ["servers", "alpha"])
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -548,11 +560,13 @@ test "set dotted key value - reject duplicate key" {
   let table : Map[String, TomlValue] = Map([])
   set_dotted_key_value(table, ["config", "timeout"], TomlInteger(30))
   // Duplicate key should be rejected
-  let result = try? set_dotted_key_value(
-    table,
-    ["config", "timeout"],
-    TomlInteger(60),
-  )
+  let result = try
+    set_dotted_key_value(table, ["config", "timeout"], TomlInteger(60))
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(result, content="Err(DuplicateKey(\"timeout\"))")
 }
 

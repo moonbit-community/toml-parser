@@ -98,11 +98,17 @@ test "parse array" {
 
 ///|
 test "parse array ending with exponent float" {
-  let result = try? @toml.parse(
-    (
-      #|numbers = [-1e2]
-    ),
-  )
+  let result = try
+    @toml.parse(
+      (
+        #|numbers = [-1e2]
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -139,7 +145,11 @@ test "test parser expect method failure" {
 ///|
 test "test parser EOF handling in peek" {
   debug_inspect(
-    try? @toml.parse(""),
+    try @toml.parse("") catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({}))
     ),
@@ -169,7 +179,11 @@ test "test parser rejects dash-starting identifier as value" {
 ///|
 test "test inline table with string keys" {
   debug_inspect(
-    try? @toml.parse("table = {\"string key\" = \"value\"}"),
+    try @toml.parse("table = {\"string key\" = \"value\"}") catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "table": TomlTable({ "string key": TomlString("value") }) }))
     ),
@@ -203,7 +217,11 @@ test "test table header with string name" {
     #|key = "value"
     #|
   debug_inspect(
-    try? @toml.parse(string_table_name_toml),
+    try @toml.parse(string_table_name_toml) catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "table name": TomlTable({ "key": TomlString("value") }) }))
     ),
@@ -217,7 +235,11 @@ test "test table header numeric name" {
     #|key = "value"
     #|
   debug_inspect(
-    try? @toml.parse(numeric_table_name_toml),
+    try @toml.parse(numeric_table_name_toml) catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "123": TomlTable({ "key": TomlString("value") }) }))
     ),
@@ -311,7 +333,11 @@ test "test exponent-like bare keys" {
     #|-10e-1 = "d"
     #|
   debug_inspect(
-    try? @toml.parse(exponent_like_keys_toml),
+    try @toml.parse(exponent_like_keys_toml) catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(
       #|  TomlTable(
@@ -340,7 +366,11 @@ test "test exponent-like bare table headers" {
     #|value = "d"
     #|
   debug_inspect(
-    try? @toml.parse(exponent_like_table_names_toml),
+    try @toml.parse(exponent_like_table_names_toml) catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(
       #|  TomlTable(
@@ -378,7 +408,11 @@ test "overflow float rejected in value position" {
 test "overflow float accepted as bare key" {
   // The same overflow token is valid as a bare key (all chars are A-Za-z0-9_-)
   debug_inspect(
-    try? @toml.parse("-31e368 = \"ok\"\n"),
+    try @toml.parse("-31e368 = \"ok\"\n") catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "-31e368": TomlString("ok") }))
     ),
@@ -389,19 +423,31 @@ test "overflow float accepted as bare key" {
 test "special float keywords as keys" {
   // inf, nan, +inf, -inf, etc. are valid bare keys in TOML
   debug_inspect(
-    try? @toml.parse("+inf = 1\n"),
+    try @toml.parse("+inf = 1\n") catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "+inf": TomlInteger(1) }))
     ),
   )
   debug_inspect(
-    try? @toml.parse("-inf = 2\n"),
+    try @toml.parse("-inf = 2\n") catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "-inf": TomlInteger(2) }))
     ),
   )
   debug_inspect(
-    try? @toml.parse("nan = 3\n"),
+    try @toml.parse("nan = 3\n") catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "nan": TomlInteger(3) }))
     ),
@@ -412,14 +458,22 @@ test "special float keywords as keys" {
 test "dotted key with float-like segments" {
   // Float token with dot in raw string should split into dotted keys
   debug_inspect(
-    try? @toml.parse("1.2 = \"a\"\n"),
+    try @toml.parse("1.2 = \"a\"\n") catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "1": TomlTable({ "2": TomlString("a") }) }))
     ),
   )
   // Float-like key followed by dotted sub-key
   debug_inspect(
-    try? @toml.parse("[-80e-2.sub]\nval = 1\n"),
+    try @toml.parse("[-80e-2.sub]\nval = 1\n") catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "-80e-2": TomlTable({ "sub": TomlTable({ "val": TomlInteger(1) }) }) }))
     ),
@@ -461,7 +515,11 @@ test "test table name conflicts with existing value" {
 /// Tests for inline table edge cases  
 test "test empty inline table" {
   debug_inspect(
-    try? @toml.parse("empty = {}"),
+    try @toml.parse("empty = {}") catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "empty": TomlTable({}) }))
     ),
@@ -471,7 +529,11 @@ test "test empty inline table" {
 ///|
 test "test nested inline tables" {
   debug_inspect(
-    try? @toml.parse("table = {inner = {key = \"value\"}}"),
+    try @toml.parse("table = {inner = {key = \"value\"}}") catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "table": TomlTable({ "inner": TomlTable({ "key": TomlString("value") }) }) }))
     ),
@@ -481,7 +543,11 @@ test "test nested inline tables" {
 ///|
 test "test inline table with multiple key types" {
   debug_inspect(
-    try? @toml.parse("mixed = {\"quoted\" = 1, unquoted = 2}"),
+    try @toml.parse("mixed = {\"quoted\" = 1, unquoted = 2}") catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "mixed": TomlTable({ "quoted": TomlInteger(1), "unquoted": TomlInteger(2) }) }))
     ),
@@ -491,7 +557,11 @@ test "test inline table with multiple key types" {
 ///|
 test "test inline table with array values" {
   debug_inspect(
-    try? @toml.parse("table = {arr = [1, 2, 3], str = \"test\"}"),
+    try @toml.parse("table = {arr = [1, 2, 3], str = \"test\"}") catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(
       #|  TomlTable(
@@ -656,5 +726,12 @@ test "complex dotted keys" {
     #|server."port number".8080.config = 3
     #|
   // TODO: fix
-  debug_inspect(try? @toml.parse(data), content="")
+  debug_inspect(
+    try @toml.parse(data) catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
+    content="",
+  )
 }

@@ -7,7 +7,11 @@
 
 ///|
 test "fixed: [a-a-a] table header parses correctly" {
-  let result = try? @toml.parse("[a-a-a]\n_ = false\n")
+  let result = try @toml.parse("[a-a-a]\n_ = false\n") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -18,7 +22,11 @@ test "fixed: [a-a-a] table header parses correctly" {
 
 ///|
 test "fixed: leading underscore value rejected (not infinite loop)" {
-  let result = try? @toml.parse("x = _1.2\n")
+  let result = try @toml.parse("x = _1.2\n") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -33,7 +41,11 @@ test "fixed: leading underscore value rejected (not infinite loop)" {
 
 ///|
 test "fixed: positive prefix '+' tokenized for integers" {
-  let result = try? @toml.parse("pos = +99\n")
+  let result = try @toml.parse("pos = +99\n") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -44,7 +56,11 @@ test "fixed: positive prefix '+' tokenized for integers" {
 
 ///|
 test "fixed: positive prefix '+' tokenized for floats" {
-  let result = try? @toml.parse("pos = +1.0\n")
+  let result = try @toml.parse("pos = +1.0\n") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -59,7 +75,11 @@ test "fixed: positive prefix '+' tokenized for floats" {
 
 ///|
 test "fixed: CRLF line ending handled" {
-  let result = try? @toml.parse("key = \"val\"\r\n")
+  let result = try @toml.parse("key = \"val\"\r\n") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -74,7 +94,11 @@ test "fixed: CRLF line ending handled" {
 
 ///|
 test "fixed: datetime with space separator" {
-  let result = try? @toml.parse("dt = 1987-07-05 17:45:00Z\n")
+  let result = try @toml.parse("dt = 1987-07-05 17:45:00Z\n") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -89,7 +113,11 @@ test "fixed: datetime with space separator" {
 
 ///|
 test "fixed: numeric key leading zeros preserved" {
-  let result = try? @toml.parse("0123 = true\n")
+  let result = try @toml.parse("0123 = true\n") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -110,7 +138,11 @@ test "fixed: multiline string line ending backslash" {
     #|
     #|  fox jumps over the lazy dog."""
     #|
-  let result = try? @toml.parse(input)
+  let result = try @toml.parse(input) catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -125,7 +157,11 @@ test "fixed: multiline string line ending backslash" {
 
 ///|
 test "fixed: hex escape \\xHH" {
-  let result = try? @toml.parse("esc = \"\\x41\"\n")
+  let result = try @toml.parse("esc = \"\\x41\"\n") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -136,7 +172,11 @@ test "fixed: hex escape \\xHH" {
 
 ///|
 test "fixed: escape \\e (ESC)" {
-  let result = try? @toml.parse("esc = \"\\e\"\n")
+  let result = try @toml.parse("esc = \"\\e\"\n") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -163,7 +203,11 @@ test "bug: array of tables cannot reopen" {
     #|[[fruits]]
     #|name = "banana"
     #|
-  let _ = try? @toml.parse(input)
+  let _ = try @toml.parse(input) catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   // Should parse without error
 }
 
@@ -173,7 +217,11 @@ test "bug: array of tables cannot reopen" {
 
 ///|
 test "fixed: keyword as table name" {
-  let result = try? @toml.parse("[true]\nx = 1\n")
+  let result = try @toml.parse("[true]\nx = 1\n") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -196,7 +244,11 @@ test "bug: inline table newlines (TOML 1.1)" {
     #|  b = 2
     #|}
     #|
-  let _ = try? @toml.parse(input)
+  let _ = try @toml.parse(input) catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
 }
 
 // ============================================================
@@ -207,7 +259,11 @@ test "bug: inline table newlines (TOML 1.1)" {
 ///|
 #skip
 test "bug: datetime millisecond trailing zeros" {
-  let result = try? @toml.parse("dt = 1987-07-05T17:45:56.600Z\n")
+  let result = try @toml.parse("dt = 1987-07-05T17:45:56.600Z\n") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   // Should preserve .600, not truncate to .6
   debug_inspect(result, content="")
 }
@@ -221,7 +277,11 @@ test "fixed: multiline string with consecutive quotes" {
   let input =
     #|str = """Here are two quotes: "". Cool."""
     #|
-  let result = try? @toml.parse(input)
+  let result = try @toml.parse(input) catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
@@ -236,7 +296,11 @@ test "fixed: multiline string with consecutive quotes" {
 
 ///|
 test "fixed: dashed bare key starting with dash" {
-  let result = try? @toml.parse("-key = 1\n")
+  let result = try @toml.parse("-key = 1\n") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     result,
     content=(
