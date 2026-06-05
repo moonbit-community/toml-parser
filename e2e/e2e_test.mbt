@@ -20,7 +20,11 @@ async test "valid toml-test suite" {
         continue
       }
     }
-    let parsed = try? @toml.parse(toml_content)
+    let parsed = try @toml.parse(toml_content) catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    }
     match parsed {
       Err(e) => {
         failures.push("[PARSE-ERROR] \{toml_path}: \{e}")

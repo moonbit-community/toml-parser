@@ -587,11 +587,17 @@ test "test escaped single quote in string" {
 
 ///|
 test "test invalid escape sequence error" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = "test\z invalid"
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = "test\z invalid"
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   // TODO: ArgsLoc no absolute loc
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
@@ -603,11 +609,17 @@ test "test invalid escape sequence error" {
 
 ///|
 test "test unterminated string error" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = "unterminated
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = "unterminated
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   // TODO: ArgsLoc no absolute loc
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
@@ -619,11 +631,17 @@ test "test unterminated string error" {
 
 ///|
 test "test unexpected end after escape" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = "test\
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = "test\
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   // TODO: ArgsLoc no absolute loc
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
@@ -635,11 +653,17 @@ test "test unexpected end after escape" {
 
 ///|
 test "test invalid characters" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key @ value
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key @ value
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -708,7 +732,11 @@ test "lexer expect_string failure" {
       #|hello world
     ),
   )
-  let maybe_result = try? lexer.expect_string("goodbye")
+  let maybe_result = try lexer.expect_string("goodbye") catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_result.unwrap_err()),
     content=(
@@ -776,11 +804,17 @@ test "unicode 4 escape uppercase hex" {
 ///|
 /// Test Unicode 4-digit escape invalid hex digit
 test "unicode 4 escape invalid hex" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = "\uGHIJ"
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = "\uGHIJ"
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -792,11 +826,17 @@ test "unicode 4 escape invalid hex" {
 ///|
 /// Test Unicode 4-digit escape incomplete sequence
 test "unicode 4 escape incomplete" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = "\u123"
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = "\u123"
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -808,11 +848,17 @@ test "unicode 4 escape incomplete" {
 ///|
 /// Test Unicode 4-digit escape invalid code point
 test "unicode 4 escape invalid code point" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = "\uD800"
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = "\uD800"
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -880,11 +926,17 @@ test "unicode 8 escape uppercase hex" {
 ///|
 /// Test Unicode 8-digit escape invalid hex digit
 test "unicode 8 escape invalid hex" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = "\U0000000G"
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = "\U0000000G"
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -896,11 +948,17 @@ test "unicode 8 escape invalid hex" {
 ///|
 /// Test Unicode 8-digit escape incomplete sequence
 test "unicode 8 escape incomplete" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = "\U0000001"
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = "\U0000001"
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -912,11 +970,17 @@ test "unicode 8 escape incomplete" {
 ///|
 /// Test Unicode 8-digit escape invalid code point (too large)
 test "unicode 8 escape invalid code point large" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = "\U00110000"
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = "\U00110000"
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -928,11 +992,17 @@ test "unicode 8 escape invalid code point large" {
 ///|
 /// Test Unicode 8-digit escape invalid code point (surrogate range)
 test "unicode 8 escape invalid code point surrogate" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = "\U0000D800"
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = "\U0000D800"
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -944,11 +1014,17 @@ test "unicode 8 escape invalid code point surrogate" {
 ///|
 /// Test Unicode 8-digit escape invalid code point conversion
 test "unicode 8 escape invalid conversion" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = "\U7FFFFFFF"
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = "\U7FFFFFFF"
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -1097,11 +1173,17 @@ test "multiline basic string line ending backslash CR" {
 ///|
 /// Test multiline basic string invalid escape
 test "multiline basic string invalid escape" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = """\z"""
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = """\z"""
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -1113,11 +1195,17 @@ test "multiline basic string invalid escape" {
 ///|
 /// Test multiline basic string unexpected end after escape
 test "multiline basic string unexpected end after escape" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = """\
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = """\
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -1129,11 +1217,17 @@ test "multiline basic string unexpected end after escape" {
 ///|
 /// Test multiline basic string unterminated
 test "multiline basic string unterminated" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = """incomplete
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = """incomplete
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -1145,11 +1239,17 @@ test "multiline basic string unterminated" {
 ///|
 /// Test multiline basic string early termination in loop
 test "multiline basic string early termination" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = """line
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = """line
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -1185,11 +1285,17 @@ test "multiline literal string CRLF" {
 ///|
 /// Test multiline literal string unterminated
 test "multiline literal string unterminated" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = '''incomplete
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = '''incomplete
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -1202,11 +1308,17 @@ test "multiline literal string unterminated" {
 /// Test hex number with no digits after 0x
 test "hex number invalid digit error path" {
   // This should fail because there are no hex digits after 0x
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = 0x
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = 0x
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -1361,11 +1473,17 @@ test "multiline basic string CR only" {
 /// Test multiline basic string early termination at None peek
 test "multiline basic string none peek" {
   // This creates a string that will reach None in the peek() during processing
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = """incomplete string
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = """incomplete string
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -1516,11 +1634,17 @@ test "test hex overflow edge case" {
 test "unicode code point conversion failure" {
   // Try to find a Unicode code that's valid as int but invalid as char
   // Code point 0x110000 is too large for valid Unicode
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = "\U00110000"
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = "\U00110000"
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   let error_msg = maybe_tokens.unwrap_err().to_string()
   match error_msg.strip_prefix("Invalid Unicode code point: ") {
     Some(_) => debug_inspect(true, content="true") // Expected error
@@ -1532,11 +1656,17 @@ test "unicode code point conversion failure" {
 /// Test very specific multiline string that could reach None peek
 test "multiline string abrupt end" {
   // Create a multiline string that ends abruptly without proper closing
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = """content without closing
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = """content without closing
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   let error_msg = maybe_tokens.unwrap_err().to_string()
   // This should trigger one of the unterminated multiline string errors
   let is_unterminated = match
@@ -1552,11 +1682,17 @@ test "multiline string abrupt end" {
 test "unicode 8 digit none conversion attempt" {
   // Try an edge case that might trigger the None path in unicode 8 escape
   // Use a very large value that might fail conversion
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = "\U7FFFFFFF"
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = "\U7FFFFFFF"
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   let error_msg = maybe_tokens.unwrap_err().to_string()
   // Should get invalid Unicode code point error
   let has_invalid_unicode = match
@@ -1600,11 +1736,17 @@ test "attempt hex digit error path" {
 /// Test multiline string with potential truncation
 test "multiline string potential truncation" {
   // Try to create a scenario where multiline string processing might hit None
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = """partial
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = """partial
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   // Should get unterminated string error
   let error_msg = maybe_tokens.unwrap_err().to_string()
   let is_unterminated = error_msg.contains("Unterminated")
@@ -1613,11 +1755,17 @@ test "multiline string potential truncation" {
 
 ///|
 test "trailing _ in binary number" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = 0b10_10_
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = 0b10_10_
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -1628,11 +1776,17 @@ test "trailing _ in binary number" {
 
 ///|
 test "consequence _ in binary number" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = 0b10__10_10
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = 0b10__10_10
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   // according to spec, this should fail
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
@@ -1644,11 +1798,17 @@ test "consequence _ in binary number" {
 
 ///|
 test "trailing _ in hex number" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = 0xAB_CD_
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = 0xAB_CD_
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -1659,11 +1819,17 @@ test "trailing _ in hex number" {
 
 ///|
 test "consecutive _ in hex number" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = 0xAB__CD_EF
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = 0xAB__CD_EF
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   // according to spec, this should fail
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
@@ -1675,11 +1841,17 @@ test "consecutive _ in hex number" {
 
 ///|
 test "trailing _ in octal number" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = 0o755_
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = 0o755_
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
@@ -1690,11 +1862,17 @@ test "trailing _ in octal number" {
 
 ///|
 test "consecutive _ in octal number" {
-  let maybe_tokens = try? @tokenize.tokenize(
-    (
-      #|key = 0o7__55_44
-    ),
-  )
+  let maybe_tokens = try
+    @tokenize.tokenize(
+      (
+        #|key = 0o7__55_44
+      ),
+    )
+  catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   // according to spec, this should fail
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),

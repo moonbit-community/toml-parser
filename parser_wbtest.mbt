@@ -176,7 +176,12 @@ test "parse_dotted_key - error cases" {
   // Test error when no key is found
   let tokens = @tokenize.tokenize("=")
   let parser = Parser::new(tokens)
-  guard (try? parser.parse_dotted_key()) is Err(err) else {
+  guard (try parser.parse_dotted_key() catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    })
+    is Err(err) else {
     fail("Expected error but got success")
   }
   debug_inspect(
@@ -196,7 +201,12 @@ test "parse_dotted_key - error after dot" {
   // Test error when dot is followed by invalid token
   let tokens = @tokenize.tokenize("key.=")
   let parser = Parser::new(tokens)
-  guard (try? parser.parse_dotted_key()) is Err(result) else {
+  guard (try parser.parse_dotted_key() catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    })
+    is Err(result) else {
     fail("Expected error but got success")
   }
   debug_inspect(

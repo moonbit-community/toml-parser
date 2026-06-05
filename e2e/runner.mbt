@@ -46,7 +46,11 @@ pub fn run_single_valid_test(toml_path : String) -> String? raise @fs.IOError {
   let expected : Json = @json.parse(expected_json_str) catch {
     e => return Some("\{toml_path}: failed to parse expected JSON: \{e}")
   }
-  let parsed = try? @toml.parse(toml_content)
+  let parsed = try @toml.parse(toml_content) catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   match parsed {
     Err(e) => Some("[PARSE-ERROR] \{toml_path}: \{e}")
     Ok(value) => {
@@ -72,7 +76,11 @@ pub fn run_single_invalid_test(toml_path : String) -> String? raise @fs.IOError 
     // Non-UTF-8 file: parser would reject this, count as pass
     _ => return None
   }
-  let parsed = try? @toml.parse(toml_content)
+  let parsed = try @toml.parse(toml_content) catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   match parsed {
     Ok(_) => Some("[PASS-BUT-SHOULD-FAIL] \{toml_path}")
     Err(_) => None
@@ -208,8 +216,16 @@ fn float_values_equal(a : Map[String, Json], b : Map[String, Json]) -> Bool {
     return va_neg_zero == vb_neg_zero
   }
   // Parse and compare numerically
-  let fa = try? @string.parse_double(va)
-  let fb = try? @string.parse_double(vb)
+  let fa = try @string.parse_double(va) catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
+  let fb = try @string.parse_double(vb) catch {
+    err => Err(err)
+  } noraise {
+    value => Ok(value)
+  }
   match (fa, fb) {
     (Ok(a), Ok(b)) => a == b
     _ => false

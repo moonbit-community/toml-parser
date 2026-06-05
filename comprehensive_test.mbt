@@ -652,7 +652,11 @@ test "inline table error locations" {
 
   // Test 5: Invalid syntax after comma
   debug_inspect(
-    try? @toml.parse("table = {key1 = \"val1\", }"),
+    try @toml.parse("table = {key1 = \"val1\", }") catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "table": TomlTable({ "key1": TomlString("val1") }) }))
     ),
@@ -972,7 +976,11 @@ test "newline significate" {
     #|]  
     #|
   debug_inspect(
-    try? @toml.parse(data3),
+    try @toml.parse(data3) catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
       #|Ok(TomlTable({ "x": TomlArray([TomlInteger(1), TomlInteger(2)]) }))
     ),
