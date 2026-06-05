@@ -61,7 +61,7 @@ async test "valid toml-test suite" {
 ///|
 async test "invalid toml-test suite" {
   let files : Array[String] = []
-  collect_toml_files("e2e/testdata/invalid", files)
+  @e2e.collect_toml_files("e2e/testdata/invalid", files)
   files.sort()
   let mut passed = 0
   let mut failed = 0
