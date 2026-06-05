@@ -4,11 +4,9 @@ import {
   "moonbitlang/core/json",
   "moonbitlang/core/encoding/utf8",
   "moonbitlang/core/string",
-  "moonbitlang/async",
 }
 
 import {
   "bobzhang/toml-e2e" @e2e,
+  "moonbitlang/async",
 } for "test"
-
-warnings = "-unused_package"
