@@ -9,7 +9,7 @@ fn capped_size(size : Int, cap : Int) -> Int {
 
 ///|
 fn string_from_parts(head : Char, tail : Array[Char]) -> String {
-  let builder = StringBuilder::new()
+  let builder = StringBuilder()
   builder.write_char(head)
   for ch in tail {
     builder.write_char(ch)
@@ -229,10 +229,7 @@ fn time_string_gen() -> @qc.Gen[String] {
           @qc.char_range('0', '9')
           .array_with_size(len)
           .fmap(fn(chars) {
-            let builder = chars.fold(init=StringBuilder::new(), fn(
-              builder,
-              ch,
-            ) {
+            let builder = chars.fold(init=StringBuilder(), fn(builder, ch) {
               builder.write_char(ch)
               builder
             })

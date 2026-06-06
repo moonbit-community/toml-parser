@@ -172,7 +172,7 @@ fn @lexer.Lexer::read_unicode_8_escape(self : @lexer.Lexer) -> Char raise {
 /// Parse a basic string (double quotes) with escape sequences
 fn @lexer.Lexer::read_basic_string(self : @lexer.Lexer) -> String raise {
   self.advance() // consume opening quote
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   let next_view = for view = self.view() {
     match view {
       ['"', .. rest] => break rest // exit
@@ -261,7 +261,7 @@ fn @lexer.Lexer::read_basic_string(self : @lexer.Lexer) -> String raise {
 /// Parse a literal string (single quotes) without escape sequences
 fn @lexer.Lexer::read_literal_string(self : @lexer.Lexer) -> String raise {
   self.advance() // consume opening quote
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   let next = for view = self.view() {
     match view {
       ['\'', .. rest] => break rest
@@ -291,7 +291,7 @@ fn @lexer.Lexer::read_multiline_basic_string(
   self : @lexer.Lexer,
 ) -> String raise {
   self.skip_single_newline()
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   for view = self.view() {
     match view {
       [.. "\"\"\"\"\"", .. rest] => {
@@ -456,7 +456,7 @@ fn @lexer.Lexer::read_multiline_literal_string(
     }
     _ => ()
   }
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   for view = self.view() {
     match view {
       [.. "'''''", .. rest] => {
@@ -757,7 +757,7 @@ fn @lexer.Lexer::read_number_with_loc(
   start_pos : @lexer.Position,
   has_sign? : Bool = false,
 ) -> Token raise {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   if is_negative {
     sb.write_char('-')
   }
@@ -806,7 +806,7 @@ fn @lexer.Lexer::read_number_with_loc(
     }
   }
   // Read digits
-  let raw = StringBuilder::new()
+  let raw = StringBuilder()
   if is_negative {
     raw.write_char('-')
   }

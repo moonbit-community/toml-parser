@@ -1,7 +1,7 @@
 ///|
 /// Helper function to escape strings according to TOML spec
 fn escape_toml_string(s : String) -> String {
-  let result = StringBuilder::new()
+  let result = StringBuilder()
   for char in s {
     match char {
       '\b' => result <+ "\\b"
@@ -16,7 +16,7 @@ fn escape_toml_string(s : String) -> String {
         result <+ "\\u"
         let code = c.to_int()
         // Format as 4-digit hex manually
-        let hex = StringBuilder::new()
+        let hex = StringBuilder()
         for i = 3; i >= 0; i = i - 1 {
           let digit = (code >> (i * 4)) & 0xF
           if digit < 10 {
@@ -112,7 +112,7 @@ fn should_format_inline(arr : Array[TomlValue]) -> Bool {
 ///|
 /// Convert a TomlValue to its string representation in TOML format
 pub fn TomlValue::to_string(self : TomlValue) -> String {
-  let result = StringBuilder::new()
+  let result = StringBuilder()
   self.write_toml(result, [])
   result.to_string()
 }

@@ -444,8 +444,8 @@ fn swap_values(a : Ref[Int], b : Ref[Int]) -> Unit {
 
 ///|
 test "ref swap" {
-  let x : Ref[Int] = Ref::new(10)
-  let y : Ref[Int] = Ref::new(20)
+  let x : Ref[Int] = Ref(10)
+  let y : Ref[Int] = Ref(20)
   swap_values(x, y) // x.val is now 20, y.val is now 10
 }
 ```
