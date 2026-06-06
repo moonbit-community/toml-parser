@@ -12,8 +12,6 @@ pub fn parse(String) -> TomlValue raise
 // Errors
 
 // Types and methods
-type Parser derive(@debug.Debug)
-
 pub(all) enum TomlValue {
   TomlString(String)
   TomlInteger(Int64)

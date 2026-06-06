@@ -26,10 +26,10 @@ pub fn TomlValue::datetime_info(self : TomlValue) -> (String, String)? {
 
 ///|
 /// Parser state (will implement methods later)
-struct Parser {
+priv struct Parser {
   tokens : Array[@tokenize.Token]
   mut position : Int
-} derive(Debug)
+}
 
 ///|
 /// Return a view of the tokens from the current position to end of input.
