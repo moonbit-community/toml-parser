@@ -47,7 +47,7 @@ async test "valid toml-test suite" {
     "\{passed} passed, \{failed} failed out of \{passed + failed} valid tests",
   )
   if failed > 0 {
-    let msg = StringBuilder::new()
+    let msg = StringBuilder()
     msg <+ "\{failed} of \{passed + failed} valid tests failed:\n"
     for f in failures {
       msg <+ "  \{f}\n"
@@ -79,7 +79,7 @@ async test "invalid toml-test suite" {
     "\{passed} passed, \{failed} failed out of \{passed + failed} invalid tests",
   )
   if failed > 0 {
-    let msg = StringBuilder::new()
+    let msg = StringBuilder()
     msg <+ "\{failed} of \{passed + failed} invalid tests failed:\n"
     for f in failures {
       msg <+ "  \{f}\n"

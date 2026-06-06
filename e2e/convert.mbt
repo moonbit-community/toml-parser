@@ -37,7 +37,7 @@ fn typed_value(ty : String, value : String) -> Json {
 /// Normalize datetime: uppercase T separator, Z suffix, ensure seconds present,
 /// and pad fractional seconds to 3 digits.
 fn normalize_datetime(s : String) -> String {
-  let buf = StringBuilder::new()
+  let buf = StringBuilder()
   for c in s {
     match c {
       't' | ' ' => buf.write_char('T')
