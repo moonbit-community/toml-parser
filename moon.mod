@@ -1,9 +1,9 @@
 name = "bobzhang/toml"
 
-version = "0.4.0"
+version = "0.4.1"
 
 import {
-  "bobzhang/lexer@0.1.3",
+  "bobzhang/lexer@0.2.0",
   "moonbitlang/quickcheck@0.11.2",
   "moonbitlang/x@0.4.41",
 }
