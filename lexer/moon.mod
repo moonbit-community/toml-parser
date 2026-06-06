@@ -1,10 +1,10 @@
 name = "bobzhang/lexer"
 
-version = "0.1.3"
+version = "0.2.0"
 
 readme = "README.md"
 
-repository = "https://github.com/bobzhang/bob"
+repository = "https://github.com/moonbit-community/toml-parser"
 
 license = "Apache-2.0"
 
