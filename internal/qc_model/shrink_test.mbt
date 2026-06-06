@@ -49,8 +49,8 @@ fn shrink_simple_value(
 
 ///|
 fn shrink_datetime_values(
-  values : Array[@tokenize.TomlDateTime],
-) -> Iter[Array[@tokenize.TomlDateTime]] {
+  values : Array[@datetime.TomlDateTime],
+) -> Iter[Array[@datetime.TomlDateTime]] {
   Array::makei(values.length(), fn(i) {
     let next = values.copy()
     next.remove(i) |> ignore

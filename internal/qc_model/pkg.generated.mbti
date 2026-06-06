@@ -3,7 +3,7 @@ package "bobzhang/toml/internal/qc_model"
 
 import {
   "bobzhang/toml",
-  "bobzhang/toml/internal/tokenize",
+  "bobzhang/toml/datetime",
   "moonbitlang/core/debug",
 }
 
@@ -31,8 +31,8 @@ pub(all) enum SimpleValue {
   SString(String)
   SInteger(Int64)
   SBoolean(Bool)
-  SDateTime(@tokenize.TomlDateTime)
-  SDateTimeArray(Array[@tokenize.TomlDateTime])
+  SDateTime(@datetime.TomlDateTime)
+  SDateTimeArray(Array[@datetime.TomlDateTime])
   SEmptyArray
   SStringArray(Array[String])
   SIntegerArray(Array[Int64])

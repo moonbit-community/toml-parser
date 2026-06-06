@@ -1,14 +1,14 @@
 ///|
 /// Extended datetime tests for improved coverage
 test "test TomlDateTime types and equality" {
-  let offset_dt1 = @tokenize.OffsetDateTime("1979-05-27T07:32:00Z")
-  let offset_dt2 = @tokenize.OffsetDateTime("1979-05-27T07:32:00Z")
-  let offset_dt3 = @tokenize.OffsetDateTime("1980-05-27T07:32:00Z")
+  let offset_dt1 = @datetime.OffsetDateTime("1979-05-27T07:32:00Z")
+  let offset_dt2 = @datetime.OffsetDateTime("1979-05-27T07:32:00Z")
+  let offset_dt3 = @datetime.OffsetDateTime("1980-05-27T07:32:00Z")
   debug_inspect(offset_dt1 == offset_dt2, content="true")
   debug_inspect(offset_dt1 == offset_dt3, content="false")
-  let local_dt = @tokenize.LocalDateTime("1979-05-27T07:32:00")
-  let local_date = @tokenize.LocalDate("1979-05-27")
-  let local_time = @tokenize.LocalTime("07:32:00")
+  let local_dt = @datetime.LocalDateTime("1979-05-27T07:32:00")
+  let local_date = @datetime.LocalDate("1979-05-27")
+  let local_time = @datetime.LocalTime("07:32:00")
   debug_inspect(offset_dt1 == local_dt, content="false")
   debug_inspect(local_dt == local_date, content="false")
   debug_inspect(local_date == local_time, content="false")
@@ -16,7 +16,7 @@ test "test TomlDateTime types and equality" {
 
 ///|
 test "test datetime token debug representation" {
-  let offset_dt = @tokenize.OffsetDateTime("1979-05-27T07:32:00+01:00")
+  let offset_dt = @datetime.OffsetDateTime("1979-05-27T07:32:00+01:00")
   let token = @tokenize.DateTimeToken(offset_dt, loc=@tokenize.default_loc())
 
   // Test that datetime token has a debug representation
@@ -33,11 +33,11 @@ test "test datetime token debug representation" {
 
 ///|
 test "test different datetime formats" {
-  let local_dt = @tokenize.LocalDateTime("1979-05-27T07:32:00")
-  let local_date = @tokenize.LocalDate("1979-05-27")
-  let local_time = @tokenize.LocalTime("07:32:00")
-  let offset_dt_z = @tokenize.OffsetDateTime("1979-05-27T07:32:00Z")
-  let offset_dt_plus = @tokenize.OffsetDateTime("1979-05-27T07:32:00+01:00")
+  let local_dt = @datetime.LocalDateTime("1979-05-27T07:32:00")
+  let local_date = @datetime.LocalDate("1979-05-27")
+  let local_time = @datetime.LocalTime("07:32:00")
+  let offset_dt_z = @datetime.OffsetDateTime("1979-05-27T07:32:00Z")
+  let offset_dt_plus = @datetime.OffsetDateTime("1979-05-27T07:32:00+01:00")
 
   // Test Show implementation
   debug_inspect(local_dt.to_string().contains("LocalDateTime"), content="true")
@@ -55,7 +55,7 @@ test "test different datetime formats" {
 
 ///|
 test "test datetime token creation and usage" {
-  let dt = @tokenize.OffsetDateTime("2023-12-25T00:00:00Z")
+  let dt = @datetime.OffsetDateTime("2023-12-25T00:00:00Z")
   let loc = @tokenize.default_loc()
   let token = @tokenize.DateTimeToken(dt, loc~)
 

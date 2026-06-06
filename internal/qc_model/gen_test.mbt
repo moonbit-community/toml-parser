@@ -267,17 +267,17 @@ fn offset_suffix_gen() -> @qc.Gen[String] {
 }
 
 ///|
-fn local_date_gen() -> @qc.Gen[@tokenize.TomlDateTime] {
+fn local_date_gen() -> @qc.Gen[@datetime.TomlDateTime] {
   date_string_gen().fmap(fn(value) { LocalDate(value) })
 }
 
 ///|
-fn local_time_gen() -> @qc.Gen[@tokenize.TomlDateTime] {
+fn local_time_gen() -> @qc.Gen[@datetime.TomlDateTime] {
   time_string_gen().fmap(fn(value) { LocalTime(value) })
 }
 
 ///|
-fn local_datetime_gen() -> @qc.Gen[@tokenize.TomlDateTime] {
+fn local_datetime_gen() -> @qc.Gen[@datetime.TomlDateTime] {
   @qc.liftA2(
     fn(date : String, time : String) { LocalDateTime("\{date}T\{time}") },
     date_string_gen(),
@@ -286,7 +286,7 @@ fn local_datetime_gen() -> @qc.Gen[@tokenize.TomlDateTime] {
 }
 
 ///|
-fn offset_datetime_gen() -> @qc.Gen[@tokenize.TomlDateTime] {
+fn offset_datetime_gen() -> @qc.Gen[@datetime.TomlDateTime] {
   @qc.liftA3(
     fn(date : String, time : String, offset : String) {
       OffsetDateTime("\{date}T\{time}\{offset}")
@@ -298,7 +298,7 @@ fn offset_datetime_gen() -> @qc.Gen[@tokenize.TomlDateTime] {
 }
 
 ///|
-fn toml_datetime_gen() -> @qc.Gen[@tokenize.TomlDateTime] {
+fn toml_datetime_gen() -> @qc.Gen[@datetime.TomlDateTime] {
   @qc.frequency([
     (2U, local_date_gen()),
     (2U, local_time_gen()),

@@ -22,8 +22,8 @@ pub(all) enum SimpleValue {
   SString(String)
   SInteger(Int64)
   SBoolean(Bool)
-  SDateTime(@tokenize.TomlDateTime)
-  SDateTimeArray(Array[@tokenize.TomlDateTime])
+  SDateTime(@datetime.TomlDateTime)
+  SDateTimeArray(Array[@datetime.TomlDateTime])
   SEmptyArray
   SStringArray(Array[String])
   SIntegerArray(Array[Int64])
@@ -89,7 +89,7 @@ fn[A] collect_toml_array(
 }
 
 ///|
-fn project_datetime(value : @toml.TomlValue) -> @tokenize.TomlDateTime? {
+fn project_datetime(value : @toml.TomlValue) -> @datetime.TomlDateTime? {
   match value {
     TomlDateTime(dt) => Some(dt)
     _ => None
@@ -233,7 +233,7 @@ fn SimpleValue::contains_datetime(self : SimpleValue) -> Bool {
 }
 
 ///|
-fn datetime_has_fractional_seconds(datetime : @tokenize.TomlDateTime) -> Bool {
+fn datetime_has_fractional_seconds(datetime : @datetime.TomlDateTime) -> Bool {
   match datetime {
     OffsetDateTime(text) | LocalDateTime(text) | LocalTime(text) =>
       text.contains(".")
