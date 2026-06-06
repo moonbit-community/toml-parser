@@ -1,6 +1,6 @@
 name = "bobzhang/toml"
 
-version = "0.2.3"
+version = "0.3.0"
 
 import {
   "bobzhang/lexer@0.1.3",
@@ -18,4 +18,4 @@ keywords = [ "toml", "parser", "config" ]
 
 description = "A TOML parser implementation in MoonBit"
 
-warnings = "+unnecessary_annotation"
+warnings = "+a-unused_optional_argument-unused_default_value-missing_invariant-missing_reasoning-lexmatch_longest_match"
