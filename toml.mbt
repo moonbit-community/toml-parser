@@ -77,7 +77,7 @@ pub fn Parser::update_view(
 
 ///|
 /// Create a new parser
-pub fn Parser::new(tokens : Array[@tokenize.Token]) -> Parser {
+pub fn Parser::Parser(tokens : Array[@tokenize.Token]) -> Parser {
   { tokens, position: 0 }
 }
 

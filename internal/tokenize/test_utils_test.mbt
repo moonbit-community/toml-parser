@@ -45,7 +45,7 @@ test "verify lexer_expect_to_fail output" {
 
 ///|
 test "verify lexer_action_expect_to_fail output" {
-  let lexer = @lexer.Lexer::new(
+  let lexer = @lexer.Lexer::Lexer(
     (
       #|hello world
     ),

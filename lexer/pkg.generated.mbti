@@ -10,14 +10,16 @@ import {
 // Errors
 
 // Types and methods
-type Lexer
+pub struct Lexer {
+  // private fields
+}
+pub fn Lexer::Lexer(String) -> Self
 pub fn Lexer::advance(Self) -> Unit
 pub fn Lexer::error(Self, String) -> String
 pub fn Lexer::expect_char(Self, Char, msg? : String) -> Unit raise
 pub fn Lexer::expect_string(Self, String, msg? : String) -> Unit raise
 pub fn Lexer::get_loc(Self) -> Position
 pub fn Lexer::get_position(Self) -> Int
-pub fn Lexer::new(String) -> Self
 pub fn Lexer::new_line(Self) -> Unit
 pub fn Lexer::peek(Self) -> Char?
 pub fn Lexer::peek_charcode(Self) -> UInt16?

@@ -299,7 +299,7 @@ let header_defined_marker : String = "\u0000__header__"
 /// `Result[TomlValue, Error]` instead.
 pub fn parse(input : String) -> TomlValue raise {
   let tokens = @tokenize.tokenize(input)
-  let parser = Parser::new(tokens)
+  let parser = Parser::Parser(tokens)
   let main_table = {}
   for current_table = main_table {
     parser.skip_newlines()

@@ -595,7 +595,7 @@ fn @lexer.Lexer::read_octal_number(self : @lexer.Lexer) -> Int64 raise {
 
 ///|
 test {
-  let lexer = @lexer.Lexer::new(
+  let lexer = @lexer.Lexer::Lexer(
     (
       #|0o755
     ),
@@ -1129,7 +1129,7 @@ fn @lexer.Lexer::read_number(
 
 ///|
 test "read_number" {
-  let lexer = @lexer.Lexer::new("123")
+  let lexer = @lexer.Lexer::Lexer("123")
   debug_inspect(
     lexer.read_number(false),
     content=(
@@ -1345,7 +1345,7 @@ fn @lexer.Lexer::next_token(self : @lexer.Lexer) -> Token raise {
 ///|
 /// Tokenize entire input
 pub fn tokenize(input : String) -> Array[Token] raise {
-  let lexer = @lexer.Lexer::new(input)
+  let lexer = @lexer.Lexer::Lexer(input)
   let tokens = Array::new()
   for current_token = lexer.next_token() {
     match current_token {
@@ -1364,7 +1364,7 @@ pub fn tokenize(input : String) -> Array[Token] raise {
 ///|
 /// Test read_number
 test "read_number 2" {
-  let lexer = @lexer.Lexer::new("123")
+  let lexer = @lexer.Lexer::Lexer("123")
   debug_inspect(
     lexer.read_number(false),
     content=(
@@ -1379,7 +1379,7 @@ test "read_number 2" {
 ///|
 /// Test Unicode escape sequences
 test "unicode escape sequences" {
-  let lexer1 = @lexer.Lexer::new("\"\\u0041\"") // 'A'
+  let lexer1 = @lexer.Lexer::Lexer("\"\\u0041\"") // 'A'
   let result1 = lexer1.read_basic_string()
   debug_inspect(
     result1,
@@ -1387,7 +1387,7 @@ test "unicode escape sequences" {
       #|"A"
     ),
   )
-  let lexer2 = @lexer.Lexer::new("\"\\U00000041\"") // 'A'
+  let lexer2 = @lexer.Lexer::Lexer("\"\\U00000041\"") // 'A'
   let result2 = lexer2.read_basic_string()
   debug_inspect(
     result2,
@@ -1400,7 +1400,7 @@ test "unicode escape sequences" {
 ///|
 /// Test multiline basic string
 test "multiline basic string" {
-  let lexer = @lexer.Lexer::new("\"\"\"line1\nline2\"\"\"")
+  let lexer = @lexer.Lexer::Lexer("\"\"\"line1\nline2\"\"\"")
   lexer.expect_string("\"\"\"")
   let result = lexer.read_multiline_basic_string()
   debug_inspect(
@@ -1414,7 +1414,7 @@ test "multiline basic string" {
 ///|
 /// Test multiline literal string
 test "multiline literal string" {
-  let lexer = @lexer.Lexer::new("'''line1\nline2'''")
+  let lexer = @lexer.Lexer::Lexer("'''line1\nline2'''")
   lexer.expect_string("'''")
   let result = lexer.read_multiline_literal_string()
   debug_inspect(
@@ -1428,7 +1428,7 @@ test "multiline literal string" {
 ///|
 /// Test line ending backslash in multiline string
 test "line ending backslash" {
-  let lexer = @lexer.Lexer::new("\"\"\"line1\\\n   line2\"\"\"")
+  let lexer = @lexer.Lexer::Lexer("\"\"\"line1\\\n   line2\"\"\"")
   lexer.expect_string("\"\"\"")
   let result = lexer.read_multiline_basic_string()
   debug_inspect(
@@ -1442,7 +1442,7 @@ test "line ending backslash" {
 ///|
 /// Test basic string parsing
 test "basic string parsing" {
-  let lexer = @lexer.Lexer::new("\"Hello, \\\"world\\\"!\"")
+  let lexer = @lexer.Lexer::Lexer("\"Hello, \\\"world\\\"!\"")
   let result = lexer.read_basic_string()
   debug_inspect(
     result,
@@ -1455,7 +1455,7 @@ test "basic string parsing" {
 ///|
 /// Test literal string parsing  
 test "literal string parsing" {
-  let lexer = @lexer.Lexer::new("'Hello, world!'")
+  let lexer = @lexer.Lexer::Lexer("'Hello, world!'")
   let result = lexer.read_literal_string()
   debug_inspect(
     result,
@@ -1468,7 +1468,7 @@ test "literal string parsing" {
 ///|
 /// Test identifier parsing
 test "identifier parsing" {
-  let lexer = @lexer.Lexer::new("hello-world_123")
+  let lexer = @lexer.Lexer::Lexer("hello-world_123")
   let result = lexer.read_identifier()
   debug_inspect(
     result,
@@ -1481,7 +1481,7 @@ test "identifier parsing" {
 ///|
 /// Test hex number parsing
 test "hex number parsing" {
-  let lexer = @lexer.Lexer::new("0xDEADBEEF")
+  let lexer = @lexer.Lexer::Lexer("0xDEADBEEF")
   let result = lexer.read_hex_number()
   debug_inspect(result, content="3735928559")
 }
@@ -1489,7 +1489,7 @@ test "hex number parsing" {
 ///|
 /// Test octal number parsing  
 test "octal number parsing" {
-  let lexer = @lexer.Lexer::new("0o755")
+  let lexer = @lexer.Lexer::Lexer("0o755")
   let result = lexer.read_octal_number()
   debug_inspect(result, content="493")
 }
@@ -1497,7 +1497,7 @@ test "octal number parsing" {
 ///|
 /// Test binary number parsing
 test "binary number parsing" {
-  let lexer = @lexer.Lexer::new("0b1010")
+  let lexer = @lexer.Lexer::Lexer("0b1010")
   let result = lexer.read_binary_number()
   debug_inspect(result, content="10")
 }

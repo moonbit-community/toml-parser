@@ -727,7 +727,7 @@ test "test dash-starting identifier tokenized before parser validation" {
 ///|
 /// Test lexer expect_string error cases
 test "lexer expect_string failure" {
-  let lexer = @lexer.Lexer::new(
+  let lexer = @lexer.Lexer::Lexer(
     (
       #|hello world
     ),
