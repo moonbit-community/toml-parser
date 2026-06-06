@@ -12,13 +12,7 @@ pub fn parse(String) -> TomlValue raise
 // Errors
 
 // Types and methods
-pub struct Parser {
-  tokens : Array[@tokenize.Token]
-  mut position : Int
-} derive(@debug.Debug)
-pub fn Parser::Parser(Array[@tokenize.Token]) -> Self
-pub fn Parser::update_view(Self, ArrayView[@tokenize.Token]) -> Unit
-pub fn Parser::view(Self, skip_newlines? : Bool) -> ArrayView[@tokenize.Token]
+type Parser derive(@debug.Debug)
 
 pub(all) enum TomlValue {
   TomlString(String)

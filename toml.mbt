@@ -26,7 +26,7 @@ pub fn TomlValue::datetime_info(self : TomlValue) -> (String, String)? {
 
 ///|
 /// Parser state (will implement methods later)
-pub struct Parser {
+struct Parser {
   tokens : Array[@tokenize.Token]
   mut position : Int
 } derive(Debug)
@@ -39,7 +39,7 @@ pub struct Parser {
 /// breaks are insignificant (e.g. between top-level statements). The
 /// parser's position is not advanced — callers commit progress by passing
 /// the consumed tail back through `update_view`.
-pub fn Parser::view(
+fn Parser::view(
   self : Self,
   skip_newlines? : Bool = false,
 ) -> ArrayView[@tokenize.Token] {
@@ -67,7 +67,7 @@ fn[T] ArrayView::start(self : ArrayView[T]) -> Int = "%arrayview.start"
 /// from that point. The new position is read from the view's start offset
 /// in the underlying token array, so the input must be a slice of
 /// `self.tokens`.
-pub fn Parser::update_view(
+fn Parser::update_view(
   self : Parser,
   view : ArrayView[@tokenize.Token],
 ) -> Unit {
@@ -77,8 +77,22 @@ pub fn Parser::update_view(
 
 ///|
 /// Create a new parser
-pub fn Parser::Parser(tokens : Array[@tokenize.Token]) -> Parser {
+fn Parser::Parser(tokens : Array[@tokenize.Token]) -> Parser {
   { tokens, position: 0 }
+}
+
+///|
+/// Tests for parser creation
+test "parser creation" {
+  let loc = @tokenize.default_loc()
+  let tokens = [
+    @tokenize.Identifier("key", loc~),
+    Equals(loc~),
+    StringToken("value", loc~, multiline=false),
+  ]
+  let parser = Parser::Parser(tokens)
+  debug_inspect(parser.position, content="0")
+  debug_inspect(parser.tokens.length(), content="3")
 }
 
 ///|
