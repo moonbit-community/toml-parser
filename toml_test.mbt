@@ -336,7 +336,7 @@ test "parser creation" {
     Equals(loc~),
     StringToken("value", loc~, multiline=false),
   ]
-  let parser = @toml.Parser::new(tokens)
+  let parser = @toml.Parser::Parser(tokens)
   debug_inspect(parser.position, content="0")
   debug_inspect(parser.tokens.length(), content="3")
 }

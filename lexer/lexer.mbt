@@ -19,7 +19,7 @@ struct Lexer {
 /// Get a view of the input string
 /// # Example:
 /// ```
-/// let lexer = Lexer::new("Hello, world!")
+/// let lexer = Lexer::Lexer("Hello, world!")
 /// lexer.advance()
 /// lexer.advance()
 /// inspect(lexer.view(), content="llo, world!")
@@ -32,7 +32,7 @@ pub fn Lexer::view(self : Lexer) -> StringView {
 /// Update the lexer's position and column based on a new view
 /// # Example:
 /// ```
-/// let lexer = Lexer::new("😈x中world!")
+/// let lexer = Lexer::Lexer("😈x中world!")
 /// match lexer.view() {
 ///  [.."😈x", .. rest] => lexer.update_view(rest)
 ///  _ => ()
@@ -47,14 +47,14 @@ pub fn Lexer::update_view(self : Lexer, view : StringView) -> Unit {
 
 ///|
 /// Create a new lexer
-pub fn Lexer::new(input : String) -> Lexer {
+pub fn Lexer::Lexer(input : String) -> Lexer {
   { input, position: 0, line: 1, column: 1 }
 }
 
 ///|
 /// Tests for lexer creation
 test "lexer creation" {
-  let lexer = Lexer::new("key = value")
+  let lexer = Lexer::Lexer("key = value")
   inspect(lexer.input, content="key = value")
   inspect(lexer.position, content="0")
   inspect(lexer.line, content="1")
@@ -66,7 +66,7 @@ test "lexer creation" {
 /// Note: This method does not skip '\n' characters as those are significant in TOML
 /// # Example:
 /// ```
-/// let lexer = Lexer::new("  \t\rHello, world!")
+/// let lexer = Lexer::Lexer("  \t\rHello, world!")
 /// lexer.skip_whitespace()
 /// inspect(lexer.peek(), content="Some('H')")
 /// ```
@@ -102,7 +102,7 @@ pub fn Lexer::skip_single_newline(self : Lexer) -> Unit {
 /// Get current character without advancing
 /// # Example:
 /// ```
-/// let lexer = Lexer::new("Hello, world!")
+/// let lexer = Lexer::Lexer("Hello, world!")
 /// inspect(lexer.peek(), content="Some('H')")
 /// lexer.advance()
 /// inspect(lexer.peek(), content="Some('e')")
@@ -222,7 +222,7 @@ pub fn Lexer::advance(self : Lexer) -> Unit {
 ///|
 /// Test position tracking with explicit new_line() API
 test "position tracking" {
-  let lexer = Lexer::new("hello\nworld")
+  let lexer = Lexer::Lexer("hello\nworld")
   inspect(lexer.get_loc().line, content="1")
   inspect(lexer.get_loc().column, content="1")
   lexer.advance() // h
@@ -244,7 +244,7 @@ test "position tracking" {
 ///|
 /// Test skip whitespace with position tracking
 test "skip whitespace with position tracking" {
-  let lexer = Lexer::new("  \t\rH")
+  let lexer = Lexer::Lexer("  \t\rH")
   lexer.skip_whitespace()
   inspect(lexer.get_loc().column, content="5") // moved past 4 whitespace chars
   debug_inspect(lexer.peek(), content="Some('H')")
@@ -253,7 +253,7 @@ test "skip whitespace with position tracking" {
 ///|
 /// Test explicit new_line API
 test "explicit new_line API" {
-  let lexer = Lexer::new("test")
+  let lexer = Lexer::Lexer("test")
   inspect(lexer.get_loc().line, content="1")
   inspect(lexer.get_loc().column, content="1")
   lexer.new_line()
