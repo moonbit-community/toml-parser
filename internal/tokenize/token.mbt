@@ -19,7 +19,7 @@ pub(all) enum Token {
   IntegerToken(Int64, loc~ : Loc)
   FloatToken(Double, loc~ : Loc, raw~ : String)
   BooleanToken(Bool, loc~ : Loc)
-  DateTimeToken(TomlDateTime, loc~ : Loc)
+  DateTimeToken(@datetime.TomlDateTime, loc~ : Loc)
 
   // Symbols
   LeftBracket(loc~ : Loc) // [
@@ -37,36 +37,6 @@ pub(all) enum Token {
   Newline(loc~ : Loc)
   EOF(loc~ : Loc)
 } derive(Eq, Debug)
-
-///|
-/// DateTime type for TOML datetime values
-pub(all) enum TomlDateTime {
-  OffsetDateTime(String) // e.g., "1979-05-27T07:32:00Z" or "1979-05-27T07:32:00+01:00"
-  LocalDateTime(String) // e.g., "1979-05-27T07:32:00"
-  LocalDate(String) // e.g., "1979-05-27"
-  LocalTime(String) // e.g., "07:32:00"
-} derive(Eq, Debug)
-
-///|
-/// Show impl for TomlDateTime - provides human-readable format
-pub impl Show for TomlDateTime with fn output(self, logger) {
-  match self {
-    OffsetDateTime(s) =>
-      logger <+
-        $|OffsetDateTime("\{s}")
-    LocalDateTime(s) =>
-      logger <+
-        $|LocalDateTime("\{s}")
-    LocalDate(s) =>
-      logger <+
-        $|LocalDate("\{s}")
-    LocalTime(s) =>
-      logger <+
-        $|LocalTime("\{s}")
-  }
-}
-
-///|
 
 ///|
 /// Check if two locations are adjacent (end of first equals start of second).

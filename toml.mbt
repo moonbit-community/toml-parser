@@ -7,8 +7,13 @@ pub(all) enum TomlValue {
   TomlBoolean(Bool)
   TomlArray(Array[TomlValue])
   TomlTable(Map[String, TomlValue])
-  TomlDateTime(@tokenize.TomlDateTime)
+  TomlDateTime(@datetime.TomlDateTime)
 } derive(Eq, Debug)
+
+///|
+/// Re-export `TomlDateTime` so consumers see the type as `@toml.TomlDateTime`
+/// instead of having to import the `datetime` subpackage directly.
+pub using @datetime {type TomlDateTime}
 
 ///|
 /// Extract datetime variant name and value string from a TomlDateTime value.

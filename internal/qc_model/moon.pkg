@@ -1,6 +1,6 @@
 import {
-  "bobzhang/toml/internal/tokenize",
   "bobzhang/toml",
+  "bobzhang/toml/datetime",
 }
 
 import {

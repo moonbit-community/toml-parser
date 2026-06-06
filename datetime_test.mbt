@@ -230,7 +230,7 @@ test "datetime format edge cases" {
 ///|
 /// Test datetime serialization and deserialization consistency
 test "datetime serialization consistency" {
-  let original_offset = @tokenize.OffsetDateTime("1979-05-27T07:32:00Z")
+  let original_offset = @datetime.OffsetDateTime("1979-05-27T07:32:00Z")
   let toml_value = @toml.TomlDateTime(original_offset)
   let serialized = toml_value.to_string()
 
