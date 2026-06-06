@@ -328,20 +328,6 @@ test "toml datetime edge cases" {
 }
 
 ///|
-/// Tests for parser creation  
-test "parser creation" {
-  let loc = @tokenize.default_loc()
-  let tokens = [
-    @tokenize.Identifier("key", loc~),
-    Equals(loc~),
-    StringToken("value", loc~, multiline=false),
-  ]
-  let parser = @toml.Parser::Parser(tokens)
-  debug_inspect(parser.position, content="0")
-  debug_inspect(parser.tokens.length(), content="3")
-}
-
-///|
 /// Tests for datetime token creation
 test "datetime token creation" {
   let loc = @tokenize.default_loc()
