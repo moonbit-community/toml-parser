@@ -7,7 +7,7 @@ pub(all) enum TomlValue {
   TomlBoolean(Bool)
   TomlArray(Array[TomlValue])
   TomlTable(Map[String, TomlValue])
-  TomlDateTime(@datetime.TomlDateTime)
+  TomlDateTime(TomlDateTime)
 } derive(Eq, Debug)
 
 ///|
