@@ -687,26 +687,27 @@ fn @lexer.Lexer::read_datetime_with_loc(
     // LocalTime: HH:MM[:SS[.fff]] - must check first (2-digit start vs 4-digit)
     (("[0-9]{2}:[0-9]{2}" "(:[0-9]{2})?(\.[0-9]+)?") as time, rest) => {
       self.update_view(rest)
-      let time_str = time.to_owned()
-      validate_time(time_str)
+      validate_time(time)
       let end_pos = self.get_loc()
-      DateTimeToken(LocalTime(time_str), loc=make_loc(start_pos, end_pos))
+      DateTimeToken(
+        LocalTime(time.to_owned()),
+        loc=make_loc(start_pos, end_pos),
+      )
     }
     // Date-based patterns: lex YYYY-MM-DD first, then check continuation
     ("[0-9]{4}-[0-9]{2}-[0-9]{2}" as date, rest) => {
       self.update_view(rest)
-      let date_str = date.to_owned()
-      validate_date(date_str)
+      validate_date(date)
       // Check for time component: T/t/space followed by HH:MM[:SS[.fff]]
       if self.view() =~ (
           (re"^" + re"[Tt ][0-9]{2}:[0-9]{2}" + re"(:[0-9]{2})?(\.[0-9]+)?") as time_with_t,
           after=rest2,
         ) {
         self.update_view(rest2)
-        let time_part = time_with_t.to_owned()
-        // Validate time portion (skip the T/t/space separator)
-        validate_time(time_part[1:].to_owned())
-        let datetime_str = "\{date_str}\{time_part}"
+        // Validate time portion (skip the T/t/space separator) — view slice
+        // avoids allocating a copy just for validation.
+        validate_time(time_with_t[1:])
+        let datetime_str = "\{date}\{time_with_t}"
         // Check for timezone: Z or ±HH:MM
         if self.view() =~ (re"^" + re"[Zz]", after=rest3) {
           self.update_view(rest3)
@@ -720,11 +721,10 @@ fn @lexer.Lexer::read_datetime_with_loc(
             after=rest3,
           ) {
           self.update_view(rest3)
-          let offset_str = offset.to_owned()
-          validate_timezone_offset(offset_str)
+          validate_timezone_offset(offset)
           let end_pos = self.get_loc()
           DateTimeToken(
-            OffsetDateTime("\{datetime_str}\{offset_str}"),
+            OffsetDateTime("\{datetime_str}\{offset}"),
             loc=make_loc(start_pos, end_pos),
           )
         } else {
@@ -738,7 +738,10 @@ fn @lexer.Lexer::read_datetime_with_loc(
       } else {
         // Just date, no time component - LocalDate
         let end_pos = self.get_loc()
-        DateTimeToken(LocalDate(date_str), loc=make_loc(start_pos, end_pos))
+        DateTimeToken(
+          LocalDate(date.to_owned()),
+          loc=make_loc(start_pos, end_pos),
+        )
       }
     }
     _ => {
@@ -999,7 +1002,7 @@ fn validate_integer_string(raw : String) -> Unit raise {
 
 ///|
 /// Validate a date string YYYY-MM-DD.
-fn validate_date(s : String) -> Unit raise {
+fn validate_date(s : StringView) -> Unit raise {
   // s is "YYYY-MM-DD" (10 chars)
   if s.length() < 10 {
     raise Failure::Failure("Invalid date: '\{s}'")
@@ -1023,7 +1026,7 @@ fn validate_date(s : String) -> Unit raise {
 
 ///|
 /// Validate a time string HH:MM or HH:MM:SS[.fff].
-fn validate_time(s : String) -> Unit raise {
+fn validate_time(s : StringView) -> Unit raise {
   if s.length() < 5 {
     raise Failure::Failure("Invalid time: '\{s}'")
   }
@@ -1046,7 +1049,7 @@ fn validate_time(s : String) -> Unit raise {
 
 ///|
 /// Parse an integer from a substring.
-fn parse_int_substr(s : String, start : Int, end : Int) -> Int {
+fn parse_int_substr(s : StringView, start : Int, end : Int) -> Int {
   let mut result = 0
   for i = start; i < end && i < s.length(); i = i + 1 {
     let c = s[i]
@@ -1070,7 +1073,7 @@ fn days_in_month(year : Int, month : Int) -> Int {
 
 ///|
 /// Validate timezone offset ±HH:MM (hour 0-23, minute 0-59).
-fn validate_timezone_offset(s : String) -> Unit raise {
+fn validate_timezone_offset(s : StringView) -> Unit raise {
   // s is like "+25:00" or "-12:60" (6 chars)
   let hour = parse_int_substr(s, 1, 3)
   let minute = parse_int_substr(s, 4, 6)
