@@ -10,9 +10,7 @@ import {
 // Errors
 
 // Types and methods
-pub struct Lexer {
-  // private fields
-}
+type Lexer
 pub fn Lexer::Lexer(String) -> Self
 pub fn Lexer::advance(Self) -> Unit
 pub fn Lexer::error(Self, String) -> String
