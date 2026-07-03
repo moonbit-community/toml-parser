@@ -100,7 +100,7 @@ fn create_array_of_tables(
   let mut current_table = root_table
 
   // Navigate to the parent of the final key
-  for key in path[:-1] {
+  for key in path[:path.length() - 1] {
     match current_table.get(key) {
       Some(TomlTable(existing_table)) => {
         if existing_table.contains("\u0000__inline__") {
