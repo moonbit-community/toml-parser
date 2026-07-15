@@ -20,6 +20,10 @@ pub(all) struct Loc {
   end : @lexer.Position
 } derive(Eq, @debug.Debug)
 pub fn Loc::adjacent(Self, Self) -> Bool
+pub fn Loc::equal(Self, Self) -> Bool
+pub fn Loc::not_equal(Self, Self) -> Bool
+#as_free_fn
+pub fn Loc::to_repr(Self) -> @debug.Repr
 
 pub(all) enum Token {
   StringToken(String, loc~ : Loc, multiline~ : Bool)
@@ -38,7 +42,11 @@ pub(all) enum Token {
   Newline(loc~ : Loc)
   EOF(loc~ : Loc)
 } derive(Eq, @debug.Debug)
+pub fn Token::equal(Self, Self) -> Bool
 pub fn Token::loc(Self) -> Loc
+pub fn Token::not_equal(Self, Self) -> Bool
+#as_free_fn
+pub fn Token::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 

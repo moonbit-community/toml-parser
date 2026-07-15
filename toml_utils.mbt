@@ -47,24 +47,32 @@ priv suberror TableConflicts {
   ExpectedArray(String, TomlValue)
   DuplicateKey(String)
   InlineTableImmutable(String)
-} derive(Debug)
+}
 
 ///|
-/// Show impl for error messages
-impl Show for TableConflicts with fn output(self, logger) {
+/// Render a conflict for parser diagnostics.
+///
+/// This is a plain method rather than a `Show`/`Debug` impl: `TableConflicts`
+/// is private, so a trait impl's methods would be promoted to regular methods
+/// that nothing calls, which the compiler reports as dead code.
+fn TableConflicts::to_string(self : TableConflicts) -> String {
   match self {
     ExpectedTable(key, value) =>
-      logger <+
+      (
         $|ExpectedTable("\{key}", "\{value.type_name()}")
+      )
     ExpectedArray(key, value) =>
-      logger <+
+      (
         $|ExpectedArray("\{key}", "\{value.type_name()}")
+      )
     DuplicateKey(key) =>
-      logger <+
+      (
         $|DuplicateKey("\{key}")
+      )
     InlineTableImmutable(key) =>
-      logger <+
+      (
         $|InlineTableImmutable("\{key}")
+      )
   }
 }
 
@@ -130,7 +138,7 @@ fn create_array_of_tables(
 
   // Handle the final key as an array of tables
   let final_key = path[path.length() - 1]
-  let new_table = {}
+  let new_table = Map([])
   match current_table.get(final_key) {
     Some(TomlArray(existing_array)) => {
       // Verify this is an array-of-tables (created by [[ ]]), not a static array (= [...])
@@ -157,7 +165,7 @@ fn create_array_of_tables(
 ///|
 test "create_array_of_tables - first table creation" {
   // Test creating the first table in an array of tables
-  let root_table : Map[String, TomlValue] = {}
+  let root_table : Map[String, TomlValue] = Map([])
 
   // Create first table in array [[servers]]
   let new_table = create_array_of_tables(root_table, ["servers"])
@@ -179,7 +187,7 @@ test "create_array_of_tables - first table creation" {
 ///|
 test "create_array_of_tables - append to existing array" {
   // Test appending to an existing array of tables
-  let root_table : Map[String, TomlValue] = {}
+  let root_table : Map[String, TomlValue] = Map([])
 
   // Create first table
   let table1 = create_array_of_tables(root_table, ["products"])
@@ -217,7 +225,7 @@ test "create_array_of_tables - append to existing array" {
 ///|
 test "create_array_of_tables - nested path creation" {
   // Test creating array of tables with nested path
-  let root_table : Map[String, TomlValue] = {}
+  let root_table : Map[String, TomlValue] = Map([])
 
   // Create [[fruit.physical.color]]
   let color_table1 = create_array_of_tables(root_table, [
@@ -299,7 +307,7 @@ test "create_array_of_tables - path conflicts with non-table" {
   let result = try
     create_array_of_tables(root_table, ["products", "items"])
   catch {
-    err => Err(err)
+    err => Err(err.to_string())
   } noraise {
     value => Ok(value)
   }
@@ -328,7 +336,7 @@ test "create_array_of_tables - final key conflicts with non-array" {
   let result = try
     create_array_of_tables(root_table, ["servers", "alpha"])
   catch {
-    err => Err(err)
+    err => Err(err.to_string())
   } noraise {
     value => Ok(value)
   }
@@ -560,14 +568,13 @@ test "set dotted key value - reject duplicate key" {
   let table : Map[String, TomlValue] = Map([])
   set_dotted_key_value(table, ["config", "timeout"], TomlInteger(30))
   // Duplicate key should be rejected
-  let result = try
+  try
     set_dotted_key_value(table, ["config", "timeout"], TomlInteger(60))
   catch {
-    err => Err(err)
+    err => inspect(err.to_string(), content="DuplicateKey(\"timeout\")")
   } noraise {
-    value => Ok(value)
+    _ => fail("Expected error but got success")
   }
-  debug_inspect(result, content="Err(DuplicateKey(\"timeout\"))")
 }
 
 ///|
@@ -601,7 +608,7 @@ test "set dotted key value - add to existing table" {
 
 ///|
 test "set dotted key value - conflict with non-table value" {
-  let table : Map[String, TomlValue] = {}
+  let table : Map[String, TomlValue] = Map([])
 
   // Set a string value at "config"
   set_dotted_key_value(table, ["config"], TomlString("simple value"))
@@ -611,10 +618,10 @@ test "set dotted key value - conflict with non-table value" {
     set_dotted_key_value(table, ["config", "nested"], TomlString("value"))
   catch {
     err =>
-      debug_inspect(
-        err,
+      inspect(
+        err.to_string(),
         content=(
-          #|ExpectedTable("config", TomlString("simple value"))
+          #|ExpectedTable("config", "string")
         ),
       )
   } noraise {

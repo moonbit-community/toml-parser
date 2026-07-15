@@ -32,6 +32,24 @@ pub(all) enum SimpleValue {
 } derive(Eq, Debug)
 
 ///|
+pub extend SimpleDocument with Eq::{not_equal, equal}
+
+///|
+pub extend SimpleDocument with Debug::{to_repr}
+
+///|
+pub extend SimpleDocument with Show::{to_string, output}
+
+///|
+pub extend SimpleValue with Eq::{not_equal, equal}
+
+///|
+pub extend SimpleValue with Debug::{to_repr}
+
+///|
+pub extend SimpleValue with Show::{to_string, output}
+
+///|
 pub impl Show for SimpleDocument with fn output(self, logger) {
   Debug::to_repr(self).output(logger)
 }

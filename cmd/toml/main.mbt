@@ -40,7 +40,7 @@ fn main {
 
 ///|
 fn run(args : ArrayView[String]) -> Int {
-  let matches = @argparse.parse(toml_command(), argv=args, env={}) catch {
+  let matches = @argparse.parse(toml_command(), argv=args, env=Map([])) catch {
     err => {
       println(err)
       return 2

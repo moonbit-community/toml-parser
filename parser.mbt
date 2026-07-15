@@ -137,7 +137,7 @@ fn Parser::parse_array(self : Self) -> TomlValue raise {
 /// Parse an inline table {key = value, key2 = value2}
 /// No trailing comma allowed unlike Array
 fn Parser::parse_inline_table(self : Parser) -> TomlValue raise {
-  let table = {}
+  let table = Map([])
   self.skip_newlines() // TOML 1.1: allow newlines in inline tables
   if self.view() is [RightBrace, .. rest] {
     self.update_view(rest)
@@ -300,7 +300,7 @@ let header_defined_marker : String = "\u0000__header__"
 pub fn parse(input : String) -> TomlValue raise {
   let tokens = @tokenize.tokenize(input)
   let parser = Parser::Parser(tokens)
-  let main_table = {}
+  let main_table = Map([])
   for current_table = main_table {
     parser.skip_newlines()
     match parser.view() {
