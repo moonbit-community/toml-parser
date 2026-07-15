@@ -118,6 +118,9 @@ pub fn TomlValue::to_string(self : TomlValue) -> String {
 }
 
 ///|
+pub extend TomlValue with Show::{output}
+
+///|
 /// TODO: the logger interface is good?
 pub impl Show for TomlValue with fn output(self, logger) {
   logger.write_string(self.to_string())

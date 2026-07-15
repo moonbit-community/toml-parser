@@ -18,6 +18,15 @@ pub(all) enum TomlDateTime {
 } derive(Eq, Debug)
 
 ///|
+pub extend TomlDateTime with Eq::{not_equal, equal}
+
+///|
+pub extend TomlDateTime with Debug::{to_repr}
+
+///|
+pub extend TomlDateTime with Show::{to_string, output}
+
+///|
 /// Render the variant for human-readable diagnostics:
 /// `OffsetDateTime("1979-05-27T07:32:00Z")` etc.
 pub impl Show for TomlDateTime with fn output(self, logger) {
