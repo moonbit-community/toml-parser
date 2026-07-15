@@ -27,7 +27,7 @@ pub fn to_test_json(value : @toml.TomlValue) -> Json {
 
 ///|
 fn typed_value(ty : String, value : String) -> Json {
-  let obj : Map[String, Json] = {}
+  let obj : Map[String, Json] = Map([])
   obj["type"] = Json::string(ty)
   obj["value"] = Json::string(value)
   Json::object(obj)

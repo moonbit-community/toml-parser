@@ -130,7 +130,7 @@ fn create_array_of_tables(
 
   // Handle the final key as an array of tables
   let final_key = path[path.length() - 1]
-  let new_table = {}
+  let new_table = Map([])
   match current_table.get(final_key) {
     Some(TomlArray(existing_array)) => {
       // Verify this is an array-of-tables (created by [[ ]]), not a static array (= [...])
@@ -157,7 +157,7 @@ fn create_array_of_tables(
 ///|
 test "create_array_of_tables - first table creation" {
   // Test creating the first table in an array of tables
-  let root_table : Map[String, TomlValue] = {}
+  let root_table : Map[String, TomlValue] = Map([])
 
   // Create first table in array [[servers]]
   let new_table = create_array_of_tables(root_table, ["servers"])
@@ -179,7 +179,7 @@ test "create_array_of_tables - first table creation" {
 ///|
 test "create_array_of_tables - append to existing array" {
   // Test appending to an existing array of tables
-  let root_table : Map[String, TomlValue] = {}
+  let root_table : Map[String, TomlValue] = Map([])
 
   // Create first table
   let table1 = create_array_of_tables(root_table, ["products"])
@@ -217,7 +217,7 @@ test "create_array_of_tables - append to existing array" {
 ///|
 test "create_array_of_tables - nested path creation" {
   // Test creating array of tables with nested path
-  let root_table : Map[String, TomlValue] = {}
+  let root_table : Map[String, TomlValue] = Map([])
 
   // Create [[fruit.physical.color]]
   let color_table1 = create_array_of_tables(root_table, [
@@ -601,7 +601,7 @@ test "set dotted key value - add to existing table" {
 
 ///|
 test "set dotted key value - conflict with non-table value" {
-  let table : Map[String, TomlValue] = {}
+  let table : Map[String, TomlValue] = Map([])
 
   // Set a string value at "config"
   set_dotted_key_value(table, ["config"], TomlString("simple value"))
