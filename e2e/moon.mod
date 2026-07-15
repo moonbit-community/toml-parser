@@ -5,7 +5,7 @@ version = "0.1.0"
 import {
   "bobzhang/toml@0.4.0",
   "moonbitlang/x@0.4.41",
-  "moonbitlang/async@0.16.8",
+  "moonbitlang/async@0.20.2",
 }
 
 warnings = "+test_unqualified_package"
