@@ -50,6 +50,23 @@ priv suberror TableConflicts {
 } derive(Debug)
 
 ///|
+extend TableConflicts with Show::{to_string}
+
+///|
+/// Shadows the implicit promotion of `Show::output`; nothing calls it.
+#warnings("-unused_value")
+fn TableConflicts::output(self : TableConflicts, logger : &Logger) -> Unit {
+  Show::output(self, logger)
+}
+
+///|
+/// Shadows the implicit promotion of `Debug::to_repr`; nothing calls it.
+#warnings("-unused_value")
+fn TableConflicts::to_repr(self : TableConflicts) -> @debug.Repr {
+  Debug::to_repr(self)
+}
+
+///|
 /// Show impl for error messages
 impl Show for TableConflicts with fn output(self, logger) {
   match self {

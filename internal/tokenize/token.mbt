@@ -12,6 +12,14 @@ pub(all) struct Loc {
 } derive(Eq, Debug)
 
 ///|
+#deprecated("compare with `==`; the Eq impl is unaffected")
+pub extend Loc with Eq::{not_equal, equal}
+
+///|
+#deprecated("render via the Debug trait, e.g. `debug_inspect`")
+pub extend Loc with Debug::{to_repr}
+
+///|
 /// Token types for the lexer
 pub(all) enum Token {
   // Literals
@@ -37,6 +45,14 @@ pub(all) enum Token {
   Newline(loc~ : Loc)
   EOF(loc~ : Loc)
 } derive(Eq, Debug)
+
+///|
+#deprecated("compare with `==`; the Eq impl is unaffected")
+pub extend Token with Eq::{not_equal, equal}
+
+///|
+#deprecated("render via the Debug trait, e.g. `debug_inspect`")
+pub extend Token with Debug::{to_repr}
 
 ///|
 /// Check if two locations are adjacent (end of first equals start of second).
