@@ -18,4 +18,4 @@ keywords = [ "toml", "parser", "config" ]
 
 description = "A TOML parser implementation in MoonBit"
 
-warnings = "+a-unused_optional_argument-unused_default_value-missing_invariant-missing_reasoning-lexmatch_longest_match"
+warnings = "+a-unused_optional_argument-unused_default_value-missing_invariant-missing_reasoning-lexmatch_longest_match-implicit_impl_as_method"
