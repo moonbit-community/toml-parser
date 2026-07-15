@@ -118,6 +118,10 @@ pub fn TomlValue::to_string(self : TomlValue) -> String {
 }
 
 ///|
+#deprecated("render via the Show trait, e.g. `inspect` or `\\{value}`")
+pub extend TomlValue with Show::{output}
+
+///|
 /// TODO: the logger interface is good?
 pub impl Show for TomlValue with fn output(self, logger) {
   logger.write_string(self.to_string())

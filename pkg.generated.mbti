@@ -22,7 +22,16 @@ pub(all) enum TomlValue {
   TomlDateTime(@datetime.TomlDateTime)
 } derive(Eq, @debug.Debug)
 pub fn TomlValue::datetime_info(Self) -> (String, String)?
+#deprecated
+pub fn TomlValue::equal(Self, Self) -> Bool
 pub fn TomlValue::is_homogeneous_array(Array[Self]) -> Bool
+#deprecated
+pub fn TomlValue::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn TomlValue::output(Self, &Logger) -> Unit
+#as_free_fn
+#deprecated
+pub fn TomlValue::to_repr(Self) -> @debug.Repr
 pub fn TomlValue::to_string(Self) -> String
 pub fn TomlValue::type_name(Self) -> String
 pub fn TomlValue::validate(Self) -> Bool

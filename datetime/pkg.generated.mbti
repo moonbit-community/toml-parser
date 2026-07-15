@@ -16,6 +16,16 @@ pub(all) enum TomlDateTime {
   LocalDate(String)
   LocalTime(String)
 } derive(Eq, @debug.Debug)
+#deprecated
+pub fn TomlDateTime::equal(Self, Self) -> Bool
+#deprecated
+pub fn TomlDateTime::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn TomlDateTime::output(Self, &Logger) -> Unit
+#as_free_fn
+#deprecated
+pub fn TomlDateTime::to_repr(Self) -> @debug.Repr
+pub fn TomlDateTime::to_string(Self) -> String
 pub impl Show for TomlDateTime
 
 // Type aliases

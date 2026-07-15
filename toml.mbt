@@ -11,6 +11,14 @@ pub(all) enum TomlValue {
 } derive(Eq, Debug)
 
 ///|
+#deprecated("compare with `==`; the Eq impl is unaffected")
+pub extend TomlValue with Eq::{not_equal, equal}
+
+///|
+#deprecated("render via the Debug trait, e.g. `debug_inspect`")
+pub extend TomlValue with Debug::{to_repr}
+
+///|
 /// Re-export `TomlDateTime` so consumers see the type as `@toml.TomlDateTime`
 /// instead of having to import the `datetime` subpackage directly.
 pub using @datetime {type TomlDateTime}
