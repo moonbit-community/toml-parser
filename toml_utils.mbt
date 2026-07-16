@@ -50,38 +50,25 @@ priv suberror TableConflicts {
 } derive(Debug)
 
 ///|
-extend TableConflicts with Show::{to_string}
-
-///|
-/// Shadows the implicit promotion of `Show::output`; nothing calls it.
-#warnings("-unused_value")
-fn TableConflicts::output(self : TableConflicts, logger : &Logger) -> Unit {
-  Show::output(self, logger)
-}
-
-///|
-/// Shadows the implicit promotion of `Debug::to_repr`; nothing calls it.
-#warnings("-unused_value")
-fn TableConflicts::to_repr(self : TableConflicts) -> @debug.Repr {
-  Debug::to_repr(self)
-}
-
-///|
 /// Show impl for error messages
-impl Show for TableConflicts with fn output(self, logger) {
+impl Show for TableConflicts with fn to_string(self) {
   match self {
     ExpectedTable(key, value) =>
-      logger <+
+      (
         $|ExpectedTable("\{key}", "\{value.type_name()}")
+      )
     ExpectedArray(key, value) =>
-      logger <+
+      (
         $|ExpectedArray("\{key}", "\{value.type_name()}")
+      )
     DuplicateKey(key) =>
-      logger <+
+      (
         $|DuplicateKey("\{key}")
+      )
     InlineTableImmutable(key) =>
-      logger <+
+      (
         $|InlineTableImmutable("\{key}")
+      )
   }
 }
 
