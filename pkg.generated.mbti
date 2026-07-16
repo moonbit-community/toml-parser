@@ -29,7 +29,6 @@ pub fn TomlValue::is_homogeneous_array(Array[Self]) -> Bool
 pub fn TomlValue::not_equal(Self, Self) -> Bool
 #deprecated
 pub fn TomlValue::output(Self, &Logger) -> Unit
-#as_free_fn
 #deprecated
 pub fn TomlValue::to_repr(Self) -> @debug.Repr
 pub fn TomlValue::to_string(Self) -> String
