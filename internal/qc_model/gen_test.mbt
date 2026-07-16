@@ -18,23 +18,23 @@ fn string_from_parts(head : Char, tail : Array[Char]) -> String {
 }
 
 ///|
-fn simple_key_tail_char_gen() -> @qc.Gen[Char] {
-  @qc.one_of([
-    @qc.char_range('a', 'z'),
-    @qc.char_range('0', '9'),
-    @qc.pure('-'),
-    @qc.pure('_'),
+fn simple_key_tail_char_gen() -> @gen.Gen[Char] {
+  @gen.one_of([
+    @gen.char_range('a', 'z'),
+    @gen.char_range('0', '9'),
+    @gen.pure('-'),
+    @gen.pure('_'),
   ])
 }
 
 ///|
-fn bare_key_gen() -> @qc.Gen[String] {
-  @qc.sized(fn(size) {
+fn bare_key_gen() -> @gen.Gen[String] {
+  @gen.sized(fn(size) {
     let max_tail = capped_size(size, 4)
-    @qc.int_range(0, max_tail + 1).bind(fn(tail_len) {
-      @qc.liftA2(
+    @gen.int_range(0, max_tail + 1).bind(fn(tail_len) {
+      @gen.liftA2(
         string_from_parts,
-        @qc.char_range('a', 'z'),
+        @gen.char_range('a', 'z'),
         simple_key_tail_char_gen().array_with_size(tail_len),
       )
     })
@@ -42,30 +42,30 @@ fn bare_key_gen() -> @qc.Gen[String] {
 }
 
 ///|
-fn negative_exponent_like_key_gen() -> @qc.Gen[String] {
-  @qc.sized(fn(size) {
+fn negative_exponent_like_key_gen() -> @gen.Gen[String] {
+  @gen.sized(fn(size) {
     let max_tail = capped_size(size, 4)
-    let significand_gen = @qc.int_range(0, max_tail + 1).bind(fn(tail_len) {
-      @qc.liftA2(
+    let significand_gen = @gen.int_range(0, max_tail + 1).bind(fn(tail_len) {
+      @gen.liftA2(
         string_from_parts,
-        @qc.char_range('1', '9'),
-        @qc.char_range('0', '9').array_with_size(tail_len),
+        @gen.char_range('1', '9'),
+        @gen.char_range('0', '9').array_with_size(tail_len),
       )
     })
-    let exponent_gen = @qc.int_range(0, max_tail + 1).bind(fn(tail_len) {
-      @qc.liftA2(
+    let exponent_gen = @gen.int_range(0, max_tail + 1).bind(fn(tail_len) {
+      @gen.liftA2(
         string_from_parts,
-        @qc.char_range('0', '9'),
-        @qc.char_range('0', '9').array_with_size(tail_len),
+        @gen.char_range('0', '9'),
+        @gen.char_range('0', '9').array_with_size(tail_len),
       )
     })
-    @qc.liftA3(
+    @gen.liftA3(
       fn(significand, negative_exponent, exponent) {
         let exponent_sign = if negative_exponent { "-" } else { "" }
         "-\{significand}e\{exponent_sign}\{exponent}"
       },
       significand_gen,
-      @qc.one_of([@qc.pure(false), @qc.pure(true)]),
+      @gen.one_of([@gen.pure(false), @gen.pure(true)]),
       exponent_gen,
     )
   })
@@ -81,47 +81,47 @@ fn string_with_middle_char(
 }
 
 ///|
-fn key_with_middle_char_gen(middle : @qc.Gen[Char]) -> @qc.Gen[String] {
-  @qc.liftA3(string_with_middle_char, bare_key_gen(), middle, bare_key_gen())
+fn key_with_middle_char_gen(middle : @gen.Gen[Char]) -> @gen.Gen[String] {
+  @gen.liftA3(string_with_middle_char, bare_key_gen(), middle, bare_key_gen())
 }
 
 ///|
-fn padded_key_gen() -> @qc.Gen[String] {
-  @qc.liftA3(
+fn padded_key_gen() -> @gen.Gen[String] {
+  @gen.liftA3(
     string_with_middle_char,
-    @qc.one_of([@qc.pure(""), bare_key_gen()]),
-    @qc.one_of([@qc.pure(' '), @qc.pure('\t')]),
+    @gen.one_of([@gen.pure(""), bare_key_gen()]),
+    @gen.one_of([@gen.pure(' '), @gen.pure('\t')]),
     bare_key_gen(),
   ).bind(fn(prefix_padded) {
-    @qc.one_of([
-      @qc.pure(prefix_padded),
-      @qc.liftA2(
+    @gen.one_of([
+      @gen.pure(prefix_padded),
+      @gen.liftA2(
         fn(inner : String, suffix : Char) { inner + suffix.to_string() },
-        @qc.pure(prefix_padded),
-        @qc.one_of([@qc.pure(' '), @qc.pure('\t')]),
+        @gen.pure(prefix_padded),
+        @gen.one_of([@gen.pure(' '), @gen.pure('\t')]),
       ),
     ])
   })
 }
 
 ///|
-fn complex_key_gen() -> @qc.Gen[String] {
-  @qc.frequency([
-    (2U, key_with_middle_char_gen(@qc.pure(' '))),
-    (2U, key_with_middle_char_gen(@qc.pure('.'))),
-    (1U, key_with_middle_char_gen(@qc.pure('"'))),
-    (1U, key_with_middle_char_gen(@qc.pure('#'))),
-    (1U, key_with_middle_char_gen(@qc.pure('\\'))),
-    (1U, key_with_middle_char_gen(@qc.pure('\n'))),
-    (1U, key_with_middle_char_gen(@qc.pure('\t'))),
+fn complex_key_gen() -> @gen.Gen[String] {
+  @gen.frequency([
+    (2U, key_with_middle_char_gen(@gen.pure(' '))),
+    (2U, key_with_middle_char_gen(@gen.pure('.'))),
+    (1U, key_with_middle_char_gen(@gen.pure('"'))),
+    (1U, key_with_middle_char_gen(@gen.pure('#'))),
+    (1U, key_with_middle_char_gen(@gen.pure('\\'))),
+    (1U, key_with_middle_char_gen(@gen.pure('\n'))),
+    (1U, key_with_middle_char_gen(@gen.pure('\t'))),
     (1U, padded_key_gen()),
-    (1U, @qc.pure("")),
+    (1U, @gen.pure("")),
   ])
 }
 
 ///|
-fn simple_key_gen() -> @qc.Gen[String] {
-  @qc.frequency([
+fn simple_key_gen() -> @gen.Gen[String] {
+  @gen.frequency([
     (3U, bare_key_gen()),
     (2U, complex_key_gen()),
     (1U, negative_exponent_like_key_gen()),
@@ -129,22 +129,22 @@ fn simple_key_gen() -> @qc.Gen[String] {
 }
 
 ///|
-fn string_value_gen() -> @qc.Gen[@qc_model.SimpleValue] {
-  let strings : @qc.Gen[String] = @qc.Gen::spawn()
+fn string_value_gen() -> @gen.Gen[@qc_model.SimpleValue] {
+  let strings : @gen.Gen[String] = @gen.Gen::spawn()
   strings
   .scale(fn(size) { capped_size(size, 8) })
   .fmap(fn(value) { SString(value) })
 }
 
 ///|
-fn integer_value_gen() -> @qc.Gen[@qc_model.SimpleValue] {
-  let integers : @qc.Gen[Int64] = @qc.Gen::spawn()
+fn integer_value_gen() -> @gen.Gen[@qc_model.SimpleValue] {
+  let integers : @gen.Gen[Int64] = @gen.Gen::spawn()
   integers.fmap(fn(value) { SInteger(value) })
 }
 
 ///|
-fn boolean_value_gen() -> @qc.Gen[@qc_model.SimpleValue] {
-  let booleans : @qc.Gen[Bool] = @qc.Gen::spawn()
+fn boolean_value_gen() -> @gen.Gen[@qc_model.SimpleValue] {
+  let booleans : @gen.Gen[Bool] = @gen.Gen::spawn()
   booleans.fmap(fn(value) { SBoolean(value) })
 }
 
@@ -201,10 +201,10 @@ fn format_offset(sign : Char, hour : Int, minute : Int) -> String {
 }
 
 ///|
-fn date_string_gen() -> @qc.Gen[String] {
-  @qc.int_range(1900, 2101).bind(fn(year) {
-    @qc.int_range(1, 13).bind(fn(month) {
-      @qc.int_range(1, days_in_month(year, month) + 1).fmap(fn(day) {
+fn date_string_gen() -> @gen.Gen[String] {
+  @gen.int_range(1900, 2101).bind(fn(year) {
+    @gen.int_range(1, 13).bind(fn(month) {
+      @gen.int_range(1, days_in_month(year, month) + 1).fmap(fn(day) {
         format_date(year, month, day)
       })
     })
@@ -212,21 +212,21 @@ fn date_string_gen() -> @qc.Gen[String] {
 }
 
 ///|
-fn time_string_gen() -> @qc.Gen[String] {
-  @qc.liftA2(
+fn time_string_gen() -> @gen.Gen[String] {
+  @gen.liftA2(
     fn(base : String, fractional : String) { base + fractional },
-    @qc.liftA3(
+    @gen.liftA3(
       format_time,
-      @qc.int_range(0, 24),
-      @qc.int_range(0, 60),
-      @qc.int_range(0, 60),
+      @gen.int_range(0, 24),
+      @gen.int_range(0, 60),
+      @gen.int_range(0, 60),
     ),
-    @qc.frequency([
-      (1U, @qc.pure("")),
+    @gen.frequency([
+      (1U, @gen.pure("")),
       (
         1U,
-        @qc.int_range(1, 10).bind(fn(len) {
-          @qc.char_range('0', '9')
+        @gen.int_range(1, 10).bind(fn(len) {
+          @gen.char_range('0', '9')
           .array_with_size(len)
           .fmap(fn(chars) {
             let builder = chars.fold(init=StringBuilder(), fn(builder, ch) {
@@ -242,43 +242,43 @@ fn time_string_gen() -> @qc.Gen[String] {
 }
 
 ///|
-fn offset_suffix_gen() -> @qc.Gen[String] {
-  @qc.frequency([
-    (2U, @qc.pure("Z")),
+fn offset_suffix_gen() -> @gen.Gen[String] {
+  @gen.frequency([
+    (2U, @gen.pure("Z")),
     (
       1U,
-      @qc.liftA3(
+      @gen.liftA3(
         format_offset,
-        @qc.pure('+'),
-        @qc.int_range(0, 24),
-        @qc.int_range(0, 60),
+        @gen.pure('+'),
+        @gen.int_range(0, 24),
+        @gen.int_range(0, 60),
       ),
     ),
     (
       1U,
-      @qc.liftA3(
+      @gen.liftA3(
         format_offset,
-        @qc.pure('-'),
-        @qc.int_range(0, 24),
-        @qc.int_range(0, 60),
+        @gen.pure('-'),
+        @gen.int_range(0, 24),
+        @gen.int_range(0, 60),
       ),
     ),
   ])
 }
 
 ///|
-fn local_date_gen() -> @qc.Gen[@datetime.TomlDateTime] {
+fn local_date_gen() -> @gen.Gen[@datetime.TomlDateTime] {
   date_string_gen().fmap(fn(value) { LocalDate(value) })
 }
 
 ///|
-fn local_time_gen() -> @qc.Gen[@datetime.TomlDateTime] {
+fn local_time_gen() -> @gen.Gen[@datetime.TomlDateTime] {
   time_string_gen().fmap(fn(value) { LocalTime(value) })
 }
 
 ///|
-fn local_datetime_gen() -> @qc.Gen[@datetime.TomlDateTime] {
-  @qc.liftA2(
+fn local_datetime_gen() -> @gen.Gen[@datetime.TomlDateTime] {
+  @gen.liftA2(
     fn(date : String, time : String) { LocalDateTime("\{date}T\{time}") },
     date_string_gen(),
     time_string_gen(),
@@ -286,8 +286,8 @@ fn local_datetime_gen() -> @qc.Gen[@datetime.TomlDateTime] {
 }
 
 ///|
-fn offset_datetime_gen() -> @qc.Gen[@datetime.TomlDateTime] {
-  @qc.liftA3(
+fn offset_datetime_gen() -> @gen.Gen[@datetime.TomlDateTime] {
+  @gen.liftA3(
     fn(date : String, time : String, offset : String) {
       OffsetDateTime("\{date}T\{time}\{offset}")
     },
@@ -298,8 +298,8 @@ fn offset_datetime_gen() -> @qc.Gen[@datetime.TomlDateTime] {
 }
 
 ///|
-fn toml_datetime_gen() -> @qc.Gen[@datetime.TomlDateTime] {
-  @qc.frequency([
+fn toml_datetime_gen() -> @gen.Gen[@datetime.TomlDateTime] {
+  @gen.frequency([
     (2U, local_date_gen()),
     (2U, local_time_gen()),
     (2U, local_datetime_gen()),
@@ -308,12 +308,12 @@ fn toml_datetime_gen() -> @qc.Gen[@datetime.TomlDateTime] {
 }
 
 ///|
-fn datetime_value_gen() -> @qc.Gen[@qc_model.SimpleValue] {
+fn datetime_value_gen() -> @gen.Gen[@qc_model.SimpleValue] {
   toml_datetime_gen().fmap(fn(value) { SDateTime(value) })
 }
 
 ///|
-fn datetime_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
+fn datetime_array_value_gen(size : Int) -> @gen.Gen[@qc_model.SimpleValue] {
   non_empty_length_gen(size).bind(fn(len) {
     toml_datetime_gen()
     .array_with_size(len)
@@ -322,14 +322,14 @@ fn datetime_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
 }
 
 ///|
-fn non_empty_length_gen(size : Int) -> @qc.Gen[Int] {
+fn non_empty_length_gen(size : Int) -> @gen.Gen[Int] {
   let max_len = capped_size(size + 1, 4)
-  @qc.int_range(1, max_len + 1)
+  @gen.int_range(1, max_len + 1)
 }
 
 ///|
-fn string_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
-  let strings : @qc.Gen[String] = @qc.Gen::spawn()
+fn string_array_value_gen(size : Int) -> @gen.Gen[@qc_model.SimpleValue] {
+  let strings : @gen.Gen[String] = @gen.Gen::spawn()
   let strings = strings.scale(fn(n) { capped_size(n, 8) })
   non_empty_length_gen(size).bind(fn(len) {
     strings.array_with_size(len).fmap(fn(values) { SStringArray(values) })
@@ -337,29 +337,29 @@ fn string_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
 }
 
 ///|
-fn integer_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
-  let integers : @qc.Gen[Int64] = @qc.Gen::spawn()
+fn integer_array_value_gen(size : Int) -> @gen.Gen[@qc_model.SimpleValue] {
+  let integers : @gen.Gen[Int64] = @gen.Gen::spawn()
   non_empty_length_gen(size).bind(fn(len) {
     integers.array_with_size(len).fmap(fn(values) { SIntegerArray(values) })
   })
 }
 
 ///|
-fn boolean_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
-  let booleans : @qc.Gen[Bool] = @qc.Gen::spawn()
+fn boolean_array_value_gen(size : Int) -> @gen.Gen[@qc_model.SimpleValue] {
+  let booleans : @gen.Gen[Bool] = @gen.Gen::spawn()
   non_empty_length_gen(size).bind(fn(len) {
     booleans.array_with_size(len).fmap(fn(values) { SBooleanArray(values) })
   })
 }
 
 ///|
-fn scalar_or_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
-  @qc.frequency([
+fn scalar_or_array_value_gen(size : Int) -> @gen.Gen[@qc_model.SimpleValue] {
+  @gen.frequency([
     (3U, string_value_gen()),
     (2U, integer_value_gen()),
     (2U, boolean_value_gen()),
     (2U, datetime_value_gen()),
-    (1U, @qc.pure(SEmptyArray)),
+    (1U, @gen.pure(SEmptyArray)),
     (2U, string_array_value_gen(size)),
     (2U, integer_array_value_gen(size)),
     (2U, boolean_array_value_gen(size)),
@@ -368,8 +368,8 @@ fn scalar_or_array_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
 }
 
 ///|
-fn simple_entry_gen(size : Int) -> @qc.Gen[(String, @qc_model.SimpleValue)] {
-  @qc.liftA2(
+fn simple_entry_gen(size : Int) -> @gen.Gen[(String, @qc_model.SimpleValue)] {
+  @gen.liftA2(
     fn(key, value) { (key, value) },
     simple_key_gen(),
     simple_value_gen(size),
@@ -377,10 +377,10 @@ fn simple_entry_gen(size : Int) -> @qc.Gen[(String, @qc_model.SimpleValue)] {
 }
 
 ///|
-fn table_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
+fn table_value_gen(size : Int) -> @gen.Gen[@qc_model.SimpleValue] {
   let next_size = size / 2
   let max_fields = capped_size(size + 1, 4)
-  @qc.int_range(0, max_fields + 1).bind(fn(field_count) {
+  @gen.int_range(0, max_fields + 1).bind(fn(field_count) {
     simple_entry_gen(next_size)
     .array_with_size(field_count)
     .fmap(fn(entries) { STable(Map::from_array(entries)) })
@@ -388,20 +388,20 @@ fn table_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
 }
 
 ///|
-fn simple_value_gen(size : Int) -> @qc.Gen[@qc_model.SimpleValue] {
+fn simple_value_gen(size : Int) -> @gen.Gen[@qc_model.SimpleValue] {
   let leaf = scalar_or_array_value_gen(size)
   if size <= 0 {
     leaf
   } else {
-    @qc.frequency([(9U, leaf), (2U, table_value_gen(size))])
+    @gen.frequency([(9U, leaf), (2U, table_value_gen(size))])
   }
 }
 
 ///|
-fn simple_document_gen() -> @qc.Gen[@qc_model.SimpleDocument] {
-  @qc.sized(fn(size) {
+fn simple_document_gen() -> @gen.Gen[@qc_model.SimpleDocument] {
+  @gen.sized(fn(size) {
     let max_fields = capped_size(size + 1, 5)
-    @qc.int_range(0, max_fields + 1).bind(fn(field_count) {
+    @gen.int_range(0, max_fields + 1).bind(fn(field_count) {
       simple_entry_gen(size)
       .array_with_size(field_count)
       .fmap(fn(entries) { { fields: Map::from_array(entries) } })
