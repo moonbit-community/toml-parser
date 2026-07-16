@@ -24,7 +24,6 @@ pub fn Loc::adjacent(Self, Self) -> Bool
 pub fn Loc::equal(Self, Self) -> Bool
 #deprecated
 pub fn Loc::not_equal(Self, Self) -> Bool
-#as_free_fn
 #deprecated
 pub fn Loc::to_repr(Self) -> @debug.Repr
 
@@ -50,7 +49,6 @@ pub fn Token::equal(Self, Self) -> Bool
 pub fn Token::loc(Self) -> Loc
 #deprecated
 pub fn Token::not_equal(Self, Self) -> Bool
-#as_free_fn
 #deprecated
 pub fn Token::to_repr(Self) -> @debug.Repr
 

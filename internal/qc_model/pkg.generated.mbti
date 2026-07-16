@@ -30,7 +30,6 @@ pub fn SimpleDocument::from_toml(@toml.TomlValue) -> Self?
 pub fn SimpleDocument::not_equal(Self, Self) -> Bool
 #deprecated
 pub fn SimpleDocument::output(Self, &Logger) -> Unit
-#as_free_fn
 #deprecated
 pub fn SimpleDocument::to_repr(Self) -> @debug.Repr
 #deprecated
@@ -57,7 +56,6 @@ pub fn SimpleValue::from_toml(@toml.TomlValue) -> Self?
 pub fn SimpleValue::not_equal(Self, Self) -> Bool
 #deprecated
 pub fn SimpleValue::output(Self, &Logger) -> Unit
-#as_free_fn
 #deprecated
 pub fn SimpleValue::to_repr(Self) -> @debug.Repr
 #deprecated
