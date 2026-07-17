@@ -29,6 +29,12 @@ The `--target native` flag is required because the tests use filesystem APIs (`@
 
 ## Known TOML 1.0 vs 1.1 Differences (9 expected failures)
 
+These are pinned in `known_toml11_diffs` in `e2e_test.mbt` and enforced as an
+exact set: a fixture that starts being accepted is reported as `[REGRESSION]`,
+and one that starts being rejected correctly is reported as
+`[STALE-EXEMPTION]` so the list cannot silently rot. Keep this table and that
+list in sync.
+
 The parser targets **TOML 1.1**. These 9 invalid-test "failures" are TOML 1.0 restrictions
 that TOML 1.1 intentionally relaxes — the parser is correct:
 
