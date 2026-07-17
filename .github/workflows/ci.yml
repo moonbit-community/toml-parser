@@ -43,6 +43,11 @@ jobs:
       - name: moon test (whole workspace)
         run: moon test
 
+      # The official toml-test conformance suite is async + uses @fs, so it is
+      # excluded from the default wasm-gc target and only runs on native.
+      - name: moon test e2e (toml-test conformance, native)
+        run: moon test e2e --target native
+
       - name: moon cram (native CLI)
         if: matrix.channel == 'nightly'
         run: moon cram test --release tests/cram
