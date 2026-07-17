@@ -650,15 +650,12 @@ fn @lexer.Lexer::read_binary_number(self : @lexer.Lexer) -> Int64 raise {
 /// Check if the current input matches a datetime pattern without consuming characters
 fn @lexer.Lexer::is_datetime_pattern(self : @lexer.Lexer) -> Bool {
   // Check for datetime patterns using regex
-  lexmatch self.view() with longest {
-    (
-      "[0-9]{2}:[0-9]{2}"
-      "(:[0-9]{2})?(\.[0-9]+)?",
-      // LocalTime pattern: HH:MM[:SS[.fff]] followed by valid terminator
-      rest
-    ) => check_datetime_terminator_string(rest)
+  lexscan self.view() with longest {
+    // LocalTime pattern: HH:MM[:SS[.fff]] followed by valid terminator
+    (START + re"[0-9]{2}:[0-9]{2}" + re"(:[0-9]{2})?(\.[0-9]+)?", after=rest) =>
+      check_datetime_terminator_string(rest)
     // LocalDate pattern: YYYY-MM-DD (always valid, may continue with T for datetime)
-    ("[0-9]{4}-[0-9]{2}-[0-9]{2}", _) => true
+    (START + re"[0-9]{4}-[0-9]{2}-[0-9]{2}", after=_) => true
     _ => false
   }
 }
@@ -683,9 +680,12 @@ fn @lexer.Lexer::read_datetime_with_loc(
   // - LocalTime: HH:MM:SS (starts with 2 digits, has colons)
   // - Date-based: YYYY-MM-DD (starts with 4 digits)
   //   - Check what follows T to determine: LocalDate, LocalDateTime, or OffsetDateTime
-  lexmatch self.view() with longest {
+  lexscan self.view() with longest {
     // LocalTime: HH:MM[:SS[.fff]] - must check first (2-digit start vs 4-digit)
-    (("[0-9]{2}:[0-9]{2}" "(:[0-9]{2})?(\.[0-9]+)?") as time, rest) => {
+    (
+      (START + re"[0-9]{2}:[0-9]{2}" + re"(:[0-9]{2})?(\.[0-9]+)?") as time,
+      after=rest,
+    ) => {
       self.update_view(rest)
       validate_time(time)
       let end_pos = self.get_loc()
@@ -695,7 +695,7 @@ fn @lexer.Lexer::read_datetime_with_loc(
       )
     }
     // Date-based patterns: lex YYYY-MM-DD first, then check continuation
-    ("[0-9]{4}-[0-9]{2}-[0-9]{2}" as date, rest) => {
+    ((START + re"[0-9]{4}-[0-9]{2}-[0-9]{2}") as date, after=rest) => {
       self.update_view(rest)
       validate_date(date)
       // Check for time component: T/t/space followed by HH:MM[:SS[.fff]]
