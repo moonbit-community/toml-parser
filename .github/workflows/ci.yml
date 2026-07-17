@@ -40,8 +40,8 @@ jobs:
           moon info
           git diff --exit-code
       
-      - name: moon test (unit tests)
-        run: moon test .
+      - name: moon test (whole workspace)
+        run: moon test
 
       - name: moon cram (native CLI)
         if: matrix.channel == 'nightly'
