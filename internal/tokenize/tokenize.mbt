@@ -9,6 +9,14 @@ pub fn default_loc() -> Loc {
 const START : Regex = re"^"
 
 ///|
+/// TOML date: `YYYY-MM-DD`.
+const DATE : Regex = re"[0-9]{4}-[0-9]{2}-[0-9]{2}"
+
+///|
+/// TOML time: `HH:MM` with optional `:SS` and `.fff` fraction.
+const TIME : Regex = re"[0-9]{2}:[0-9]{2}" + re"(:[0-9]{2})?(\.[0-9]+)?"
+
+///|
 /// Create a location from lexer positions
 fn make_loc(start_pos : @lexer.Position, end_pos : @lexer.Position) -> Loc {
   { start: start_pos, end: end_pos }
@@ -652,10 +660,9 @@ fn @lexer.Lexer::is_datetime_pattern(self : @lexer.Lexer) -> Bool {
   // Check for datetime patterns using regex
   lexscan self.view() with longest {
     // LocalTime pattern: HH:MM[:SS[.fff]] followed by valid terminator
-    (START + re"[0-9]{2}:[0-9]{2}" + re"(:[0-9]{2})?(\.[0-9]+)?", after=rest) =>
-      check_datetime_terminator_string(rest)
+    (START + TIME, after=rest) => check_datetime_terminator_string(rest)
     // LocalDate pattern: YYYY-MM-DD (always valid, may continue with T for datetime)
-    (START + re"[0-9]{4}-[0-9]{2}-[0-9]{2}", after=_) => true
+    (START + DATE, after=_) => true
     _ => false
   }
 }
@@ -682,10 +689,7 @@ fn @lexer.Lexer::read_datetime_with_loc(
   //   - Check what follows T to determine: LocalDate, LocalDateTime, or OffsetDateTime
   lexscan self.view() with longest {
     // LocalTime: HH:MM[:SS[.fff]] - must check first (2-digit start vs 4-digit)
-    (
-      (START + re"[0-9]{2}:[0-9]{2}" + re"(:[0-9]{2})?(\.[0-9]+)?") as time,
-      after=rest,
-    ) => {
+    ((START + TIME) as time, after=rest) => {
       self.update_view(rest)
       validate_time(time)
       let end_pos = self.get_loc()
@@ -695,14 +699,11 @@ fn @lexer.Lexer::read_datetime_with_loc(
       )
     }
     // Date-based patterns: lex YYYY-MM-DD first, then check continuation
-    ((START + re"[0-9]{4}-[0-9]{2}-[0-9]{2}") as date, after=rest) => {
+    ((START + DATE) as date, after=rest) => {
       self.update_view(rest)
       validate_date(date)
       // Check for time component: T/t/space followed by HH:MM[:SS[.fff]]
-      if self.view() =~ (
-          (re"^" + re"[Tt ][0-9]{2}:[0-9]{2}" + re"(:[0-9]{2})?(\.[0-9]+)?") as time_with_t,
-          after=rest2,
-        ) {
+      if self.view() =~ ((START + re"[Tt ]" + TIME) as time_with_t, after=rest2) {
         self.update_view(rest2)
         // Validate time portion (skip the T/t/space separator) — view slice
         // avoids allocating a copy just for validation.
