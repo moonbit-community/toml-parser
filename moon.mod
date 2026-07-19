@@ -1,6 +1,6 @@
 name = "bobzhang/toml"
 
-version = "0.4.1"
+version = "0.4.2"
 
 import {
   "bobzhang/lexer@0.2.0",
