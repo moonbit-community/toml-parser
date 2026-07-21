@@ -520,6 +520,10 @@ fn @lexer.Lexer::read_multiline_literal_string(
 const INT64_MAX = 9223372036854775807L
 
 ///|
+/// Smallest value a TOML integer can take (signed 64-bit).
+const INT64_MIN : Int64 = -9223372036854775807L - 1L
+
+///|
 /// Parse hexadecimal number. Returns the value and the raw source text
 /// (prefix + digits, underscores preserved) so the parser can still use the
 /// token as a bare key.
@@ -960,15 +964,11 @@ fn @lexer.Lexer::read_number_with_loc(
   }
   let s = sb.to_string()
   let raw_s = raw.to_string()
-  if is_float {
-    validate_float_string(s, raw_s) catch {
-      e => fail(self.error(e.to_string()))
-    }
-  } else {
-    validate_integer_string(raw_s) catch {
-      e => fail(self.error(e.to_string()))
-    }
-  }
+  // Numeric validation (underscore placement, dot placement, Int64 range)
+  // is NOT done here: the text may be a bare key, where TOML applies no
+  // numeric rules at all. The parser validates the raw text when — and only
+  // when — the token is consumed as a value (see validate_integer_literal /
+  // validate_float_literal).
   let end_pos = self.get_loc()
   let loc = make_loc(start_pos, end_pos)
   if is_float {
@@ -983,10 +983,59 @@ fn @lexer.Lexer::read_number_with_loc(
       raw=raw_s,
     )
   } else {
-    IntegerToken(@string.parse_int64(s), loc~, raw=raw_s) catch {
-      _ => fail("Invalid integer: \{s}")
+    // Saturate on Int64 overflow so the token always carries a value; the
+    // parser never observes it because it range-checks the raw text first.
+    IntegerToken(
+      @string.parse_int64(s) catch {
+        _ => if s is ['-', ..] { INT64_MIN } else { INT64_MAX }
+      },
+      loc~,
+      raw=raw_s,
+    )
+  }
+}
+
+///|
+/// Remove underscores from a numeric literal's raw text.
+fn strip_underscores(raw : String) -> String {
+  let sb = StringBuilder()
+  for ch in raw {
+    if ch != '_' {
+      sb.write_char(ch)
     }
   }
+  sb.to_string()
+}
+
+///|
+/// Validate a decimal integer literal from its raw source text (optional
+/// sign, underscores preserved): underscore placement and Int64 range.
+///
+/// The tokenizer emits decimal numeric tokens without validating them
+/// because the same text can be a bare key, where TOML applies no numeric
+/// rules. The parser calls this when — and only when — the token is used
+/// as a value. Radix-prefixed literals (0x/0o/0b) are not covered: they
+/// can never be confused with values here since the tokenizer already
+/// validated them (digits, underscores, and Int64 range) at lex time.
+pub fn validate_integer_literal(raw : String) -> Unit raise {
+  if raw.has_prefix("0x") || raw.has_prefix("0o") || raw.has_prefix("0b") {
+    return
+  }
+  validate_underscores(raw)
+  let s = strip_underscores(raw)
+  let _ = @string.parse_int64(s) catch {
+    _ => raise Failure::Failure("Invalid integer: \{s}")
+  }
+}
+
+///|
+/// Validate a decimal float literal from its raw source text (optional
+/// sign, underscores preserved): underscore placement and dot placement.
+///
+/// See validate_integer_literal for why validation is deferred to the
+/// parser.
+pub fn validate_float_literal(raw : String) -> Unit raise {
+  validate_float_string(strip_underscores(raw), raw)
 }
 
 ///|
@@ -1006,12 +1055,6 @@ fn validate_float_string(s : String, raw : String) -> Unit raise {
     }
   }
   // Validate underscore placement in raw string
-  validate_underscores(raw)
-}
-
-///|
-/// Validate a decimal integer string for underscore placement.
-fn validate_integer_string(raw : String) -> Unit raise {
   validate_underscores(raw)
 }
 

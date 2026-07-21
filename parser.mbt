@@ -76,11 +76,21 @@ fn Parser::parse_value(
       self.update_view(rest)
       TomlString(s)
     }
-    [IntegerToken(i, ..), .. rest] => {
+    [IntegerToken(i, raw~, ..), .. rest] => {
+      // Numeric rules (underscore placement, Int64 range) apply only when
+      // the token is used as a value; in key position the raw text is used
+      // verbatim and never validated.
+      @tokenize.validate_integer_literal(raw) catch {
+        e => self.error(e.to_string())
+      }
       self.update_view(rest)
       TomlInteger(i)
     }
     [FloatToken(f, raw~, ..), .. rest] => {
+      // As above: dot/underscore rules apply to values only.
+      @tokenize.validate_float_literal(raw) catch {
+        e => self.error(e.to_string())
+      }
       // Reject overflow: non-finite values are only valid with the
       // canonical spellings inf/nan/+inf/-inf/+nan/-nan.
       if (f.is_inf() || f.is_nan()) &&

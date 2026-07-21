@@ -30,7 +30,7 @@ test "fixed: leading underscore value rejected (not infinite loop)" {
   debug_inspect(
     result,
     content=(
-      #|Err(Failure("parser.mbt:209:20-209:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 7 } }"))
+      #|Err(Failure("parser.mbt:219:20-219:70@bobzhang/toml FAILED: Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 7 } }"))
     ),
   )
 }
