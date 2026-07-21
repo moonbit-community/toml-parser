@@ -814,6 +814,7 @@ test "lexer datetime disambiguation" {
       #|  IntegerToken(
       #|    123,
       #|    loc={ start: { line: 2, column: 9 }, end: { line: 2, column: 12 } },
+      #|    raw="123",
       #|  ),
       #|  EOF(loc={ start: { line: 2, column: 12 }, end: { line: 2, column: 12 } }),
       #|]

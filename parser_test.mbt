@@ -253,9 +253,10 @@ test "tokenize exponent-like bare keys" {
     @tokenize.tokenize("10e-1 = \"a\""),
     content=(
       #|[
-      #|  Identifier(
-      #|    "10e-1",
+      #|  FloatToken(
+      #|    1,
       #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 6 } },
+      #|    raw="10e-1",
       #|  ),
       #|  Equals(loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 8 } }),
       #|  StringToken(
@@ -271,9 +272,10 @@ test "tokenize exponent-like bare keys" {
     @tokenize.tokenize("10e1 = \"b\""),
     content=(
       #|[
-      #|  Identifier(
-      #|    "10e1",
+      #|  FloatToken(
+      #|    100,
       #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|    raw="10e1",
       #|  ),
       #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
       #|  StringToken(
@@ -421,7 +423,8 @@ test "overflow float accepted as bare key" {
 
 ///|
 test "special float keywords as keys" {
-  // inf, nan, +inf, -inf, etc. are valid bare keys in TOML
+  // inf, nan, -inf, etc. are valid bare keys in TOML, but +inf is not:
+  // '+' is not a bare-key character, so `+inf = 1` must be rejected.
   debug_inspect(
     try @toml.parse("+inf = 1\n") catch {
       err => Err(err)
@@ -429,7 +432,7 @@ test "special float keywords as keys" {
       value => Ok(value)
     },
     content=(
-      #|Ok(TomlTable({ "+inf": TomlInteger(1) }))
+      #|Err(Failure("parser.mbt:209:20-209:70@bobzhang/toml FAILED: Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 5 } }"))
     ),
   )
   debug_inspect(
@@ -686,6 +689,8 @@ test "dotted key notation integer keys" {
 
 ///|
 /// Test dotted key notation - conflict with table headers
+/// `a.b = ...` defines the table `a`, so reopening it with a `[a]` header
+/// is a duplicate definition and must be rejected (TOML 1.0).
 test "dotted key notation table conflict" {
   let conflict_toml =
     #|a.b = "dotted"
@@ -693,9 +698,13 @@ test "dotted key notation table conflict" {
     #|c = "table"
     #|
   debug_inspect(
-    @toml.parse(conflict_toml),
+    try @toml.parse(conflict_toml) catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
-      #|TomlTable({ "a": TomlTable({ "b": TomlString("dotted"), "c": TomlString("table") }) })
+      #|Err(Failure("parser.mbt:209:20-209:70@bobzhang/toml FAILED: Duplicate table definition: [a] at { start: { line: 2, column: 4 }, end: { line: 3, column: 1 } }"))
     ),
   )
 }

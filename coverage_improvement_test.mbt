@@ -107,7 +107,7 @@ test "test edge case number formats for error paths" {
   debug_inspect(
     tokens,
     content=(
-      #|Err(Failure("internal/tokenize/tokenize.mbt:973:12-973:41@bobzhang/toml FAILED: Invalid integer: 999999999999999999999999999999999999999"))
+      #|Err(Failure("internal/tokenize/tokenize.mbt:987:12-987:41@bobzhang/toml FAILED: Invalid integer: 999999999999999999999999999999999999999"))
     ),
   )
 }
@@ -209,6 +209,7 @@ test "test mixed case hex digits" {
       #|  IntegerToken(
       #|    11259375,
       #|    loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 21 } },
+      #|    raw="0xaBcDeF",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }),
       #|]

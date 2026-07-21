@@ -516,23 +516,29 @@ fn @lexer.Lexer::read_multiline_literal_string(
 }
 
 ///|
-/// Parse hexadecimal number
-fn @lexer.Lexer::read_hex_number(self : @lexer.Lexer) -> Int64 raise {
+/// Largest value a TOML integer can take (signed 64-bit).
+const INT64_MAX = 9223372036854775807L
+
+///|
+/// Parse hexadecimal number. Returns the value and the raw source text
+/// (prefix + digits, underscores preserved) so the parser can still use the
+/// token as a bare key.
+fn @lexer.Lexer::read_hex_number(self : @lexer.Lexer) -> (Int64, String) raise {
 
   // (?:[0-9a-fA-F][0-9a-fA-F]*)(?:_[0-9a-fA-F][0-9a-fA-F]*)*
   // TODO(upstream): support non capturing group
   let mut result = 0L
   // 0xA__FF_12 is invalid according to spec
   guard self.view() =~ (
-    re"^" +
-    re"0[xX]" +
-    (re"[0-9a-fA-F]+(_[0-9a-fA-F]+)*" as hex_digits),
+    (re"^" + re"0x" + re"[0-9a-fA-F]+(_[0-9a-fA-F]+)*") as raw,
     after=rest,
   ) else {
     fail(self.error("Invalid hex number format"))
   }
-  for ch in hex_digits {
-    if ch is '_' {
+  let mut i = 0
+  for ch in raw {
+    i = i + 1
+    if i <= 2 || ch is '_' { // skip the "0x" prefix and underscores
       continue
     }
     let digit_value = match ch {
@@ -541,16 +547,22 @@ fn @lexer.Lexer::read_hex_number(self : @lexer.Lexer) -> Int64 raise {
       'A'..='F' => (ch.to_int() - 'A'.to_int()).to_int64() + 10L
       _ => fail(self.error("Invalid hex digit"))
     }
+    if result > (INT64_MAX - digit_value) / 16L {
+      fail(self.error("Invalid hex number: value out of Int64 range"))
+    }
     result = result * 16L + digit_value
   }
   self.update_view(rest)
 
   // 0-width assertion
   match self.view() {
-    [] => result
+    [] => (result, raw.to_owned())
+    // A '.' means a dotted bare key like `0xAB.cd`; the parser splits the
+    // raw text, so this is not an error here.
+    ['.', ..] => (result, raw.to_owned())
     [delimited, ..] =>
       if delimited is (' ' | '\t' | '\r' | '\n' | ',' | ']' | '}' | '#') {
-        result
+        (result, raw.to_owned())
       } else {
         fail(
           self.error(
@@ -562,35 +574,46 @@ fn @lexer.Lexer::read_hex_number(self : @lexer.Lexer) -> Int64 raise {
 }
 
 ///|
-/// Parse octal number
-fn @lexer.Lexer::read_octal_number(self : @lexer.Lexer) -> Int64 raise {
+/// Parse octal number. Returns the value and the raw source text
+/// (prefix + digits, underscores preserved) so the parser can still use the
+/// token as a bare key.
+fn @lexer.Lexer::read_octal_number(
+  self : @lexer.Lexer,
+) -> (Int64, String) raise {
 
   // (?:[0-7][0-7]*)(?:_[0-7][0-7]*)*
   // TODO(upstream): support non capturing group
   let mut result = 0L
   // 0o7__55_44 is invalid according to spec
   guard self.view() =~ (
-    re"^" +
-    re"0[oO]" +
-    (re"[0-7]+(_[0-7]+)*" as octal_digits),
+    (re"^" + re"0o" + re"[0-7]+(_[0-7]+)*") as raw,
     after=rest,
   ) else {
     fail(self.error("Invalid octal number format"))
   }
-  for ch in octal_digits {
-    if ch is '_' {
+  let mut i = 0
+  for ch in raw {
+    i = i + 1
+    if i <= 2 || ch is '_' { // skip the "0o" prefix and underscores
       continue
     }
-    result = result * 8L + (ch.to_int() - '0').to_int64()
+    let digit_value = (ch.to_int() - '0').to_int64()
+    if result > (INT64_MAX - digit_value) / 8L {
+      fail(self.error("Invalid octal number: value out of Int64 range"))
+    }
+    result = result * 8L + digit_value
   }
   self.update_view(rest)
 
   // 0-width assertion
   match self.view() {
-    [] => result
+    [] => (result, raw.to_owned())
+    // A '.' means a dotted bare key like `0o17.cd`; the parser splits the
+    // raw text, so this is not an error here.
+    ['.', ..] => (result, raw.to_owned())
     [delimited, ..] =>
       if delimited is (' ' | '\t' | '\r' | '\n' | ',' | ']' | '}' | '#') {
-        result
+        (result, raw.to_owned())
       } else {
         fail(
           self.error(
@@ -609,12 +632,21 @@ test {
     ),
   )
   let result = lexer.read_octal_number()
-  debug_inspect(result, content="493")
+  debug_inspect(
+    result,
+    content=(
+      #|(493, "0o755")
+    ),
+  )
 }
 
 ///|
-/// Parse binary number
-fn @lexer.Lexer::read_binary_number(self : @lexer.Lexer) -> Int64 raise {
+/// Parse binary number. Returns the value and the raw source text
+/// (prefix + digits, underscores preserved) so the parser can still use the
+/// token as a bare key.
+fn @lexer.Lexer::read_binary_number(
+  self : @lexer.Lexer,
+) -> (Int64, String) raise {
 
   // (?:[01][01]*)(?:_[01][01]*)*
   // TODO(upstream): support non capturing group
@@ -623,27 +655,34 @@ fn @lexer.Lexer::read_binary_number(self : @lexer.Lexer) -> Int64 raise {
   let mut result = 0L
   // 0b1__00_11 is invalid according to spec
   guard self.view() =~ (
-    re"^" +
-    re"0[bB]" +
-    (re"[01]+(_[01]+)*" as binary_digits),
+    (re"^" + re"0b" + re"[01]+(_[01]+)*") as raw,
     after=rest,
   ) else {
     fail(self.error("Invalid binary number format"))
   }
-  for ch in binary_digits {
-    if ch is '_' {
+  let mut i = 0
+  for ch in raw {
+    i = i + 1
+    if i <= 2 || ch is '_' { // skip the "0b" prefix and underscores
       continue
     }
-    result = result * 2L + (ch.to_int() - '0').to_int64()
+    let digit_value = (ch.to_int() - '0').to_int64()
+    if result > (INT64_MAX - digit_value) / 2L {
+      fail(self.error("Invalid binary number: value out of Int64 range"))
+    }
+    result = result * 2L + digit_value
   }
   self.update_view(rest)
 
   // 0-width assertion
   match self.view() {
-    [] => result
+    [] => (result, raw.to_owned())
+    // A '.' means a dotted bare key like `0b101.cd`; the parser splits the
+    // raw text, so this is not an error here.
+    ['.', ..] => (result, raw.to_owned())
     [delimited, ..] =>
       if delimited is (' ' | '\t' | '\r' | '\n' | ',' | ']' | '}' | '#') {
-        result
+        (result, raw.to_owned())
       } else {
         fail(
           self.error(
@@ -768,43 +807,24 @@ fn @lexer.Lexer::read_number_with_loc(
   let mut is_float = false
 
   // Check if this might be a special format number (0x, 0o, 0b)
+  // TOML only allows the lowercase prefixes; 0X/0O/0B fall through to the
+  // bare-key path so `x = 0X5` errors while [0XAB] stays a valid key.
   if !is_negative {
     match self.view() {
       ['0', 'x', ..] => {
-        let value = self.read_hex_number()
+        let (value, raw) = self.read_hex_number()
         let end_pos = self.get_loc()
-        return IntegerToken(
-          if is_negative {
-            -value
-          } else {
-            value
-          },
-          loc=make_loc(start_pos, end_pos),
-        )
+        return IntegerToken(value, loc=make_loc(start_pos, end_pos), raw~)
       }
       ['0', 'o', ..] => {
-        let value = self.read_octal_number()
+        let (value, raw) = self.read_octal_number()
         let end_pos = self.get_loc()
-        return IntegerToken(
-          if is_negative {
-            -value
-          } else {
-            value
-          },
-          loc=make_loc(start_pos, end_pos),
-        )
+        return IntegerToken(value, loc=make_loc(start_pos, end_pos), raw~)
       }
       ['0', 'b', ..] => {
-        let value = self.read_binary_number()
+        let (value, raw) = self.read_binary_number()
         let end_pos = self.get_loc()
-        return IntegerToken(
-          if is_negative {
-            -value
-          } else {
-            value
-          },
-          loc=make_loc(start_pos, end_pos),
-        )
+        return IntegerToken(value, loc=make_loc(start_pos, end_pos), raw~)
       }
       _ => () // continue with non binary mode
     }
@@ -813,6 +833,10 @@ fn @lexer.Lexer::read_number_with_loc(
   let raw = StringBuilder()
   if is_negative {
     raw.write_char('-')
+  } else if has_sign {
+    // Keep the '+' in the raw text: a signed number can never be a bare
+    // key, and the parser uses the raw text to tell the difference.
+    raw.write_char('+')
   }
   let next_view = for view = self.view() {
     match view {
@@ -838,13 +862,18 @@ fn @lexer.Lexer::read_number_with_loc(
     digits_so_far[digit_start] == '0' {
     let end_pos = self.get_loc()
     let loc = make_loc(start_pos, end_pos)
-    return Identifier(digits_so_far, loc~)
+    // A leading '+' means this can never be a bare key; keep the sign so
+    // the parser rejects it in key position.
+    let name = if has_sign { "+\{digits_so_far}" } else { digits_so_far }
+    return Identifier(name, loc~)
   }
 
   // Check for decimal point
+  let mut has_dot = false
   match self.view() {
     ['.', .. rest] => {
       is_float = true
+      has_dot = true
       self.update_view(rest)
       sb.write_char('.')
       raw.write_char('.')
@@ -904,10 +933,15 @@ fn @lexer.Lexer::read_number_with_loc(
     _ => ()
   }
   // If followed by identifier chars (a-z, A-Z, _, -), this is a bare key
-  // like "1key" or "2000-datetime", not a number value.
+  // like "1key", "2000-datetime" or "-5y", not a number value.
   // Use raw string (preserves underscores) for the identifier.
+  // Excluded cases:
+  // - has_sign ('+'): never a valid bare key character, leave the numeric
+  //   token to the parser, which rejects it in key position.
+  // - has_dot: "1.5x" contains '.', which is not a bare key character; the
+  //   float token followed by an identifier errors out in the parser.
   match self.view() {
-    ['a'..='z' | 'A'..='Z' | '_' | '-', ..] if !is_negative => {
+    ['a'..='z' | 'A'..='Z' | '_' | '-', ..] if !has_sign && !has_dot => {
       let next_view = for view = self.view() {
         match view {
           ['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' as ch, .. rest] => {
@@ -926,26 +960,6 @@ fn @lexer.Lexer::read_number_with_loc(
   }
   let s = sb.to_string()
   let raw_s = raw.to_string()
-  // If the number is in key position (followed by = after whitespace),
-  // and the raw string contains characters that would be lost in numeric conversion
-  // (underscores, exponent notation), produce an Identifier to preserve the text.
-  let has_lossy_chars = raw_s != s || (is_float && !raw_s.contains("."))
-  if !is_negative && !has_sign && has_lossy_chars {
-    let is_key = for view = self.view() {
-      match view {
-        [' ' | '\t', .. rest] => continue rest
-        ['=' | '.', ..] => break true // key = value or dotted.key
-        // ] followed by newline/EOF indicates table header [key], not array
-        [']', '\n' | '\r', ..] | [']'] => break true
-        _ => break false
-      }
-    }
-    if is_key {
-      let end_pos = self.get_loc()
-      let loc = make_loc(start_pos, end_pos)
-      return Identifier(raw_s, loc~)
-    }
-  }
   if is_float {
     validate_float_string(s, raw_s) catch {
       e => fail(self.error(e.to_string()))
@@ -969,7 +983,7 @@ fn @lexer.Lexer::read_number_with_loc(
       raw=raw_s,
     )
   } else {
-    IntegerToken(@string.parse_int64(s), loc~) catch {
+    IntegerToken(@string.parse_int64(s), loc~, raw=raw_s) catch {
       _ => fail("Invalid integer: \{s}")
     }
   }
@@ -1140,6 +1154,7 @@ test "read_number" {
       #|IntegerToken(
       #|  123,
       #|  loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  raw="123",
       #|)
     ),
   )
@@ -1276,30 +1291,18 @@ fn @lexer.Lexer::next_token(self : @lexer.Lexer) -> Token raise {
       }
 
     // Positive numbers with explicit '+' (only decimal, not 0x/0o/0b).
-    // '+' is not a valid bare key character, so +number in key position
-    // (followed by = or ]) should be rejected.
-    ['+', '0'..='9', ..] => {
-      // Peek ahead: skip digits/underscores, then check for key indicators
-      let is_key_context = for view = self.view()[1:] {
-        match view {
-          ['0'..='9' | '_', .. rest] => continue rest
-          [' ' | '\t', .. rest] => continue rest
-          ['=' | ']', ..] => break true // +num= or [+num] are both invalid
-          _ => break false
-        }
-      }
-      if is_key_context {
-        fail("Unexpected character: '+'")
-      }
+    // '+' is not a valid bare key character; the raw text keeps the sign so
+    // the parser can reject this token in key position (e.g. `+5 = 3`).
+    ['+', '0'..='9', ..] =>
       match self.view() {
-        ['+', '0', 'x' | 'o' | 'b', ..] => fail("Unexpected character: '+'")
+        ['+', '0', 'x' | 'X' | 'o' | 'O' | 'b' | 'B', ..] =>
+          fail("Unexpected character: '+'")
         ['+', .. rest] => {
           self.update_view(rest)
-          self.read_number_with_loc(false, start_pos)
+          self.read_number_with_loc(false, start_pos, has_sign=true)
         }
         _ => abort("Internal error: pattern matching inconsistency")
       }
-    }
 
     // Handle negative special float values (-inf, -nan)
     ['-', 'i', 'n', 'f', .. rest] => {
@@ -1375,6 +1378,7 @@ test "read_number 2" {
       #|IntegerToken(
       #|  123,
       #|  loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
+      #|  raw="123",
       #|)
     ),
   )
@@ -1487,7 +1491,12 @@ test "identifier parsing" {
 test "hex number parsing" {
   let lexer = @lexer.Lexer::Lexer("0xDEADBEEF")
   let result = lexer.read_hex_number()
-  debug_inspect(result, content="3735928559")
+  debug_inspect(
+    result,
+    content=(
+      #|(3735928559, "0xDEADBEEF")
+    ),
+  )
 }
 
 ///|
@@ -1495,7 +1504,12 @@ test "hex number parsing" {
 test "octal number parsing" {
   let lexer = @lexer.Lexer::Lexer("0o755")
   let result = lexer.read_octal_number()
-  debug_inspect(result, content="493")
+  debug_inspect(
+    result,
+    content=(
+      #|(493, "0o755")
+    ),
+  )
 }
 
 ///|
@@ -1503,7 +1517,12 @@ test "octal number parsing" {
 test "binary number parsing" {
   let lexer = @lexer.Lexer::Lexer("0b1010")
   let result = lexer.read_binary_number()
-  debug_inspect(result, content="10")
+  debug_inspect(
+    result,
+    content=(
+      #|(10, "0b1010")
+    ),
+  )
 }
 
 ///|

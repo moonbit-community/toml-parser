@@ -24,7 +24,7 @@ pub extend Loc with Debug::{to_repr}
 pub(all) enum Token {
   // Literals
   StringToken(String, loc~ : Loc, multiline~ : Bool)
-  IntegerToken(Int64, loc~ : Loc)
+  IntegerToken(Int64, loc~ : Loc, raw~ : String)
   FloatToken(Double, loc~ : Loc, raw~ : String)
   BooleanToken(Bool, loc~ : Loc)
   DateTimeToken(@datetime.TomlDateTime, loc~ : Loc)
@@ -69,7 +69,7 @@ pub fn Loc::adjacent(self : Loc, other : Loc) -> Bool {
 pub fn Token::loc(self : Self) -> Loc {
   match self {
     StringToken(_, loc~, ..) => loc
-    IntegerToken(_, loc~) => loc
+    IntegerToken(_, loc~, ..) => loc
     FloatToken(_, loc~, ..) => loc
     BooleanToken(_, loc~) => loc
     DateTimeToken(_, loc~) => loc

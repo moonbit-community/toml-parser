@@ -45,6 +45,7 @@ test "tokenize integer" {
       #|  IntegerToken(
       #|    42,
       #|    loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 12 } },
+      #|    raw="42",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }),
       #|]
@@ -120,16 +121,19 @@ test "tokenize array syntax" {
       #|  IntegerToken(
       #|    1,
       #|    loc={ start: { line: 1, column: 2 }, end: { line: 1, column: 3 } },
+      #|    raw="1",
       #|  ),
       #|  Comma(loc={ start: { line: 1, column: 3 }, end: { line: 1, column: 4 } }),
       #|  IntegerToken(
       #|    2,
       #|    loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } },
+      #|    raw="2",
       #|  ),
       #|  Comma(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
       #|  IntegerToken(
       #|    3,
       #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 9 } },
+      #|    raw="3",
       #|  ),
       #|  RightBracket(loc={ start: { line: 1, column: 9 }, end: { line: 1, column: 10 } }),
       #|  EOF(loc={ start: { line: 1, column: 10 }, end: { line: 1, column: 10 } }),
@@ -196,6 +200,7 @@ test "tokenize multiline" {
       #|  IntegerToken(
       #|    42,
       #|    loc={ start: { line: 2, column: 8 }, end: { line: 2, column: 10 } },
+      #|    raw="42",
       #|  ),
       #|  EOF(loc={ start: { line: 2, column: 10 }, end: { line: 2, column: 10 } }),
       #|]
@@ -335,6 +340,7 @@ test "tokenize hexadecimal numbers" {
       #|  IntegerToken(
       #|    57005,
       #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 13 } },
+      #|    raw="0xDEAD",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 13 } }),
       #|]
@@ -383,6 +389,7 @@ test "tokenize octal numbers" {
       #|  IntegerToken(
       #|    493,
       #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 12 } },
+      #|    raw="0o755",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }),
       #|]
@@ -431,6 +438,7 @@ test "tokenize binary numbers" {
       #|  IntegerToken(
       #|    13,
       #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 13 } },
+      #|    raw="0b1101",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 13 } }),
       #|]
@@ -479,6 +487,7 @@ test "tokenize numbers with underscores" {
       #|  IntegerToken(
       #|    1000000,
       #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 16 } },
+      #|    raw="1_000_000",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 16 }, end: { line: 1, column: 16 } }),
       #|]
@@ -524,6 +533,7 @@ test "tokenize numbers with underscores" {
       #|  IntegerToken(
       #|    65535,
       #|    loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 20 } },
+      #|    raw="0xFF_FF",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 20 }, end: { line: 1, column: 20 } }),
       #|]
@@ -550,6 +560,7 @@ test "tokenize special hex digits" {
       #|  IntegerToken(
       #|    81985529216486895,
       #|    loc={ start: { line: 1, column: 14 }, end: { line: 1, column: 32 } },
+      #|    raw="0x0123456789ABCDEF",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 32 }, end: { line: 1, column: 32 } }),
       #|]
@@ -691,6 +702,7 @@ test "test binary number with underscores" {
       #|  IntegerToken(
       #|    172,
       #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 18 } },
+      #|    raw="0b1010_1100",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 18 }, end: { line: 1, column: 18 } }),
       #|]
@@ -1542,6 +1554,7 @@ test "hex number with underscores" {
       #|  IntegerToken(
       #|    3735928559,
       #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 20 } },
+      #|    raw="0xDE_AD_BE_EF",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 20 }, end: { line: 1, column: 20 } }),
       #|]
@@ -1602,29 +1615,23 @@ test "very large invalid float" {
 }
 
 ///|
-/// Test edge case for hex digit error handling  
+/// Hex numbers that exceed the Int64 range are rejected (used to silently
+/// wrap around, e.g. 0xFFFFFFFFFFFFFFFF parsed as -1).
 test "test hex overflow edge case" {
-  // Test a hex number that might cause overflow issues
-  let tokens = @tokenize.tokenize(
-    (
-      #|hex = 0xFFFFFFFFFFFFFFFF
-    ),
-  )
   debug_inspect(
-    tokens,
+    try
+      @tokenize.tokenize(
+        (
+          #|hex = 0xFFFFFFFFFFFFFFFF
+        ),
+      )
+    catch {
+      err => Err(err)
+    } noraise {
+      value => Ok(value)
+    },
     content=(
-      #|[
-      #|  Identifier(
-      #|    "hex",
-      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
-      #|  ),
-      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
-      #|  IntegerToken(
-      #|    -1,
-      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 25 } },
-      #|  ),
-      #|  EOF(loc={ start: { line: 1, column: 25 }, end: { line: 1, column: 25 } }),
-      #|]
+      #|Err(Failure("internal/tokenize/tokenize.mbt:551:7-551:71@bobzhang/toml FAILED: Invalid hex number: value out of Int64 range at line 1, column 7"))
     ),
   )
 }
@@ -1725,6 +1732,7 @@ test "attempt hex digit error path" {
       #|  IntegerToken(
       #|    188900967593046,
       #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 21 } },
+      #|    raw="0xABCDEF123456",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }),
       #|]

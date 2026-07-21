@@ -137,10 +137,19 @@ fn create_array_of_tables(
   let new_table = Map([])
   match current_table.get(final_key) {
     Some(TomlArray(existing_array)) => {
-      // Verify this is an array-of-tables (created by [[ ]]), not a static array (= [...])
-      // Static arrays are either empty or contain non-table values
+      // Verify this is an array-of-tables (created by [[ ]]), not a static
+      // array (= [...]). Static arrays are either empty or contain
+      // non-table values; a static array of inline tables is immutable as
+      // well, and its elements carry the inline-table marker.
       let is_array_of_tables = existing_array.length() > 0 &&
-        existing_array.iter().all(fn(v) { v is TomlTable(_) })
+        existing_array
+        .iter()
+        .all(fn(v) {
+          match v {
+            TomlTable(t) => !t.contains("\u0000__inline__")
+            _ => false
+          }
+        })
       if !is_array_of_tables {
         raise ExpectedArray(final_key, TomlArray(existing_array))
       }

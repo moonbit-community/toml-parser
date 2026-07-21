@@ -14,31 +14,46 @@ fn Parser::skip_newlines(self : Parser) -> Unit {
 /// Try to consume a single bare key from the current position.
 /// Handles identifiers, strings, integers, booleans (true/false),
 /// and special float keywords (inf/nan) in key position.
+///
+/// The raw source text of numeric tokens is used as the key so that
+/// underscores and other digit formatting are preserved (`1_0` stays
+/// "1_0"). A leading '+' in the raw text means the token can never be a
+/// bare key ('+' is not a bare-key character), so it is rejected here and
+/// surfaces as an "Expected key" error.
 fn Parser::try_parse_single_key(self : Parser) -> String? {
   match self.view() {
-    [Identifier(name, ..), .. rest] => {
-      self.update_view(rest)
-      Some(name)
-    }
+    [Identifier(name, ..), .. rest] =>
+      if name.has_prefix("+") {
+        None
+      } else {
+        self.update_view(rest)
+        Some(name)
+      }
     [StringToken(_, multiline=true, ..), ..] => None // multiline strings not allowed as keys
     [StringToken(name, ..), .. rest] => {
       self.update_view(rest)
       Some(name)
     }
-    [IntegerToken(i, ..), .. rest] => {
-      self.update_view(rest)
-      Some(i.to_string())
-    }
+    [IntegerToken(_, raw~, ..), .. rest] =>
+      if raw.has_prefix("+") {
+        None
+      } else {
+        self.update_view(rest)
+        Some(raw)
+      }
     [BooleanToken(b, ..), .. rest] => {
       self.update_view(rest)
       Some(if b { "true" } else { "false" })
     }
-    [FloatToken(_, raw~, ..), .. rest] => {
+    [FloatToken(_, raw~, ..), .. rest] =>
       // Use the raw source text so that tokens like -10e-1 (which the
       // lexer parses as a float) can still serve as bare keys.
-      self.update_view(rest)
-      Some(raw)
-    }
+      if raw.has_prefix("+") {
+        None
+      } else {
+        self.update_view(rest)
+        Some(raw)
+      }
     [DateTimeToken(LocalDate(s), ..), .. rest] => {
       // Only LocalDate (YYYY-MM-DD) is valid as a bare key — it only
       // contains digits and dashes. Other datetime variants contain
@@ -206,6 +221,10 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
     [FloatToken(_, raw~, ..), .. rest] => {
       // Use the raw source text so dotted numeric keys like "1.2" split
       // correctly and tokens like -10e-1 are preserved verbatim.
+      // A leading '+' is never valid in a bare key.
+      if raw.has_prefix("+") {
+        self.error("Expected key")
+      }
       self.update_view(rest)
       match raw.split_once(".") {
         Some((left, right)) => {
@@ -230,6 +249,10 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
         // Check for float token (e.g. 1.2 → keys "1" and "2")
         match self.view() {
           [FloatToken(_, raw~, ..), .. rest2] => {
+            // A leading '+' is never valid in a bare key.
+            if raw.has_prefix("+") {
+              self.error("Expected key after dot")
+            }
             self.update_view(rest2)
             let float_str = raw
             match float_str.split_once(".") {
@@ -360,14 +383,11 @@ pub fn parse(input : String) -> TomlValue raise {
       _ => {
         // Parse key-value pair
         let (key_path, value) = parser.parse_key_value()
-        // Mark implicit tables when inside an explicitly defined [table] section
-        let in_defined_section = current_table.contains(table_defined_marker)
-        set_dotted_key_value(
-          current_table,
-          key_path,
-          value,
-          mark_implicit=in_defined_section,
-        ) catch {
+        // Tables created by dotted keys count as defined: they cannot be
+        // reopened with [table] headers later (TOML 1.0 "tables cannot be
+        // defined more than once"), and dotted keys in one section cannot
+        // extend a table that a [table] header defined in another section.
+        set_dotted_key_value(current_table, key_path, value, mark_implicit=true) catch {
           error => parser.error("\{error}")
         }
         // Validate that key-value pair is properly terminated
