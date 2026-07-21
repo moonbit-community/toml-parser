@@ -30,6 +30,7 @@ test "test invalid float parsing" {
       #|    IntegerToken(
       #|      3,
       #|      loc={ start: { line: 1, column: 15 }, end: { line: 1, column: 16 } },
+      #|      raw="3",
       #|    ),
       #|    EOF(loc={ start: { line: 1, column: 16 }, end: { line: 1, column: 16 } }),
       #|  ],
@@ -234,6 +235,7 @@ test "test hex with valid delimiters" {
       #|  IntegerToken(
       #|    4666,
       #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 13 } },
+      #|    raw="0x123A",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 13 } }),
       #|]
@@ -257,11 +259,13 @@ test "test hex with valid delimiters" {
       #|  IntegerToken(
       #|    4666,
       #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 14 } },
+      #|    raw="0x123A",
       #|  ),
       #|  Comma(loc={ start: { line: 1, column: 14 }, end: { line: 1, column: 15 } }),
       #|  IntegerToken(
       #|    11,
       #|    loc={ start: { line: 1, column: 16 }, end: { line: 1, column: 19 } },
+      #|    raw="0xB",
       #|  ),
       #|  RightBracket(loc={ start: { line: 1, column: 19 }, end: { line: 1, column: 20 } }),
       #|  EOF(loc={ start: { line: 1, column: 20 }, end: { line: 1, column: 20 } }),
@@ -289,6 +293,7 @@ test "test hex case variations" {
       #|  IntegerToken(
       #|    11259375,
       #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 15 } },
+      #|    raw="0xaBcDeF",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 15 }, end: { line: 1, column: 15 } }),
       #|]
@@ -336,6 +341,7 @@ test "test octal with valid delimiters" {
       #|  IntegerToken(
       #|    493,
       #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 12 } },
+      #|    raw="0o755",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 12 }, end: { line: 1, column: 12 } }),
       #|]
@@ -359,11 +365,13 @@ test "test octal with valid delimiters" {
       #|  IntegerToken(
       #|    420,
       #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 13 } },
+      #|    raw="0o644",
       #|  ),
       #|  Comma(loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 14 } }),
       #|  IntegerToken(
       #|    493,
       #|    loc={ start: { line: 1, column: 15 }, end: { line: 1, column: 20 } },
+      #|    raw="0o755",
       #|  ),
       #|  RightBracket(loc={ start: { line: 1, column: 20 }, end: { line: 1, column: 21 } }),
       #|  EOF(loc={ start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }),
@@ -412,6 +420,7 @@ test "test binary with valid delimiters" {
       #|  IntegerToken(
       #|    10,
       #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 13 } },
+      #|    raw="0b1010",
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 13 } }),
       #|]
@@ -435,11 +444,13 @@ test "test binary with valid delimiters" {
       #|  IntegerToken(
       #|    5,
       #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 13 } },
+      #|    raw="0b101",
       #|  ),
       #|  Comma(loc={ start: { line: 1, column: 13 }, end: { line: 1, column: 14 } }),
       #|  IntegerToken(
       #|    6,
       #|    loc={ start: { line: 1, column: 15 }, end: { line: 1, column: 20 } },
+      #|    raw="0b110",
       #|  ),
       #|  RightBracket(loc={ start: { line: 1, column: 20 }, end: { line: 1, column: 21 } }),
       #|  EOF(loc={ start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }),

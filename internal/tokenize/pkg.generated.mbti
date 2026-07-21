@@ -29,7 +29,7 @@ pub fn Loc::to_repr(Self) -> @debug.Repr
 
 pub(all) enum Token {
   StringToken(String, loc~ : Loc, multiline~ : Bool)
-  IntegerToken(Int64, loc~ : Loc)
+  IntegerToken(Int64, loc~ : Loc, raw~ : String)
   FloatToken(Double, loc~ : Loc, raw~ : String)
   BooleanToken(Bool, loc~ : Loc)
   DateTimeToken(@datetime.TomlDateTime, loc~ : Loc)
