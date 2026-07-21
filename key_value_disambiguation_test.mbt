@@ -265,3 +265,65 @@ test "static arrays cannot be appended by array-of-tables headers" {
     assert_true(parse_expect_to_fail(input).has_prefix("ExpectedArray"))
   }
 }
+
+///|
+test "bare keys are not subject to numeric underscore or range rules" {
+  // Bare keys only require A-Za-z0-9_- characters; underscore placement and
+  // Int64 range are numeric-literal rules and do not apply in key position.
+  // (Regression: these used to fail numeric validation before the parser
+  // could use the raw text as a key.)
+  debug_inspect(
+    @toml.parse("1__0 = 1\n"),
+    content=(
+      #|TomlTable({ "1__0": TomlInteger(1) })
+    ),
+  )
+  debug_inspect(
+    @toml.parse("[1_]\nx = 2\n"),
+    content=(
+      #|TomlTable({ "1_": TomlTable({ "x": TomlInteger(2) }) })
+    ),
+  )
+  debug_inspect(
+    @toml.parse("1_.5 = 3\n"),
+    content=(
+      #|TomlTable({ "1_": TomlTable({ "5": TomlInteger(3) }) })
+    ),
+  )
+  debug_inspect(
+    @toml.parse("99999999999999999999 = 1\n"),
+    content=(
+      #|TomlTable({ "99999999999999999999": TomlInteger(1) })
+    ),
+  )
+  debug_inspect(
+    @toml.parse("-99999999999999999999 = 1\n"),
+    content=(
+      #|TomlTable({ "-99999999999999999999": TomlInteger(1) })
+    ),
+  )
+}
+
+///|
+test "numeric validation still applies in value position" {
+  // The same texts are invalid as values — and the error keeps the specific
+  // reason rather than degrading to a generic "Expected value".
+  debug_inspect(
+    [
+      parse_expect_to_fail("x = 1__0\n"),
+      parse_expect_to_fail("arr = [1__0]\n"),
+      parse_expect_to_fail("x = 1_\n"),
+      parse_expect_to_fail("x = 1.5_\n"),
+      parse_expect_to_fail("x = 99999999999999999999\n"),
+    ],
+    content=(
+      #|[
+      #|  "Failure(Invalid number: underscore not between digits) at { start: { line: 1, column: 5 }, end: { line: 1, column: 9 } })",
+      #|  "Failure(Invalid number: underscore not between digits) at { start: { line: 1, column: 8 }, end: { line: 1, column: 12 } })",
+      #|  "Failure(Invalid number: trailing underscore) at { start: { line: 1, column: 5 }, end: { line: 1, column: 7 } })",
+      #|  "Failure(Invalid number: trailing underscore) at { start: { line: 1, column: 5 }, end: { line: 1, column: 9 } })",
+      #|  "Failure(Invalid integer: 99999999999999999999) at { start: { line: 1, column: 5 }, end: { line: 1, column: 25 } })",
+      #|]
+    ),
+  )
+}

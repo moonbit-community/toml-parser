@@ -107,7 +107,21 @@ test "test edge case number formats for error paths" {
   debug_inspect(
     tokens,
     content=(
-      #|Err(Failure("internal/tokenize/tokenize.mbt:987:12-987:41@bobzhang/toml FAILED: Invalid integer: 999999999999999999999999999999999999999"))
+      #|Ok(
+      #|  [
+      #|    Identifier(
+      #|      "huge",
+      #|      loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 5 } },
+      #|    ),
+      #|    Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
+      #|    IntegerToken(
+      #|      9223372036854775807,
+      #|      loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 47 } },
+      #|      raw="999999999999999999999999999999999999999",
+      #|    ),
+      #|    EOF(loc={ start: { line: 1, column: 47 }, end: { line: 1, column: 47 } }),
+      #|  ],
+      #|)
     ),
   )
 }
