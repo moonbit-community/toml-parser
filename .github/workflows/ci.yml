@@ -50,7 +50,7 @@ jobs:
 
       - name: moon cram (native CLI)
         if: matrix.channel == 'nightly'
-        run: moon cram test --release tests/cram
+        run: moon -C toml_cli cram test --release tests/cram
 
       # - name: moon test
       #   run: moon test --enable-coverage
