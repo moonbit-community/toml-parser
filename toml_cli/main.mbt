@@ -1,10 +1,10 @@
 ///|
-let version : String = "0.2.3"
+let version : String = "0.1.0"
 
 ///|
 fn toml_command() -> @argparse.Command {
   Command(
-    "toml",
+    "toml_cli",
     about="Parse, validate, and format TOML files.",
     version~,
     arg_required_else_help=true,

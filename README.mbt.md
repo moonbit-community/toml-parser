@@ -75,20 +75,27 @@ import {
 
 ## Command-Line Usage
 
-The module includes a native `toml` CLI in `cmd/toml` for validating and
-normalizing TOML files:
+The companion `bobzhang/toml_cli` module (in `toml_cli/` in this repository)
+provides a CLI for validating and normalizing TOML files. Run the published
+prebuilt wasm directly, no installation needed:
 
 ```bash
-moon run --target native cmd/toml -- --help
-moon run --target native cmd/toml -- check config.toml
-moon run --target native cmd/toml -- format config.toml
+moon runwasm bobzhang/toml_cli -- --help
+moon runwasm bobzhang/toml_cli -- check config.toml
+moon runwasm bobzhang/toml_cli -- format config.toml
+```
+
+Or run it from source in this repository:
+
+```bash
+moon run --target native toml_cli -- --help
 ```
 
 For release-style CLI testing, run the Moon Cram transcript tests. `moon cram`
-builds the native CLI and puts `toml.exe` on `PATH`:
+builds the native CLI and puts `toml_cli.exe` on `PATH`:
 
 ```bash
-moon cram test --release tests/cram
+moon -C toml_cli cram test --release tests/cram
 ```
 
 ## Quick Start
@@ -569,7 +576,7 @@ toml-parser/
 - **Core Parser** (`toml.mbt`, `parser.mbt`) - Main TOML parsing implementation with full TOML 1.0 specification support, recursive descent parser with error recovery
 - **Tokenizer** (`internal/tokenize/`) - Lexical analysis and tokenization engine supporting all TOML tokens including special float values (inf, nan)
 - **Utilities** (`toml_utils.mbt`) - Helper functions for table creation, dotted key handling, and nested structure management
-- **CLI Application** (`cmd/toml/`) - Command-line validation and formatting for TOML files
+- **CLI Application** (`toml_cli/`, published as `bobzhang/toml_cli`) - Command-line validation and formatting for TOML files
 - **Comprehensive Test Suite** (8000+ lines) - Extensive coverage including:
   - Unit tests for all data types and features
   - Official TOML specification compliance tests
@@ -693,7 +700,7 @@ moon test e2e -v --target native       # e2e toml-test suite (745 tests)
 ### Running the CLI
 
 ```bash
-moon run cmd/toml
+moon run toml_cli
 ```
 
 ### Building
