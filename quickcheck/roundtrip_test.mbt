@@ -6,7 +6,7 @@
 /// shrinker straight off the `RoundTrippable` instances, so the call names
 /// only the property.
 fn roundtrip_property(document : @quickcheck.RoundTrippable) -> @qc.Property {
-  let value = document.inner()
+  let value = document.0
   let rendered = value.to_string()
   check_roundtrip(value, rendered)
   |> @qc.classify(is_nested(value), "nested-table")

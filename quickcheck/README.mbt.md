@@ -35,7 +35,7 @@ is the standard escape hatch — the same pattern `moonbitlang/quickcheck`'s own
 test "documents survive a parse round-trip" {
   @qc.quick_check_fn(
     fn(document : @quickcheck.RoundTrippable) {
-      @quickcheck.round_trips(document.inner())
+      @quickcheck.round_trips(document.0)
     },
     max_success=100,
   )

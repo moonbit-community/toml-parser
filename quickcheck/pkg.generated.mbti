@@ -23,7 +23,6 @@ pub(all) struct RoundTrippable(@toml.TomlValue) derive(Eq, @debug.Debug)
 #deprecated
 pub fn RoundTrippable::arbitrary(Int, @splitmix.RandomState) -> Self
 pub fn RoundTrippable::equal(Self, Self) -> Bool
-pub fn RoundTrippable::inner(Self) -> @toml.TomlValue
 pub fn RoundTrippable::not_equal(Self, Self) -> Bool
 #deprecated
 pub fn RoundTrippable::shrink(Self) -> Iter[Self]

@@ -11,11 +11,13 @@
 /// ```mbt nocheck
 /// test {
 ///   @qc.quick_check_fn(fn(doc : @quickcheck.RoundTrippable) {
-///     let value = doc.inner()
-///     @toml.parse(value.to_string()) == value
+///     @toml.parse(doc.0.to_string()) == doc.0
 ///   })
 /// }
 /// ```
+///
+/// Access the wrapped value with the tuple-field accessor `.0` (or match
+/// `RoundTrippable(value)`), the same as the library's `modifiers`.
 pub(all) struct RoundTrippable(@toml.TomlValue) derive(Eq, Debug)
 
 ///|
@@ -23,13 +25,6 @@ pub extend RoundTrippable with Eq::{not_equal, equal}
 
 ///|
 pub extend RoundTrippable with Debug::{to_repr}
-
-///|
-/// Unwrap to the underlying `TomlValue`.
-pub fn RoundTrippable::inner(self : RoundTrippable) -> @toml.TomlValue {
-  let RoundTrippable(value) = self
-  value
-}
 
 ///|
 pub impl @core_qc.Arbitrary for RoundTrippable with fn arbitrary(size, rng) {
@@ -42,7 +37,7 @@ pub extend RoundTrippable with @core_qc.Arbitrary::{arbitrary}
 
 ///|
 pub impl @qc.Shrink for RoundTrippable with fn shrink(self) {
-  shrink_document(self.inner()).map(fn(value) { RoundTrippable(value) })
+  shrink_document(self.0).map(fn(value) { RoundTrippable(value) })
 }
 
 ///|
