@@ -1,7 +1,11 @@
 ///|
 /// Default location for testing and compatibility
 pub fn default_loc() -> Loc {
-  let pos : @lexer.Position = { line: 1, column: 1 }
+  // FIXME(upstream): two lints disagree, so the type is spelled exactly once.
+  // `let pos : @lexer.Position = { ... }` trips unqualified_record, while
+  // spelling both the annotation and the `T::` prefix trips
+  // unnecessary_annotation.
+  let pos = @lexer.Position::{ line: 1, column: 1 }
   { start: pos, end: pos }
 }
 

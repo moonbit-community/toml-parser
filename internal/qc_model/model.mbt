@@ -40,30 +40,12 @@ pub extend SimpleDocument with Eq::{not_equal, equal}
 pub extend SimpleDocument with Debug::{to_repr}
 
 ///|
-#deprecated("render via the Show trait, e.g. `inspect` or `\\{value}`")
-pub extend SimpleDocument with Show::{to_string, output}
-
-///|
 #deprecated("compare with `==`; the Eq impl is unaffected")
 pub extend SimpleValue with Eq::{not_equal, equal}
 
 ///|
 #deprecated("render via the Debug trait, e.g. `debug_inspect`")
 pub extend SimpleValue with Debug::{to_repr}
-
-///|
-#deprecated("render via the Show trait, e.g. `inspect` or `\\{value}`")
-pub extend SimpleValue with Show::{to_string, output}
-
-///|
-pub impl Show for SimpleDocument with fn output(self, logger) {
-  Debug::to_repr(self).output(logger)
-}
-
-///|
-pub impl Show for SimpleValue with fn output(self, logger) {
-  Debug::to_repr(self).output(logger)
-}
 
 ///|
 /// Lift a model value into the parser's `TomlValue` representation.

@@ -16,7 +16,7 @@ fn simple_document_roundtrip_check(
             Ok(())
           } else {
             Err(
-              "round-trip mismatch\nrendered:\n\{rendered}\noriginal:\n\{doc}\nparsed:\n\{roundtripped}",
+              "round-trip mismatch\nrendered:\n\{rendered}\noriginal:\n\{repr(doc)}\nparsed:\n\{repr(roundtripped)}",
             )
           }
         None =>
