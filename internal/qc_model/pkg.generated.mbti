@@ -29,13 +29,8 @@ pub fn SimpleDocument::from_toml(@toml.TomlValue) -> Self?
 #deprecated
 pub fn SimpleDocument::not_equal(Self, Self) -> Bool
 #deprecated
-pub fn SimpleDocument::output(Self, &Logger) -> Unit
-#deprecated
 pub fn SimpleDocument::to_repr(Self) -> @debug.Repr
-#deprecated
-pub fn SimpleDocument::to_string(Self) -> String
 pub fn SimpleDocument::to_toml(Self) -> @toml.TomlValue
-pub impl Show for SimpleDocument
 
 pub(all) enum SimpleValue {
   SString(String)
@@ -55,13 +50,8 @@ pub fn SimpleValue::from_toml(@toml.TomlValue) -> Self?
 #deprecated
 pub fn SimpleValue::not_equal(Self, Self) -> Bool
 #deprecated
-pub fn SimpleValue::output(Self, &Logger) -> Unit
-#deprecated
 pub fn SimpleValue::to_repr(Self) -> @debug.Repr
-#deprecated
-pub fn SimpleValue::to_string(Self) -> String
 pub fn SimpleValue::to_toml(Self) -> @toml.TomlValue
-pub impl Show for SimpleValue
 
 // Type aliases
 
