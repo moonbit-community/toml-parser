@@ -22,9 +22,14 @@ moonx bobzhang/toml_cli format config.toml
 toml <file>           Parse TOML and print normalized TOML (same as `format`)
 toml format <file>    Parse TOML and print normalized TOML
 toml check <file>     Validate TOML without printing parsed output
+toml tojson <file>    Parse TOML and print it as JSON
 ```
 
 Exit codes: `0` on success, `1` on read/parse failure, `2` on usage errors.
+
+`tojson` maps tables to objects and arrays to arrays; datetimes become their
+TOML string form, integers keep their exact 64-bit decimal representation,
+and non-finite floats become the strings `"nan"`/`"inf"`/`"-inf"`.
 
 ## Run from source
 

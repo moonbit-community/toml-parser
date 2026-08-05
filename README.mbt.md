@@ -85,6 +85,7 @@ straight through, no `--` separator):
 moonx bobzhang/toml_cli --help
 moonx bobzhang/toml_cli check config.toml
 moonx bobzhang/toml_cli format config.toml
+moonx bobzhang/toml_cli tojson config.toml
 ```
 
 Or run it from source in this repository:
