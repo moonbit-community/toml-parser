@@ -436,7 +436,9 @@ fn set_dotted_key_value(
   value : TomlValue,
   mark_implicit? : Bool = false,
 ) -> Unit raise TableConflicts {
-  guard key_path.length() != 0
+  guard key_path.length() != 0 else {
+    abort("set_dotted_key_value: key_path must not be empty")
+  }
   if key_path.length() == 1 {
     // Simple key assignment — reject duplicates
     let key = key_path[0]
