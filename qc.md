@@ -1,6 +1,10 @@
 # QuickCheck Roundtrip Testing
 
-This project uses [moonbitlang/quickcheck](https://mooncakes.io/docs/#/moonbitlang/quickcheck/) to verify that the TOML serializer produces output the parser can round-trip correctly.
+This project uses the QuickCheck framework that ships with the MoonBit core
+library (`moonbitlang/core/quickcheck`, introduced by
+[moonbitlang/core#3955](https://github.com/moonbitlang/core/pull/3955)) to
+verify that the TOML serializer produces output the parser can round-trip
+correctly. No third-party dependency is needed.
 
 ## How It Works
 
@@ -45,19 +49,18 @@ classDiagram
 
 ## QuickCheck Components
 
-The test package now keeps the QuickCheck plumbing in test-only files:
+The QuickCheck plumbing lives in the `internal/qc_model` package:
 
-- `internal/qc_model/gen_test.mbt` defines the generators.
-- `internal/qc_model/shrink_test.mbt` defines the shrink helpers.
-- `internal/qc_model/roundtrip_test.mbt` defines the TOML conversion and property.
-- `internal/qc_model/qc_model_test.mbt` runs the property test.
-
-These helpers are no longer exported from `internal/qc_model`; the package only
-keeps the simplified model types used by the test.
+- `internal/qc_model/generator.mbt` defines the generators and the
+  `Arbitrary` impl for `SimpleDocument`.
+- `internal/qc_model/shrink.mbt` defines the shrinkers and the `Shrink`
+  impl for `SimpleDocument`.
+- `internal/qc_model/roundtrip_test.mbt` defines the round-trip property,
+  drives it with `@qc.check`, and snapshots the generator's coverage.
 
 The test implements four key pieces required by the quickcheck framework:
 
-### 1. Generators (`@qc.Gen`)
+### 1. Generators (`@qc.Generator`)
 
 Generators produce random values. Each type needs a custom generator.
 
@@ -88,85 +91,87 @@ Key generator patterns used:
 
 | Pattern | Example | Purpose |
 |---------|---------|---------|
-| `@qc.Gen::spawn()` | `@qc.Gen[String]::spawn()` | Use the built-in Arbitrary instance |
+| `spawn()` (local helper) | `(spawn() : @qc.Generator[String])` | Use the built-in Arbitrary instance |
 | `@qc.one_of([...])` | `one_of([pure('-'), pure('_')])` | Choose uniformly from options |
 | `@qc.frequency([...])` | `frequency([(3U, bare), (2U, complex)])` | Weighted random choice |
-| `.fmap(fn)` | `gen.fmap(fn(x) { SString(x) })` | Transform generated values |
-| `.bind(fn)` | `gen.bind(fn(n) { ... })` | Chain dependent generators |
-| `@qc.liftA2(f, g1, g2)` | `liftA2(make_pair, key_gen, val_gen)` | Combine two generators |
-| `.scale(fn)` | `gen.scale(fn(s) { min(s, 8) })` | Control size parameter |
+| `.map(fn)` | `gen.map(x => SString(x))` | Transform generated values |
+| `.flat_map(fn)` | `gen.flat_map(n => ...)` | Chain dependent generators |
+| `lift2(f, g1, g2)` (local helper) | `lift2(make_pair, key_gen, val_gen)` | Combine two generators |
+| `.scale(fn)` | `gen.scale(s => min(s, 8))` | Control size parameter |
 | `.array_with_size(n)` | `gen.array_with_size(len)` | Generate fixed-size arrays |
-| `@qc.sized(fn)` | `sized(fn(size) { ... })` | Access the current size |
+| `@qc.sized(fn)` | `sized(size => ...)` | Access the current size |
 
-### 2. Shrinker (`(@qc_model.SimpleValue) -> Iter[@qc_model.SimpleValue]`)
+`char_range`, `lift2`, and `lift3` are small local helpers in
+`generator.mbt`; the core package covers everything else directly.
 
-When a test fails, quickcheck uses shrinkers to find the **minimal** failing case. The helper shrinker tries:
+### 2. Shrinker (`impl @shrink.Shrink for SimpleDocument`)
+
+When a test fails, quickcheck uses shrinkers to find the **minimal** failing case. The shrinker tries:
 - Removing individual entries from tables
 - Shrinking individual values within entries
 
 ```moonbit
-fn shrink_simple_value(value : @qc_model.SimpleValue) -> Iter[@qc_model.SimpleValue] {
+fn shrink_simple_value(value : SimpleValue) -> Iter[SimpleValue] {
   match value {
-    SString(value) => @qc.Shrink::shrink(value).map(fn(next) { SString(next) })
+    SString(s) => @shrink.Shrink::shrink(s).map(next => SString(next))
     STable(fields) =>
-      shrink_table_entries(fields.to_array()).map(fn(next_entries) {
-        STable(Map::from_array(next_entries[:]))
-      })
+      shrink_table_entries(fields.to_array()).map(next_entries => STable(
+        Map::from_array(next_entries),
+      ))
     // ...
   }
 }
 ```
 
-### 3. Property (`@qc.Property`)
+### 3. Property (`(SimpleDocument) -> Bool raise?`)
 
-The property combines the roundtrip check with classification labels for coverage reporting:
+The property is a plain function; on failure it raises with the rendered
+TOML so the counterexample text appears in the failure report:
 
 ```moonbit
-fn roundtrip_property(doc : @qc_model.SimpleDocument) -> @qc.Property {
-  let rendered = simple_document_to_toml(doc).to_string()
-  let checked = simple_document_roundtrip_check(doc, rendered)
-  @qc.counterexample(
-    @qc.classify(checked, doc.contains_table(), "contains-table"),
-    rendered,
-  )
+(doc : @qc_model.SimpleDocument) => {
+  let rendered = doc.to_toml().to_string()
+  match simple_document_roundtrip_check(doc, rendered) {
+    Ok(_) => true
+    Err(message) => fail(message)
+  }
 }
 ```
 
-- `@qc.classify(result, condition, label)` — tags test cases for coverage stats
-- `@qc.counterexample(result, value)` — attaches a displayable counterexample on failure
+The core driver reports the shrunk counterexample via `Debug` alongside
+the raised message.
 
-### 4. Running (`@qc.quick_check_silence`)
+### 4. Running (`@qc.check`)
 
 ```moonbit
 test "quickcheck simple document roundtrip" {
-  inspect(
-    @qc.quick_check_silence(
-      @qc.forall_shrink(
-        simple_document_gen(),   // generator
-        shrink_simple_document,  // shrinker
-        roundtrip_property,      // property
-      ),
-      max_success=2000, // run 2000 random cases
-      max_size=12,      // control max complexity
-    ),
-    content=...,
-  )
+  @qc.check(roundtrip_property, count=2000, max_size=12)
 }
 ```
 
-## Test Output
+`@qc.check` raises with a failure report (including the shrunk
+counterexample) if the property is falsified; on success the test simply
+passes.
 
-The test runs 2000 random documents and reports coverage:
+## Coverage Snapshot
+
+The core driver has no `classify` combinator, so structural coverage is
+snapshotted separately: a fixed-seed sample of 2000 documents is tallied
+against the `contains_*` predicates and the counts are checked with
+`inspect`:
 
 ```
-+++ [2000/0/2000] Ok, passed!
-49.85% : contains-string
-56.2% : contains-complex-key
-60.55% : contains-array
-29.15% : contains-table
+651/2000 : contains-table
+1338/2000 : contains-array
+519/2000 : contains-datetime-array
+548/2000 : contains-fractional-datetime
+855/2000 : contains-datetime
+767/2000 : contains-negative-exponent-like-key
+1210/2000 : contains-complex-key
+1030/2000 : contains-string
 ```
 
-This means ~30% of generated documents contain nested tables and ~60% contain arrays, giving good structural coverage.
+This means ~33% of generated documents contain nested tables and ~67% contain arrays, giving good structural coverage. If a generator change shifts the distribution, the snapshot fails and the new counts must be reviewed.
 
 ## Size Control
 

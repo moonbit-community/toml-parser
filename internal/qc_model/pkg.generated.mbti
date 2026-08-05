@@ -5,9 +5,13 @@ import {
   "bobzhang/toml",
   "bobzhang/toml/datetime",
   "moonbitlang/core/debug",
+  "moonbitlang/core/quickcheck",
+  "moonbitlang/core/quickcheck/shrink",
+  "moonbitlang/core/quickcheck/splitmix",
 }
 
 // Values
+pub fn simple_document_generator() -> @quickcheck.Generator[SimpleDocument]
 
 // Errors
 
@@ -15,6 +19,8 @@ import {
 pub(all) struct SimpleDocument {
   fields : Map[String, SimpleValue]
 } derive(Eq, @debug.Debug)
+#deprecated
+pub fn SimpleDocument::arbitrary(Int, @splitmix.RandomState) -> Self
 pub fn SimpleDocument::contains_array(Self) -> Bool
 pub fn SimpleDocument::contains_complex_key(Self) -> Bool
 pub fn SimpleDocument::contains_datetime(Self) -> Bool
@@ -29,8 +35,12 @@ pub fn SimpleDocument::from_toml(@toml.TomlValue) -> Self?
 #deprecated
 pub fn SimpleDocument::not_equal(Self, Self) -> Bool
 #deprecated
+pub fn SimpleDocument::shrink(Self) -> Iter[Self]
+#deprecated
 pub fn SimpleDocument::to_repr(Self) -> @debug.Repr
 pub fn SimpleDocument::to_toml(Self) -> @toml.TomlValue
+pub impl @quickcheck.Arbitrary for SimpleDocument
+pub impl @shrink.Shrink for SimpleDocument
 
 pub(all) enum SimpleValue {
   SString(String)

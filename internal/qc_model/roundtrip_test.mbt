@@ -28,50 +28,64 @@ fn simple_document_roundtrip_check(
 }
 
 ///|
-fn roundtrip_property(doc : @qc_model.SimpleDocument) -> @qc.Property {
-  let rendered = doc.to_toml().to_string()
-  let checked = simple_document_roundtrip_check(doc, rendered)
-  let classified = checked
-    |> @qc.classify(doc.contains_table(), "contains-table")
-    |> @qc.classify(doc.contains_array(), "contains-array")
-    |> @qc.classify(doc.contains_datetime_array(), "contains-datetime-array")
-    |> @qc.classify(
-      doc.contains_fractional_datetime(),
-      "contains-fractional-datetime",
-    )
-    |> @qc.classify(doc.contains_datetime(), "contains-datetime")
-    |> @qc.classify(
-      doc.contains_negative_exponent_like_key(),
-      "contains-negative-exponent-like-key",
-    )
-    |> @qc.classify(doc.contains_complex_key(), "contains-complex-key")
-    |> @qc.classify(doc.contains_string(), "contains-string")
-  @qc.counterexample(classified, rendered)
+/// Drive the round-trip property with the core QuickCheck driver. On
+/// failure, the shrunk counterexample is reported via `Debug` and the
+/// raised message carries the rendered TOML.
+test "quickcheck simple document roundtrip" {
+  @qc.check(
+    (doc : @qc_model.SimpleDocument) => {
+      let rendered = doc.to_toml().to_string()
+      match simple_document_roundtrip_check(doc, rendered) {
+        Ok(_) => true
+        Err(message) => fail(message)
+      }
+    },
+    count=2000,
+    max_size=12,
+  )
 }
 
 ///|
-test "quickcheck simple document roundtrip" {
-  inspect(
-    @qc.quick_check_silence(
-      @qc.forall_shrink(
-        simple_document_gen(),
-        shrink_simple_document,
-        roundtrip_property,
-      ),
-      max_success=2000,
-      max_size=12,
+/// Snapshot of the generator's structural coverage over a fixed seed, so
+/// distribution regressions in the generators stay visible now that the
+/// driver no longer prints classification stats.
+test "generator coverage distribution" {
+  let docs = @qc_model.simple_document_generator().samples(
+    count=2000,
+    size=12,
+    seed=37,
+  )
+  let labels : Array[(String, (@qc_model.SimpleDocument) -> Bool)] = [
+    ("contains-table", doc => doc.contains_table()),
+    ("contains-array", doc => doc.contains_array()),
+    ("contains-datetime-array", doc => doc.contains_datetime_array()),
+    ("contains-fractional-datetime", doc => doc.contains_fractional_datetime()),
+    ("contains-datetime", doc => doc.contains_datetime()),
+    (
+      "contains-negative-exponent-like-key",
+      doc => doc.contains_negative_exponent_like_key(),
     ),
+    ("contains-complex-key", doc => doc.contains_complex_key()),
+    ("contains-string", doc => doc.contains_string()),
+  ]
+  let report = StringBuilder()
+  for label in labels {
+    let (name, predicate) = label
+    let hits = docs.iter().filter(predicate).count()
+    report <+ "\{hits}/\{docs.length()} : \{name}\n"
+  }
+  inspect(
+    report.to_string(),
     content=(
-      #|+++ [2000/0/2000] Ok, passed!
-      #|Coverage:
-      #|61% : contains-array
-      #|29.15% : contains-table
-      #|44.4% : contains-string
-      #|36.7% : contains-datetime
-      #|52.55% : contains-complex-key
-      #|21.05% : contains-datetime-array
-      #|22.05% : contains-fractional-datetime
-      #|33.15% : contains-negative-exponent-like-key
+      #|651/2000 : contains-table
+      #|1338/2000 : contains-array
+      #|519/2000 : contains-datetime-array
+      #|548/2000 : contains-fractional-datetime
+      #|855/2000 : contains-datetime
+      #|767/2000 : contains-negative-exponent-like-key
+      #|1210/2000 : contains-complex-key
+      #|1030/2000 : contains-string
+      #|
     ),
   )
 }
