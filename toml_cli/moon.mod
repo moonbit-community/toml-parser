@@ -1,6 +1,6 @@
 name = "bobzhang/toml_cli"
 
-version = "0.1.0"
+version = "0.2.0"
 
 import {
   "bobzhang/toml@0.4.2",
