@@ -25,6 +25,7 @@ cached on first use; pin a version with bobzhang/toml_cli@<version>):
 
   moonx bobzhang/toml_cli check config.toml
   moonx bobzhang/toml_cli format config.toml
+  moonx bobzhang/toml_cli tojson config.toml
 
 Exit codes:
   0  success
@@ -39,6 +40,7 @@ move it over the original after checking the exit code.
 Commands:
   format  Parse TOML and print normalized TOML.
   check   Validate TOML without printing parsed output.
+  tojson  Parse TOML and print it as JSON.
   help    Print help for the subcommand(s).
 
 Arguments:
@@ -60,6 +62,7 @@ cached on first use; pin a version with bobzhang/toml_cli@<version>):
 
   moonx bobzhang/toml_cli check config.toml
   moonx bobzhang/toml_cli format config.toml
+  moonx bobzhang/toml_cli tojson config.toml
 
 Exit codes:
   0  success
@@ -74,6 +77,7 @@ move it over the original after checking the exit code.
 Commands:
   format  Parse TOML and print normalized TOML.
   check   Validate TOML without printing parsed output.
+  tojson  Parse TOML and print it as JSON.
   help    Print help for the subcommand(s).
 
 Arguments:
@@ -112,6 +116,38 @@ $ cat > valid.toml <<'EOF'
 > EOF
 > toml_cli.exe check valid.toml
 valid.toml: OK
+```
+
+## Convert To JSON
+
+Integers keep their exact 64-bit decimal representation (note `big` below
+is 2^53 + 1, which a double cannot represent), and datetimes become their
+TOML string form:
+
+```mooncram
+$ cat > convert.toml <<'EOF'
+> title = "MoonBit"
+> ports = [8000, 8001]
+> pi = 3.14
+> big = 9007199254740993
+> date = 1979-05-27T07:32:00Z
+> [server]
+> enabled = true
+> EOF
+> toml_cli.exe tojson convert.toml
+{
+  "title": "MoonBit",
+  "ports": [
+    8000,
+    8001
+  ],
+  "pi": 3.14,
+  "big": 9007199254740993,
+  "date": "1979-05-27T07:32:00Z",
+  "server": {
+    "enabled": true
+  }
+}
 ```
 
 ## Report Parse Errors

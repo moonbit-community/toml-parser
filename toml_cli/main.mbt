@@ -10,6 +10,7 @@ let about : String =
   #|
   #|  moonx bobzhang/toml_cli check config.toml
   #|  moonx bobzhang/toml_cli format config.toml
+  #|  moonx bobzhang/toml_cli tojson config.toml
   #|
   #|Exit codes:
   #|  0  success
@@ -46,6 +47,13 @@ fn toml_command() -> @argparse.Command {
           num_args=@argparse.ValueRange::single(),
         ),
       ]),
+      Command("tojson", about="Parse TOML and print it as JSON.", positionals=[
+        PositionArg(
+          "file",
+          about="TOML file to convert.",
+          num_args=@argparse.ValueRange::single(),
+        ),
+      ]),
     ],
   )
 }
@@ -69,6 +77,7 @@ fn run(args : ArrayView[String]) -> Int {
   match matches.subcommand {
     Some(("format", child)) => dispatch_file(child, format_file)
     Some(("check", child)) => dispatch_file(child, check_file)
+    Some(("tojson", child)) => dispatch_file(child, tojson_file)
     Some((name, _)) => {
       println("error: unsupported command `\{name}`")
       2
