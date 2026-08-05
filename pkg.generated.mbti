@@ -40,4 +40,3 @@ pub impl Show for TomlValue
 pub using @datetime {type TomlDateTime}
 
 // Traits
-

@@ -30,4 +30,3 @@ pub fn TestResult::new() -> Self
 // Type aliases
 
 // Traits
-
