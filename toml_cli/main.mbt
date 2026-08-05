@@ -2,10 +2,30 @@
 let version : String = "0.1.0"
 
 ///|
+let about : String =
+  #|Parse, validate, and format TOML files.
+  #|
+  #|Run it from mooncakes.io without installing (the binary is fetched and
+  #|cached on first use; pin a version with bobzhang/toml_cli@<version>):
+  #|
+  #|  moonx bobzhang/toml_cli check config.toml
+  #|  moonx bobzhang/toml_cli format config.toml
+  #|
+  #|Exit codes:
+  #|  0  success
+  #|  1  the file could not be read or is not valid TOML; a human-readable
+  #|     error with position information is printed to stdout
+  #|  2  usage error (unknown subcommand or missing file argument)
+  #|
+  #|`format` prints the normalized document to stdout; it never rewrites the
+  #|input file. To format in place, redirect stdout to a temporary file and
+  #|move it over the original after checking the exit code.
+
+///|
 fn toml_command() -> @argparse.Command {
   Command(
     "toml_cli",
-    about="Parse, validate, and format TOML files.",
+    about~,
     version~,
     arg_required_else_help=true,
     positionals=[

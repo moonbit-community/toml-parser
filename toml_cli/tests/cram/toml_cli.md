@@ -20,6 +20,22 @@ Usage: toml_cli [file] [command]
 
 Parse, validate, and format TOML files.
 
+Run it from mooncakes.io without installing (the binary is fetched and
+cached on first use; pin a version with bobzhang/toml_cli@<version>):
+
+  moonx bobzhang/toml_cli check config.toml
+  moonx bobzhang/toml_cli format config.toml
+
+Exit codes:
+  0  success
+  1  the file could not be read or is not valid TOML; a human-readable
+     error with position information is printed to stdout
+  2  usage error (unknown subcommand or missing file argument)
+
+`format` prints the normalized document to stdout; it never rewrites the
+input file. To format in place, redirect stdout to a temporary file and
+move it over the original after checking the exit code.
+
 Commands:
   format  Parse TOML and print normalized TOML.
   check   Validate TOML without printing parsed output.
@@ -38,6 +54,22 @@ $ toml_cli.exe
 Usage: toml_cli [file] [command]
 
 Parse, validate, and format TOML files.
+
+Run it from mooncakes.io without installing (the binary is fetched and
+cached on first use; pin a version with bobzhang/toml_cli@<version>):
+
+  moonx bobzhang/toml_cli check config.toml
+  moonx bobzhang/toml_cli format config.toml
+
+Exit codes:
+  0  success
+  1  the file could not be read or is not valid TOML; a human-readable
+     error with position information is printed to stdout
+  2  usage error (unknown subcommand or missing file argument)
+
+`format` prints the normalized document to stdout; it never rewrites the
+input file. To format in place, redirect stdout to a temporary file and
+move it over the original after checking the exit code.
 
 Commands:
   format  Parse TOML and print normalized TOML.

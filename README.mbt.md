@@ -78,12 +78,13 @@ import {
 
 The companion `bobzhang/toml_cli` module (in `toml_cli/` in this repository)
 provides a CLI for validating and normalizing TOML files. Run the published
-prebuilt wasm directly, no installation needed:
+prebuilt binary directly, no installation needed (arguments are passed
+straight through, no `--` separator):
 
 ```bash
-moon runwasm bobzhang/toml_cli -- --help
-moon runwasm bobzhang/toml_cli -- check config.toml
-moon runwasm bobzhang/toml_cli -- format config.toml
+moonx bobzhang/toml_cli --help
+moonx bobzhang/toml_cli check config.toml
+moonx bobzhang/toml_cli format config.toml
 ```
 
 Or run it from source in this repository:

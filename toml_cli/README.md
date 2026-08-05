@@ -5,13 +5,15 @@ A command-line tool to parse, validate, and format TOML files, built on
 
 ## Run without installing
 
-Once published, the prebuilt WebAssembly binary can be run directly from
-mooncakes.io:
+The prebuilt binary can be run directly from mooncakes.io — it is fetched
+and cached on first use, and arguments are passed straight through (no `--`
+separator needed). Pin a version with `bobzhang/toml_cli@<version>` for
+reproducible behavior:
 
 ```bash
-moon runwasm bobzhang/toml_cli -- --help
-moon runwasm bobzhang/toml_cli -- check config.toml
-moon runwasm bobzhang/toml_cli -- format config.toml
+moonx bobzhang/toml_cli --help
+moonx bobzhang/toml_cli check config.toml
+moonx bobzhang/toml_cli format config.toml
 ```
 
 ## Usage
