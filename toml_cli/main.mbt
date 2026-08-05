@@ -1,5 +1,5 @@
 ///|
-let version : String = "0.1.0"
+let version : String = "0.2.0"
 
 ///|
 let about : String =
