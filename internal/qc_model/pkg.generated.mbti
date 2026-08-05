@@ -56,4 +56,3 @@ pub fn SimpleValue::to_toml(Self) -> @toml.TomlValue
 // Type aliases
 
 // Traits
-

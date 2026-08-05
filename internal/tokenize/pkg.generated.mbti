@@ -59,4 +59,3 @@ pub fn Token::to_repr(Self) -> @debug.Repr
 // Type aliases
 
 // Traits
-
