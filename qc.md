@@ -55,8 +55,9 @@ The QuickCheck plumbing lives in the `internal/qc_model` package:
   `Arbitrary` impl for `SimpleDocument`.
 - `internal/qc_model/shrink.mbt` defines the shrinkers and the `Shrink`
   impl for `SimpleDocument`.
-- `internal/qc_model/roundtrip_test.mbt` defines the round-trip property,
-  drives it with `@qc.check`, and snapshots the generator's coverage.
+- `internal/qc_model/roundtrip_test.mbt` drives the round-trip property
+  with `@qc.report`, classifying every case via `observe`, and snapshots
+  the whole report (pass status plus structural coverage).
 
 The test implements four key pieces required by the quickcheck framework:
 
@@ -94,15 +95,16 @@ Key generator patterns used:
 | `spawn()` (local helper) | `(spawn() : @qc.Generator[String])` | Use the built-in Arbitrary instance |
 | `@qc.one_of([...])` | `one_of([pure('-'), pure('_')])` | Choose uniformly from options |
 | `@qc.frequency([...])` | `frequency([(3U, bare), (2U, complex)])` | Weighted random choice |
+| `@qc.char_range(lo, hi)` | `char_range('a', 'z')` | Characters in an inclusive range |
 | `.map(fn)` | `gen.map(x => SString(x))` | Transform generated values |
 | `.flat_map(fn)` | `gen.flat_map(n => ...)` | Chain dependent generators |
-| `lift2(f, g1, g2)` (local helper) | `lift2(make_pair, key_gen, val_gen)` | Combine two generators |
+| `.zip(g)` / `.zip_with(g, f)` / `.zip_with3(g2, g3, f)` | `key_gen.zip(val_gen)` | Combine generators applicatively |
 | `.scale(fn)` | `gen.scale(s => min(s, 8))` | Control size parameter |
 | `.array_with_size(n)` | `gen.array_with_size(len)` | Generate fixed-size arrays |
 | `@qc.sized(fn)` | `sized(size => ...)` | Access the current size |
 
-`char_range`, `lift2`, and `lift3` are small local helpers in
-`generator.mbt`; the core package covers everything else directly.
+`spawn` (a generator from an `Arbitrary` instance) is the only remaining
+local helper; the core package covers everything else directly.
 
 ### 2. Shrinker (`impl @shrink.Shrink for SimpleDocument`)
 
@@ -141,37 +143,34 @@ TOML so the counterexample text appears in the failure report:
 The core driver reports the shrunk counterexample via `Debug` alongside
 the raised message.
 
-### 4. Running (`@qc.check`)
+### 4. Running and Coverage (`@qc.report` + `observe`)
+
+The driver's `observe` parameter classifies every accepted case, so one
+run both checks the property and tracks structural coverage. The test
+snapshots the entire report:
 
 ```moonbit
 test "quickcheck simple document roundtrip" {
-  @qc.check(roundtrip_property, count=2000, max_size=12)
+  let result = @qc.report(
+    roundtrip_property,
+    observe=doc => [
+      @qc.classify(doc.contains_table(), "contains-table"),
+      @qc.classify(doc.contains_array(), "contains-array"),
+      // ... six more classifiers
+    ],
+    count=2000,
+    max_size=12,
+  )
+  debug_inspect(result, content=...)
 }
 ```
 
-`@qc.check` raises with a failure report (including the shrunk
-counterexample) if the property is falsified; on success the test simply
-passes.
-
-## Coverage Snapshot
-
-The core driver has no `classify` combinator, so structural coverage is
-snapshotted separately: a fixed-seed sample of 2000 documents is tallied
-against the `contains_*` predicates and the counts are checked with
-`inspect`:
-
-```
-651/2000 : contains-table
-1338/2000 : contains-array
-519/2000 : contains-datetime-array
-548/2000 : contains-fractional-datetime
-855/2000 : contains-datetime
-767/2000 : contains-negative-exponent-like-key
-1210/2000 : contains-complex-key
-1030/2000 : contains-string
-```
-
-This means ~33% of generated documents contain nested tables and ~67% contain arrays, giving good structural coverage. If a generator change shifts the distribution, the snapshot fails and the new counts must be reviewed.
+A passing run snapshots as `Passed(tests=2000, observations={ classes:
+{ "contains-table": 570, "contains-array": 1218, ... } })` — ~29% of
+generated documents contain nested tables and ~61% contain arrays. If a
+generator change shifts the distribution, the snapshot fails and the new
+counts must be reviewed. A failing run renders the shrunk counterexample
+and the raised message (which carries the rendered TOML) instead.
 
 ## Size Control
 

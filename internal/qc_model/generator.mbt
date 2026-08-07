@@ -12,32 +12,6 @@ fn[T : @qc.Arbitrary] spawn() -> @qc.Generator[T] {
 }
 
 ///|
-fn char_range(lower : Char, upper : Char) -> @qc.Generator[Char] {
-  @qc.int_range(lower.to_int(), upper.to_int() + 1).map(code => {
-    code.unsafe_to_char()
-  })
-}
-
-///|
-fn[A, B, C] lift2(
-  f : (A, B) -> C,
-  ga : @qc.Generator[A],
-  gb : @qc.Generator[B],
-) -> @qc.Generator[C] {
-  ga.flat_map(a => gb.map(b => f(a, b)))
-}
-
-///|
-fn[A, B, C, D] lift3(
-  f : (A, B, C) -> D,
-  ga : @qc.Generator[A],
-  gb : @qc.Generator[B],
-  gc : @qc.Generator[C],
-) -> @qc.Generator[D] {
-  ga.flat_map(a => gb.flat_map(b => gc.map(c => f(a, b, c))))
-}
-
-///|
 fn capped_size(size : Int, cap : Int) -> Int {
   if size < cap {
     size
@@ -59,8 +33,8 @@ fn string_from_parts(head : Char, tail : Array[Char]) -> String {
 ///|
 fn simple_key_tail_char_gen() -> @qc.Generator[Char] {
   @qc.one_of([
-    char_range('a', 'z'),
-    char_range('0', '9'),
+    @qc.char_range('a', 'z'),
+    @qc.char_range('0', '9'),
     @qc.pure('-'),
     @qc.pure('_'),
   ])
@@ -71,10 +45,9 @@ fn bare_key_gen() -> @qc.Generator[String] {
   @qc.sized(size => {
     let max_tail = capped_size(size, 4)
     @qc.int_range(0, max_tail + 1).flat_map(tail_len => {
-      lift2(
-        string_from_parts,
-        char_range('a', 'z'),
+      @qc.char_range('a', 'z').zip_with(
         simple_key_tail_char_gen().array_with_size(tail_len),
+        string_from_parts,
       )
     })
   })
@@ -85,27 +58,24 @@ fn negative_exponent_like_key_gen() -> @qc.Generator[String] {
   @qc.sized(size => {
     let max_tail = capped_size(size, 4)
     let significand_gen = @qc.int_range(0, max_tail + 1).flat_map(tail_len => {
-      lift2(
+      @qc.char_range('1', '9').zip_with(
+        @qc.char_range('0', '9').array_with_size(tail_len),
         string_from_parts,
-        char_range('1', '9'),
-        char_range('0', '9').array_with_size(tail_len),
       )
     })
     let exponent_gen = @qc.int_range(0, max_tail + 1).flat_map(tail_len => {
-      lift2(
+      @qc.char_range('0', '9').zip_with(
+        @qc.char_range('0', '9').array_with_size(tail_len),
         string_from_parts,
-        char_range('0', '9'),
-        char_range('0', '9').array_with_size(tail_len),
       )
     })
-    lift3(
+    significand_gen.zip_with3(
+      @qc.one_of([@qc.pure(false), @qc.pure(true)]),
+      exponent_gen,
       (significand, negative_exponent, exponent) => {
         let exponent_sign = if negative_exponent { "-" } else { "" }
         "-\{significand}e\{exponent_sign}\{exponent}"
       },
-      significand_gen,
-      @qc.one_of([@qc.pure(false), @qc.pure(true)]),
-      exponent_gen,
     )
   })
 }
@@ -123,23 +93,23 @@ fn string_with_middle_char(
 fn key_with_middle_char_gen(
   middle : @qc.Generator[Char],
 ) -> @qc.Generator[String] {
-  lift3(string_with_middle_char, bare_key_gen(), middle, bare_key_gen())
+  bare_key_gen().zip_with3(middle, bare_key_gen(), string_with_middle_char)
 }
 
 ///|
 fn padded_key_gen() -> @qc.Generator[String] {
-  lift3(
-    string_with_middle_char,
-    @qc.one_of([@qc.pure(""), bare_key_gen()]),
+  @qc.one_of([@qc.pure(""), bare_key_gen()])
+  .zip_with3(
     @qc.one_of([@qc.pure(' '), @qc.pure('\t')]),
     bare_key_gen(),
-  ).flat_map(prefix_padded => {
+    string_with_middle_char,
+  )
+  .flat_map(prefix_padded => {
     @qc.one_of([
       @qc.pure(prefix_padded),
-      lift2(
-        (inner : String, suffix : Char) => inner + suffix.to_string(),
-        @qc.pure(prefix_padded),
+      @qc.pure(prefix_padded).zip_with(
         @qc.one_of([@qc.pure(' '), @qc.pure('\t')]),
+        (inner : String, suffix : Char) => inner + suffix.to_string(),
       ),
     ])
   })
@@ -252,20 +222,15 @@ fn date_string_gen() -> @qc.Generator[String] {
 
 ///|
 fn time_string_gen() -> @qc.Generator[String] {
-  lift2(
-    (base : String, fractional : String) => base + fractional,
-    lift3(
-      format_time,
-      @qc.int_range(0, 24),
-      @qc.int_range(0, 60),
-      @qc.int_range(0, 60),
-    ),
+  @qc.int_range(0, 24)
+  .zip_with3(@qc.int_range(0, 60), @qc.int_range(0, 60), format_time)
+  .zip_with(
     @qc.frequency([
       (1U, @qc.pure("")),
       (
         1U,
         @qc.int_range(1, 10).flat_map(len => {
-          char_range('0', '9')
+          @qc.char_range('0', '9')
           .array_with_size(len)
           .map(chars => {
             let builder = chars.fold(init=StringBuilder(), (builder, ch) => {
@@ -277,6 +242,7 @@ fn time_string_gen() -> @qc.Generator[String] {
         }),
       ),
     ]),
+    (base : String, fractional : String) => base + fractional,
   )
 }
 
@@ -286,20 +252,18 @@ fn offset_suffix_gen() -> @qc.Generator[String] {
     (2U, @qc.pure("Z")),
     (
       1U,
-      lift3(
-        format_offset,
-        @qc.pure('+'),
+      @qc.pure('+').zip_with3(
         @qc.int_range(0, 24),
         @qc.int_range(0, 60),
+        format_offset,
       ),
     ),
     (
       1U,
-      lift3(
-        format_offset,
-        @qc.pure('-'),
+      @qc.pure('-').zip_with3(
         @qc.int_range(0, 24),
         @qc.int_range(0, 60),
+        format_offset,
       ),
     ),
   ])
@@ -317,23 +281,18 @@ fn local_time_gen() -> @qc.Generator[@datetime.TomlDateTime] {
 
 ///|
 fn local_datetime_gen() -> @qc.Generator[@datetime.TomlDateTime] {
-  lift2(
-    (date : String, time : String) => LocalDateTime("\{date}T\{time}"),
-    date_string_gen(),
-    time_string_gen(),
-  )
+  date_string_gen().zip_with(time_string_gen(), (date, time) => {
+    LocalDateTime("\{date}T\{time}")
+  })
 }
 
 ///|
 fn offset_datetime_gen() -> @qc.Generator[@datetime.TomlDateTime] {
-  lift3(
-    (date : String, time : String, offset : String) => {
-      OffsetDateTime("\{date}T\{time}\{offset}")
-    },
-    date_string_gen(),
-    time_string_gen(),
-    offset_suffix_gen(),
-  )
+  date_string_gen().zip_with3(time_string_gen(), offset_suffix_gen(), (
+    date,
+    time,
+    offset,
+  ) => OffsetDateTime("\{date}T\{time}\{offset}"))
 }
 
 ///|
@@ -408,7 +367,7 @@ fn scalar_or_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
 
 ///|
 fn simple_entry_gen(size : Int) -> @qc.Generator[(String, SimpleValue)] {
-  lift2((key, value) => (key, value), simple_key_gen(), simple_value_gen(size))
+  simple_key_gen().zip(simple_value_gen(size))
 }
 
 ///|
@@ -433,8 +392,8 @@ fn simple_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
 }
 
 ///|
-/// Generator for whole model documents; the entry point used by both the
-/// round-trip property and the coverage snapshot.
+/// Generator for whole model documents; the entry point used by the
+/// round-trip property.
 pub fn simple_document_generator() -> @qc.Generator[SimpleDocument] {
   @qc.sized(size => {
     let max_fields = capped_size(size + 1, 5)
