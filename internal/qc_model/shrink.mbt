@@ -1,14 +1,17 @@
 ///|
-fn shrink_simple_value(
-  value : @qc_model.SimpleValue,
-) -> Iter[@qc_model.SimpleValue] {
+/// Shrinkers for the QuickCheck model, expressed as
+/// `moonbitlang/core/quickcheck/shrink` trait impls so the core `@qc.check`
+/// driver can minimize failing documents.
+
+///|
+fn shrink_simple_value(value : SimpleValue) -> Iter[SimpleValue] {
   match value {
-    SString(s) => @qc.Shrink::shrink(s).map(fn(next) { SString(next) })
-    SInteger(n) => @qc.Shrink::shrink(n).map(fn(next) { SInteger(next) })
-    SBoolean(b) => @qc.Shrink::shrink(b).map(fn(next) { SBoolean(next) })
+    SString(s) => @shrink.Shrink::shrink(s).map(next => SString(next))
+    SInteger(n) => @shrink.Shrink::shrink(n).map(next => SInteger(next))
+    SBoolean(b) => @shrink.Shrink::shrink(b).map(next => SBoolean(next))
     SDateTime(_) => Iter::empty()
     SDateTimeArray(values) =>
-      shrink_datetime_values(values).map(fn(next_values) {
+      shrink_datetime_values(values).map(next_values => {
         if next_values.is_empty() {
           SEmptyArray
         } else {
@@ -17,7 +20,7 @@ fn shrink_simple_value(
       })
     SEmptyArray => Iter::empty()
     SStringArray(values) =>
-      @qc.Shrink::shrink(values).map(fn(next_values) {
+      @shrink.Shrink::shrink(values).map(next_values => {
         if next_values.is_empty() {
           SEmptyArray
         } else {
@@ -25,7 +28,7 @@ fn shrink_simple_value(
         }
       })
     SIntegerArray(values) =>
-      @qc.Shrink::shrink(values).map(fn(next_values) {
+      @shrink.Shrink::shrink(values).map(next_values => {
         if next_values.is_empty() {
           SEmptyArray
         } else {
@@ -33,7 +36,7 @@ fn shrink_simple_value(
         }
       })
     SBooleanArray(values) =>
-      @qc.Shrink::shrink(values).map(fn(next_values) {
+      @shrink.Shrink::shrink(values).map(next_values => {
         if next_values.is_empty() {
           SEmptyArray
         } else {
@@ -41,7 +44,7 @@ fn shrink_simple_value(
         }
       })
     STable(fields) =>
-      shrink_table_entries(fields.to_array()).map(fn(next_entries) {
+      shrink_table_entries(fields.to_array()).map(next_entries => {
         STable(Map::from_array(next_entries))
       })
   }
@@ -51,7 +54,7 @@ fn shrink_simple_value(
 fn shrink_datetime_values(
   values : Array[@datetime.TomlDateTime],
 ) -> Iter[Array[@datetime.TomlDateTime]] {
-  Array::makei(values.length(), fn(i) {
+  Array::makei(values.length(), i => {
     let next = values.copy()
     next.remove(i) |> ignore
     next
@@ -60,17 +63,17 @@ fn shrink_datetime_values(
 
 ///|
 fn shrink_table_entries(
-  entries : Array[(String, @qc_model.SimpleValue)],
-) -> Iter[Array[(String, @qc_model.SimpleValue)]] {
-  let removed_entries = Array::makei(entries.length(), fn(i) {
+  entries : Array[(String, SimpleValue)],
+) -> Iter[Array[(String, SimpleValue)]] {
+  let removed_entries = Array::makei(entries.length(), i => {
     let next = entries.copy()
     next.remove(i) |> ignore
     next
   }).iter()
-  let shrunk_values = Array::makei(entries.length(), fn(i) {
+  let shrunk_values = Array::makei(entries.length(), i => {
       let (key, value) = entries[i]
       shrink_simple_value(value)
-      .map(fn(next_value) {
+      .map(next_value => {
         let next = entries.copy()
         next[i] = (key, next_value)
         next
@@ -83,10 +86,12 @@ fn shrink_table_entries(
 }
 
 ///|
-fn shrink_simple_document(
-  doc : @qc_model.SimpleDocument,
-) -> Iter[@qc_model.SimpleDocument] {
-  shrink_table_entries(doc.fields.to_array()).map(next_entries => {
+pub impl @shrink.Shrink for SimpleDocument with fn shrink(self) {
+  shrink_table_entries(self.fields.to_array()).map(next_entries => {
     fields: Map::from_array(next_entries),
   })
 }
+
+///|
+#deprecated("shrinking is driven by `@qc.check`; the Shrink impl is unaffected")
+pub extend SimpleDocument with @shrink.Shrink::{shrink}

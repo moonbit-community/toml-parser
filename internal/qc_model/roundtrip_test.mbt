@@ -28,50 +28,59 @@ fn simple_document_roundtrip_check(
 }
 
 ///|
-fn roundtrip_property(doc : @qc_model.SimpleDocument) -> @qc.Property {
-  let rendered = doc.to_toml().to_string()
-  let checked = simple_document_roundtrip_check(doc, rendered)
-  let classified = checked
-    |> @qc.classify(doc.contains_table(), "contains-table")
-    |> @qc.classify(doc.contains_array(), "contains-array")
-    |> @qc.classify(doc.contains_datetime_array(), "contains-datetime-array")
-    |> @qc.classify(
-      doc.contains_fractional_datetime(),
-      "contains-fractional-datetime",
-    )
-    |> @qc.classify(doc.contains_datetime(), "contains-datetime")
-    |> @qc.classify(
-      doc.contains_negative_exponent_like_key(),
-      "contains-negative-exponent-like-key",
-    )
-    |> @qc.classify(doc.contains_complex_key(), "contains-complex-key")
-    |> @qc.classify(doc.contains_string(), "contains-string")
-  @qc.counterexample(classified, rendered)
-}
-
-///|
+/// Drive the round-trip property with the core QuickCheck driver and
+/// snapshot the whole report: the `observe` classifications double as a
+/// structural-coverage regression net, and a failing run surfaces the
+/// shrunk counterexample plus the rendered TOML in the raised message.
 test "quickcheck simple document roundtrip" {
-  inspect(
-    @qc.quick_check_silence(
-      @qc.forall_shrink(
-        simple_document_gen(),
-        shrink_simple_document,
-        roundtrip_property,
-      ),
-      max_success=2000,
-      max_size=12,
-    ),
+  let result = @qc.report(
+    (doc : @qc_model.SimpleDocument) => {
+      let rendered = doc.to_toml().to_string()
+      match simple_document_roundtrip_check(doc, rendered) {
+        Ok(_) => true
+        Err(message) => fail(message)
+      }
+    },
+    observe=doc => {
+      [
+        @qc.classify(doc.contains_table(), "contains-table"),
+        @qc.classify(doc.contains_array(), "contains-array"),
+        @qc.classify(doc.contains_datetime_array(), "contains-datetime-array"),
+        @qc.classify(
+          doc.contains_fractional_datetime(),
+          "contains-fractional-datetime",
+        ),
+        @qc.classify(doc.contains_datetime(), "contains-datetime"),
+        @qc.classify(
+          doc.contains_negative_exponent_like_key(),
+          "contains-negative-exponent-like-key",
+        ),
+        @qc.classify(doc.contains_complex_key(), "contains-complex-key"),
+        @qc.classify(doc.contains_string(), "contains-string"),
+      ]
+    },
+    count=2000,
+    max_size=12,
+  )
+  debug_inspect(
+    result,
     content=(
-      #|+++ [2000/0/2000] Ok, passed!
-      #|Coverage:
-      #|61% : contains-array
-      #|29.15% : contains-table
-      #|44.4% : contains-string
-      #|36.7% : contains-datetime
-      #|52.55% : contains-complex-key
-      #|21.05% : contains-datetime-array
-      #|22.05% : contains-fractional-datetime
-      #|33.15% : contains-negative-exponent-like-key
+      #|Passed(
+      #|  tests=2000,
+      #|  observations={
+      #|    labels: {},
+      #|    classes: {
+      #|      "contains-table": 570,
+      #|      "contains-array": 1218,
+      #|      "contains-datetime-array": 448,
+      #|      "contains-fractional-datetime": 408,
+      #|      "contains-datetime": 752,
+      #|      "contains-negative-exponent-like-key": 652,
+      #|      "contains-complex-key": 1024,
+      #|      "contains-string": 890,
+      #|    },
+      #|  },
+      #|)
     ),
   )
 }

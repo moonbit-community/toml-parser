@@ -1,9 +1,10 @@
 import {
   "bobzhang/toml",
   "bobzhang/toml/datetime",
+  "moonbitlang/core/quickcheck" @qc,
+  "moonbitlang/core/quickcheck/shrink",
 }
 
 import {
-  "moonbitlang/quickcheck" @qc,
-  "moonbitlang/quickcheck/gen",
+  "moonbitlang/core/quickcheck" @qc,
 } for "test"
