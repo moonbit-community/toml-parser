@@ -88,7 +88,6 @@ test "quickcheck simple document roundtrip" {
       #|    },
       #|  },
       #|)
-
     ),
   )
 }
