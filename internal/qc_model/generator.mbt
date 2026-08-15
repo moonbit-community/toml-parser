@@ -7,11 +7,6 @@
 /// generate documents directly.
 
 ///|
-fn[T : @qc.Arbitrary] spawn() -> @qc.Generator[T] {
-  Generator(@qc.Arbitrary::arbitrary)
-}
-
-///|
 fn capped_size(size : Int, cap : Int) -> Int {
   if size < cap {
     size
@@ -141,19 +136,19 @@ fn simple_key_gen() -> @qc.Generator[String] {
 
 ///|
 fn string_value_gen() -> @qc.Generator[SimpleValue] {
-  let strings : @qc.Generator[String] = spawn()
+  let strings : @qc.Generator[String] = @qc.spawn()
   strings.scale(size => capped_size(size, 8)).map(value => SString(value))
 }
 
 ///|
 fn integer_value_gen() -> @qc.Generator[SimpleValue] {
-  let integers : @qc.Generator[Int64] = spawn()
+  let integers : @qc.Generator[Int64] = @qc.spawn()
   integers.map(value => SInteger(value))
 }
 
 ///|
 fn boolean_value_gen() -> @qc.Generator[SimpleValue] {
-  let booleans : @qc.Generator[Bool] = spawn()
+  let booleans : @qc.Generator[Bool] = @qc.spawn()
   booleans.map(value => SBoolean(value))
 }
 
@@ -327,7 +322,7 @@ fn non_empty_length_gen(size : Int) -> @qc.Generator[Int] {
 
 ///|
 fn string_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
-  let strings : @qc.Generator[String] = spawn()
+  let strings : @qc.Generator[String] = @qc.spawn()
   let strings = strings.scale(n => capped_size(n, 8))
   non_empty_length_gen(size).flat_map(len => {
     strings.array_with_size(len).map(values => SStringArray(values))
@@ -336,7 +331,7 @@ fn string_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
 
 ///|
 fn integer_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
-  let integers : @qc.Generator[Int64] = spawn()
+  let integers : @qc.Generator[Int64] = @qc.spawn()
   non_empty_length_gen(size).flat_map(len => {
     integers.array_with_size(len).map(values => SIntegerArray(values))
   })
@@ -344,7 +339,7 @@ fn integer_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
 
 ///|
 fn boolean_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
-  let booleans : @qc.Generator[Bool] = spawn()
+  let booleans : @qc.Generator[Bool] = @qc.spawn()
   non_empty_length_gen(size).flat_map(len => {
     booleans.array_with_size(len).map(values => SBooleanArray(values))
   })

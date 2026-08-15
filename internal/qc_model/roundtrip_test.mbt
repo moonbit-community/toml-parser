@@ -28,19 +28,27 @@ fn simple_document_roundtrip_check(
 }
 
 ///|
+/// Diagnose a document that failed the round-trip, for
+/// `counterexample_context`. Only ever called on a shrunk counterexample,
+/// so the `Ok` branch is unreachable in practice.
+fn roundtrip_failure_context(doc : @qc_model.SimpleDocument) -> String {
+  match simple_document_roundtrip_check(doc, doc.to_toml().to_string()) {
+    Ok(_) => "document round-trips cleanly"
+    Err(message) => message
+  }
+}
+
+///|
 /// Drive the round-trip property with the core QuickCheck driver and
 /// snapshot the whole report: the `observe` classifications double as a
-/// structural-coverage regression net, and a failing run surfaces the
-/// shrunk counterexample plus the rendered TOML in the raised message.
+/// structural-coverage regression net, and `counterexample_context`
+/// renders the rendered TOML and mismatch detail for a shrunk failure.
 test "quickcheck simple document roundtrip" {
   let result = @qc.report(
     (doc : @qc_model.SimpleDocument) => {
-      let rendered = doc.to_toml().to_string()
-      match simple_document_roundtrip_check(doc, rendered) {
-        Ok(_) => true
-        Err(message) => fail(message)
-      }
+      simple_document_roundtrip_check(doc, doc.to_toml().to_string()) is Ok(_)
     },
+    counterexample_context=roundtrip_failure_context,
     observe=doc => {
       [
         @qc.classify(doc.contains_table(), "contains-table"),
@@ -68,7 +76,6 @@ test "quickcheck simple document roundtrip" {
       #|Passed(
       #|  tests=2000,
       #|  observations={
-      #|    labels: {},
       #|    classes: {
       #|      "contains-table": 570,
       #|      "contains-array": 1218,
@@ -81,6 +88,7 @@ test "quickcheck simple document roundtrip" {
       #|    },
       #|  },
       #|)
+
     ),
   )
 }
