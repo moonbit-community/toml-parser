@@ -1,9 +1,9 @@
 name = "bobzhang/toml"
 
-version = "0.4.2"
+version = "0.4.3"
 
 import {
-  "bobzhang/lexer@0.2.0",
+  "bobzhang/lexer@0.2.1",
 }
 
 readme = "README.md"

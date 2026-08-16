@@ -70,7 +70,7 @@ Then add it directly to your `moon.mod`:
 ```moonbit nocheck
 ///|
 import {
-  "bobzhang/toml@0.2.3",
+  "bobzhang/toml@0.4.3",
 }
 ```
 
