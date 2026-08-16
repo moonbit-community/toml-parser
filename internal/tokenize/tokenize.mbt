@@ -705,7 +705,7 @@ fn @lexer.Lexer::read_binary_number(
 /// Check if the current input matches a datetime pattern without consuming characters
 fn @lexer.Lexer::is_datetime_pattern(self : @lexer.Lexer) -> Bool {
   // Check for datetime patterns using regex
-  lexscan self.view() with longest {
+  lexmatch self.view() with longest {
     // LocalTime pattern: HH:MM[:SS[.fff]] followed by valid terminator
     (START + TIME, after=rest) => check_datetime_terminator_string(rest)
     // LocalDate pattern: YYYY-MM-DD (always valid, may continue with T for datetime)
@@ -734,7 +734,7 @@ fn @lexer.Lexer::read_datetime_with_loc(
   // - LocalTime: HH:MM:SS (starts with 2 digits, has colons)
   // - Date-based: YYYY-MM-DD (starts with 4 digits)
   //   - Check what follows T to determine: LocalDate, LocalDateTime, or OffsetDateTime
-  lexscan self.view() with longest {
+  lexmatch self.view() with longest {
     // LocalTime: HH:MM[:SS[.fff]] - must check first (2-digit start vs 4-digit)
     ((START + TIME) as time, after=rest) => {
       self.update_view(rest)

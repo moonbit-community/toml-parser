@@ -7,6 +7,14 @@ pub(all) struct Position {
 } derive(Eq, Debug)
 
 ///|
+#deprecated("compare with `==`; the Eq impl is unaffected")
+pub extend Position with Eq::{not_equal, equal}
+
+///|
+#deprecated("render via the Debug trait, e.g. `debug_inspect`")
+pub extend Position with Debug::{to_repr}
+
+///|
 /// Lexer state with position tracking for better error reporting
 struct Lexer {
   input : String

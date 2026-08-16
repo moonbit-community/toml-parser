@@ -30,6 +30,12 @@ pub(all) struct Position {
   line : Int
   column : Int
 } derive(Eq, @debug.Debug)
+#deprecated
+pub fn Position::equal(Self, Self) -> Bool
+#deprecated
+pub fn Position::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn Position::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 
