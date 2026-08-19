@@ -28,24 +28,28 @@ fn simple_document_roundtrip_check(
 }
 
 ///|
+/// Diagnose a document that failed the round-trip, for
+/// `counterexample_context`. Only ever called on a shrunk counterexample,
+/// so the `Ok` branch is unreachable in practice.
+fn roundtrip_failure_context(doc : @qc_model.SimpleDocument) -> String {
+  match simple_document_roundtrip_check(doc, doc.to_toml().to_string()) {
+    Ok(_) => "document round-trips cleanly"
+    Err(message) => message
+  }
+}
+
+///|
 /// Drive the round-trip property with the core QuickCheck driver and
 /// snapshot the whole report: the `observe` classifications double as a
-/// structural-coverage regression net, and a failure carries the rendered
-/// TOML and mismatch detail in the raised message.
-///
-/// TODO: once the stable channel bundles a core with
-/// `counterexample_context` (moonbitlang/core#3993), pass the diagnostic
-/// through that parameter instead of raising, so a mismatch is reported as
-/// `Falsified` with context rather than `Raised`. Kept portable for now so
-/// the package builds on both release channels.
+/// structural-coverage regression net, and `counterexample_context`
+/// renders the generated TOML and mismatch detail for a shrunk failure —
+/// so a mismatch reports as `Falsified` with context rather than `Raised`.
 test "quickcheck simple document roundtrip" {
   let result = @qc.report(
     (doc : @qc_model.SimpleDocument) => {
-      match simple_document_roundtrip_check(doc, doc.to_toml().to_string()) {
-        Ok(_) => true
-        Err(message) => fail(message)
-      }
+      simple_document_roundtrip_check(doc, doc.to_toml().to_string()) is Ok(_)
     },
+    counterexample_context=roundtrip_failure_context,
     observe=doc => {
       [
         @qc.classify(doc.contains_table(), "contains-table"),
