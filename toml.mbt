@@ -91,7 +91,7 @@ fn Parser::update_view(
 ///|
 /// Create a new parser
 fn Parser::Parser(tokens : Array[@tokenize.Token]) -> Parser {
-  { tokens, position: 0 }
+  { tokens, position: 0, }
 }
 
 ///|

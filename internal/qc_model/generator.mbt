@@ -395,7 +395,7 @@ pub fn simple_document_generator() -> @qc.Generator[SimpleDocument] {
     @qc.int_range(0, max_fields + 1).flat_map(field_count => {
       simple_entry_gen(size)
       .array_with_size(field_count)
-      .map(entries => { fields: Map::from_array(entries) })
+      .map(entries => { fields: Map::from_array(entries), })
     })
   })
 }

@@ -13,7 +13,7 @@ pub struct TestResult {
 ///|
 /// Create an empty `TestResult` with zero counts and no failures recorded.
 pub fn TestResult::new() -> TestResult {
-  { passed: 0, failed: 0, failures: [] }
+  { passed: 0, failed: 0, failures: [], }
 }
 
 ///|

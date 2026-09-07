@@ -56,7 +56,7 @@ pub fn Lexer::update_view(self : Lexer, view : StringView) -> Unit {
 ///|
 /// Create a new lexer
 pub fn Lexer::Lexer(input : String) -> Lexer {
-  { input, position: 0, line: 1, column: 1 }
+  { input, position: 0, line: 1, column: 1, }
 }
 
 ///|
@@ -141,7 +141,7 @@ pub fn Lexer::peek_charcode(self : Lexer) -> UInt16? {
 /// captured position with the post-consumption value to build the half-open
 /// span attached to the resulting token.
 pub fn Lexer::get_loc(self : Lexer) -> Position {
-  { line: self.line, column: self.column }
+  { line: self.line, column: self.column, }
 }
 
 ///|
