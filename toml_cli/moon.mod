@@ -4,7 +4,7 @@ version = "0.2.0"
 
 import {
   "moonbit-community/toml@0.4.2",
-  "moonbitlang/x@0.4.41",
+  "moonbitlang/x@0.5.1",
 }
 
 readme = "README.md"

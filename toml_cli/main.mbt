@@ -98,7 +98,7 @@ fn dispatch_file(matches : @argparse.Matches, action : (String) -> Int) -> Int {
 fn format_file(path : String) -> Int {
   let source = @fs.read_file_to_string(path) catch {
     err => {
-      println("error: failed to read \{path}: \{err}")
+      println("error: failed to read \{path}: \{Repr(err)}")
       return 1
     }
   }
@@ -116,7 +116,7 @@ fn format_file(path : String) -> Int {
 fn check_file(path : String) -> Int {
   let source = @fs.read_file_to_string(path) catch {
     err => {
-      println("error: failed to read \{path}: \{err}")
+      println("error: failed to read \{path}: \{Repr(err)}")
       return 1
     }
   }

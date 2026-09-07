@@ -31,7 +31,7 @@ fn to_json(value : @toml_lib.TomlValue) -> Json {
 fn tojson_file(path : String) -> Int {
   let source = @fs.read_file_to_string(path) catch {
     err => {
-      println("error: failed to read \{path}: \{err}")
+      println("error: failed to read \{path}: \{Repr(err)}")
       return 1
     }
   }
