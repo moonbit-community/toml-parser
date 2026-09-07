@@ -131,7 +131,7 @@ test "datetime in nested structures" {
   event_table["end_datetime"] = TomlDateTime(
     LocalDateTime("2023-06-17T17:00:00"),
   )
-  let sessions = Array::new()
+  let sessions = Array()
   let session1 : Map[String, @toml.TomlValue] = Map([])
   session1["title"] = TomlString("Opening Keynote")
   session1["scheduled_at"] = TomlDateTime(

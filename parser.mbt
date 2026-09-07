@@ -224,7 +224,7 @@ fn[A] Parser::error(self : Parser, msg : String) -> A raise {
 ///|
 /// Parse a dotted key path: key.subkey.subsubkey
 fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
-  let path = Array::new()
+  let path = Array()
 
   // Parse first key - handle the case where the tokenizer saw a float like "1.2"
   match self.view() {
