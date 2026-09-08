@@ -5,8 +5,8 @@ pub fn default_loc() -> Loc {
   // `let pos : @lexer.Position = { ... }` trips unqualified_record, while
   // spelling both the annotation and the `T::` prefix trips
   // unnecessary_annotation.
-  let pos = @lexer.Position::{ line: 1, column: 1 }
-  { start: pos, end: pos }
+  let pos = @lexer.Position::{ line: 1, column: 1, }
+  { start: pos, end: pos, }
 }
 
 ///|
@@ -23,7 +23,7 @@ const TIME : Regex = re"[0-9]{2}:[0-9]{2}" + re"(:[0-9]{2})?(\.[0-9]+)?"
 ///|
 /// Create a location from lexer positions
 fn make_loc(start_pos : @lexer.Position, end_pos : @lexer.Position) -> Loc {
-  { start: start_pos, end: end_pos }
+  { start: start_pos, end: end_pos, }
 }
 
 ///|
@@ -1400,7 +1400,7 @@ fn @lexer.Lexer::next_token(self : @lexer.Lexer) -> Token raise {
 /// Tokenize entire input
 pub fn tokenize(input : String) -> Array[Token] raise {
   let lexer = @lexer.Lexer::Lexer(input)
-  let tokens = Array::new()
+  let tokens = []
   for current_token = lexer.next_token() {
     match current_token {
       EOF(_) as t => {
