@@ -1400,7 +1400,7 @@ fn @lexer.Lexer::next_token(self : @lexer.Lexer) -> Token raise {
 /// Tokenize entire input
 pub fn tokenize(input : String) -> Array[Token] raise {
   let lexer = @lexer.Lexer::Lexer(input)
-  let tokens = Array()
+  let tokens = []
   for current_token = lexer.next_token() {
     match current_token {
       EOF(_) as t => {

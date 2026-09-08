@@ -159,7 +159,7 @@ fn create_array_of_tables(
     Some(value) => raise ExpectedArray(final_key, value)
     None => {
       // Create new array with the first table
-      let array = Array()
+      let array = []
       array.push(TomlTable(new_table))
       current_table[final_key] = TomlArray(array)
       new_table
