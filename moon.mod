@@ -1,6 +1,6 @@
 name = "moonbit-community/toml"
 
-version = "0.4.3"
+version = "0.4.4"
 
 import {
   "bobzhang/lexer@0.2.1",
