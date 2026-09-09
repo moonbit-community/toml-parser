@@ -1,0 +1,74 @@
+name: Publish
+
+# Publishes the current module to mooncakes.io.
+#
+# Triggers:
+#   - A tag matching `v*` is pushed (e.g. `v0.3.6`). The tag must point at
+#     a commit whose `moon.mod` version matches the tag.
+#   - Manual dispatch via the Actions UI.
+#
+# Required repository secret:
+#   - MOONCAKES_TOKEN    : API token for your mooncakes.io account
+#                          (taken from `~/.moon/credentials.json` "token" field)
+#   - MOONCAKES_USERNAME : your mooncakes.io username (matches the module's
+#                          namespace, e.g. "moonbit-community" for "moonbit-community/toml")
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      # Use `latest` to match `.github/workflows/ci.yml`. See that file for
+      # the reasoning behind avoiding `nightly`.
+      - name: Set up MoonBit (latest)
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s latest
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+
+      - name: Show MoonBit version
+        run: moon version --all
+
+      - name: Configure mooncakes credentials
+        env:
+          MOONCAKES_TOKEN: ${{ secrets.MOONCAKES_TOKEN }}
+          MOONCAKES_USERNAME: ${{ secrets.MOONCAKES_USERNAME }}
+        run: |
+          mkdir -p "$HOME/.moon"
+          printf '{"token":"%s","username":"%s"}\n' \
+            "$MOONCAKES_TOKEN" "$MOONCAKES_USERNAME" \
+            > "$HOME/.moon/credentials.json"
+          chmod 600 "$HOME/.moon/credentials.json"
+
+      # Fail fast on a bad or expired token. Without this the run gets all the
+      # way through check+test before `moon publish` reports
+      # "401 Unauthorized, detail: Invalid API token".
+      - name: Verify credentials
+        run: |
+          moon whoami
+          who=$(moon whoami 2>/dev/null | tr -d '\r')
+          echo "authenticated as: $who"
+          case "$who" in
+            *moonbit-community*) ;;
+            *) echo "::error::mooncakes account does not match the module namespace \
+(moonbit-community). Check the MOONCAKES_TOKEN / MOONCAKES_USERNAME secrets."; exit 1 ;;
+          esac
+
+      - name: Update dependencies
+        run: moon update
+
+      - name: Check
+        run: moon check
+
+      - name: Test
+        run: moon test
+
+      - name: Publish
+        run: moon publish
