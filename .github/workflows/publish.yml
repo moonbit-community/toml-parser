@@ -1,0 +1,90 @@
+name: publish-package
+
+# Publishes one module of this workspace to mooncakes.io as moonbit-community,
+# using the org secret MOONCAKES_MOONBIT_COMMUNITY_TOKEN (same as the org
+# workflow template). Publish `toml` before `toml_cli`: toml_cli depends on the
+# released moonbit-community/toml, so each module is built standalone
+# (MOON_WORK=off) against the registry rather than the local workspace.
+
+on:
+  workflow_dispatch:
+    inputs:
+      module:
+        description: Module to publish
+        required: true
+        type: choice
+        options:
+          - toml
+          - toml_cli
+
+permissions: {}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      MOON_WORK: "off"
+      MODULE_DIR: ${{ inputs.module == 'toml' && '.' || inputs.module }}
+      TAG_PREFIX: ${{ inputs.module == 'toml' && 'v' || format('{0}-v', inputs.module) }}
+    outputs:
+      published_tag: ${{ steps.prepublish.outputs.published_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: install-ubuntu
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: post install
+        run: |
+          moon version --all
+          moon update
+
+      - name: prepublish check
+        id: prepublish
+        working-directory: ${{ env.MODULE_DIR }}
+        run: |
+          moon check
+          moon test
+          version="$(sed -n 's/^version = "\(.*\)"/\1/p' moon.mod)"
+          if [[ -z "$version" ]]; then
+            echo "could not read package version from moon.mod" >&2
+            exit 1
+          fi
+          echo "published_tag=${TAG_PREFIX}${version}" >> "$GITHUB_OUTPUT"
+
+      - name: publish
+        working-directory: ${{ env.MODULE_DIR }}
+        env:
+          SECRET: ${{ secrets.MOONCAKES_MOONBIT_COMMUNITY_TOKEN }}
+        shell: bash
+        run: |
+          if [ -z "$SECRET" ]; then
+            echo "Error: MOONCAKES_MOONBIT_COMMUNITY_TOKEN secret is not set."
+            echo "Please contact an admin to grant access to this secret."
+            exit 1
+          fi
+          echo "$SECRET" > ~/.moon/credentials.json
+          moon publish
+          rm ~/.moon/credentials.json
+
+  tag:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: tag published commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PUBLISHED_TAG: ${{ needs.publish.outputs.published_tag }}
+        shell: bash
+        run: |
+          gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+            -f ref="refs/tags/$PUBLISHED_TAG" \
+            -f sha="$GITHUB_SHA"
