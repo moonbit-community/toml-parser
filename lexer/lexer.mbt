@@ -218,11 +218,16 @@ pub fn Lexer::error(self : Lexer, msg : String) -> String {
 pub fn Lexer::advance(self : Lexer) -> Unit {
   if self.position < self.input.length() {
     self.column += 1
+    // Step over a whole surrogate pair, but only if it really is a pair:
+    // an unpaired surrogate is a single code unit, and jumping two units
+    // would skip the next character or run past the end of the input.
     let ch = self.input.unsafe_get(self.position)
-    if !ch.is_surrogate() {
-      self.position += 1
-    } else {
+    if ch.is_leading_surrogate() &&
+      self.position + 1 < self.input.length() &&
+      self.input.unsafe_get(self.position + 1).is_trailing_surrogate() {
       self.position += 2
+    } else {
+      self.position += 1
     }
   }
 }
