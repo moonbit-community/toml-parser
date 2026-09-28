@@ -1,3 +1,7 @@
+import {
+  "moonbitlang/core/quickcheck" @qc,
+} for "test"
+
 options(
   name: "moonbit-community/toml/lexer",
 )
