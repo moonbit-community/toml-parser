@@ -666,6 +666,62 @@ test "qc: error() appends the current line and column" {
 }
 
 ///|
+/// Reference location for raw UTF-16 input: lines are counted at `\n`, and
+/// the column is one plus the number of characters that *begin* in the
+/// consumed part of the line -- every code unit except the trailing half of
+/// a well-formed surrogate pair. It depends only on the offset, so it also
+/// pins down offsets that split a pair.
+fn raw_reference_loc(input : String, pos : Int) -> @lexer.Position {
+  let mut line = 1
+  let mut column = 1
+  for i in 0..<pos {
+    let u = input.unsafe_get(i)
+    if u == '\n'.to_int().to_uint16() {
+      line += 1
+      column = 1
+    } else if !(i > 0 &&
+      u.is_trailing_surrogate() &&
+      input.unsafe_get(i - 1).is_leading_surrogate()) {
+      column += 1
+    }
+  }
+  { line, column, }
+}
+
+///|
+fn raw_terminator(input : String, i : Int) -> Bool {
+  let lf = '\n'.to_int().to_uint16()
+  let cr = '\r'.to_int().to_uint16()
+  i < input.length() &&
+  (
+    input.unsafe_get(i) == lf ||
+    (
+      input.unsafe_get(i) == cr &&
+      i + 1 < input.length() &&
+      input.unsafe_get(i + 1) == lf
+    )
+  )
+}
+
+///|
+/// Offset reached by moving up to `k` code units from `pos` without reaching
+/// a line terminator. May stop in the middle of a surrogate pair.
+fn raw_same_line_offset(input : String, pos : Int, k : Int) -> Int {
+  let mut j = pos
+  while j < input.length() && j - pos < k && !raw_terminator(input, j) {
+    j += 1
+  }
+  j
+}
+
+///|
+fn raw_slice(input : String, start : Int, end : Int) -> String {
+  string_of_units(
+    Array::makei(end - start, i => input.unsafe_get(start + i).to_int()),
+  )
+}
+
+///|
 test "qc: arbitrary UTF-16 (lone surrogates): cursor stays in bounds and drains" {
   @qc.check(
     (u : Units) => {
@@ -673,18 +729,63 @@ test "qc: arbitrary UTF-16 (lone surrogates): cursor stays in bounds and drains"
       guard input.length() == u.units.length() else { return false }
       let lexer = @lexer.Lexer::Lexer(input)
       let mut last = 0
+      // A saved view and the line it was saved on, for backtracking.
+      let mut saved : (StringView, Int)? = None
       for op in u.ops {
-        match op % 4 {
-          0 | 1 => lexer.advance()
-          2 => lexer.skip_whitespace()
-          _ => lexer.skip_single_newline()
+        let pos = lexer.get_position()
+        let k = op / 8 % 4 + 1
+        if raw_terminator(input, pos) {
+          lexer.skip_single_newline()
+        } else {
+          match op % 8 {
+            0 | 1 => lexer.advance()
+            2 => lexer.skip_whitespace()
+            3 => {
+              // Raw offsets: may land inside a surrogate pair.
+              let j = raw_same_line_offset(input, pos, k)
+              lexer.update_view(lexer.view().view(start_offset=j - pos))
+            }
+            4 => {
+              // The literal may end with the leading half of a pair.
+              let j = raw_same_line_offset(input, pos, k)
+              lexer.expect_string(raw_slice(input, pos, j)) catch {
+                _ => return false
+              }
+            }
+            5 => {
+              let j = raw_same_line_offset(input, pos, k)
+              let bad = if j < input.length() && input.unsafe_get(j) == 1 {
+                2
+              } else {
+                1
+              }
+              let lit = raw_slice(input, pos, j) + string_of_units([bad])
+              let before = state(lexer)
+              let failed = try lexer.expect_string(lit) catch {
+                _ => true
+              } noraise {
+                _ => false
+              }
+              guard failed && state(lexer) == before else { return false }
+            }
+            6 => saved = Some((lexer.view(), lexer.get_loc().line))
+            _ =>
+              if saved is Some((view, line)) && line == lexer.get_loc().line {
+                lexer.update_view(view)
+              }
+          }
         }
         let pos = lexer.get_position()
-        guard pos >= last && pos <= input.length() else { return false }
+        guard pos >= 0 && pos <= input.length() else { return false }
+        guard saved is Some(_) || pos >= last else { return false }
         guard lexer.view().length() == input.length() - pos else {
           return false
         }
         guard lexer.peek() == input.get_char(pos) else { return false }
+        // Location is a function of the offset alone (path-independent).
+        guard lexer.get_loc() == raw_reference_loc(input, pos) else {
+          return false
+        }
         last = pos
       }
       // `advance` must reach the end in at most one step per code unit and
@@ -699,6 +800,7 @@ test "qc: arbitrary UTF-16 (lone surrogates): cursor stays in bounds and drains"
       lexer.get_position() == input.length()
     },
     observe=u => {
+      let kinds = u.ops.map(op => op % 8)
       [
         @qc.classify(
           u.units.iter().any(x => x >= 0xD800 && x < 0xE000),
@@ -710,6 +812,13 @@ test "qc: arbitrary UTF-16 (lone surrogates): cursor stays in bounds and drains"
           u.units[u.units.length() - 1] < 0xDC00,
           "ends with leading surrogate",
         ),
+        @qc.classify(
+          u.units.iter().any(x => x >= 0xD800 && x < 0xDC00) &&
+          kinds.contains(3),
+          "update_view with surrogates",
+        ),
+        @qc.classify(kinds.contains(4), "expect_string"),
+        @qc.classify(kinds.contains(6) && kinds.contains(7), "save+restore"),
       ]
     },
     counterexample_context=u => {
@@ -807,4 +916,44 @@ test "regression: expect_string accepts literals containing astral characters" {
   }
   assert_true(msg.has_suffix("Expected string: 😈x at line 1, column 1"))
   inspect(lexer.get_position(), content="0")
+}
+
+///|
+test "regression: column is path-independent at offsets that split a pair" {
+  // Codex review of the update_view fix: for "😈", moving to offset 1
+  // (inside the pair), then 2, then back to 0 gave columns 2 -> 3 -> 2,
+  // because the pair's trailing unit counted as a column when a range
+  // started on it. Columns now count characters that *begin* in a range,
+  // which is additive, so every offset has exactly one column.
+  let lexer = @lexer.Lexer::Lexer("😈x")
+  let saved = lexer.view()
+  lexer.update_view(saved.view(start_offset=1))
+  let mid = lexer.get_loc().column
+  lexer.update_view(saved.view(start_offset=2))
+  let after = lexer.get_loc().column
+  lexer.update_view(saved)
+  let back = lexer.get_loc().column
+  debug_inspect((mid, after, back), content="(2, 2, 1)")
+  // `advance` off the trailing half of a split pair adds no column, so it
+  // agrees with jumping straight past the pair.
+  lexer.update_view(saved.view(start_offset=1))
+  lexer.advance()
+  debug_inspect(
+    (lexer.get_position(), lexer.get_loc()),
+    content="(2, { line: 1, column: 2 })",
+  )
+  // `expect_string` can stop inside a pair (its literal ends with a lone
+  // leading surrogate); finishing the pair gives the same state as
+  // matching the whole character at once.
+  let lexer = @lexer.Lexer::Lexer("😈x")
+  lexer.expect_string(string_of_units([0xD83D]))
+  debug_inspect(
+    (lexer.get_position(), lexer.get_loc()),
+    content="(1, { line: 1, column: 2 })",
+  )
+  lexer.expect_string(string_of_units([0xDE08, 'x'.to_int()]))
+  debug_inspect(
+    (lexer.get_position(), lexer.get_loc()),
+    content="(3, { line: 1, column: 3 })",
+  )
 }

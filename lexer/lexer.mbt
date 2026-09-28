@@ -52,6 +52,8 @@ pub fn Lexer::update_view(self : Lexer, view : StringView) -> Unit {
   // Columns count characters (as `advance` does), not UTF-16 code units, so
   // a surrogate pair between the old and new offsets counts once. Moving
   // backwards (backtracking to a saved view) subtracts symmetrically.
+  // `column_width` is additive, so the column only depends on the offset,
+  // not on the path taken to it -- even if a view splits a surrogate pair.
   if new_offset >= self.position {
     self.column += column_width(self.input, self.position, new_offset)
   } else {
@@ -62,13 +64,21 @@ pub fn Lexer::update_view(self : Lexer, view : StringView) -> Unit {
 
 ///|
 /// Number of columns spanned by the UTF-16 range `[start, end)` of `input`:
-/// one per character, where a well-formed surrogate pair is one character
-/// and any unpaired surrogate code unit is one character on its own.
+/// the number of characters that *begin* in the range. Every code unit
+/// begins a character except the trailing half of a well-formed surrogate
+/// pair, so a pair counts once (on its leading unit) and an unpaired
+/// surrogate counts as one character on its own.
+///
+/// Whether a unit begins a character depends only on `input`, never on
+/// `start`, so the width is additive:
+/// `width(a, c) == width(a, b) + width(b, c)`. This keeps columns
+/// consistent even when a view offset splits a surrogate pair (e.g. moving
+/// to the middle of a pair and back restores the original column).
 fn column_width(input : String, start : Int, end : Int) -> Int {
   let end = if end > input.length() { input.length() } else { end }
   let mut width = 0
   for i = start; i < end; i = i + 1 {
-    let paired_trailing = i > start &&
+    let paired_trailing = i > 0 &&
       input.unsafe_get(i).is_trailing_surrogate() &&
       input.unsafe_get(i - 1).is_leading_surrogate()
     if !paired_trailing {
@@ -236,18 +246,22 @@ pub fn Lexer::error(self : Lexer, msg : String) -> String {
 /// Note: Does not automatically track newlines - call new_line() explicitly when needed
 pub fn Lexer::advance(self : Lexer) -> Unit {
   if self.position < self.input.length() {
-    self.column += 1
     // Step over a whole surrogate pair, but only if it really is a pair:
     // an unpaired surrogate is a single code unit, and jumping two units
     // would skip the next character or run past the end of the input.
-    let ch = self.input.unsafe_get(self.position)
+    let start = self.position
+    let ch = self.input.unsafe_get(start)
     if ch.is_leading_surrogate() &&
-      self.position + 1 < self.input.length() &&
-      self.input.unsafe_get(self.position + 1).is_trailing_surrogate() {
+      start + 1 < self.input.length() &&
+      self.input.unsafe_get(start + 1).is_trailing_surrogate() {
       self.position += 2
     } else {
       self.position += 1
     }
+    // Same column accounting as `update_view`: one column per character
+    // beginning in the consumed range (so stepping off the trailing half
+    // of a pair that a view split adds no column).
+    self.column += column_width(self.input, start, self.position)
   }
 }
 
