@@ -1,9 +1,9 @@
 name = "moonbit-community/toml"
 
-version = "0.4.4"
+version = "0.5.0"
 
 import {
-  "bobzhang/lexer@0.2.1",
+  "bobzhang/lexer@0.3.0",
 }
 
 readme = "README.md"

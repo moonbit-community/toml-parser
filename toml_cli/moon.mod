@@ -1,9 +1,9 @@
 name = "moonbit-community/toml_cli"
 
-version = "0.2.0"
+version = "0.2.1"
 
 import {
-  "moonbit-community/toml@0.4.4",
+  "moonbit-community/toml@0.5.0",
   "moonbitlang/x@0.5.1",
 }
 
