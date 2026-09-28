@@ -49,8 +49,33 @@ pub fn Lexer::view(self : Lexer) -> StringView {
 /// ```
 pub fn Lexer::update_view(self : Lexer, view : StringView) -> Unit {
   let new_offset = view.start_offset()
-  self.column = new_offset - self.position + self.column
+  // Columns count characters (as `advance` does), not UTF-16 code units, so
+  // a surrogate pair between the old and new offsets counts once. Moving
+  // backwards (backtracking to a saved view) subtracts symmetrically.
+  if new_offset >= self.position {
+    self.column += column_width(self.input, self.position, new_offset)
+  } else {
+    self.column -= column_width(self.input, new_offset, self.position)
+  }
   self.position = new_offset
+}
+
+///|
+/// Number of columns spanned by the UTF-16 range `[start, end)` of `input`:
+/// one per character, where a well-formed surrogate pair is one character
+/// and any unpaired surrogate code unit is one character on its own.
+fn column_width(input : String, start : Int, end : Int) -> Int {
+  let end = if end > input.length() { input.length() } else { end }
+  let mut width = 0
+  for i = start; i < end; i = i + 1 {
+    let paired_trailing = i > start &&
+      input.unsafe_get(i).is_trailing_surrogate() &&
+      input.unsafe_get(i - 1).is_leading_surrogate()
+    if !paired_trailing {
+      width += 1
+    }
+  }
+  width
 }
 
 ///|

@@ -227,10 +227,10 @@ test "unicode or emoji" {
       #|  Equals(loc={ start: { line: 1, column: 6 }, end: { line: 1, column: 7 } }),
       #|  StringToken(
       #|    "💩",
-      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 12 } },
+      #|    loc={ start: { line: 1, column: 8 }, end: { line: 1, column: 11 } },
       #|    multiline=false,
       #|  ),
-      #|  Newline(loc={ start: { line: 1, column: 12 }, end: { line: 2, column: 1 } }),
+      #|  Newline(loc={ start: { line: 1, column: 11 }, end: { line: 2, column: 1 } }),
       #|  Identifier(
       #|    "key2",
       #|    loc={ start: { line: 2, column: 1 }, end: { line: 2, column: 5 } },
@@ -238,10 +238,10 @@ test "unicode or emoji" {
       #|  Equals(loc={ start: { line: 2, column: 6 }, end: { line: 2, column: 7 } }),
       #|  StringToken(
       #|    "💩",
-      #|    loc={ start: { line: 2, column: 8 }, end: { line: 2, column: 12 } },
+      #|    loc={ start: { line: 2, column: 8 }, end: { line: 2, column: 11 } },
       #|    multiline=false,
       #|  ),
-      #|  EOF(loc={ start: { line: 2, column: 12 }, end: { line: 2, column: 12 } }),
+      #|  EOF(loc={ start: { line: 2, column: 11 }, end: { line: 2, column: 11 } }),
       #|]
     ),
   )
