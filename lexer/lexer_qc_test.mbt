@@ -61,3 +61,27 @@ test "regression: update_view counts a surrogate pair as one column" {
   lexer.update_view(saved)
   debug_inspect(lexer.get_loc(), content="{ line: 1, column: 1 }")
 }
+
+///|
+test "regression: expect_string accepts literals containing astral characters" {
+  // Found by "qc: expect_string of the upcoming text == advancing over it":
+  // counterexample chars=['😈']. The code-unit loop called `advance`, which
+  // steps over the whole pair, so the literal's trailing surrogate was then
+  // compared against the next character and the match always failed.
+  let lexer = @lexer.Lexer::Lexer("😈x=")
+  lexer.expect_string("😈x")
+  debug_inspect(
+    (lexer.get_position(), lexer.get_loc(), lexer.peek()),
+    content="(3, { line: 1, column: 3 }, Some('='))",
+  )
+  // A mismatch still reports the start position and leaves the lexer alone.
+  let lexer = @lexer.Lexer::Lexer("😈y")
+  let msg = try lexer.expect_string("😈x") catch {
+    Failure(msg) => msg
+    _ => "unexpected error"
+  } noraise {
+    _ => "unexpected success"
+  }
+  assert_true(msg.has_suffix("Expected string: 😈x at line 1, column 1"))
+  inspect(lexer.get_position(), content="0")
+}

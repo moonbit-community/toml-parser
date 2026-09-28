@@ -208,21 +208,15 @@ pub fn Lexer::expect_string(
   str : String,
   msg? : String,
 ) -> Unit raise {
-  // TODO: reduce the usage of advance()
-  // should document that no newline expected
-  // store the original postion for precise error reporting
-  let saved_pos = self.position
-  let saved_line = self.line
-  let saved_column = self.column
-  for i = 0; i < str.length(); i = i + 1 {
-    if self.peek_charcode() is Some(ch) && ch == str.unsafe_get(i) {
-      self.advance()
-    } else {
-      self.position = saved_pos
-      self.line = saved_line
-      self.column = saved_column
-      fail(self.error(msg.unwrap_or("Expected string: " + str)))
-    }
+  // Compare the whole literal before moving, so a mismatch leaves the
+  // lexer untouched and the error points at the start of the literal.
+  // (Comparing code unit by code unit while calling `advance` broke on
+  // surrogate pairs, since `advance` steps over both units at once.)
+  let view = self.view()
+  if view.has_prefix(str) {
+    self.update_view(view.view(start_offset=str.length()))
+  } else {
+    fail(self.error(msg.unwrap_or("Expected string: " + str)))
   }
 }
 
