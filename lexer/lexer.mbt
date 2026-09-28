@@ -49,8 +49,43 @@ pub fn Lexer::view(self : Lexer) -> StringView {
 /// ```
 pub fn Lexer::update_view(self : Lexer, view : StringView) -> Unit {
   let new_offset = view.start_offset()
-  self.column = new_offset - self.position + self.column
+  // Columns count characters (as `advance` does), not UTF-16 code units, so
+  // a surrogate pair between the old and new offsets counts once. Moving
+  // backwards (backtracking to a saved view) subtracts symmetrically.
+  // `column_width` is additive, so the column only depends on the offset,
+  // not on the path taken to it -- even if a view splits a surrogate pair.
+  if new_offset >= self.position {
+    self.column += column_width(self.input, self.position, new_offset)
+  } else {
+    self.column -= column_width(self.input, new_offset, self.position)
+  }
   self.position = new_offset
+}
+
+///|
+/// Number of columns spanned by the UTF-16 range `[start, end)` of `input`:
+/// the number of characters that *begin* in the range. Every code unit
+/// begins a character except the trailing half of a well-formed surrogate
+/// pair, so a pair counts once (on its leading unit) and an unpaired
+/// surrogate counts as one character on its own.
+///
+/// Whether a unit begins a character depends only on `input`, never on
+/// `start`, so the width is additive:
+/// `width(a, c) == width(a, b) + width(b, c)`. This keeps columns
+/// consistent even when a view offset splits a surrogate pair (e.g. moving
+/// to the middle of a pair and back restores the original column).
+fn column_width(input : String, start : Int, end : Int) -> Int {
+  let end = if end > input.length() { input.length() } else { end }
+  let mut width = 0
+  for i = start; i < end; i = i + 1 {
+    let paired_trailing = i > 0 &&
+      input.unsafe_get(i).is_trailing_surrogate() &&
+      input.unsafe_get(i - 1).is_leading_surrogate()
+    if !paired_trailing {
+      width += 1
+    }
+  }
+  width
 }
 
 ///|
@@ -183,21 +218,15 @@ pub fn Lexer::expect_string(
   str : String,
   msg? : String,
 ) -> Unit raise {
-  // TODO: reduce the usage of advance()
-  // should document that no newline expected
-  // store the original postion for precise error reporting
-  let saved_pos = self.position
-  let saved_line = self.line
-  let saved_column = self.column
-  for i = 0; i < str.length(); i = i + 1 {
-    if self.peek_charcode() is Some(ch) && ch == str.unsafe_get(i) {
-      self.advance()
-    } else {
-      self.position = saved_pos
-      self.line = saved_line
-      self.column = saved_column
-      fail(self.error(msg.unwrap_or("Expected string: " + str)))
-    }
+  // Compare the whole literal before moving, so a mismatch leaves the
+  // lexer untouched and the error points at the start of the literal.
+  // (Comparing code unit by code unit while calling `advance` broke on
+  // surrogate pairs, since `advance` steps over both units at once.)
+  let view = self.view()
+  if view.has_prefix(str) {
+    self.update_view(view.view(start_offset=str.length()))
+  } else {
+    fail(self.error(msg.unwrap_or("Expected string: " + str)))
   }
 }
 
@@ -217,13 +246,22 @@ pub fn Lexer::error(self : Lexer, msg : String) -> String {
 /// Note: Does not automatically track newlines - call new_line() explicitly when needed
 pub fn Lexer::advance(self : Lexer) -> Unit {
   if self.position < self.input.length() {
-    self.column += 1
-    let ch = self.input.unsafe_get(self.position)
-    if !ch.is_surrogate() {
-      self.position += 1
-    } else {
+    // Step over a whole surrogate pair, but only if it really is a pair:
+    // an unpaired surrogate is a single code unit, and jumping two units
+    // would skip the next character or run past the end of the input.
+    let start = self.position
+    let ch = self.input.unsafe_get(start)
+    if ch.is_leading_surrogate() &&
+      start + 1 < self.input.length() &&
+      self.input.unsafe_get(start + 1).is_trailing_surrogate() {
       self.position += 2
+    } else {
+      self.position += 1
     }
+    // Same column accounting as `update_view`: one column per character
+    // beginning in the consumed range (so stepping off the trailing half
+    // of a pair that a view split adds no column).
+    self.column += column_width(self.input, start, self.position)
   }
 }
 
