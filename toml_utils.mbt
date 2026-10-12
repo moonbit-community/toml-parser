@@ -434,7 +434,7 @@ fn set_dotted_key_value(
   table : Map[String, TomlValue],
   key_path : Array[String],
   value : TomlValue,
-  mark_implicit? : Bool = false,
+  mark_implicit~ : Bool = false,
 ) -> Unit raise TableConflicts {
   guard key_path.length() != 0 else {
     abort("set_dotted_key_value: key_path must not be empty")

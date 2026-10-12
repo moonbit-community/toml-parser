@@ -41,7 +41,7 @@ pub fn TomlValue::datetime_info(self : TomlValue) -> (String, String)? {
 /// Parser state (will implement methods later)
 priv struct Parser {
   tokens : Array[@tokenize.Token]
-  mut position : Int
+  mut position : Int32
 }
 
 ///|
@@ -54,7 +54,7 @@ priv struct Parser {
 /// the consumed tail back through `update_view`.
 fn Parser::view(
   self : Self,
-  skip_newlines? : Bool = false,
+  skip_newlines~ : Bool = false,
 ) -> ArrayView[@tokenize.Token] {
   if skip_newlines {
     for view = self.view() {
@@ -70,7 +70,7 @@ fn Parser::view(
 
 ///|
 /// FIXME: expose upstream in the core
-fn[T] ArrayView::start(self : ArrayView[T]) -> Int = "%arrayview.start"
+fn[T] ArrayView::start(self : ArrayView[T]) -> Int32 = "%arrayview.start"
 
 ///|
 /// Commit a parsed prefix by recording where the remaining `view` starts.
@@ -114,7 +114,7 @@ pub fn TomlValue::is_homogeneous_array(arr : Array[TomlValue]) -> Bool {
   match arr {
     [] => true
     [first, .. rest] => {
-      fn type_id(value : TomlValue) -> Int {
+      fn type_id(value : TomlValue) -> Int32 {
         match value {
           TomlString(_) => 0
           TomlInteger(_) => 1

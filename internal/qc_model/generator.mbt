@@ -7,7 +7,7 @@
 /// generate documents directly.
 
 ///|
-fn capped_size(size : Int, cap : Int) -> Int {
+fn capped_size(size : Int32, cap : Int32) -> Int32 {
   if size < cap {
     size
   } else {
@@ -153,7 +153,7 @@ fn boolean_value_gen() -> @qc.Generator[SimpleValue] {
 }
 
 ///|
-fn pad2(value : Int) -> String {
+fn pad2(value : Int32) -> String {
   if value < 10 {
     "0" + value.to_string()
   } else {
@@ -162,7 +162,7 @@ fn pad2(value : Int) -> String {
 }
 
 ///|
-fn pad4(value : Int) -> String {
+fn pad4(value : Int32) -> String {
   if value < 10 {
     "000" + value.to_string()
   } else if value < 100 {
@@ -175,12 +175,12 @@ fn pad4(value : Int) -> String {
 }
 
 ///|
-fn is_leap_year(year : Int) -> Bool {
+fn is_leap_year(year : Int32) -> Bool {
   year % 400 == 0 || (year % 4 == 0 && year % 100 != 0)
 }
 
 ///|
-fn days_in_month(year : Int, month : Int) -> Int {
+fn days_in_month(year : Int32, month : Int32) -> Int32 {
   match month {
     1 | 3 | 5 | 7 | 8 | 10 | 12 => 31
     4 | 6 | 9 | 11 => 30
@@ -190,17 +190,17 @@ fn days_in_month(year : Int, month : Int) -> Int {
 }
 
 ///|
-fn format_date(year : Int, month : Int, day : Int) -> String {
+fn format_date(year : Int32, month : Int32, day : Int32) -> String {
   "\{pad4(year)}-\{pad2(month)}-\{pad2(day)}"
 }
 
 ///|
-fn format_time(hour : Int, minute : Int, second : Int) -> String {
+fn format_time(hour : Int32, minute : Int32, second : Int32) -> String {
   "\{pad2(hour)}:\{pad2(minute)}:\{pad2(second)}"
 }
 
 ///|
-fn format_offset(sign : Char, hour : Int, minute : Int) -> String {
+fn format_offset(sign : Char, hour : Int32, minute : Int32) -> String {
   "\{sign}\{pad2(hour)}:\{pad2(minute)}"
 }
 
@@ -306,7 +306,7 @@ fn datetime_value_gen() -> @qc.Generator[SimpleValue] {
 }
 
 ///|
-fn datetime_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
+fn datetime_array_value_gen(size : Int32) -> @qc.Generator[SimpleValue] {
   non_empty_length_gen(size).flat_map(len => {
     toml_datetime_gen()
     .array_with_size(len)
@@ -315,13 +315,13 @@ fn datetime_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
 }
 
 ///|
-fn non_empty_length_gen(size : Int) -> @qc.Generator[Int] {
+fn non_empty_length_gen(size : Int32) -> @qc.Generator[Int32] {
   let max_len = capped_size(size + 1, 4)
   @qc.int_range(1, max_len + 1)
 }
 
 ///|
-fn string_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
+fn string_array_value_gen(size : Int32) -> @qc.Generator[SimpleValue] {
   let strings : @qc.Generator[String] = @qc.spawn()
   let strings = strings.scale(n => capped_size(n, 8))
   non_empty_length_gen(size).flat_map(len => {
@@ -330,7 +330,7 @@ fn string_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
 }
 
 ///|
-fn integer_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
+fn integer_array_value_gen(size : Int32) -> @qc.Generator[SimpleValue] {
   let integers : @qc.Generator[Int64] = @qc.spawn()
   non_empty_length_gen(size).flat_map(len => {
     integers.array_with_size(len).map(values => SIntegerArray(values))
@@ -338,7 +338,7 @@ fn integer_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
 }
 
 ///|
-fn boolean_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
+fn boolean_array_value_gen(size : Int32) -> @qc.Generator[SimpleValue] {
   let booleans : @qc.Generator[Bool] = @qc.spawn()
   non_empty_length_gen(size).flat_map(len => {
     booleans.array_with_size(len).map(values => SBooleanArray(values))
@@ -346,7 +346,7 @@ fn boolean_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
 }
 
 ///|
-fn scalar_or_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
+fn scalar_or_array_value_gen(size : Int32) -> @qc.Generator[SimpleValue] {
   @qc.frequency([
     (3U, string_value_gen()),
     (2U, integer_value_gen()),
@@ -361,12 +361,12 @@ fn scalar_or_array_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
 }
 
 ///|
-fn simple_entry_gen(size : Int) -> @qc.Generator[(String, SimpleValue)] {
+fn simple_entry_gen(size : Int32) -> @qc.Generator[(String, SimpleValue)] {
   simple_key_gen().zip(simple_value_gen(size))
 }
 
 ///|
-fn table_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
+fn table_value_gen(size : Int32) -> @qc.Generator[SimpleValue] {
   let next_size = size / 2
   let max_fields = capped_size(size + 1, 4)
   @qc.int_range(0, max_fields + 1).flat_map(field_count => {
@@ -377,7 +377,7 @@ fn table_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
 }
 
 ///|
-fn simple_value_gen(size : Int) -> @qc.Generator[SimpleValue] {
+fn simple_value_gen(size : Int32) -> @qc.Generator[SimpleValue] {
   let leaf = scalar_or_array_value_gen(size)
   if size <= 0 {
     leaf

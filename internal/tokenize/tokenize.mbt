@@ -49,7 +49,7 @@ fn @lexer.Lexer::read_identifier(self : @lexer.Lexer) -> String {
 /// Check if a character is a disallowed control character in TOML strings.
 /// Control chars U+0000-U+001F (except \t = U+0009) and U+007F (DEL) are banned.
 fn is_control_char(ch : Char) -> Bool {
-  let code : Int = ch.to_int()
+  let code : Int32 = ch.to_int()
   (code >= 0 && code <= 0x1F && code != 0x09) || code == 0x7F
 }
 
@@ -78,11 +78,11 @@ fn @lexer.Lexer::validate_special_value_termination(
 
 ///|
 ///  calculate the code point using a0, a1, a2, a3
-fn Char::is_hex(ch : Char) -> Int? {
+fn Char::is_hex(ch : Char) -> Int32? {
   match ch {
-    '0'..='9' => Some(ch.to_int() - '0')
-    'a'..='f' => Some(ch.to_int() - 'a' + 10)
-    'A'..='F' => Some(ch.to_int() - 'A' + 10)
+    '0'..<='9' => Some(ch.to_int() - '0')
+    'a'..<='f' => Some(ch.to_int() - 'a' + 10)
+    'A'..<='F' => Some(ch.to_int() - 'A' + 10)
     _ => None
   }
 }
@@ -550,9 +550,9 @@ fn @lexer.Lexer::read_hex_number(self : @lexer.Lexer) -> (Int64, String) raise {
       continue
     }
     let digit_value = match ch {
-      '0'..='9' => (ch.to_int() - '0'.to_int()).to_int64()
-      'a'..='f' => (ch.to_int() - 'a'.to_int()).to_int64() + 10L
-      'A'..='F' => (ch.to_int() - 'A'.to_int()).to_int64() + 10L
+      '0'..<='9' => (ch.to_int() - '0'.to_int()).to_int64()
+      'a'..<='f' => (ch.to_int() - 'a'.to_int()).to_int64() + 10L
+      'A'..<='F' => (ch.to_int() - 'A'.to_int()).to_int64() + 10L
       _ => fail(self.error("Invalid hex digit"))
     }
     if result > (INT64_MAX - digit_value) / 16L {
@@ -806,7 +806,7 @@ fn @lexer.Lexer::read_number_with_loc(
   self : @lexer.Lexer,
   is_negative : Bool,
   start_pos : @lexer.Position,
-  has_sign? : Bool = false,
+  has_sign~ : Bool = false,
 ) -> Token raise {
   let sb = StringBuilder()
   if is_negative {
@@ -848,7 +848,7 @@ fn @lexer.Lexer::read_number_with_loc(
   }
   let next_view = for view = self.view() {
     match view {
-      ['0'..='9' | '_' as ch, .. rest] => {
+      ['0'..<='9' | '_' as ch, .. rest] => {
         raw.write_char(ch)
         if ch != '_' {
           sb.write_char(ch)
@@ -887,7 +887,7 @@ fn @lexer.Lexer::read_number_with_loc(
       raw.write_char('.')
       let next_view = for view = self.view() {
         match view {
-          ['0'..='9' | '_' as ch, .. rest] => {
+          ['0'..<='9' | '_' as ch, .. rest] => {
             raw.write_char(ch)
             if ch != '_' {
               sb.write_char(ch)
@@ -903,7 +903,7 @@ fn @lexer.Lexer::read_number_with_loc(
   }
   // Check for exponent notation (e/E followed by optional +/- and digits)
   match self.view() {
-    ['e' | 'E', '+' | '-', '0'..='9', ..] | ['e' | 'E', '0'..='9', ..] => {
+    ['e' | 'E', '+' | '-', '0'..<='9', ..] | ['e' | 'E', '0'..<='9', ..] => {
       is_float = true
       // Consume e/E
       match self.view() {
@@ -926,7 +926,7 @@ fn @lexer.Lexer::read_number_with_loc(
       // Consume exponent digits
       let next_view = for view = self.view() {
         match view {
-          ['0'..='9' | '_' as ch, .. rest] => {
+          ['0'..<='9' | '_' as ch, .. rest] => {
             raw.write_char(ch)
             if ch != '_' {
               sb.write_char(ch)
@@ -949,10 +949,10 @@ fn @lexer.Lexer::read_number_with_loc(
   // - has_dot: "1.5x" contains '.', which is not a bare key character; the
   //   float token followed by an identifier errors out in the parser.
   match self.view() {
-    ['a'..='z' | 'A'..='Z' | '_' | '-', ..] if !has_sign && !has_dot => {
+    ['a'..<='z' | 'A'..<='Z' | '_' | '-', ..] if !has_sign && !has_dot => {
       let next_view = for view = self.view() {
         match view {
-          ['a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' as ch, .. rest] => {
+          ['a'..<='z' | 'A'..<='Z' | '0'..<='9' | '_' | '-' as ch, .. rest] => {
             raw.write_char(ch)
             continue rest
           }
@@ -1111,7 +1111,7 @@ fn validate_time(s : StringView) -> Unit raise {
 
 ///|
 /// Parse an integer from a substring.
-fn parse_int_substr(s : StringView, start : Int, end : Int) -> Int {
+fn parse_int_substr(s : StringView, start : Int32, end : Int32) -> Int32 {
   let mut result = 0
   for i = start; i < end && i < s.length(); i = i + 1 {
     let c = s[i]
@@ -1124,7 +1124,7 @@ fn parse_int_substr(s : StringView, start : Int, end : Int) -> Int {
 
 ///|
 /// Return max days in a given month, accounting for leap years.
-fn days_in_month(year : Int, month : Int) -> Int {
+fn days_in_month(year : Int32, month : Int32) -> Int32 {
   match month {
     1 | 3 | 5 | 7 | 8 | 10 | 12 => 31
     4 | 6 | 9 | 11 => 30
@@ -1150,7 +1150,7 @@ fn validate_timezone_offset(s : StringView) -> Unit raise {
 }
 
 ///|
-fn is_leap_year(year : Int) -> Bool {
+fn is_leap_year(year : Int32) -> Bool {
   (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
 }
 
@@ -1320,7 +1320,7 @@ fn @lexer.Lexer::next_token(self : @lexer.Lexer) -> Token raise {
     }
 
     // DateTime patterns (check before numbers)
-    ['0'..='9', ..] =>
+    ['0'..<='9', ..] =>
       if self.is_datetime_pattern() {
         self.read_datetime_with_loc(start_pos)
       } else {
@@ -1328,7 +1328,7 @@ fn @lexer.Lexer::next_token(self : @lexer.Lexer) -> Token raise {
       }
 
     // Negative numbers
-    ['-', '0'..='9', ..] =>
+    ['-', '0'..<='9', ..] =>
       match self.view() {
         ['-', .. rest] => {
           self.update_view(rest)
@@ -1340,7 +1340,7 @@ fn @lexer.Lexer::next_token(self : @lexer.Lexer) -> Token raise {
     // Positive numbers with explicit '+' (only decimal, not 0x/0o/0b).
     // '+' is not a valid bare key character; the raw text keeps the sign so
     // the parser can reject this token in key position (e.g. `+5 = 3`).
-    ['+', '0'..='9', ..] =>
+    ['+', '0'..<='9', ..] =>
       match self.view() {
         ['+', '0', 'x' | 'X' | 'o' | 'O' | 'b' | 'B', ..] =>
           fail("Unexpected character: '+'")
@@ -1380,7 +1380,7 @@ fn @lexer.Lexer::next_token(self : @lexer.Lexer) -> Token raise {
     }
 
     // Identifiers and keywords (bare keys: A-Za-z0-9_-)
-    ['a'..='z' | 'A'..='Z' | '_' | '-', ..] => {
+    ['a'..<='z' | 'A'..<='Z' | '_' | '-', ..] => {
       let identifier = self.read_identifier()
       let end_pos = self.get_loc()
       let loc = make_loc(start_pos, end_pos)

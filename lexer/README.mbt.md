@@ -27,8 +27,8 @@ The `Position` struct tracks location information in the input:
 ///|
 #valtype
 pub(all) struct Position {
-  line : Int
-  column : Int
+  line : Int32
+  column : Int32
 } derive(Eq, Debug)
 ```
 
