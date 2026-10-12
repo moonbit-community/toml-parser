@@ -5,8 +5,8 @@
 /// fixture path and a short reason) so that the test harness can print a
 /// summary at the end without re-walking the corpus.
 pub struct TestResult {
-  passed : Int
-  failed : Int
+  passed : Int32
+  failed : Int32
   failures : Array[String]
 }
 

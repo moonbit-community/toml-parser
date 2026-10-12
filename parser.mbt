@@ -69,7 +69,7 @@ fn Parser::try_parse_single_key(self : Parser) -> String? {
 /// Parse a primary value (string, number, boolean)
 fn Parser::parse_value(
   self : Self,
-  skip_newlines? : Bool = false,
+  skip_newlines~ : Bool = false,
 ) -> TomlValue raise {
   match self.view(skip_newlines~) {
     [StringToken(s, ..), .. rest] => {

@@ -78,7 +78,7 @@ impl @qc.Shrink for Input with fn shrink(self) {
 /// interprets as lexer operations / argument choices.
 priv struct Script {
   chars : Array[Char]
-  ops : Array[Int]
+  ops : Array[Int32]
 } derive(Debug)
 
 ///|
@@ -106,12 +106,12 @@ impl @qc.Shrink for Script with fn shrink(self) {
 /// Raw UTF-16 code units, including lone (unpaired) surrogates. MoonBit
 /// `String`s can hold such data, so the lexer must at least stay in bounds.
 priv struct Units {
-  units : Array[Int]
-  ops : Array[Int]
+  units : Array[Int32]
+  ops : Array[Int32]
 } derive(Debug)
 
 ///|
-fn unit_gen() -> @qc.Generator[Int] {
+fn unit_gen() -> @qc.Generator[Int32] {
   @qc.frequency([
     (4, @qc.int_range('a'.to_int(), 'z'.to_int() + 1)),
     (2, @qc.elements([' ', '\t', '\r', '\n'].map(c => c.to_int()))),
@@ -170,7 +170,7 @@ fn consumed(input : String, lexer : @lexer.Lexer) -> StringView {
 }
 
 ///|
-fn state(lexer : @lexer.Lexer) -> (Int, @lexer.Position) {
+fn state(lexer : @lexer.Lexer) -> (Int32, @lexer.Position) {
   (lexer.get_position(), lexer.get_loc())
 }
 
@@ -182,7 +182,7 @@ fn at_line_terminator(view : StringView) -> Bool {
 ///|
 /// Up to `k` leading characters of `view` that do not reach a line
 /// terminator (`\n` or the `\r` of a `\r\n`).
-fn same_line_prefix(view : StringView, k : Int) -> String {
+fn same_line_prefix(view : StringView, k : Int32) -> String {
   let sb = StringBuilder()
   let mut taken = 0
   let mut rest = view
@@ -202,7 +202,7 @@ fn same_line_prefix(view : StringView, k : Int) -> String {
 ///|
 /// Advance `n` characters without crossing a line terminator. Returns how
 /// many characters were actually consumed.
-fn advance_same_line(lexer : @lexer.Lexer, n : Int) -> Int {
+fn advance_same_line(lexer : @lexer.Lexer, n : Int32) -> Int32 {
   let mut i = 0
   while i < n && lexer.peek() is Some(_) && !at_line_terminator(lexer.view()) {
     lexer.advance()
@@ -212,7 +212,7 @@ fn advance_same_line(lexer : @lexer.Lexer, n : Int) -> Int {
 }
 
 ///|
-fn fresh_at(input : String, ops : Array[Int]) -> @lexer.Lexer {
+fn fresh_at(input : String, ops : Array[Int32]) -> @lexer.Lexer {
   // Position a lexer somewhere inside `input` using only newline-aware
   // moves: `ops[0]` (0..63) picks a point spread over the whole input, and
   // `ops[3]` sometimes pushes the cursor on to the next line terminator.
@@ -240,7 +240,7 @@ fn fresh_at(input : String, ops : Array[Int]) -> @lexer.Lexer {
 ///|
 /// Run one scripted operation. Line terminators are always crossed with
 /// `skip_single_newline`; everything else is chosen by `op`.
-fn step(lexer : @lexer.Lexer, op : Int) -> Unit raise {
+fn step(lexer : @lexer.Lexer, op : Int32) -> Unit raise {
   let view = lexer.view()
   if at_line_terminator(view) {
     lexer.skip_single_newline()
@@ -671,7 +671,7 @@ test "qc: error() appends the current line and column" {
 /// consumed part of the line -- every code unit except the trailing half of
 /// a well-formed surrogate pair. It depends only on the offset, so it also
 /// pins down offsets that split a pair.
-fn raw_reference_loc(input : String, pos : Int) -> @lexer.Position {
+fn raw_reference_loc(input : String, pos : Int32) -> @lexer.Position {
   let mut line = 1
   let mut column = 1
   for i in 0..<pos {
@@ -689,7 +689,7 @@ fn raw_reference_loc(input : String, pos : Int) -> @lexer.Position {
 }
 
 ///|
-fn raw_terminator(input : String, i : Int) -> Bool {
+fn raw_terminator(input : String, i : Int32) -> Bool {
   let lf = '\n'.to_int().to_uint16()
   let cr = '\r'.to_int().to_uint16()
   i < input.length() &&
@@ -706,7 +706,7 @@ fn raw_terminator(input : String, i : Int) -> Bool {
 ///|
 /// Offset reached by moving up to `k` code units from `pos` without reaching
 /// a line terminator. May stop in the middle of a surrogate pair.
-fn raw_same_line_offset(input : String, pos : Int, k : Int) -> Int {
+fn raw_same_line_offset(input : String, pos : Int32, k : Int32) -> Int32 {
   let mut j = pos
   while j < input.length() && j - pos < k && !raw_terminator(input, j) {
     j += 1
@@ -715,7 +715,7 @@ fn raw_same_line_offset(input : String, pos : Int, k : Int) -> Int {
 }
 
 ///|
-fn raw_slice(input : String, start : Int, end : Int) -> String {
+fn raw_slice(input : String, start : Int32, end : Int32) -> String {
   string_of_units(
     Array::makei(end - start, i => input.unsafe_get(start + i).to_int()),
   )
@@ -730,7 +730,7 @@ test "qc: arbitrary UTF-16 (lone surrogates): cursor stays in bounds and drains"
       let lexer = @lexer.Lexer::Lexer(input)
       let mut last = 0
       // A saved view and the line it was saved on, for backtracking.
-      let mut saved : (StringView, Int)? = None
+      let mut saved : (StringView, Int32)? = None
       for op in u.ops {
         let pos = lexer.get_position()
         let k = op / 8 % 4 + 1
@@ -836,7 +836,7 @@ test "qc: arbitrary UTF-16 (lone surrogates): cursor stays in bounds and drains"
 
 ///|
 /// Build a string from raw UTF-16 code units (lone surrogates allowed).
-fn string_of_units(units : Array[Int]) -> String {
+fn string_of_units(units : Array[Int32]) -> String {
   let sb = StringBuilder()
   for u in units {
     sb.write_char((u & 0xFFFF).unsafe_to_char())

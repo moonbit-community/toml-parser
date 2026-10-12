@@ -387,11 +387,11 @@ fn is_bare_key(key : String) -> Bool {
 
 ///|
 fn is_negative_exponent_like_key(key : String) -> Bool {
-  if key.length() < 4 || key[0] != '-' || !(key[1] is ('1'..='9')) {
+  if key.length() < 4 || key[0] != '-' || !(key[1] is ('1'..<='9')) {
     false
   } else {
     let mut significand_end = 2
-    while significand_end < key.length() && key[significand_end] is ('0'..='9') {
+    while significand_end < key.length() && key[significand_end] is ('0'..<='9') {
       significand_end += 1
     }
     if significand_end >= key.length() || !(key[significand_end] is ('e' | 'E')) {
@@ -408,7 +408,7 @@ fn is_negative_exponent_like_key(key : String) -> Bool {
     }
     let mut i = exponent_start
     while i < key.length() {
-      if !(key[i] is ('0'..='9')) {
+      if !(key[i] is ('0'..<='9')) {
         return false
       }
       i += 1
@@ -420,7 +420,7 @@ fn is_negative_exponent_like_key(key : String) -> Bool {
 ///|
 fn is_bare_key_char(ch : Char) -> Bool {
   match ch {
-    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' => true
+    'a'..<='z' | 'A'..<='Z' | '0'..<='9' | '_' | '-' => true
     _ => false
   }
 }

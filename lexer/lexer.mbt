@@ -2,8 +2,8 @@
 /// Lexer implementation for TOML
 #valtype
 pub(all) struct Position {
-  line : Int
-  column : Int
+  line : Int32
+  column : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -18,9 +18,9 @@ pub extend Position with Debug::{to_repr}
 /// Lexer state with position tracking for better error reporting
 struct Lexer {
   input : String
-  mut position : Int
-  mut line : Int
-  mut column : Int
+  mut position : Int32
+  mut line : Int32
+  mut column : Int32
 }
 
 ///|
@@ -74,7 +74,7 @@ pub fn Lexer::update_view(self : Lexer, view : StringView) -> Unit {
 /// `width(a, c) == width(a, b) + width(b, c)`. This keeps columns
 /// consistent even when a view offset splits a surrogate pair (e.g. moving
 /// to the middle of a pair and back restores the original column).
-fn column_width(input : String, start : Int, end : Int) -> Int {
+fn column_width(input : String, start : Int32, end : Int32) -> Int32 {
   let end = if end > input.length() { input.length() } else { end }
   let mut width = 0
   for i = start; i < end; i = i + 1 {
@@ -181,7 +181,7 @@ pub fn Lexer::get_loc(self : Lexer) -> Position {
 
 ///|
 /// Get current position for error reporting
-pub fn Lexer::get_position(self : Lexer) -> Int {
+pub fn Lexer::get_position(self : Lexer) -> Int32 {
   self.position
 }
 

@@ -20,9 +20,9 @@ fn escape_toml_string(s : String) -> String {
         for i = 3; i >= 0; i = i - 1 {
           let digit = (code >> (i * 4)) & 0xF
           if digit < 10 {
-            hex.write_char(Int::unsafe_to_char('0'.to_int() + digit))
+            hex.write_char(Int32::unsafe_to_char('0'.to_int() + digit))
           } else {
-            hex.write_char(Int::unsafe_to_char('A'.to_int() + digit - 10))
+            hex.write_char(Int32::unsafe_to_char('A'.to_int() + digit - 10))
           }
         }
         result <+ "\{hex}"
@@ -39,7 +39,7 @@ fn escape_toml_string(s : String) -> String {
 /// Bare TOML keys are limited to ASCII letters, digits, '_' and '-'.
 fn is_bare_toml_key_char(char : Char) -> Bool {
   match char {
-    'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-' => true
+    'a'..<='z' | 'A'..<='Z' | '0'..<='9' | '_' | '-' => true
     _ => false
   }
 }

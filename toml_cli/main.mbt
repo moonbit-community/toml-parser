@@ -67,7 +67,7 @@ fn main {
 }
 
 ///|
-fn run(args : ArrayView[String]) -> Int {
+fn run(args : ArrayView[String]) -> Int32 {
   let matches = @argparse.parse(toml_command(), argv=args, env=Map([])) catch {
     err => {
       println(err)
@@ -87,7 +87,10 @@ fn run(args : ArrayView[String]) -> Int {
 }
 
 ///|
-fn dispatch_file(matches : @argparse.Matches, action : (String) -> Int) -> Int {
+fn dispatch_file(
+  matches : @argparse.Matches,
+  action : (String) -> Int32,
+) -> Int32 {
   match matches.values.get("file") {
     Some([path]) => action(path)
     _ => 2
@@ -95,7 +98,7 @@ fn dispatch_file(matches : @argparse.Matches, action : (String) -> Int) -> Int {
 }
 
 ///|
-fn format_file(path : String) -> Int {
+fn format_file(path : String) -> Int32 {
   let source = @fs.read_file_to_string(path) catch {
     err => {
       println("error: failed to read \{path}: \{Repr(err)}")
@@ -113,7 +116,7 @@ fn format_file(path : String) -> Int {
 }
 
 ///|
-fn check_file(path : String) -> Int {
+fn check_file(path : String) -> Int32 {
   let source = @fs.read_file_to_string(path) catch {
     err => {
       println("error: failed to read \{path}: \{Repr(err)}")
