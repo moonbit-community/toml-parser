@@ -20,7 +20,7 @@ pub(all) struct SimpleDocument {
   fields : Map[String, SimpleValue]
 } derive(Eq, @debug.Debug)
 #deprecated
-pub fn SimpleDocument::arbitrary(Int, @splitmix.RandomState) -> Self
+pub fn SimpleDocument::arbitrary(Int32, @splitmix.RandomState) -> Self
 pub fn SimpleDocument::contains_array(Self) -> Bool
 pub fn SimpleDocument::contains_complex_key(Self) -> Bool
 pub fn SimpleDocument::contains_datetime(Self) -> Bool

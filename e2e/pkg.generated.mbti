@@ -21,8 +21,8 @@ pub fn to_test_json(@toml.TomlValue) -> Json
 
 // Types and methods
 pub struct TestResult {
-  passed : Int
-  failed : Int
+  passed : Int32
+  failed : Int32
   failures : Array[String]
 }
 pub fn TestResult::new() -> Self
