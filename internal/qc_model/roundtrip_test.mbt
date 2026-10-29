@@ -39,56 +39,46 @@ fn roundtrip_failure_context(doc : @qc_model.SimpleDocument) -> String {
 }
 
 ///|
-/// Drive the round-trip property with the core QuickCheck driver and
-/// snapshot the whole report: the `observe` classifications double as a
-/// structural-coverage regression net, and `counterexample_context`
-/// renders the generated TOML and mismatch detail for a shrunk failure —
-/// so a mismatch reports as `Falsified` with context rather than `Raised`.
+/// Drive the round-trip property with the core QuickCheck driver. Require
+/// every structural feature in at least 10% of generated documents, without
+/// coupling the test to the generator's exact sample sequence.
+/// Counterexamples retain the generated TOML and shrunk mismatch context.
 test "quickcheck simple document roundtrip" {
-  let result = @qc.report(
+  let coverage : Map[String, Int32] = Map([])
+  @qc.check(
     (doc : @qc_model.SimpleDocument) => {
       simple_document_roundtrip_check(doc, doc.to_toml().to_string()) is Ok(_)
     },
     counterexample_context=roundtrip_failure_context,
     observe=doc => {
-      [
-        @qc.classify(doc.contains_table(), "contains-table"),
-        @qc.classify(doc.contains_array(), "contains-array"),
-        @qc.classify(doc.contains_datetime_array(), "contains-datetime-array"),
-        @qc.classify(
-          doc.contains_fractional_datetime(),
-          "contains-fractional-datetime",
-        ),
-        @qc.classify(doc.contains_datetime(), "contains-datetime"),
-        @qc.classify(
+      let features = [
+        (doc.contains_table(), "contains-table"),
+        (doc.contains_array(), "contains-array"),
+        (doc.contains_datetime_array(), "contains-datetime-array"),
+        (doc.contains_fractional_datetime(), "contains-fractional-datetime"),
+        (doc.contains_datetime(), "contains-datetime"),
+        (
           doc.contains_negative_exponent_like_key(),
           "contains-negative-exponent-like-key",
         ),
-        @qc.classify(doc.contains_complex_key(), "contains-complex-key"),
-        @qc.classify(doc.contains_string(), "contains-string"),
+        (doc.contains_complex_key(), "contains-complex-key"),
+        (doc.contains_string(), "contains-string"),
       ]
+      features.map(fn(feature) {
+        let (present, label) = feature
+        let count = coverage.get(label).unwrap_or(0)
+        coverage[label] = count + (if present { 1 } else { 0 })
+        @qc.classify(present, label)
+      })
     },
     count=2000,
     max_size=12,
   )
-  debug_inspect(
-    result,
-    content=(
-      #|Passed(
-      #|  tests=2000,
-      #|  observations={
-      #|    classes: {
-      #|      "contains-table": 570,
-      #|      "contains-array": 1218,
-      #|      "contains-datetime-array": 448,
-      #|      "contains-fractional-datetime": 408,
-      #|      "contains-datetime": 752,
-      #|      "contains-negative-exponent-like-key": 652,
-      #|      "contains-complex-key": 1024,
-      #|      "contains-string": 890,
-      #|    },
-      #|  },
-      #|)
-    ),
-  )
+  assert_eq(coverage.length(), 8)
+  for label, count in coverage {
+    assert_true(
+      count >= 200,
+      msg="insufficient coverage for \{label}: \{count}/2000",
+    )
+  }
 }
