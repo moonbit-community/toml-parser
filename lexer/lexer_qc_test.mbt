@@ -166,7 +166,7 @@ fn reference_loc(consumed : StringView) -> @lexer.Position {
 
 ///|
 fn consumed(input : String, lexer : @lexer.Lexer) -> StringView {
-  input.view(end_offset=lexer.get_position())
+  input[:lexer.get_position()]
 }
 
 ///|
@@ -252,7 +252,7 @@ fn step(lexer : @lexer.Lexer, op : Int32) -> Unit raise {
     2 => lexer.skip_whitespace()
     3 => {
       let prefix = same_line_prefix(view, k)
-      lexer.update_view(view.view(start_offset=prefix.length()))
+      lexer.update_view(view[prefix.length():])
     }
     4 => lexer.expect_string(same_line_prefix(view, k))
     5 => if lexer.peek() is Some(c) { lexer.expect_char(c) }
@@ -260,7 +260,7 @@ fn step(lexer : @lexer.Lexer, op : Int32) -> Unit raise {
       // A mismatching expectation must fail and leave the state alone
       // (the caller re-checks the location against the model).
       let prefix = same_line_prefix(view, k)
-      let next = view.view(start_offset=prefix.length())
+      let next = view[prefix.length():]
       let s = prefix + (if next is ['\u{1}', ..] { "\u{2}" } else { "\u{1}" })
       try lexer.expect_string(s) catch {
         _ => ()
@@ -445,7 +445,7 @@ test "qc: dropping k chars with update_view == k advances" {
       let n = advance_same_line(a, k)
       let view = b.view()
       let prefix = same_line_prefix(view, k)
-      b.update_view(view.view(start_offset=prefix.length()))
+      b.update_view(view[prefix.length():])
       prefix.char_length() == n && state(a) == state(b)
     },
     counterexample_context=s => repr(s.text()),
@@ -585,7 +585,7 @@ test "qc: skip_whitespace consumes exactly the maximal run of ' ', '\\t', lone '
       let (pos0, loc0) = state(lexer)
       lexer.skip_whitespace()
       let (pos1, loc1) = state(lexer)
-      let skipped = input.view(start_offset=pos0, end_offset=pos1)
+      let skipped = input[pos0:pos1]
       let only_ws = skipped.iter().all(c => c is (' ' | '\t' | '\r')) &&
         !skipped.contains("\r\n") &&
         !(skipped.has_suffix("\r") && lexer.view() is ['\n', ..])
@@ -743,7 +743,7 @@ test "qc: arbitrary UTF-16 (lone surrogates): cursor stays in bounds and drains"
             3 => {
               // Raw offsets: may land inside a surrogate pair.
               let j = raw_same_line_offset(input, pos, k)
-              lexer.update_view(lexer.view().view(start_offset=j - pos))
+              lexer.update_view(lexer.view()[j - pos:])
             }
             4 => {
               // The literal may end with the leading half of a pair.
@@ -927,16 +927,16 @@ test "regression: column is path-independent at offsets that split a pair" {
   // which is additive, so every offset has exactly one column.
   let lexer = @lexer.Lexer::Lexer("😈x")
   let saved = lexer.view()
-  lexer.update_view(saved.view(start_offset=1))
+  lexer.update_view(saved.unsafe_view(start=1, end=saved.length()))
   let mid = lexer.get_loc().column
-  lexer.update_view(saved.view(start_offset=2))
+  lexer.update_view(saved[2:])
   let after = lexer.get_loc().column
   lexer.update_view(saved)
   let back = lexer.get_loc().column
   debug_inspect((mid, after, back), content="(2, 2, 1)")
   // `advance` off the trailing half of a split pair adds no column, so it
   // agrees with jumping straight past the pair.
-  lexer.update_view(saved.view(start_offset=1))
+  lexer.update_view(saved.unsafe_view(start=1, end=saved.length()))
   lexer.advance()
   debug_inspect(
     (lexer.get_position(), lexer.get_loc()),
