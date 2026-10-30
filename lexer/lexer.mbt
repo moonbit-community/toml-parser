@@ -33,7 +33,11 @@ struct Lexer {
 /// inspect(lexer.view(), content="llo, world!")
 /// ```
 pub fn Lexer::view(self : Lexer) -> StringView {
-  self.input.view(start_offset=self.position)
+  // Positions deliberately include raw UTF-16 offsets inside surrogate pairs.
+  guard self.position >= 0 && self.position <= self.input.length() else {
+    abort("Invalid index for View")
+  }
+  self.input.unsafe_view(start=self.position, end=self.input.length())
 }
 
 ///|
@@ -224,7 +228,7 @@ pub fn Lexer::expect_string(
   // surrogate pairs, since `advance` steps over both units at once.)
   let view = self.view()
   if view.has_prefix(str) {
-    self.update_view(view.view(start_offset=str.length()))
+    self.update_view(view.unsafe_view(start=str.length(), end=view.length()))
   } else {
     fail(self.error(msg.unwrap_or("Expected string: " + str)))
   }
