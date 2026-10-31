@@ -25,6 +25,10 @@ struct Lexer {
 
 ///|
 /// Get a view of the input string
+///
+/// `position` is always a character boundary: `String` holds well-formed UTF-16
+/// and every move (`advance`, `update_view`, `expect_string`) starts and ends on
+/// one, so slicing the input keeps the view well-formed too.
 /// # Example:
 /// ```
 /// let lexer = Lexer::Lexer("Hello, world!")
@@ -33,7 +37,7 @@ struct Lexer {
 /// inspect(lexer.view(), content="llo, world!")
 /// ```
 pub fn Lexer::view(self : Lexer) -> StringView {
-  self.input.view(start_offset=self.position)
+  self.input[self.position:]
 }
 
 ///|
@@ -51,9 +55,9 @@ pub fn Lexer::update_view(self : Lexer, view : StringView) -> Unit {
   let new_offset = view.start_offset()
   // Columns count characters (as `advance` does), not UTF-16 code units, so
   // a surrogate pair between the old and new offsets counts once. Moving
-  // backwards (backtracking to a saved view) subtracts symmetrically.
-  // `column_width` is additive, so the column only depends on the offset,
-  // not on the path taken to it -- even if a view splits a surrogate pair.
+  // backwards (backtracking to a saved view) subtracts symmetrically:
+  // `column_width` is additive, so the column depends only on the offset and
+  // not on the path taken to it.
   if new_offset >= self.position {
     self.column += column_width(self.input, self.position, new_offset)
   } else {
@@ -64,16 +68,13 @@ pub fn Lexer::update_view(self : Lexer, view : StringView) -> Unit {
 
 ///|
 /// Number of columns spanned by the UTF-16 range `[start, end)` of `input`:
-/// the number of characters that *begin* in the range. Every code unit
-/// begins a character except the trailing half of a well-formed surrogate
-/// pair, so a pair counts once (on its leading unit) and an unpaired
-/// surrogate counts as one character on its own.
+/// the number of characters that *begin* in the range. Every code unit begins
+/// a character except the trailing half of a surrogate pair, so a pair counts
+/// once, on its leading unit.
 ///
 /// Whether a unit begins a character depends only on `input`, never on
-/// `start`, so the width is additive:
-/// `width(a, c) == width(a, b) + width(b, c)`. This keeps columns
-/// consistent even when a view offset splits a surrogate pair (e.g. moving
-/// to the middle of a pair and back restores the original column).
+/// `start`, so the width is additive: `width(a, c) == width(a, b) + width(b, c)`,
+/// and a column depends only on the offset it describes.
 fn column_width(input : String, start : Int32, end : Int32) -> Int32 {
   let end = if end > input.length() { input.length() } else { end }
   let mut width = 0
@@ -224,7 +225,7 @@ pub fn Lexer::expect_string(
   // surrogate pairs, since `advance` steps over both units at once.)
   let view = self.view()
   if view.has_prefix(str) {
-    self.update_view(view.view(start_offset=str.length()))
+    self.update_view(view[str.length():])
   } else {
     fail(self.error(msg.unwrap_or("Expected string: " + str)))
   }
