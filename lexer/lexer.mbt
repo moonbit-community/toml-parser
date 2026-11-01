@@ -78,7 +78,7 @@ pub fn Lexer::update_view(self : Lexer, view : StringView) -> Unit {
 fn column_width(input : String, start : Int32, end : Int32) -> Int32 {
   let end = if end > input.length() { input.length() } else { end }
   let mut width = 0
-  for i = start; i < end; i = i + 1 {
+  for i in start..<end {
     let paired_trailing = i > 0 &&
       input.unsafe_get(i).is_trailing_surrogate() &&
       input.unsafe_get(i - 1).is_leading_surrogate()
@@ -200,12 +200,7 @@ pub fn Lexer::expect_char(self : Self, ch : Char, msg? : String) -> Unit raise {
   if self.peek() is Some(c) && c == ch {
     self.advance()
   } else {
-    let base_msg = msg.unwrap_or("Expected character: " + Char::to_string(ch))
-    let location = " at line " +
-      self.line.to_string() +
-      ", column " +
-      self.column.to_string()
-    fail(base_msg + location)
+    fail(self.error(msg.unwrap_or("Expected character: \{ch}")))
   }
 }
 
@@ -234,11 +229,7 @@ pub fn Lexer::expect_string(
 ///|
 /// Create a detailed error message with position information
 pub fn Lexer::error(self : Lexer, msg : String) -> String {
-  msg +
-  " at line " +
-  self.line.to_string() +
-  ", column " +
-  self.column.to_string()
+  "\{msg} at line \{self.line}, column \{self.column}"
 }
 
 ///|
@@ -274,7 +265,7 @@ test "position tracking" {
   inspect(lexer.get_loc().column, content="1")
   lexer.advance() // h
   inspect(lexer.get_loc().column, content="2")
-  for i = 0; i < 4; i = i + 1 {
+  for _ in 0..<4 {
     lexer.advance() // e,l,l,o
   }
   inspect(lexer.get_loc().column, content="6")
