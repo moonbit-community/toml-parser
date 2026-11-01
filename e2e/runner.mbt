@@ -160,7 +160,7 @@ fn datetime_values_equal(a : Map[String, Json], b : Map[String, Json]) -> Bool {
 fn normalize_frac_seconds(s : String) -> String {
   // Find the fractional part (between '.' and non-digit after time)
   let mut dot_pos = -1
-  for i = 0; i < s.length(); i = i + 1 {
+  for i in 0..<s.length() {
     if s[i] == '.' {
       dot_pos = i
     }

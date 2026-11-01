@@ -75,7 +75,7 @@ fn normalize_time_value(s : String) -> String {
 fn normalize_time_seconds(s : String) -> String {
   // Find the time portion (after T or at start for local time)
   let mut t_pos = -1
-  for i = 0; i < s.length(); i = i + 1 {
+  for i in 0..<s.length() {
     if s[i] == 'T' {
       t_pos = i
     }
@@ -86,14 +86,14 @@ fn normalize_time_seconds(s : String) -> String {
   let mut first_colon = -1
   // Find end of time portion (before timezone)
   let mut time_end = s.length()
-  for i = time_start; i < s.length(); i = i + 1 {
+  for i in time_start..<s.length() {
     let c = s[i]
     if c == 'Z' || ((c == '+' || c == '-') && i > time_start + 2) {
       time_end = i
       break
     }
   }
-  for i = time_start; i < time_end; i = i + 1 {
+  for i in time_start..<time_end {
     if s[i] == ':' {
       colons += 1
       if first_colon < 0 {
