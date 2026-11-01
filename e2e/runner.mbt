@@ -127,9 +127,6 @@ pub fn json_equal(a : Json, b : Json) -> Bool {
 }
 
 ///|
-/// Check if a JSON object is a toml-test typed value: {"type": "...", "value": "..."}
-
-///|
 /// Check if a JSON object is a datetime typed value.
 fn is_datetime_typed_value(m : Map[String, Json]) -> Bool {
   guard m.length() == 2 && m.get("type") is Some(String(t)) else {

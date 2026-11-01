@@ -49,9 +49,6 @@ fn normalize_datetime(s : String) -> String {
 }
 
 ///|
-/// Pad fractional seconds to 3 digits (e.g. .6 → .600, .12 → .120).
-
-///|
 /// Normalize a time value to always include seconds (HH:MM → HH:MM:00).
 fn normalize_time_value(s : String) -> String {
   // Count colons to check if seconds are present
@@ -63,7 +60,7 @@ fn normalize_time_value(s : String) -> String {
   }
   if colons == 1 {
     // Only HH:MM, add :00
-    s + ":00"
+    "\{s}:00"
   } else {
     s
   }
@@ -83,7 +80,6 @@ fn normalize_time_seconds(s : String) -> String {
   // Count colons in the time portion, stopping at timezone indicator (+/- after time, or Z)
   let time_start = if t_pos >= 0 { t_pos + 1 } else { 0 }
   let mut colons = 0
-  let mut first_colon = -1
   // Find end of time portion (before timezone)
   let mut time_end = s.length()
   for i in time_start..<s.length() {
@@ -96,9 +92,6 @@ fn normalize_time_seconds(s : String) -> String {
   for i in time_start..<time_end {
     if s[i] == ':' {
       colons += 1
-      if first_colon < 0 {
-        first_colon = i
-      }
     }
   }
   if colons == 1 {
@@ -127,11 +120,8 @@ fn format_test_float(f : Double) -> String {
   }
   let s = f.to_string()
   // Remove trailing .0 for integer-like floats
-  if s.has_suffix(".0") {
-    return s[:s.length() - 2].to_owned()
+  if s.strip_suffix(".0") is Some(head) {
+    return head.to_owned()
   }
   s
 }
-
-///|
-/// Format a number in scientific notation matching Go's %g output.
