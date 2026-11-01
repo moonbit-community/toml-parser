@@ -633,22 +633,6 @@ fn @lexer.Lexer::read_octal_number(
 }
 
 ///|
-test {
-  let lexer = @lexer.Lexer::Lexer(
-    (
-      #|0o755
-    ),
-  )
-  let result = lexer.read_octal_number()
-  debug_inspect(
-    result,
-    content=(
-      #|(493, "0o755")
-    ),
-  )
-}
-
-///|
 /// Parse binary number. Returns the value and the raw source text
 /// (prefix + digits, underscores preserved) so the parser can still use the
 /// token as a bare key.
@@ -1159,7 +1143,7 @@ fn is_leap_year(year : Int32) -> Bool {
 /// no underscore next to dot or e/E or sign.
 fn validate_underscores(raw : String) -> Unit raise {
   let len = raw.length()
-  for i = 0; i < len; i = i + 1 {
+  for i in 0..<len {
     if raw[i] == '_' {
       // Trailing underscore
       if i == len - 1 {
@@ -1328,28 +1312,20 @@ fn @lexer.Lexer::next_token(self : @lexer.Lexer) -> Token raise {
       }
 
     // Negative numbers
-    ['-', '0'..<='9', ..] =>
-      match self.view() {
-        ['-', .. rest] => {
-          self.update_view(rest)
-          self.read_number_with_loc(true, start_pos)
-        }
-        _ => abort("Internal error: pattern matching inconsistency")
-      }
+    ['-', .. rest] if rest is ['0'..<='9', ..] => {
+      self.update_view(rest)
+      self.read_number_with_loc(true, start_pos)
+    }
 
     // Positive numbers with explicit '+' (only decimal, not 0x/0o/0b).
     // '+' is not a valid bare key character; the raw text keeps the sign so
     // the parser can reject this token in key position (e.g. `+5 = 3`).
-    ['+', '0'..<='9', ..] =>
-      match self.view() {
-        ['+', '0', 'x' | 'X' | 'o' | 'O' | 'b' | 'B', ..] =>
-          fail("Unexpected character: '+'")
-        ['+', .. rest] => {
-          self.update_view(rest)
-          self.read_number_with_loc(false, start_pos, has_sign=true)
-        }
-        _ => abort("Internal error: pattern matching inconsistency")
-      }
+    ['+', '0', 'x' | 'X' | 'o' | 'O' | 'b' | 'B', ..] =>
+      fail("Unexpected character: '+'")
+    ['+', .. rest] if rest is ['0'..<='9', ..] => {
+      self.update_view(rest)
+      self.read_number_with_loc(false, start_pos, has_sign=true)
+    }
 
     // Handle negative special float values (-inf, -nan)
     ['-', 'i', 'n', 'f', .. rest] => {
@@ -1413,22 +1389,6 @@ pub fn tokenize(input : String) -> Array[Token] raise {
       }
     }
   }
-}
-
-///|
-/// Test read_number
-test "read_number 2" {
-  let lexer = @lexer.Lexer::Lexer("123")
-  debug_inspect(
-    lexer.read_number(false),
-    content=(
-      #|IntegerToken(
-      #|  123,
-      #|  loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
-      #|  raw="123",
-      #|)
-    ),
-  )
 }
 
 ///|

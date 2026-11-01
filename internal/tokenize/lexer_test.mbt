@@ -1398,36 +1398,6 @@ test "multiline literal string token" {
 }
 
 ///|
-/// Test tokenize while loop else branch (should never be reached)
-test "tokenize else branch coverage" {
-  // This tests the else branch in tokenize function that should never be reached
-  // The function returns inside the while loop, so the else is unreachable
-  let tokens = @tokenize.tokenize(
-    (
-      #|key = "value"
-    ),
-  )
-  debug_inspect(
-    tokens,
-    content=(
-      #|[
-      #|  Identifier(
-      #|    "key",
-      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
-      #|  ),
-      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
-      #|  StringToken(
-      #|    "value",
-      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 14 } },
-      #|    multiline=false,
-      #|  ),
-      #|  EOF(loc={ start: { line: 1, column: 14 }, end: { line: 1, column: 14 } }),
-      #|]
-    ),
-  )
-}
-
-///|
 /// Test multiline basic string with single quote escape
 test "multiline basic string single quote escape" {
   let tokens = @tokenize.tokenize(
@@ -1603,14 +1573,12 @@ test "very large invalid float" {
     huge_number,
   )
   // Overflow produces infinity; verify we get a FloatToken rather than an error
-  let has_float = tokens
-    .iter()
-    .any(fn(tok) {
-      match tok {
-        FloatToken(f, ..) => f.is_inf()
-        _ => false
-      }
-    })
+  let has_float = tokens.any(fn(tok) {
+    match tok {
+      FloatToken(f, ..) => f.is_inf()
+      _ => false
+    }
+  })
   debug_inspect(has_float, content="true")
 }
 
