@@ -17,7 +17,7 @@ fn escape_toml_string(s : String) -> String {
         let code = c.to_int()
         // Format as 4-digit hex manually
         let hex = StringBuilder()
-        for i = 3; i >= 0; i = i - 1 {
+        for i in 3>=..0 {
           let digit = (code >> (i * 4)) & 0xF
           if digit < 10 {
             hex.write_char(Int32::unsafe_to_char('0'.to_int() + digit))
@@ -93,9 +93,9 @@ fn format_toml_key(key : String) -> String {
 ///|
 /// Helper to check if an array should be formatted inline
 fn should_format_inline(arr : Array[TomlValue]) -> Bool {
-  // Empty arrays or arrays with more than 5 elements should be multiline
-  if arr.is_empty() || arr.length() > 5 {
-    return arr.is_empty()
+  // Arrays with more than 5 elements go multiline; empty arrays stay inline
+  if arr.length() > 5 {
+    return false
   }
 
   // Arrays containing tables should be multiline
@@ -166,19 +166,19 @@ fn TomlValue::write_toml(
       if should_format_inline(arr) {
         // Inline array
         output <+ "["
-        for i = 0; i < arr.length(); i = i + 1 {
+        for i, v in arr {
           if i > 0 {
             output <+ ", "
           }
-          arr[i].write_toml(output, path)
+          v.write_toml(output, path)
         }
         output <+ "]"
       } else {
         // Multiline array
         output <+ "[\n"
-        for i = 0; i < arr.length(); i = i + 1 {
+        for i, v in arr {
           output <+ "  "
-          arr[i].write_toml(output, path)
+          v.write_toml(output, path)
           if i < arr.length() - 1 {
             output <+ ","
           }
@@ -235,16 +235,14 @@ fn write_table_contents(
   })
 
   // Write simple key-value pairs first
-  for i = 0; i < simple_pairs.length(); i = i + 1 {
-    let (key, value) = simple_pairs[i]
+  for (key, value) in simple_pairs {
     output <+ "\{format_toml_key(key)} = "
     value.write_toml(output, path)
     output <+ "\n"
   }
 
   // Write arrays
-  for i = 0; i < array_pairs.length(); i = i + 1 {
-    let (key, value) = array_pairs[i]
+  for i, (key, value) in array_pairs {
     if i > 0 || simple_pairs.length() > 0 {
       output <+ "\n"
     }
@@ -254,15 +252,14 @@ fn write_table_contents(
   }
 
   // Write nested tables
-  for i = 0; i < table_pairs.length(); i = i + 1 {
-    let (key, value) = table_pairs[i]
+  for i, (key, value) in table_pairs {
     if i > 0 || simple_pairs.length() > 0 || array_pairs.length() > 0 {
       output <+ "\n"
     }
     match value {
       TomlArray(arr) =>
         // Array of tables
-        for j = 0; j < arr.length(); j = j + 1 {
+        for j, item in arr {
           if j > 0 {
             output <+ "\n"
           }
@@ -272,7 +269,7 @@ fn write_table_contents(
             output <+ "."
           }
           output <+ "\{format_toml_key(key)}]]\n"
-          match arr[j] {
+          match item {
             TomlTable(t) => {
               let new_path = path.copy()
               new_path.push(key)
@@ -325,10 +322,10 @@ fn write_inline_table(
 ///|
 /// Write the table path for section headers
 fn write_table_path(path : Array[String], output : StringBuilder) -> Unit {
-  for i = 0; i < path.length(); i = i + 1 {
+  for i, p in path {
     if i > 0 {
       output <+ "."
     }
-    output <+ "\{format_toml_key(path[i])}"
+    output <+ "\{format_toml_key(p)}"
   }
 }

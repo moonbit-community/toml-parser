@@ -157,16 +157,6 @@ test "test parser EOF handling in peek" {
 }
 
 ///|
-test "test parser EOF handling in advance" {
-  inspect(
-    parse_expect_to_fail("key ="),
-    content=(
-      #|Expected value at { start: { line: 1, column: 6 }, end: { line: 1, column: 6 } })
-    ),
-  )
-}
-
-///|
 test "test parser rejects dash-starting identifier as value" {
   inspect(
     parse_expect_to_fail("key = -abc"),

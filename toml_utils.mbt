@@ -142,9 +142,7 @@ fn create_array_of_tables(
       // non-table values; a static array of inline tables is immutable as
       // well, and its elements carry the inline-table marker.
       let is_array_of_tables = existing_array.length() > 0 &&
-        existing_array
-        .iter()
-        .all(fn(v) {
+        existing_array.all(fn(v) {
           match v {
             TomlTable(t) => !t.contains("\u0000__inline__")
             _ => false
@@ -453,8 +451,7 @@ fn set_dotted_key_value(
   // Mark newly created intermediate tables as "defined" so they can't
   // be reopened with [table] headers later.
   let mut current_table = table
-  for i = 0; i < key_path.length() - 1; i = i + 1 {
-    let key = key_path[i]
+  for key in key_path[:key_path.length() - 1] {
     match current_table.get(key) {
       Some(TomlTable(existing_table)) => {
         // Reject extending inline tables
