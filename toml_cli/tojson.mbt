@@ -17,10 +17,12 @@ fn to_json(value : @toml_lib.TomlValue) -> Json {
         Json::number(f)
       }
     TomlBoolean(b) => Json::boolean(b)
-    TomlDateTime(_) => {
-      let (_, s) = value.datetime_info().unwrap()
-      Json::string(s)
-    }
+    TomlDateTime(
+      OffsetDateTime(s)
+      | LocalDateTime(s)
+      | LocalDate(s)
+      | LocalTime(s)
+    ) => Json::string(s)
     TomlArray(arr) => Json::array([ for v in arr => to_json(v) ])
     TomlTable(table) =>
       Json::object(Map::from_array([ for k, v in table => (k, to_json(v)) ]))
