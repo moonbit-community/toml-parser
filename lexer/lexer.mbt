@@ -28,7 +28,8 @@ struct Lexer {
 ///
 /// `position` is always a character boundary: `String` holds well-formed UTF-16
 /// and every move (`advance`, `update_view`, `expect_string`) starts and ends on
-/// one, so slicing the input keeps the view well-formed too.
+/// one. `exact_view` checks that boundary, so a bad offset fails loudly here
+/// instead of producing a malformed view.
 /// # Example:
 /// ```
 /// let lexer = Lexer::Lexer("Hello, world!")
@@ -37,7 +38,7 @@ struct Lexer {
 /// inspect(lexer.view(), content="llo, world!")
 /// ```
 pub fn Lexer::view(self : Lexer) -> StringView {
-  self.input[self.position:]
+  self.input.exact_view(start=self.position)
 }
 
 ///|
@@ -222,6 +223,9 @@ pub fn Lexer::expect_string(
   // surrogate pairs, since `advance` steps over both units at once.)
   let view = self.view()
   if view.has_prefix(str) {
+    // Clamped rather than checked on purpose: a literal may end with the leading
+    // half of a pair (it can only come from an unchecked string), and moving to
+    // the enclosing character is friendlier than panicking.
     self.update_view(view[str.length():])
   } else {
     fail(self.error(msg.unwrap_or("Expected string: " + str)))
