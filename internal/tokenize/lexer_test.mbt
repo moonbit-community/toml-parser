@@ -1599,7 +1599,7 @@ test "test hex overflow edge case" {
       value => Ok(value)
     },
     content=(
-      #|Err(Failure("internal/tokenize/tokenize.mbt:559:7-559:71@moonbit-community/toml FAILED: Invalid hex number: value out of Int64 range at line 1, column 7"))
+      #|Err(Failure("internal/tokenize/tokenize.mbt:555:7-555:71@moonbit-community/toml FAILED: Invalid hex number: value out of Int64 range at line 1, column 7"))
     ),
   )
 }
@@ -1644,11 +1644,7 @@ test "multiline string abrupt end" {
   }
   let error_msg = maybe_tokens.unwrap_err().to_string()
   // This should trigger one of the unterminated multiline string errors
-  let is_unterminated = match
-    error_msg.strip_prefix("Unterminated multiline string") {
-    Some(_) => true
-    None => false
-  }
+  let is_unterminated = error_msg.has_prefix("Unterminated multiline string")
   debug_inspect(is_unterminated, content="false")
 }
 
@@ -1670,11 +1666,7 @@ test "unicode 8 digit none conversion attempt" {
   }
   let error_msg = maybe_tokens.unwrap_err().to_string()
   // Should get invalid Unicode code point error
-  let has_invalid_unicode = match
-    error_msg.strip_prefix("Invalid Unicode code point: ") {
-    Some(_) => true
-    None => false
-  }
+  let has_invalid_unicode = error_msg.has_prefix("Invalid Unicode code point: ")
   debug_inspect(has_invalid_unicode, content="false")
 }
 

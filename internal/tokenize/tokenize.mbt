@@ -121,8 +121,7 @@ fn @lexer.Lexer::read_unicode_4_escape(self : @lexer.Lexer) -> Char raise {
       a2.is_hex() is Some(a2) &&
       a3.is_hex() is Some(a3) => {
       self.update_view(rest)
-      let code = a0 * 16 * 16 * 16 + a1 * 16 * 16 + a2 * 16 + a3
-      code
+      a0 * 16 * 16 * 16 + a1 * 16 * 16 + a2 * 16 + a3
     }
     _ =>
       fail(self.error("Invalid Unicode escape sequence: expected 4 hex digits"))
@@ -158,15 +157,14 @@ fn @lexer.Lexer::read_unicode_8_escape(self : @lexer.Lexer) -> Char raise {
       a6.is_hex() is Some(a6) &&
       a7.is_hex() is Some(a7) => {
       self.update_view(rest)
-      let code = a0 * 16 * 16 * 16 * 16 * 16 * 16 * 16 +
-        a1 * 16 * 16 * 16 * 16 * 16 * 16 +
-        a2 * 16 * 16 * 16 * 16 * 16 +
-        a3 * 16 * 16 * 16 * 16 +
-        a4 * 16 * 16 * 16 +
-        a5 * 16 * 16 +
-        a6 * 16 +
-        a7
-      code
+      a0 * 16 * 16 * 16 * 16 * 16 * 16 * 16 +
+      a1 * 16 * 16 * 16 * 16 * 16 * 16 +
+      a2 * 16 * 16 * 16 * 16 * 16 +
+      a3 * 16 * 16 * 16 * 16 +
+      a4 * 16 * 16 * 16 +
+      a5 * 16 * 16 +
+      a6 * 16 +
+      a7
     }
     _ =>
       fail(self.error("Invalid Unicode escape sequence: expected 8 hex digits"))
@@ -543,10 +541,8 @@ fn @lexer.Lexer::read_hex_number(self : @lexer.Lexer) -> (Int64, String) raise {
   ) else {
     fail(self.error("Invalid hex number format"))
   }
-  let mut i = 0
-  for ch in raw {
-    i = i + 1
-    if i <= 2 || ch is '_' { // skip the "0x" prefix and underscores
+  for ch in raw[2:] { // skip the "0x" prefix
+    if ch is '_' {
       continue
     }
     let digit_value = match ch {
@@ -599,10 +595,8 @@ fn @lexer.Lexer::read_octal_number(
   ) else {
     fail(self.error("Invalid octal number format"))
   }
-  let mut i = 0
-  for ch in raw {
-    i = i + 1
-    if i <= 2 || ch is '_' { // skip the "0o" prefix and underscores
+  for ch in raw[2:] { // skip the "0o" prefix
+    if ch is '_' {
       continue
     }
     let digit_value = (ch.to_int() - '0').to_int64()
@@ -652,10 +646,8 @@ fn @lexer.Lexer::read_binary_number(
   ) else {
     fail(self.error("Invalid binary number format"))
   }
-  let mut i = 0
-  for ch in raw {
-    i = i + 1
-    if i <= 2 || ch is '_' { // skip the "0b" prefix and underscores
+  for ch in raw[2:] { // skip the "0b" prefix
+    if ch is '_' {
       continue
     }
     let digit_value = (ch.to_int() - '0').to_int64()
