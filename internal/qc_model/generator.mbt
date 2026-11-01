@@ -81,7 +81,7 @@ fn string_with_middle_char(
   middle : Char,
   right : String,
 ) -> String {
-  left + middle.to_string() + right
+  "\{left}\{middle}\{right}"
 }
 
 ///|
@@ -104,7 +104,7 @@ fn padded_key_gen() -> @qc.Generator[String] {
       @qc.pure(prefix_padded),
       @qc.pure(prefix_padded).zip_with(
         @qc.one_of([@qc.pure(' '), @qc.pure('\t')]),
-        (inner : String, suffix : Char) => inner + suffix.to_string(),
+        (inner : String, suffix : Char) => "\{inner}\{suffix}",
       ),
     ])
   })
@@ -154,24 +154,12 @@ fn boolean_value_gen() -> @qc.Generator[SimpleValue] {
 
 ///|
 fn pad2(value : Int32) -> String {
-  if value < 10 {
-    "0" + value.to_string()
-  } else {
-    value.to_string()
-  }
+  value.to_string().pad_start(2, '0')
 }
 
 ///|
 fn pad4(value : Int32) -> String {
-  if value < 10 {
-    "000" + value.to_string()
-  } else if value < 100 {
-    "00" + value.to_string()
-  } else if value < 1000 {
-    "0" + value.to_string()
-  } else {
-    value.to_string()
-  }
+  value.to_string().pad_start(4, '0')
 }
 
 ///|

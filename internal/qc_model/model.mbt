@@ -406,12 +406,10 @@ fn is_negative_exponent_like_key(key : String) -> Bool {
     if exponent_start >= key.length() {
       return false
     }
-    let mut i = exponent_start
-    while i < key.length() {
+    for i in exponent_start..<key.length() {
       if !(key[i] is ('0'..<='9')) {
         return false
       }
-      i += 1
     }
     true
   }
