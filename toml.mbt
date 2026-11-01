@@ -163,12 +163,9 @@ pub fn TomlValue::validate(self : TomlValue) -> Bool {
       }
       true
     }
-    TomlTable(table) => {
+    TomlTable(table) =>
       // Recursively validate all values in the table
-      let mut valid = true
-      table.each(fn(_key, value) { if !value.validate() { valid = false } })
-      valid
-    }
+      table.values().all(fn(value) { value.validate() })
     _ => true // All other types are always valid by themselves
   }
 }

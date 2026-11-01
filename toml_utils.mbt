@@ -157,9 +157,7 @@ fn create_array_of_tables(
     Some(value) => raise ExpectedArray(final_key, value)
     None => {
       // Create new array with the first table
-      let array = []
-      array.push(TomlTable(new_table))
-      current_table[final_key] = TomlArray(array)
+      current_table[final_key] = TomlArray([TomlTable(new_table)])
       new_table
     }
   }
@@ -437,9 +435,8 @@ fn set_dotted_key_value(
   guard key_path.length() != 0 else {
     abort("set_dotted_key_value: key_path must not be empty")
   }
-  if key_path.length() == 1 {
+  if key_path is [key] {
     // Simple key assignment — reject duplicates
-    let key = key_path[0]
     if table.contains(key) {
       raise DuplicateKey(key)
     }
