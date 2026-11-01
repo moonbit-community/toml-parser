@@ -536,12 +536,12 @@ fn @lexer.Lexer::read_hex_number(self : @lexer.Lexer) -> (Int64, String) raise {
   let mut result = 0L
   // 0xA__FF_12 is invalid according to spec
   guard self.view() =~ (
-    (re"^" + re"0x" + re"[0-9a-fA-F]+(_[0-9a-fA-F]+)*") as raw,
+    (re"^0x" + (re"[0-9a-fA-F]+(_[0-9a-fA-F]+)*" as digits)) as raw,
     after=rest,
   ) else {
     fail(self.error("Invalid hex number format"))
   }
-  for ch in raw[2:] { // skip the "0x" prefix
+  for ch in digits {
     if ch is '_' {
       continue
     }
@@ -590,12 +590,12 @@ fn @lexer.Lexer::read_octal_number(
   let mut result = 0L
   // 0o7__55_44 is invalid according to spec
   guard self.view() =~ (
-    (re"^" + re"0o" + re"[0-7]+(_[0-7]+)*") as raw,
+    (re"^0o" + (re"[0-7]+(_[0-7]+)*" as digits)) as raw,
     after=rest,
   ) else {
     fail(self.error("Invalid octal number format"))
   }
-  for ch in raw[2:] { // skip the "0o" prefix
+  for ch in digits {
     if ch is '_' {
       continue
     }
@@ -641,12 +641,12 @@ fn @lexer.Lexer::read_binary_number(
   let mut result = 0L
   // 0b1__00_11 is invalid according to spec
   guard self.view() =~ (
-    (re"^" + re"0b" + re"[01]+(_[01]+)*") as raw,
+    (re"^0b" + (re"[01]+(_[01]+)*" as digits)) as raw,
     after=rest,
   ) else {
     fail(self.error("Invalid binary number format"))
   }
-  for ch in raw[2:] { // skip the "0b" prefix
+  for ch in digits {
     if ch is '_' {
       continue
     }
