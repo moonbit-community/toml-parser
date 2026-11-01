@@ -212,24 +212,13 @@ fn write_table_contents(
   table.each(fn(key, value) {
     match value {
       TomlTable(_) => table_pairs.push((key, value))
-      TomlArray(arr) => {
+      TomlArray(arr) =>
         // Check if it's an array of tables
-        let mut is_table_array = true
-        for item in arr {
-          match item {
-            TomlTable(_) => continue
-            _ => {
-              is_table_array = false
-              break
-            }
-          }
-        }
-        if is_table_array && arr.length() > 0 {
+        if arr.length() > 0 && arr.all(fn(item) { item is TomlTable(_) }) {
           table_pairs.push((key, value))
         } else {
           array_pairs.push((key, value))
         }
-      }
       _ => simple_pairs.push((key, value))
     }
   })

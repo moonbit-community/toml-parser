@@ -131,20 +131,17 @@ test "datetime in nested structures" {
   event_table["end_datetime"] = TomlDateTime(
     LocalDateTime("2023-06-17T17:00:00"),
   )
-  let sessions = []
   let session1 : Map[String, @toml.TomlValue] = Map([])
   session1["title"] = TomlString("Opening Keynote")
   session1["scheduled_at"] = TomlDateTime(
     OffsetDateTime("2023-06-15T09:00:00+00:00"),
   )
-  sessions.push(@toml.TomlTable(session1))
   let session2 : Map[String, @toml.TomlValue] = Map([])
   session2["title"] = TomlString("Technical Workshop")
   session2["scheduled_at"] = TomlDateTime(
     OffsetDateTime("2023-06-15T14:00:00+00:00"),
   )
-  sessions.push(TomlTable(session2))
-  event_table["sessions"] = TomlArray(sessions)
+  event_table["sessions"] = TomlArray([TomlTable(session1), TomlTable(session2)])
   let event_value = @toml.TomlTable(event_table)
   let event_str = event_value.to_string()
 

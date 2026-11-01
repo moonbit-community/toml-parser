@@ -402,8 +402,8 @@ pub fn parse(input : String) -> TomlValue raise {
         }
         // Validate that key-value pair is properly terminated
         match parser.view() {
-          [EOF, ..] => () // EOF is valid
-          [Newline, ..] => () // Newline is valid (comments are already skipped by tokenizer)
+          // A newline or EOF terminates the pair (comments are skipped by the tokenizer)
+          [EOF, ..] | [Newline, ..] => ()
           _ =>
             parser.error("Expected newline or end of file after key-value pair")
         }
