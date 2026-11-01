@@ -156,8 +156,8 @@ pub fn TomlValue::validate(self : TomlValue) -> Bool {
         return false
       }
       // Recursively validate nested values
-      for i = 0; i < arr.length(); i = i + 1 {
-        if !arr[i].validate() {
+      for v in arr {
+        if !v.validate() {
           return false
         }
       }
