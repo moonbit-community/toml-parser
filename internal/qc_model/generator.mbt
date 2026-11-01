@@ -215,13 +215,7 @@ fn time_string_gen() -> @qc.Generator[String] {
         @qc.int_range(1, 10).flat_map(len => {
           @qc.char_range('0', '9')
           .array_with_size(len)
-          .map(chars => {
-            let builder = chars.fold(init=StringBuilder(), (builder, ch) => {
-              builder.write_char(ch)
-              builder
-            })
-            "." + builder.to_string()
-          })
+          .map(chars => string_from_parts('.', chars))
         }),
       ),
     ]),
