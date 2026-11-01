@@ -39,15 +39,7 @@ fn chars_gen() -> @qc.Generator[Array[Char]] {
   ])
   @qc.sized(size => {
     @qc.int_range(0, size + 1).flat_map(n => {
-      chunk
-      .array_with_size(n)
-      .map(chunks => {
-        let out = []
-        for c in chunks {
-          out.append(c)
-        }
-        out
-      })
+      chunk.array_with_size(n).map(chunks => chunks.flatten())
     })
   })
 }
@@ -495,8 +487,6 @@ test "qc: expect_string of the upcoming text == advancing over it" {
 }
 
 ///|
-
-///|
 /// Mix arbitrary literals with (extensions of) the upcoming text.
 fn pick_literal(lexer : @lexer.Lexer, s : Script, lit : String) -> String {
   let k = if s.ops.length() > 1 { s.ops[1] % 6 } else { 1 }
@@ -586,7 +576,7 @@ test "qc: skip_whitespace consumes exactly the maximal run of ' ', '\\t', lone '
       lexer.skip_whitespace()
       let (pos1, loc1) = state(lexer)
       let skipped = input[pos0:pos1]
-      let only_ws = skipped.iter().all(c => c is (' ' | '\t' | '\r')) &&
+      let only_ws = skipped.all(c => c is (' ' | '\t' | '\r')) &&
         !skipped.contains("\r\n") &&
         !(skipped.has_suffix("\r") && lexer.view() is ['\n', ..])
       let maximal = match lexer.view() {
@@ -804,18 +794,15 @@ test "qc: arbitrary UTF-16 (lone surrogates): cursor stays in bounds and drains"
       let kinds = u.ops.map(op => op % 8)
       [
         @qc.classify(
-          u.units.iter().any(x => x >= 0xD800 && x < 0xE000),
+          u.units.any(x => x >= 0xD800 && x < 0xE000),
           "has surrogate units",
         ),
         @qc.classify(
-          u.units.length() > 0 &&
-          u.units[u.units.length() - 1] >= 0xD800 &&
-          u.units[u.units.length() - 1] < 0xDC00,
+          u.units is [.., last] && last >= 0xD800 && last < 0xDC00,
           "ends with leading surrogate",
         ),
         @qc.classify(
-          u.units.iter().any(x => x >= 0xD800 && x < 0xDC00) &&
-          kinds.contains(3),
+          u.units.any(x => x >= 0xD800 && x < 0xDC00) && kinds.contains(3),
           "update_view with surrogates",
         ),
         @qc.classify(kinds.contains(4), "expect_string"),
