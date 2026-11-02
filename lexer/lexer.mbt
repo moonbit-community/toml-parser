@@ -224,14 +224,12 @@ pub fn Lexer::expect_string(
   // lexer untouched and the error points at the start of the literal.
   // (Comparing code unit by code unit while calling `advance` broke on
   // surrogate pairs, since `advance` steps over both units at once.)
-  let view = self.view()
-  if view.has_prefix(str) {
+  match self.view().strip_prefix(str[:]) {
     // Clamped rather than checked on purpose: a literal may end with the leading
     // half of a pair (it can only come from an unchecked string), and moving to
     // the enclosing character is friendlier than panicking.
-    self.update_view(view[str.length():])
-  } else {
-    fail(self.error(msg.unwrap_or("Expected string: " + str)))
+    Some(rest) => self.update_view(rest)
+    None => fail(self.error(msg.unwrap_or("Expected string: " + str)))
   }
 }
 
