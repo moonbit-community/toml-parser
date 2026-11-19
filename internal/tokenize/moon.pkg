@@ -1,5 +1,9 @@
 import {
-  "bobzhang/lexer",
   "moonbit-community/toml/datetime",
+  "moonbitlang/core/lexbuf",
   "moonbitlang/core/string",
 }
+
+import {
+  "moonbitlang/core/bench",
+} for "test"

@@ -1,5 +1,6 @@
 ///|
 /// TOML Value types that represent different TOML data types
+#derive(Eq, Debug)
 pub(all) enum TomlValue {
   TomlString(String)
   TomlInteger(Int64)
@@ -8,7 +9,7 @@ pub(all) enum TomlValue {
   TomlArray(Array[TomlValue])
   TomlTable(Map[String, TomlValue])
   TomlDateTime(TomlDateTime)
-} derive(Eq, Debug)
+}
 
 ///|
 #deprecated("compare with `==`; the Eq impl is unaffected")

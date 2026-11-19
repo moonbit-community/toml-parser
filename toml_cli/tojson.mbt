@@ -21,7 +21,7 @@ fn to_json(value : @toml_lib.TomlValue) -> Json {
       OffsetDateTime(s)
       | LocalDateTime(s)
       | LocalDate(s)
-      | LocalTime(s)
+      | LocalTime(s),
     ) => Json::string(s)
     TomlArray(arr) => Json::array([ for v in arr => to_json(v) ])
     TomlTable(table) =>

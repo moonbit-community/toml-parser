@@ -25,11 +25,12 @@ The `Position` struct tracks location information in the input:
 
 ```moonbit nocheck
 ///|
+#derive(Eq, Debug)
 #valtype
 pub(all) struct Position {
   line : Int32
   column : Int32
-} derive(Eq, Debug)
+}
 ```
 
 ### Lexer

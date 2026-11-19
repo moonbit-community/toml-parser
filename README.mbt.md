@@ -127,10 +127,10 @@ test {
         "title": TomlString("My App"),
         "version": TomlString("1.0.0"),
         "database": TomlTable(
-          { "host": TomlString("localhost"), "port": TomlInteger(5432L), .. }
+          { "host": TomlString("localhost"), "port": TomlInteger(5432L), .. },
         ),
         ..
-      }
+      },
     ) else {
     fail("Expected config with title, version, and database")
   }
@@ -159,6 +159,7 @@ test {
 
 ```moonbit no-check
 ///|
+#derive(Eq, Debug)
 pub(all) enum TomlValue {
   TomlString(String)
   TomlInteger(Int64)
@@ -167,7 +168,7 @@ pub(all) enum TomlValue {
   TomlArray(Array[TomlValue])
   TomlTable(Map[String, TomlValue])
   TomlDateTime(TomlDateTime)
-} derive(Eq, Debug)
+}
 ```
 
 You can construct `TomlValue` directly in code:
@@ -461,7 +462,7 @@ test {
         "database": _,
         "maintenance_schedule": _,
         ..
-      }
+      },
     ) else {
     fail("Expected table")
   }
@@ -615,10 +616,10 @@ test {
             "port": TomlInteger(5432L),
             "enabled": TomlBoolean(true),
             ..
-          }
+          },
         ),
         ..
-      }
+      },
     ) else {
     fail(
       "Expected database configuration with host=localhost, port=5432, enabled=true",

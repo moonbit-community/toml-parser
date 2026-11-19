@@ -10,12 +10,13 @@ import {
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) enum TomlDateTime {
   OffsetDateTime(String)
   LocalDateTime(String)
   LocalDate(String)
   LocalTime(String)
-} derive(Eq, @debug.Debug)
+}
 #deprecated
 pub fn TomlDateTime::equal(Self, Self) -> Bool
 #deprecated

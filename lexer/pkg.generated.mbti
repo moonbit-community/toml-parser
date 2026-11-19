@@ -26,10 +26,11 @@ pub fn Lexer::skip_whitespace(Self) -> Unit
 pub fn Lexer::update_view(Self, StringView) -> Unit
 pub fn Lexer::view(Self) -> StringView
 
+#derive(Eq, @debug.Debug)
 pub(all) struct Position {
   line : Int32
   column : Int32
-} derive(Eq, @debug.Debug)
+}
 #deprecated
 pub fn Position::equal(Self, Self) -> Bool
 #deprecated

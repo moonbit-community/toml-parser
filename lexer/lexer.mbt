@@ -1,10 +1,11 @@
 ///|
 /// Lexer implementation for TOML
+#derive(Eq, Debug)
 #valtype
 pub(all) struct Position {
   line : Int32
   column : Int32
-} derive(Eq, Debug)
+}
 
 ///|
 #deprecated("compare with `==`; the Eq impl is unaffected")

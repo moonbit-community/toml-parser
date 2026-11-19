@@ -21,15 +21,6 @@ fn lexer_expect_to_fail(input : String) -> String {
 }
 
 ///|
-fn[T] lexer_action_expect_to_fail(action : () -> T raise) -> String {
-  try action() catch {
-    error => unwrap_failure_message(error)
-  } noraise {
-    _ => abort("Expected lexer failure but action succeeded")
-  }
-}
-
-///|
 test "verify lexer_expect_to_fail output" {
   inspect(
     lexer_expect_to_fail(
@@ -39,21 +30,6 @@ test "verify lexer_expect_to_fail output" {
     ),
     content=(
       #|Unexpected character: '@')
-    ),
-  )
-}
-
-///|
-test "verify lexer_action_expect_to_fail output" {
-  let lexer = @lexer.Lexer::Lexer(
-    (
-      #|hello world
-    ),
-  )
-  inspect(
-    lexer_action_expect_to_fail(fn() raise { lexer.expect_string("goodbye") }),
-    content=(
-      #|Expected string: goodbye at line 1, column 1)
     ),
   )
 }
