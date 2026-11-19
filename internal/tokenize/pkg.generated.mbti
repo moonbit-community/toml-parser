@@ -11,6 +11,8 @@ pub fn default_loc() -> Loc
 
 pub fn tokenize(String) -> Array[Token] raise
 
+pub fn validate_date_literal(String) -> Unit raise
+
 pub fn validate_float_literal(String) -> Unit raise
 
 pub fn validate_integer_literal(String) -> Unit raise

@@ -47,8 +47,9 @@ fn Parser::try_parse_single_key(self : Parser) -> String? {
     }
     [FloatToken(_, raw~, ..), .. rest] =>
       // Use the raw source text so that tokens like -10e-1 (which the
-      // lexer parses as a float) can still serve as bare keys.
-      if raw.has_prefix("+") {
+      // lexer parses as a float) can still serve as bare keys. A '+',
+      // even in an exponent (`1e+2`), means it cannot.
+      if raw.contains_char('+') {
         None
       } else {
         self.update_view(rest)
@@ -110,6 +111,12 @@ fn Parser::parse_value(
       TomlBoolean(b)
     }
     [DateTimeToken(dt, ..), .. rest] => {
+      // A local date may be a bare key, so the tokenizer leaves it to us.
+      if dt is LocalDate(s) {
+        @tokenize.validate_date_literal(s) catch {
+          e => self.error(e.to_string())
+        }
+      }
       self.update_view(rest)
       TomlDateTime(dt)
     }
@@ -231,18 +238,8 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
     [FloatToken(_, raw~, ..), .. rest] => {
       // Use the raw source text so dotted numeric keys like "1.2" split
       // correctly and tokens like -10e-1 are preserved verbatim.
-      // A leading '+' is never valid in a bare key.
-      if raw.has_prefix("+") {
-        self.error("Expected key")
-      }
+      self.push_float_key(path, raw, "Expected key")
       self.update_view(rest)
-      match raw.split_once(".") {
-        Some((left, right)) => {
-          path.push(left.to_owned())
-          path.push(right.to_owned())
-        }
-        None => path.push(raw)
-      }
     }
     _ =>
       match self.try_parse_single_key() {
@@ -259,19 +256,8 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
         // Check for float token (e.g. 1.2 → keys "1" and "2")
         match self.view() {
           [FloatToken(_, raw~, ..), .. rest2] => {
-            // A leading '+' is never valid in a bare key.
-            if raw.has_prefix("+") {
-              self.error("Expected key after dot")
-            }
+            self.push_float_key(path, raw, "Expected key after dot")
             self.update_view(rest2)
-            let float_str = raw
-            match float_str.split_once(".") {
-              Some((left, right)) => {
-                path.push(left.to_owned())
-                path.push(right.to_owned())
-              }
-              None => path.push(float_str)
-            }
           }
           _ =>
             match self.try_parse_single_key() {
@@ -286,6 +272,31 @@ fn Parser::parse_dotted_key(self : Parser) -> Array[String] raise {
   }
   self.update_view(next_view)
   path
+}
+
+///|
+/// Pushes the keys of a float token `raw` used as a key to `path`: `1.2` is
+/// the dotted key `1` . `2`. A '+' (`+1.2`, `1e+2`) is never valid in a bare
+/// key, and `1.` has an empty second key; both raise `msg`.
+fn Parser::push_float_key(
+  self : Parser,
+  path : Array[String],
+  raw : String,
+  msg : String,
+) -> Unit raise {
+  if raw.contains_char('+') {
+    self.error(msg)
+  }
+  match raw.split_once(".") {
+    Some((left, right)) => {
+      if right.is_empty() {
+        self.error(msg)
+      }
+      path.push(left.to_owned())
+      path.push(right.to_owned())
+    }
+    None => path.push(raw)
+  }
 }
 
 ///|

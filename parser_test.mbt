@@ -422,7 +422,7 @@ test "special float keywords as keys" {
       value => Ok(value)
     },
     content=(
-      #|Err(Failure("parser.mbt:219:20-219:70@moonbit-community/toml FAILED: Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 5 } }"))
+      #|Err(Failure("parser.mbt:226:20-226:70@moonbit-community/toml FAILED: Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 5 } }"))
     ),
   )
   debug_inspect(
@@ -694,7 +694,7 @@ test "dotted key notation table conflict" {
       value => Ok(value)
     },
     content=(
-      #|Err(Failure("parser.mbt:219:20-219:70@moonbit-community/toml FAILED: Duplicate table definition: [a] at { start: { line: 2, column: 4 }, end: { line: 3, column: 1 } }"))
+      #|Err(Failure("parser.mbt:226:20-226:70@moonbit-community/toml FAILED: Duplicate table definition: [a] at { start: { line: 2, column: 4 }, end: { line: 3, column: 1 } }"))
     ),
   )
 }

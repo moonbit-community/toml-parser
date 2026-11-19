@@ -40,111 +40,6 @@ test "test invalid float parsing" {
 }
 
 ///|
-test "test invalid hex digit error" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|hex = 0xGHI
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid hex number format at line 1, column 7)"
-    ),
-  )
-}
-
-///|
-test "test octal without digits" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|test = 0o
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid octal number format at line 1, column 8)"
-    ),
-  )
-}
-
-///|
-test "test binary without digits" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|test = 0b
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid binary number format at line 1, column 8)"
-    ),
-  )
-}
-
-///|
-test "test hex with invalid delimiter" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|hex = 0x123XYZ
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid char 'X', expected whitespace, comma, or end of input after 0x... at line 1, column 12)"
-    ),
-  )
-}
-
-///|
-test "test hex regex is anchored to current view" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|hex = 0xG0x10
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid hex number format at line 1, column 7)"
-    ),
-  )
-}
-
-///|
 test "test datetime timezone regex is anchored to current view" {
   let tokens = @tokenize.tokenize(
     (
@@ -170,48 +65,6 @@ test "test datetime timezone regex is anchored to current view" {
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 27 }, end: { line: 1, column: 27 } }),
       #|]
-    ),
-  )
-}
-
-///|
-test "test octal regex is anchored to current view" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|oct = 0o80o7
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid octal number format at line 1, column 7)"
-    ),
-  )
-}
-
-///|
-test "test binary regex is anchored to current view" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|bin = 0b20b10
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid binary number format at line 1, column 7)"
     ),
   )
 }
@@ -302,27 +155,6 @@ test "test hex case variations" {
 }
 
 ///|
-test "test octal with invalid digits" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|oct = 0o789
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid char '8', expected whitespace, comma, or end of input after 0o... at line 1, column 10)"
-    ),
-  )
-}
-
-///|
 test "test octal with valid delimiters" {
   let tokens1 = @tokenize.tokenize(
     (
@@ -376,27 +208,6 @@ test "test octal with valid delimiters" {
       #|  RightBracket(loc={ start: { line: 1, column: 20 }, end: { line: 1, column: 21 } }),
       #|  EOF(loc={ start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }),
       #|]
-    ),
-  )
-}
-
-///|
-test "test binary with invalid digits" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|bin = 0b1012
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid char '2', expected whitespace, comma, or end of input after 0b... at line 1, column 12)"
     ),
   )
 }

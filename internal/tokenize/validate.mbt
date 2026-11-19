@@ -25,11 +25,20 @@ fn strip_underscores(raw : StringView) -> String {
 /// The tokenizer emits decimal numeric tokens without validating them
 /// because the same text can be a bare key, where TOML applies no numeric
 /// rules. The parser calls this when — and only when — the token is used
-/// as a value. Radix-prefixed literals (0x/0o/0b) are not covered: they
-/// can never be confused with values here since the tokenizer already
-/// validated them (digits, underscores, and Int64 range) at lex time.
+/// as a value. For radix-prefixed literals (0x/0o/0b), whose digits and
+/// underscores the tokenizer already checked, only the Int64 range is
+/// checked here.
 pub fn validate_integer_literal(raw : String) -> Unit raise {
-  if raw.has_prefix("0x") || raw.has_prefix("0o") || raw.has_prefix("0b") {
+  let radix = match raw {
+    [.. "0x", ..] => Some((16L, "hex"))
+    [.. "0o", ..] => Some((8L, "octal"))
+    [.. "0b", ..] => Some((2L, "binary"))
+    _ => None
+  }
+  if radix is Some((base, name)) {
+    if radix_value(raw.exact_view(start=2), base) is None {
+      raise Failure::Failure("Invalid \{name} number: value out of Int64 range")
+    }
     return
   }
   validate_underscores(raw)
@@ -37,6 +46,36 @@ pub fn validate_integer_literal(raw : String) -> Unit raise {
   let _ = @string.parse_int64(s) catch {
     _ => raise Failure::Failure("Invalid integer: \{s}")
   }
+}
+
+///|
+/// The value of the radix `base` digits and underscores in `digits`, or
+/// `None` if it is out of the Int64 range.
+fn radix_value(digits : StringView, base : Int64) -> Int64? {
+  let mut result = 0L
+  for ch in digits {
+    let digit = match ch {
+      '_' => continue
+      '0'..<='9' => (ch.to_int() - '0').to_int64()
+      'a'..<='f' => (ch.to_int() - 'a').to_int64() + 10L
+      _ => (ch.to_int() - 'A').to_int64() + 10L
+    }
+    if result > (INT64_MAX - digit) / base {
+      return None
+    }
+    result = result * base + digit
+  }
+  Some(result)
+}
+
+///|
+/// Validate a local date literal `YYYY-MM-DD` (month and day ranges).
+///
+/// The tokenizer does not validate a date on its own because the same text
+/// can be a bare key, such as `2023-02-30 = 1`; the parser calls this when
+/// the token is used as a value.
+pub fn validate_date_literal(raw : String) -> Unit raise {
+  validate_date(raw)
 }
 
 ///|

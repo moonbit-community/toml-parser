@@ -2,7 +2,7 @@
 /// The message for a control character `ch` (U+0000-U+001F except tab, and
 /// U+007F), which TOML does not allow in `place`.
 fn control_char_message(place : String, ch : Char) -> String {
-  let code = ch.to_int().to_string().pad_start(4, '0')
+  let code = ch.to_int().to_string(radix=16).to_upper().pad_start(4, '0')
   "Invalid control character in \{place}: U+\{code}"
 }
 
@@ -36,7 +36,6 @@ fn Lexer::read_escape(
     re"^r" => sb.write_char('\r')
     re"^\\" => sb.write_char('\\')
     re"^\"" => sb.write_char('"')
-    re"^'" => sb.write_char('\'')
     re"^b" => sb.write_char('\u0008')
     re"^f" => sb.write_char('\u000C')
     re"^e" => sb.write_char('\u001B')
@@ -149,9 +148,12 @@ fn Lexer::read_multiline_basic_string(self : Lexer) -> String raise {
         sb <+ "\"\""
         break
       }
-      // A line ending backslash trims the newline and all the whitespace and
-      // newlines after it.
-      re"^\\[ \t]*[\r\n][ \t\r\n]*" as trimmed => self.count_new_lines(trimmed)
+      // A line ending backslash trims the newline (LF or CRLF) and all the
+      // whitespace and newlines after it.
+      re"^\\[ \t]*\r?\n([ \t]|\r?\n)*" as trimmed =>
+        self.count_new_lines(trimmed)
+      re"^\\[ \t]*\r" =>
+        fail(self.error("Invalid escape: backslash followed by a bare CR"))
       re"^\\[ \t]" =>
         fail(
           self.error(
