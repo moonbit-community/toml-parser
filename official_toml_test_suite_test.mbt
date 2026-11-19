@@ -547,7 +547,7 @@ test "inf failure" {
   inspect(
     parse_expect_to_fail(inf_failure_toml),
     content=(
-      #|Invalid character 'x' after special value at line 1, column 11)
+      #|Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 12 } })
     ),
   )
   let inf_failure_toml2 =
@@ -556,7 +556,7 @@ test "inf failure" {
   inspect(
     parse_expect_to_fail(inf_failure_toml2),
     content=(
-      #|Invalid character 'x' after special value at line 1, column 11)
+      #|Expected value at { start: { line: 1, column: 7 }, end: { line: 1, column: 12 } })
     ),
   )
   let inf_failure_toml2 =

@@ -13,8 +13,9 @@ const START : Regex = re"^"
 const DATE : Regex = re"[0-9]{4}-[0-9]{2}-[0-9]{2}"
 
 ///|
-/// TOML time: `HH:MM` with optional `:SS` and `.fff` fraction.
-const TIME : Regex = re"[0-9]{2}:[0-9]{2}" + re"(:[0-9]{2})?(\.[0-9]+)?"
+/// TOML time: `HH:MM` with optional `:SS`, and a `.fff` fraction only after
+/// the seconds.
+const TIME : Regex = re"[0-9]{2}:[0-9]{2}" + re"(:[0-9]{2}(\.[0-9]+)?)?"
 
 ///|
 /// A decimal number as the tokenizer sees it: digits and underscores, an
@@ -158,12 +159,12 @@ fn Lexer::number_or_key(self : Lexer, start : Position) -> Token raise {
     (
       (
         DATE +
-        re"([Tt ][0-9]{2}:[0-9]{2}(:[0-9]{2})?(\.[0-9]+)?([Zz]|[+\-][0-9]{2}:[0-9]{2})?)?"
+        re"([Tt ][0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]+)?)?([Zz]|[+\-][0-9]{2}:[0-9]{2})?)?"
       ) as datetime
     ) => self.datetime_token(datetime, start)
     (START + TIME) as time =>
       match self.peek() {
-        None | Some(' ' | '\t' | '\n' | '\r' | '=' | ',' | ']' | '}') => {
+        None | Some(' ' | '\t' | '\n' | '\r' | '=' | ',' | ']' | '}' | '#') => {
           validate_time(time)
           DateTimeToken(LocalTime(time.to_owned()), loc=self.span(start))
         }
@@ -180,23 +181,28 @@ fn Lexer::number_or_key(self : Lexer, start : Position) -> Token raise {
     // Only the lowercase radix prefixes are numbers: `0X5` goes to the bare
     // key path, so `x = 0X5` errors while `[0XAB]` is a valid key.
     START + ((re"0x" + re"[0-9a-fA-F]+(_[0-9a-fA-F]+)*") as raw) =>
-      self.radix_number(raw, 16, "hex", start)
+      self.radix_number(raw, 16, start)
     START + ((re"0o" + re"[0-7]+(_[0-7]+)*") as raw) =>
-      self.radix_number(raw, 8, "octal", start)
+      self.radix_number(raw, 8, start)
     START + ((re"0b" + re"[01]+(_[01]+)*") as raw) =>
-      self.radix_number(raw, 2, "binary", start)
-    re"^0x" => fail(start.message("Invalid hex number format"))
-    re"^0o" => fail(start.message("Invalid octal number format"))
-    re"^0b" => fail(start.message("Invalid binary number format"))
+      self.radix_number(raw, 2, start)
+    // A prefix without digits is not a number, but can be a bare key, such as
+    // `0x` or `0xg`.
+    re"^0[xob]" => self.rest_of_bare_key(start_offset, start)
     re"^\+0[xXoObB]" => fail("Unexpected character: '+'")
     (START + DECIMAL) as raw => self.decimal_number(raw, start)
 
     // Special float values. The bare key characters after them are matched
     // only to beat the bare key case below, and reported as an error.
-    START + (re"[+\-](inf|nan)" as raw) + re"[A-Za-z0-9_\-]*" => {
+    // After `-`, they are a bare key such as `-infinite`.
+    START + (re"[+\-](inf|nan)" as raw) + (re"[A-Za-z0-9_\-]*" as rest) => {
+      if raw is ['-', ..] && rest.length() > 0 {
+        return self.rest_of_bare_key(start_offset, start)
+      }
       self.offset = start_offset + 4
       match self.peek() {
-        None | Some(' ' | '\t' | '\n' | '\r' | '=' | ',' | ']' | '}' | '#') =>
+        None
+        | Some(' ' | '\t' | '\n' | '\r' | '=' | ',' | ']' | '}' | '#' | '.') =>
           ()
         Some(ch) =>
           fail(self.error("Invalid character '\{ch}' after special value"))
@@ -227,10 +233,15 @@ fn Lexer::datetime_token(
 ) -> Token raise {
   let len = text.length()
   let date = text.unsafe_view(start=0, end=10)
-  validate_date(date)
   if len == 10 {
+    // A date alone can be a bare key, such as `2023-01-01abc` or even
+    // `2023-02-30`, so it is validated by the parser, as a value only.
+    if self.at_bare_key_char() {
+      return self.rest_of_bare_key(text.start_offset(), start)
+    }
     return DateTimeToken(LocalDate(date.to_owned()), loc=self.span(start))
   }
+  validate_date(date)
   // The time starts after the T/t/space separator, and runs to the offset.
   let offset_start = for i = 11; i < len; i = i + 1 {
     if text[i] is ('Z' | 'z' | '+' | '-') {
@@ -256,31 +267,26 @@ fn Lexer::datetime_token(
 ///|
 /// Builds the token for a radix-prefixed integer `raw` (prefix, then digits
 /// and single underscores), which ends at the cursor. The raw text is kept so
-/// that the parser can still use the token as a bare key.
+/// that the parser can still use the token as a bare key; for the same
+/// reason, the Int64 range is checked by the parser, and more bare key
+/// characters (`0x1g`) make an `Identifier`.
 fn Lexer::radix_number(
   self : Lexer,
   raw : StringView,
   base : Int64,
-  name : String,
   start : Position,
 ) -> Token raise {
-  let mut result = 0L
-  for ch in raw.unsafe_view(start=2, end=raw.length()) {
-    let digit = match ch {
-      '_' => continue
-      '0'..<='9' => (ch.to_int() - '0').to_int64()
-      'a'..<='f' => (ch.to_int() - 'a').to_int64() + 10L
-      _ => (ch.to_int() - 'A').to_int64() + 10L
-    }
-    if result > (INT64_MAX - digit) / base {
-      fail(start.message("Invalid \{name} number: value out of Int64 range"))
-    }
-    result = result * base + digit
+  if self.at_bare_key_char() {
+    return self.rest_of_bare_key(raw.start_offset(), start)
   }
+  // Saturate on overflow, like decimal integers.
+  let result = radix_value(raw.unsafe_view(start=2, end=raw.length()), base).unwrap_or(
+    INT64_MAX,
+  )
   // A '.' means a dotted bare key like `0xAB.cd`; the parser splits the raw
   // text, so this is not an error here.
   match self.peek() {
-    None | Some('.' | ' ' | '\t' | '\r' | '\n' | ',' | ']' | '}' | '#') =>
+    None | Some('.' | ' ' | '\t' | '\r' | '\n' | ',' | ']' | '}' | '#' | '=') =>
       IntegerToken(result, loc=self.span(start), raw=raw.to_owned())
     Some(ch) => {
       let prefix = raw.unsafe_view(start=0, end=2)
@@ -298,8 +304,10 @@ fn Lexer::radix_number(
 /// at the cursor.
 ///
 /// Text that is not a number value is often still a bare key, so it becomes
-/// an `Identifier`: an integer part with a leading zero (`0123`, `-01`), or a
-/// number followed by bare key characters (`1key`, `2000-datetime`, `-5y`).
+/// an `Identifier`: an integer part with a leading zero (`0123`, `-01`,
+/// `0_1`, `01abc`), or a number followed by bare key characters (`1key`,
+/// `2000-datetime`, `-5y`). A fraction followed by bare key characters is a
+/// dotted key: `1.2x` is `1`, then `.` and `2x`.
 fn Lexer::decimal_number(
   self : Lexer,
   raw : StringView,
@@ -321,15 +329,19 @@ fn Lexer::decimal_number(
     raw
     .unsafe_view(start=digits_start + 1, end=int_end)
     .contains_any(chars="0123456789") {
+    // The key runs from the start of the integer part: a `.` after it is a
+    // dotted key. A sign is kept so that the parser rejects the token as a
+    // key.
     self.offset = raw.start_offset() + int_end
-    // A sign is kept so that the parser rejects the token as a key.
-    let name = strip_underscores(raw.unsafe_view(start=0, end=int_end))
-    return Identifier(name, loc=self.span(start))
+    return self.rest_of_bare_key(raw.start_offset(), start)
   }
   let has_dot = int_end < raw.length() && raw[int_end] == '.'
-  // '+' is never a bare key character, and "1.5x" is a float followed by an
-  // identifier, which the parser rejects.
-  if !has_sign &&
+  if has_dot && self.at_bare_key_char() {
+    self.offset = raw.start_offset() + int_end
+    return self.decimal_number(raw.unsafe_view(start=0, end=int_end), start)
+  }
+  // '+' is never a bare key character, even in an exponent (`1e+2x`).
+  if !raw.contains_char('+') &&
     !has_dot &&
     self.peek() is Some('A'..<='Z' | 'a'..<='z' | '_' | '-') {
     lexscan self with longest {
@@ -362,6 +374,29 @@ fn Lexer::decimal_number(
       raw=raw.to_owned(),
     )
   }
+}
+
+///|
+/// Whether the cursor is at a bare key character, `A-Za-z0-9_-`.
+fn Lexer::at_bare_key_char(self : Lexer) -> Bool {
+  self.peek() is Some('A'..<='Z' | 'a'..<='z' | '0'..<='9' | '_' | '-')
+}
+
+///|
+/// Lexes the rest of a bare key that starts at `start_offset`, and returns
+/// it as an `Identifier`.
+fn Lexer::rest_of_bare_key(
+  self : Lexer,
+  start_offset : Int32,
+  start : Position,
+) -> Token {
+  lexscan self with longest {
+    re"^[A-Za-z0-9_\-]*" => ()
+  }
+  Identifier(
+    self.input.unsafe_view(start=start_offset, end=self.offset).to_owned(),
+    loc=self.span(start),
+  )
 }
 
 ///|

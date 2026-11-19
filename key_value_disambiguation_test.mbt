@@ -173,7 +173,7 @@ test "hex octal binary overflow is rejected" {
   inspect(
     parse_expect_to_fail("x = 0xFFFFFFFFFFFFFFFF\n"),
     content=(
-      #|Invalid hex number: value out of Int64 range at line 1, column 5)
+      #|Failure(Invalid hex number: value out of Int64 range) at { start: { line: 1, column: 5 }, end: { line: 1, column: 23 } })
     ),
   )
   inspect(
@@ -181,13 +181,13 @@ test "hex octal binary overflow is rejected" {
       "x = 0b1111111111111111111111111111111111111111111111111111111111111111\n",
     ),
     content=(
-      #|Invalid binary number: value out of Int64 range at line 1, column 5)
+      #|Failure(Invalid binary number: value out of Int64 range) at { start: { line: 1, column: 5 }, end: { line: 1, column: 71 } })
     ),
   )
   inspect(
     parse_expect_to_fail("x = 0o2000000000000000000000\n"),
     content=(
-      #|Invalid octal number: value out of Int64 range at line 1, column 5)
+      #|Failure(Invalid octal number: value out of Int64 range) at { start: { line: 1, column: 5 }, end: { line: 1, column: 29 } })
     ),
   )
   // The boundaries of the Int64 range still parse.
@@ -324,6 +324,305 @@ test "numeric validation still applies in value position" {
       #|  "Failure(Invalid number: trailing underscore) at { start: { line: 1, column: 5 }, end: { line: 1, column: 9 } })",
       #|  "Failure(Invalid integer: 99999999999999999999) at { start: { line: 1, column: 5 }, end: { line: 1, column: 25 } })",
       #|]
+    ),
+  )
+}
+
+// ============================================================
+// Bare keys that look like numbers, dates or special floats are keys: the
+// numeric and date rules apply in value position only.
+// ============================================================
+
+///|
+test "leading-zero bare keys keep their underscores and suffix" {
+  debug_inspect(
+    @toml.parse("0_1 = 1\n01 = 2\n01abc = 3\n"),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "0_1": TomlInteger(1),
+      #|    "01": TomlInteger(2),
+      #|    "01abc": TomlInteger(3),
+      #|  },
+      #|)
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = 0_1\n"),
+    content=(
+      #|Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 8 } })
+    ),
+  )
+}
+
+///|
+test "radix-looking bare keys" {
+  debug_inspect(
+    @toml.parse(
+      "0xg = 1\n0x8000000000000000 = 2\n0x1=3\n0o8 = 4\n0b2 = 5\n0x = 6\n",
+    ),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "0xg": TomlInteger(1),
+      #|    "0x8000000000000000": TomlInteger(2),
+      #|    "0x1": TomlInteger(3),
+      #|    "0o8": TomlInteger(4),
+      #|    "0b2": TomlInteger(5),
+      #|    "0x": TomlInteger(6),
+      #|  },
+      #|)
+    ),
+  )
+  debug_inspect(
+    @toml.parse("[0xG0x10]\n0o7=1\n0b1=2\n"),
+    content=(
+      #|TomlTable({ "0xG0x10": TomlTable({ "0o7": TomlInteger(1), "0b1": TomlInteger(2) }) })
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = 0xg\n"),
+    content=(
+      #|Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 8 } })
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = 0x\n"),
+    content=(
+      #|Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 7 } })
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = 0o789\n"),
+    content=(
+      #|Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 10 } })
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = 0b10_\n"),
+    content=(
+      #|Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 10 } })
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = 0x8000000000000000\n"),
+    content=(
+      #|Failure(Invalid hex number: value out of Int64 range) at { start: { line: 1, column: 5 }, end: { line: 1, column: 23 } })
+    ),
+  )
+  debug_inspect(
+    @toml.parse("x=0x1\n"),
+    content=(
+      #|TomlTable({ "x": TomlInteger(1) })
+    ),
+  )
+}
+
+///|
+test "date-looking bare keys" {
+  debug_inspect(
+    @toml.parse("2023-02-30 = 1\n2023-01-01abc = 2\n[2023-13-01]\n"),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "2023-02-30": TomlInteger(1),
+      #|    "2023-01-01abc": TomlInteger(2),
+      #|    "2023-13-01": TomlTable({}),
+      #|  },
+      #|)
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = 2023-02-30\n"),
+    content=(
+      #|Failure(Invalid date: day 30 exceeds max 28 for month 2) at { start: { line: 1, column: 5 }, end: { line: 1, column: 15 } })
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = [2023-13-01]\n"),
+    content=(
+      #|Failure(Invalid date: month 13 out of range) at { start: { line: 1, column: 6 }, end: { line: 1, column: 16 } })
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = {y = 2023-00-01}\n"),
+    content=(
+      #|Failure(Invalid date: month 0 out of range) at { start: { line: 1, column: 10 }, end: { line: 1, column: 20 } })
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = 2023-01-01abc\n"),
+    content=(
+      #|Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 18 } })
+    ),
+  )
+}
+
+///|
+test "signed special float bare keys" {
+  debug_inspect(
+    @toml.parse("-infinite = 1\n-inf.x = 2\n-nan-1 = 3\n"),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "-infinite": TomlInteger(1),
+      #|    "-inf": TomlTable({ "x": TomlInteger(2) }),
+      #|    "-nan-1": TomlInteger(3),
+      #|  },
+      #|)
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = -infinite\n"),
+    content=(
+      #|Expected value at { start: { line: 1, column: 5 }, end: { line: 1, column: 14 } })
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = -inf.x\n"),
+    content=(
+      #|Expected newline or end of file after key-value pair at { start: { line: 1, column: 9 }, end: { line: 1, column: 10 } })
+    ),
+  )
+}
+
+///|
+test "dotted keys after numbers" {
+  debug_inspect(
+    @toml.parse("1.abc = 1\n1.2x = 2\n3.5e3-y = 3\n"),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "1": TomlTable({ "abc": TomlInteger(1), "2x": TomlInteger(2) }),
+      #|    "3": TomlTable({ "5e3-y": TomlInteger(3) }),
+      #|  },
+      #|)
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("1. = 1\n"),
+    content=(
+      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 3 } })
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("a.1. = 1\n"),
+    content=(
+      #|Expected key after dot at { start: { line: 1, column: 3 }, end: { line: 1, column: 5 } })
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = 1.2x\n"),
+    content=(
+      #|Expected newline or end of file after key-value pair at { start: { line: 1, column: 6 }, end: { line: 1, column: 7 } })
+    ),
+  )
+}
+
+///|
+test "a plus sign in an exponent is not a bare key character" {
+  inspect(
+    parse_expect_to_fail("1e+2x = 1\n"),
+    content=(
+      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 5 } })
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("1e+2 = 1\n"),
+    content=(
+      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 5 } })
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("a.1.2e+3 = 1\n"),
+    content=(
+      #|Expected key after dot at { start: { line: 1, column: 3 }, end: { line: 1, column: 9 } })
+    ),
+  )
+  debug_inspect(
+    @toml.parse("1e-2x = 1\n1.2e-3 = 2\n"),
+    content=(
+      #|TomlTable(
+      #|  {
+      #|    "1e-2x": TomlInteger(1),
+      #|    "1": TomlTable({ "2e-3": TomlInteger(2) }),
+      #|  },
+      #|)
+    ),
+  )
+}
+
+///|
+test "local time followed by a comment" {
+  debug_inspect(
+    @toml.parse("x = 07:32:00#comment\n"),
+    content=(
+      #|TomlTable({ "x": TomlDateTime(LocalTime("07:32:00")) })
+    ),
+  )
+}
+
+///|
+test "time fraction needs seconds" {
+  inspect(
+    parse_expect_to_fail("x = 07:32.1\n"),
+    content=(
+      #|Unexpected character: ':')
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = 1979-05-27T07:32.1Z\n"),
+    content=(
+      #|Expected newline or end of file after key-value pair at { start: { line: 1, column: 21 }, end: { line: 1, column: 22 } })
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = 1979-05-27 07:32.5\n"),
+    content=(
+      #|Expected newline or end of file after key-value pair at { start: { line: 1, column: 21 }, end: { line: 1, column: 22 } })
+    ),
+  )
+}
+
+///|
+test "escaped single quote is not an escape" {
+  inspect(
+    parse_expect_to_fail("x = \"\\'\"\n"),
+    content=(
+      #|Invalid escape sequence: \' at line 1, column 6)
+    ),
+  )
+  inspect(
+    parse_expect_to_fail("x = \"\"\"\\'\"\"\"\n"),
+    content=(
+      #|Invalid escape sequence: \' at line 1, column 10)
+    ),
+  )
+}
+
+///|
+test "line ending backslash needs LF or CRLF" {
+  inspect(
+    parse_expect_to_fail("x = \"\"\"a\\\rb\"\"\"\n"),
+    content=(
+      #|Invalid escape: backslash followed by a bare CR at line 1, column 11)
+    ),
+  )
+  debug_inspect(
+    @toml.parse("x = \"\"\"a\\\r\n  b\"\"\"\n"),
+    content=(
+      #|TomlTable({ "x": TomlString("ab") })
+    ),
+  )
+}
+
+///|
+test "control character code is hex" {
+  let del = (0x7f).unsafe_to_char().to_string()
+  inspect(
+    parse_expect_to_fail("x = \"" + del + "\"\n"),
+    content=(
+      #|Invalid control character in basic string: U+007F at line 1, column 7)
     ),
   )
 }

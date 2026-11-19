@@ -569,34 +569,6 @@ test "tokenize special hex digits" {
 }
 
 ///|
-/// Test uncovered escape sequences and error conditions
-test "test escaped single quote in string" {
-  let tokens = @tokenize.tokenize(
-    (
-      #|key = "test\' quote"
-    ),
-  )
-  debug_inspect(
-    tokens,
-    content=(
-      #|[
-      #|  Identifier(
-      #|    "key",
-      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
-      #|  ),
-      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
-      #|  StringToken(
-      #|    "test' quote",
-      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 21 } },
-      #|    multiline=false,
-      #|  ),
-      #|  EOF(loc={ start: { line: 1, column: 21 }, end: { line: 1, column: 21 } }),
-      #|]
-    ),
-  )
-}
-
-///|
 test "test invalid escape sequence error" {
   let maybe_tokens = try
     @tokenize.tokenize(
@@ -1296,29 +1268,6 @@ test "multiline literal string unterminated" {
 }
 
 ///|
-/// Test hex number with no digits after 0x
-test "hex number invalid digit error path" {
-  // This should fail because there are no hex digits after 0x
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|key = 0x
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid hex number format at line 1, column 7)"
-    ),
-  )
-}
-
-///|
 /// Test invalid float parsing case
 test "invalid float error" {
   // This should trigger the invalid float error in read_number
@@ -1371,60 +1320,6 @@ test "multiline literal string token" {
       #|    multiline=true,
       #|  ),
       #|  EOF(loc={ start: { line: 1, column: 24 }, end: { line: 1, column: 24 } }),
-      #|]
-    ),
-  )
-}
-
-///|
-/// Test multiline basic string with single quote escape
-test "multiline basic string single quote escape" {
-  let tokens = @tokenize.tokenize(
-    (
-      #|key = """line with \' quote"""
-    ),
-  )
-  debug_inspect(
-    tokens,
-    content=(
-      #|[
-      #|  Identifier(
-      #|    "key",
-      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
-      #|  ),
-      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
-      #|  StringToken(
-      #|    "line with ' quote",
-      #|    loc={ start: { line: 1, column: 7 }, end: { line: 1, column: 31 } },
-      #|    multiline=true,
-      #|  ),
-      #|  EOF(loc={ start: { line: 1, column: 31 }, end: { line: 1, column: 31 } }),
-      #|]
-    ),
-  )
-}
-
-///|
-/// Test multiline basic string with CR only (without LF)
-test "multiline basic string CR only" {
-  // CR: '\r' is hard to visualize in the multipline string
-  // explicit escaping is better for testing
-  let tokens = @tokenize.tokenize("key = \"\"\"line1\\\rline2\"\"\"")
-  debug_inspect(
-    tokens,
-    content=(
-      #|[
-      #|  Identifier(
-      #|    "key",
-      #|    loc={ start: { line: 1, column: 1 }, end: { line: 1, column: 4 } },
-      #|  ),
-      #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
-      #|  StringToken(
-      #|    "line1line2",
-      #|    loc={ start: { line: 1, column: 7 }, end: { line: 2, column: 9 } },
-      #|    multiline=true,
-      #|  ),
-      #|  EOF(loc={ start: { line: 2, column: 9 }, end: { line: 2, column: 9 } }),
       #|]
     ),
   )
@@ -1562,22 +1457,6 @@ test "very large invalid float" {
 }
 
 ///|
-/// Hex numbers that exceed the Int64 range are rejected (used to silently
-/// wrap around, e.g. 0xFFFFFFFFFFFFFFFF parsed as -1).
-test "test hex overflow edge case" {
-  inspect(
-    lexer_expect_to_fail(
-      (
-        #|hex = 0xFFFFFFFFFFFFFFFF
-      ),
-    ),
-    content=(
-      #|Invalid hex number: value out of Int64 range at line 1, column 7)
-    ),
-  )
-}
-
-///|
 /// Test Unicode escape that might fail to_char conversion
 test "unicode code point conversion failure" {
   // Try to find a Unicode code that's valid as int but invalid as char
@@ -1695,135 +1574,6 @@ test "multiline string potential truncation" {
 }
 
 ///|
-test "trailing _ in binary number" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|key = 0b10_10_
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 14)"
-    ),
-  )
-}
-
-///|
-test "consequence _ in binary number" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|key = 0b10__10_10
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  // according to spec, this should fail
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid char '_', expected whitespace, comma, or end of input after 0b... at line 1, column 11)"
-    ),
-  )
-}
-
-///|
-test "trailing _ in hex number" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|key = 0xAB_CD_
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 14)"
-    ),
-  )
-}
-
-///|
-test "consecutive _ in hex number" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|key = 0xAB__CD_EF
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  // according to spec, this should fail
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid char '_', expected whitespace, comma, or end of input after 0x... at line 1, column 11)"
-    ),
-  )
-}
-
-///|
-test "trailing _ in octal number" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|key = 0o755_
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 12)"
-    ),
-  )
-}
-
-///|
-test "consecutive _ in octal number" {
-  let maybe_tokens = try
-    @tokenize.tokenize(
-      (
-        #|key = 0o7__55_44
-      ),
-    )
-  catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  // according to spec, this should fail
-  debug_inspect(
-    unwrap_failure_message(maybe_tokens.unwrap_err()),
-    content=(
-      #|"Invalid char '_', expected whitespace, comma, or end of input after 0o... at line 1, column 10)"
-    ),
-  )
-}
-
-///|
 /// An unterminated basic string is reported at the start of its content,
 /// whether or not it has escapes. (The old tokenizer reported the end of the
 /// last `\x`, `\u` or `\U` escape instead, a leftover cursor.)
@@ -1841,14 +1591,342 @@ test "unterminated basic string after an escape" {
 }
 
 ///|
-/// A bare CR trimmed by a line ending backslash counts as a line break
-/// wherever it is. (The old tokenizer counted it only right after the
-/// backslash, and as whitespace after a space or tab.)
+/// A bare CR is not a line ending, so a line ending backslash cannot trim
+/// it. (The old tokenizer took it as one.)
 test "bare CR after a line ending backslash and a space" {
   inspect(
     lexer_expect_to_fail("x = \"\"\"\\ \r\\q\"\"\""),
     content=(
-      #|Invalid escape sequence: \q at line 2, column 3)
+      #|Invalid escape: backslash followed by a bare CR at line 1, column 11)
+    ),
+  )
+}
+
+// ============================================================
+// Bare keys that look like numbers or dates. Numeric rules apply only in
+// value position, which the parser checks; the tokenizer keeps such text as
+// a key.
+// ============================================================
+
+///|
+/// A leading zero makes a bare key, kept verbatim with its underscores and
+/// any bare key characters after it.
+test "leading-zero bare keys keep their text" {
+  inspect(
+    token_texts("0_1 = 1"),
+    content=(
+      #|Identifier(0_1) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("01abc = 1"),
+    content=(
+      #|Identifier(01abc) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("01.23 = 1"),
+    content=(
+      #|Identifier(01) . Integer(23) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("-0_1 = 1"),
+    content=(
+      #|Identifier(-0_1) = Integer(1) EOF
+    ),
+  )
+}
+
+///|
+/// Radix prefixes without valid digits, or followed by more bare key
+/// characters, are bare keys; the Int64 range is checked by the parser, and
+/// `=` ends a radix number.
+test "radix-looking bare keys" {
+  inspect(
+    token_texts("0xg = 1"),
+    content=(
+      #|Identifier(0xg) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("0x = 1"),
+    content=(
+      #|Identifier(0x) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("0o8 = 1"),
+    content=(
+      #|Identifier(0o8) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("0b2 = 1"),
+    content=(
+      #|Identifier(0b2) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("0x8000000000000000 = 1"),
+    content=(
+      #|Integer(0x8000000000000000) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("0x1=2"),
+    content=(
+      #|Integer(0x1) = Integer(2) EOF
+    ),
+  )
+  inspect(
+    token_texts("0o7=2"),
+    content=(
+      #|Integer(0o7) = Integer(2) EOF
+    ),
+  )
+  inspect(
+    token_texts("0b1=2"),
+    content=(
+      #|Integer(0b1) = Integer(2) EOF
+    ),
+  )
+  // These used to be lex errors; in value position the parser rejects them.
+  inspect(
+    token_texts(
+      "0xGHI 0x123XYZ 0xG0x10 0o80o7 0b20b10 0o789 0b1012 0b10_10_ 0b10__10_10 0xAB_CD_ 0xAB__CD_EF 0o755_ 0o7__55_44",
+    ),
+    content=(
+      #|Identifier(0xGHI) Identifier(0x123XYZ) Identifier(0xG0x10) Identifier(0o80o7) Identifier(0b20b10) Identifier(0o789) Identifier(0b1012) Identifier(0b10_10_) Identifier(0b10__10_10) Identifier(0xAB_CD_) Identifier(0xAB__CD_EF) Identifier(0o755_) Identifier(0o7__55_44) EOF
+    ),
+  )
+}
+
+///|
+/// A date alone can be a bare key: it is validated by the parser, and bare
+/// key characters after it extend the key.
+test "date-looking bare keys" {
+  inspect(
+    token_texts("2023-02-30 = 1"),
+    content=(
+      #|LocalDate("2023-02-30") = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("2023-01-01abc = 1"),
+    content=(
+      #|Identifier(2023-01-01abc) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("2023-01-01T07 = 1"),
+    content=(
+      #|Identifier(2023-01-01T07) = Integer(1) EOF
+    ),
+  )
+  // A date with a time is still validated as it is lexed.
+  inspect(
+    lexer_expect_to_fail("x = 2023-02-30T07:00:00"),
+    content=(
+      #|Failure(Invalid date: day 30 exceeds max 28 for month 2)
+    ),
+  )
+}
+
+///|
+/// After `-`, `inf` and `nan` followed by bare key characters are a bare key,
+/// and a `.` after them starts a dotted key.
+test "signed special float bare keys" {
+  inspect(
+    token_texts("-infinite = 1"),
+    content=(
+      #|Identifier(-infinite) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("-inf.x = 1"),
+    content=(
+      #|Float(-inf) . Identifier(x) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("-nan_x = 1"),
+    content=(
+      #|Identifier(-nan_x) = Integer(1) EOF
+    ),
+  )
+  // '+' is not a bare key character.
+  inspect(
+    lexer_expect_to_fail("+infinite = 1"),
+    content=(
+      #|Invalid character 'i' after special value at line 1, column 5)
+    ),
+  )
+}
+
+///|
+/// A fraction followed by bare key characters is a dotted key.
+test "dotted keys after numbers" {
+  inspect(
+    token_texts("1.abc = 1"),
+    content=(
+      #|Integer(1) . Identifier(abc) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("1.2x = 1"),
+    content=(
+      #|Integer(1) . Identifier(2x) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("1._x = 1"),
+    content=(
+      #|Integer(1) . Identifier(_x) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("-1.5e3-x = 1"),
+    content=(
+      #|Integer(-1) . Identifier(5e3-x) = Integer(1) EOF
+    ),
+  )
+  // Left to the parser, which rejects the empty second key.
+  inspect(
+    token_texts("1. = 1"),
+    content=(
+      #|Float(1.) = Integer(1) EOF
+    ),
+  )
+}
+
+///|
+/// A '+' anywhere in a number keeps it from merging with the bare key
+/// characters after it.
+test "exponent sign does not join a bare key" {
+  inspect(
+    token_texts("1e+2x = 1"),
+    content=(
+      #|Float(1e+2) Identifier(x) = Integer(1) EOF
+    ),
+  )
+  inspect(
+    token_texts("1e-2x = 1"),
+    content=(
+      #|Identifier(1e-2x) = Integer(1) EOF
+    ),
+  )
+}
+
+///|
+test "local time followed by a comment" {
+  inspect(
+    token_texts("x = 07:32:00#comment"),
+    content=(
+      #|Identifier(x) = LocalTime("07:32:00") EOF
+    ),
+  )
+  inspect(
+    token_texts("x = 07:32#comment"),
+    content=(
+      #|Identifier(x) = LocalTime("07:32") EOF
+    ),
+  )
+}
+
+///|
+/// A fraction needs seconds.
+test "time fraction without seconds" {
+  inspect(
+    lexer_expect_to_fail("x = 07:32.1"),
+    content=(
+      #|Unexpected character: ':')
+    ),
+  )
+  // Lexed as a datetime without the fraction, which the parser rejects.
+  inspect(
+    token_texts("x = 1979-05-27T07:32.1Z"),
+    content=(
+      #|Identifier(x) = LocalDateTime("1979-05-27T07:32") . Identifier(1Z) EOF
+    ),
+  )
+  inspect(
+    token_texts("x = 07:32:00.1 y = 1979-05-27T07:32:00.1Z"),
+    content=(
+      #|Identifier(x) = LocalTime("07:32:00.1") Identifier(y) = OffsetDateTime("1979-05-27T07:32:00.1Z") EOF
+    ),
+  )
+}
+
+///|
+/// `\'` is not a TOML escape.
+test "escaped single quote is invalid" {
+  inspect(
+    lexer_expect_to_fail("x = \"test\\' quote\""),
+    content=(
+      #|Invalid escape sequence: \' at line 1, column 10)
+    ),
+  )
+  inspect(
+    lexer_expect_to_fail("x = \"\"\"test\\' quote\"\"\""),
+    content=(
+      #|Invalid escape sequence: \' at line 1, column 14)
+    ),
+  )
+}
+
+///|
+/// Only LF or CRLF may follow a line ending backslash and its whitespace.
+test "line ending backslash before a bare CR" {
+  inspect(
+    lexer_expect_to_fail("x = \"\"\"a\\\rb\"\"\""),
+    content=(
+      #|Invalid escape: backslash followed by a bare CR at line 1, column 11)
+    ),
+  )
+  inspect(
+    lexer_expect_to_fail("x = \"\"\"a\\ \rb\"\"\""),
+    content=(
+      #|Invalid escape: backslash followed by a bare CR at line 1, column 12)
+    ),
+  )
+  // A CRLF still is a line ending, and so is a CRLF after the first one.
+  inspect(
+    token_texts("x = \"\"\"a\\ \r\n \r\n b\"\"\""),
+    content=(
+      #|Identifier(x) = String(ab) EOF
+    ),
+  )
+  // A bare CR after the trimmed newline is an error too.
+  inspect(
+    lexer_expect_to_fail("x = \"\"\"a\\\n\rb\"\"\""),
+    content=(
+      #|Invalid control character in multiline string: U+000D at line 2, column 2)
+    ),
+  )
+}
+
+///|
+/// The code of a control character is reported in hex.
+test "control character code in hex" {
+  let del = (0x7f).unsafe_to_char().to_string()
+  let us = (0x1f).unsafe_to_char().to_string()
+  inspect(
+    lexer_expect_to_fail("x = \"a" + del + "\""),
+    content=(
+      #|Invalid control character in basic string: U+007F at line 1, column 8)
+    ),
+  )
+  inspect(
+    lexer_expect_to_fail("x = 'a" + us + "'"),
+    content=(
+      #|Invalid control character in literal string: U+001F at line 1, column 8)
+    ),
+  )
+  inspect(
+    lexer_expect_to_fail("x = 1 #" + del),
+    content=(
+      #|Invalid control character in comment: U+007F at line 1, column 9)
     ),
   )
 }

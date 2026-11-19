@@ -33,3 +33,29 @@ test "verify lexer_expect_to_fail output" {
     ),
   )
 }
+
+///|
+/// The tokens of `input` in short form, without their locations: numbers
+/// show their raw text.
+fn token_texts(input : String) -> String raise {
+  let texts = @tokenize.tokenize(input).map(token => {
+    match token {
+      Identifier(name, ..) => "Identifier(\{name})"
+      IntegerToken(_, raw~, ..) => "Integer(\{raw})"
+      FloatToken(_, raw~, ..) => "Float(\{raw})"
+      BooleanToken(b, ..) => "Boolean(\{b})"
+      StringToken(s, ..) => "String(\{s})"
+      DateTimeToken(dt, ..) => "\{dt}"
+      LeftBracket(..) => "["
+      RightBracket(..) => "]"
+      LeftBrace(..) => "{"
+      RightBrace(..) => "}"
+      Equals(..) => "="
+      Comma(..) => ","
+      Dot(..) => "."
+      Newline(..) => "Newline"
+      EOF(..) => "EOF"
+    }
+  })
+  texts.join(" ")
+}
