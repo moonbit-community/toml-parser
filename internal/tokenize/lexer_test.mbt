@@ -1822,3 +1822,33 @@ test "consecutive _ in octal number" {
     ),
   )
 }
+
+///|
+/// An unterminated basic string is reported at the start of its content,
+/// whether or not it has escapes. (The old tokenizer reported the end of the
+/// last `\x`, `\u` or `\U` escape instead, a leftover cursor.)
+test "unterminated basic string after an escape" {
+  inspect(
+    lexer_expect_to_fail(
+      (
+        #|x = "A
+      ),
+    ),
+    content=(
+      #|Unterminated string at line 1, column 6)
+    ),
+  )
+}
+
+///|
+/// A bare CR trimmed by a line ending backslash counts as a line break
+/// wherever it is. (The old tokenizer counted it only right after the
+/// backslash, and as whitespace after a space or tab.)
+test "bare CR after a line ending backslash and a space" {
+  inspect(
+    lexer_expect_to_fail("x = \"\"\"\\ \r\\q\"\"\""),
+    content=(
+      #|Invalid escape sequence: \q at line 2, column 3)
+    ),
+  )
+}
