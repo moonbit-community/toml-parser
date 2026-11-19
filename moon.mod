@@ -2,10 +2,6 @@ name = "moonbit-community/toml"
 
 version = "0.5.1"
 
-import {
-  "bobzhang/lexer@0.3.0",
-}
-
 readme = "README.md"
 
 repository = "https://github.com/moonbit-community/toml-parser"

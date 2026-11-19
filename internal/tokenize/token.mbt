@@ -6,10 +6,11 @@
 /// `adjacent` (no gap) when one's `end` equals the other's `start`, which
 /// the parser uses to distinguish e.g. `[[` (array-of-tables) from `[ [`
 /// (a nested array literal opening a normal table header).
+#derive(Eq, Debug)
 pub(all) struct Loc {
-  start : @lexer.Position
-  end : @lexer.Position
-} derive(Eq, Debug)
+  start : Position
+  end : Position
+}
 
 ///|
 #deprecated("compare with `==`; the Eq impl is unaffected")
@@ -21,6 +22,7 @@ pub extend Loc with Debug::{to_repr}
 
 ///|
 /// Token types for the lexer
+#derive(Eq, Debug)
 pub(all) enum Token {
   // Literals
   StringToken(String, loc~ : Loc, multiline~ : Bool)
@@ -44,7 +46,7 @@ pub(all) enum Token {
   // Special
   Newline(loc~ : Loc)
   EOF(loc~ : Loc)
-} derive(Eq, Debug)
+}
 
 ///|
 #deprecated("compare with `==`; the Eq impl is unaffected")

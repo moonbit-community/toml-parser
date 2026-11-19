@@ -737,27 +737,6 @@ test "test dash-starting identifier tokenized before parser validation" {
 }
 
 ///|
-/// Test lexer expect_string error cases
-test "lexer expect_string failure" {
-  let lexer = @lexer.Lexer::Lexer(
-    (
-      #|hello world
-    ),
-  )
-  let maybe_result = try lexer.expect_string("goodbye") catch {
-    err => Err(err)
-  } noraise {
-    value => Ok(value)
-  }
-  debug_inspect(
-    unwrap_failure_message(maybe_result.unwrap_err()),
-    content=(
-      #|"Expected string: goodbye at line 1, column 1)"
-    ),
-  )
-}
-
-///|
 /// Test Unicode 4-digit escape with lowercase hex letters
 test "unicode 4 escape lowercase hex" {
   let tokens = @tokenize.tokenize(
@@ -1173,10 +1152,10 @@ test "multiline basic string line ending backslash CR" {
       #|  Equals(loc={ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }),
       #|  StringToken(
       #|    "line1line2",
-      #|    loc={ start: { line: 1, column: 7 }, end: { line: 2, column: 13 } },
+      #|    loc={ start: { line: 1, column: 7 }, end: { line: 2, column: 12 } },
       #|    multiline=true,
       #|  ),
-      #|  EOF(loc={ start: { line: 2, column: 13 }, end: { line: 2, column: 13 } }),
+      #|  EOF(loc={ start: { line: 2, column: 12 }, end: { line: 2, column: 12 } }),
       #|]
     ),
   )
@@ -1586,20 +1565,14 @@ test "very large invalid float" {
 /// Hex numbers that exceed the Int64 range are rejected (used to silently
 /// wrap around, e.g. 0xFFFFFFFFFFFFFFFF parsed as -1).
 test "test hex overflow edge case" {
-  debug_inspect(
-    try
-      @tokenize.tokenize(
-        (
-          #|hex = 0xFFFFFFFFFFFFFFFF
-        ),
-      )
-    catch {
-      err => Err(err)
-    } noraise {
-      value => Ok(value)
-    },
+  inspect(
+    lexer_expect_to_fail(
+      (
+        #|hex = 0xFFFFFFFFFFFFFFFF
+      ),
+    ),
     content=(
-      #|Err(Failure("internal/tokenize/tokenize.mbt:555:7-555:71@moonbit-community/toml FAILED: Invalid hex number: value out of Int64 range at line 1, column 7"))
+      #|Invalid hex number: value out of Int64 range at line 1, column 7)
     ),
   )
 }

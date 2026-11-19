@@ -2,7 +2,6 @@
 package "moonbit-community/toml/internal/tokenize"
 
 import {
-  "bobzhang/lexer",
   "moonbit-community/toml/datetime",
   "moonbitlang/core/debug",
 }
@@ -19,10 +18,11 @@ pub fn validate_integer_literal(String) -> Unit raise
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct Loc {
-  start : @lexer.Position
-  end : @lexer.Position
-} derive(Eq, @debug.Debug)
+  start : Position
+  end : Position
+}
 pub fn Loc::adjacent(Self, Self) -> Bool
 #deprecated
 pub fn Loc::equal(Self, Self) -> Bool
@@ -31,6 +31,13 @@ pub fn Loc::not_equal(Self, Self) -> Bool
 #deprecated
 pub fn Loc::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
+pub(all) struct Position {
+  line : Int32
+  column : Int32
+}
+
+#derive(Eq, @debug.Debug)
 pub(all) enum Token {
   StringToken(String, loc~ : Loc, multiline~ : Bool)
   IntegerToken(Int64, loc~ : Loc, raw~ : String)
@@ -47,7 +54,7 @@ pub(all) enum Token {
   Identifier(String, loc~ : Loc)
   Newline(loc~ : Loc)
   EOF(loc~ : Loc)
-} derive(Eq, @debug.Debug)
+}
 #deprecated
 pub fn Token::equal(Self, Self) -> Bool
 pub fn Token::loc(Self) -> Loc
