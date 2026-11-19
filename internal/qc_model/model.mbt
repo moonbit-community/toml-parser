@@ -5,9 +5,10 @@
 /// from a deliberately restricted grammar (`SimpleValue`). The restriction
 /// makes generation, shrinking, and round-trip checks tractable while
 /// still covering every case the parser must handle in practice.
+#derive(Eq, Debug)
 pub(all) struct SimpleDocument {
   fields : Map[String, SimpleValue]
-} derive(Eq, Debug)
+}
 
 ///|
 /// Restricted value space for the QuickCheck model.
@@ -18,6 +19,7 @@ pub(all) struct SimpleDocument {
 /// arrays are intentionally excluded — they are forbidden by TOML — and
 /// floats are excluded so that round-trip equality stays exact under
 /// pretty-printing. `STable` allows nested tables for recursive structure.
+#derive(Eq, Debug)
 pub(all) enum SimpleValue {
   SString(String)
   SInteger(Int64)
@@ -29,7 +31,7 @@ pub(all) enum SimpleValue {
   SIntegerArray(Array[Int64])
   SBooleanArray(Array[Bool])
   STable(Map[String, SimpleValue])
-} derive(Eq, Debug)
+}
 
 ///|
 #deprecated("compare with `==`; the Eq impl is unaffected")

@@ -42,12 +42,13 @@ fn create_nested_table(
 }
 
 ///|
+#derive(Debug)
 priv suberror TableConflicts {
   ExpectedTable(String, TomlValue)
   ExpectedArray(String, TomlValue)
   DuplicateKey(String)
   InlineTableImmutable(String)
-} derive(Debug)
+}
 
 ///|
 /// Show impl for error messages

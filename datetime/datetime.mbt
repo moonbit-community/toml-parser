@@ -10,12 +10,13 @@
 /// Values are stored as their original string form. The parser preserves
 /// the spelling supplied in the TOML source; it does not normalize or
 /// validate the underlying calendar arithmetic.
+#derive(Eq, Debug)
 pub(all) enum TomlDateTime {
   OffsetDateTime(String)
   LocalDateTime(String)
   LocalDate(String)
   LocalTime(String)
-} derive(Eq, Debug)
+}
 
 ///|
 #deprecated("compare with `==`; the Eq impl is unaffected")

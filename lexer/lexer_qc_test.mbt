@@ -46,9 +46,10 @@ fn chars_gen() -> @qc.Generator[Array[Char]] {
 
 ///|
 /// A well-formed (surrogate-pair-correct) input string.
+#derive(Debug)
 priv struct Input {
   chars : Array[Char]
-} derive(Debug)
+}
 
 ///|
 fn Input::text(self : Input) -> String {
@@ -68,10 +69,11 @@ impl @qc.Shrink for Input with fn shrink(self) {
 ///|
 /// An input plus a script of small non-negative integers that a driver
 /// interprets as lexer operations / argument choices.
+#derive(Debug)
 priv struct Script {
   chars : Array[Char]
   ops : Array[Int32]
-} derive(Debug)
+}
 
 ///|
 fn Script::text(self : Script) -> String {
@@ -97,10 +99,11 @@ impl @qc.Shrink for Script with fn shrink(self) {
 ///|
 /// Raw UTF-16 code units, including lone (unpaired) surrogates. MoonBit
 /// `String`s can hold such data, so the lexer must at least stay in bounds.
+#derive(Debug)
 priv struct Units {
   units : Array[Int32]
   ops : Array[Int32]
-} derive(Debug)
+}
 
 ///|
 fn unit_gen() -> @qc.Generator[Int32] {
