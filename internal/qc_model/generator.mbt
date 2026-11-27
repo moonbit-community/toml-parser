@@ -28,8 +28,8 @@ fn string_from_parts(head : Char, tail : Array[Char]) -> String {
 ///|
 fn simple_key_tail_char_gen() -> @qc.Generator[Char] {
   @qc.one_of([
-    @qc.char_range('a', 'z'),
-    @qc.char_range('0', '9'),
+    @qc.char_range(inclusive=true, 'a', 'z'),
+    @qc.char_range(inclusive=true, '0', '9'),
     @qc.pure('-'),
     @qc.pure('_'),
   ])
@@ -39,8 +39,8 @@ fn simple_key_tail_char_gen() -> @qc.Generator[Char] {
 fn bare_key_gen() -> @qc.Generator[String] {
   @qc.sized(size => {
     let max_tail = capped_size(size, 4)
-    @qc.int_range(0, max_tail + 1).flat_map(tail_len => {
-      @qc.char_range('a', 'z').zip_with(
+    @qc.int_range(inclusive=false, 0, max_tail + 1).flat_map(tail_len => {
+      @qc.char_range(inclusive=true, 'a', 'z').zip_with(
         simple_key_tail_char_gen().array_with_size(tail_len),
         string_from_parts,
       )
@@ -52,18 +52,20 @@ fn bare_key_gen() -> @qc.Generator[String] {
 fn negative_exponent_like_key_gen() -> @qc.Generator[String] {
   @qc.sized(size => {
     let max_tail = capped_size(size, 4)
-    let significand_gen = @qc.int_range(0, max_tail + 1).flat_map(tail_len => {
-      @qc.char_range('1', '9').zip_with(
-        @qc.char_range('0', '9').array_with_size(tail_len),
-        string_from_parts,
-      )
-    })
-    let exponent_gen = @qc.int_range(0, max_tail + 1).flat_map(tail_len => {
-      @qc.char_range('0', '9').zip_with(
-        @qc.char_range('0', '9').array_with_size(tail_len),
-        string_from_parts,
-      )
-    })
+    let significand_gen = @qc.int_range(inclusive=false, 0, max_tail + 1).flat_map(tail_len => {
+        @qc.char_range(inclusive=true, '1', '9').zip_with(
+          @qc.char_range(inclusive=true, '0', '9').array_with_size(tail_len),
+          string_from_parts,
+        )
+      },
+    )
+    let exponent_gen = @qc.int_range(inclusive=false, 0, max_tail + 1).flat_map(tail_len => {
+        @qc.char_range(inclusive=true, '0', '9').zip_with(
+          @qc.char_range(inclusive=true, '0', '9').array_with_size(tail_len),
+          string_from_parts,
+        )
+      },
+    )
     significand_gen.zip_with3(
       @qc.one_of([@qc.pure(false), @qc.pure(true)]),
       exponent_gen,
@@ -194,9 +196,9 @@ fn format_offset(sign : Char, hour : Int32, minute : Int32) -> String {
 
 ///|
 fn date_string_gen() -> @qc.Generator[String] {
-  @qc.int_range(1900, 2101).flat_map(year => {
-    @qc.int_range(1, 13).flat_map(month => {
-      @qc.int_range(1, days_in_month(year, month) + 1).map(day => {
+  @qc.int_range(inclusive=false, 1900, 2101).flat_map(year => {
+    @qc.int_range(inclusive=false, 1, 13).flat_map(month => {
+      @qc.int_range(inclusive=false, 1, days_in_month(year, month) + 1).map(day => {
         format_date(year, month, day)
       })
     })
@@ -205,15 +207,19 @@ fn date_string_gen() -> @qc.Generator[String] {
 
 ///|
 fn time_string_gen() -> @qc.Generator[String] {
-  @qc.int_range(0, 24)
-  .zip_with3(@qc.int_range(0, 60), @qc.int_range(0, 60), format_time)
+  @qc.int_range(inclusive=false, 0, 24)
+  .zip_with3(
+    @qc.int_range(inclusive=false, 0, 60),
+    @qc.int_range(inclusive=false, 0, 60),
+    format_time,
+  )
   .zip_with(
     @qc.frequency([
       (1U, @qc.pure("")),
       (
         1U,
-        @qc.int_range(1, 10).flat_map(len => {
-          @qc.char_range('0', '9')
+        @qc.int_range(inclusive=false, 1, 10).flat_map(len => {
+          @qc.char_range(inclusive=true, '0', '9')
           .array_with_size(len)
           .map(chars => string_from_parts('.', chars))
         }),
@@ -230,16 +236,16 @@ fn offset_suffix_gen() -> @qc.Generator[String] {
     (
       1U,
       @qc.pure('+').zip_with3(
-        @qc.int_range(0, 24),
-        @qc.int_range(0, 60),
+        @qc.int_range(inclusive=false, 0, 24),
+        @qc.int_range(inclusive=false, 0, 60),
         format_offset,
       ),
     ),
     (
       1U,
       @qc.pure('-').zip_with3(
-        @qc.int_range(0, 24),
-        @qc.int_range(0, 60),
+        @qc.int_range(inclusive=false, 0, 24),
+        @qc.int_range(inclusive=false, 0, 60),
         format_offset,
       ),
     ),
@@ -299,7 +305,7 @@ fn datetime_array_value_gen(size : Int32) -> @qc.Generator[SimpleValue] {
 ///|
 fn non_empty_length_gen(size : Int32) -> @qc.Generator[Int32] {
   let max_len = capped_size(size + 1, 4)
-  @qc.int_range(1, max_len + 1)
+  @qc.int_range(inclusive=false, 1, max_len + 1)
 }
 
 ///|
@@ -351,7 +357,7 @@ fn simple_entry_gen(size : Int32) -> @qc.Generator[(String, SimpleValue)] {
 fn table_value_gen(size : Int32) -> @qc.Generator[SimpleValue] {
   let next_size = size / 2
   let max_fields = capped_size(size + 1, 4)
-  @qc.int_range(0, max_fields + 1).flat_map(field_count => {
+  @qc.int_range(inclusive=false, 0, max_fields + 1).flat_map(field_count => {
     simple_entry_gen(next_size)
     .array_with_size(field_count)
     .map(entries => STable(Map::from_array(entries)))
@@ -374,7 +380,7 @@ fn simple_value_gen(size : Int32) -> @qc.Generator[SimpleValue] {
 pub fn simple_document_generator() -> @qc.Generator[SimpleDocument] {
   @qc.sized(size => {
     let max_fields = capped_size(size + 1, 5)
-    @qc.int_range(0, max_fields + 1).flat_map(field_count => {
+    @qc.int_range(inclusive=false, 0, max_fields + 1).flat_map(field_count => {
       simple_entry_gen(size)
       .array_with_size(field_count)
       .map(entries => { fields: Map::from_array(entries), })

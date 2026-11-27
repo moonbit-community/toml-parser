@@ -157,6 +157,6 @@ $ cat > invalid.toml <<'EOF'
 > key =
 > EOF
 > toml_cli.exe check invalid.toml
-error: failed to parse invalid.toml: Failure(parser.mbt:*@moonbit-community/toml FAILED: Expected value at { start: { line: 1, column: 6 }, end: { line: 2, column: 1 } }) (glob)
+error: failed to parse invalid.toml: Failure: parser.mbt:*@moonbit-community/toml FAILED: Expected value at { start: { line: 1, column: 6 }, end: { line: 2, column: 1 } } (glob)
 [1]
 ```

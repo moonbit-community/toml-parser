@@ -20,7 +20,7 @@
 /// block) and astral characters that are stored as surrogate pairs.
 fn interesting_char_gen() -> @qc.Generator[Char] {
   @qc.frequency([
-    (6, @qc.char_range('a', 'z')),
+    (6, @qc.char_range(inclusive=true, 'a', 'z')),
     (3, @qc.elements([' ', '\t', '\r', '\n'])),
     (1, @qc.elements(['=', '"', '#', '0', '9', '\u{0}'])),
     (2, @qc.elements(['é', '中', '\u{D7FF}', '\u{E000}', '\u{FFFF}'])),
@@ -38,7 +38,7 @@ fn chars_gen() -> @qc.Generator[Array[Char]] {
     (1, @qc.pure(['\r', '\n'])),
   ])
   @qc.sized(size => {
-    @qc.int_range(0, size + 1).flat_map(n => {
+    @qc.int_range(inclusive=false, 0, size + 1).flat_map(n => {
       chunk.array_with_size(n).map(chunks => chunks.flatten())
     })
   })
@@ -84,8 +84,8 @@ fn Script::text(self : Script) -> String {
 impl @qc.Arbitrary for Script with fn arbitrary(size, rs) {
   let rs2 = rs.split()
   let ops = @qc.sized(size => {
-    @qc.int_range(0, size * 2 + 1).flat_map(n => {
-      @qc.int_range(0, 64).array_with_size(n)
+    @qc.int_range(inclusive=false, 0, size * 2 + 1).flat_map(n => {
+      @qc.int_range(inclusive=false, 0, 64).array_with_size(n)
     })
   }).run(size, rs2)
   { chars: chars_gen().run(size, rs), ops, }
@@ -108,11 +108,11 @@ priv struct Units {
 ///|
 fn unit_gen() -> @qc.Generator[Int32] {
   @qc.frequency([
-    (4, @qc.int_range('a'.to_int(), 'z'.to_int() + 1)),
+    (4, @qc.int_range(inclusive=false, 'a'.to_int(), 'z'.to_int() + 1)),
     (2, @qc.elements([' ', '\t', '\r', '\n'].map(c => c.to_int()))),
-    (2, @qc.int_range(0xD800, 0xDC00)), // leading surrogates
-    (2, @qc.int_range(0xDC00, 0xE000)), // trailing surrogates
-    (1, @qc.int_range(0, 0x10000)),
+    (2, @qc.int_range(inclusive=false, 0xD800, 0xDC00)), // leading surrogates
+    (2, @qc.int_range(inclusive=false, 0xDC00, 0xE000)), // trailing surrogates
+    (1, @qc.int_range(inclusive=false, 0, 0x10000)),
   ])
 }
 
@@ -124,11 +124,11 @@ fn Units::text(self : Units) -> String {
 ///|
 impl @qc.Arbitrary for Units with fn arbitrary(size, rs) {
   let rs2 = rs.split()
-  let units = @qc.int_range(0, size + 1)
+  let units = @qc.int_range(inclusive=false, 0, size + 1)
     .flat_map(n => unit_gen().array_with_size(n))
     .run(size, rs)
-  let ops = @qc.int_range(0, size * 2 + 1)
-    .flat_map(n => @qc.int_range(0, 64).array_with_size(n))
+  let ops = @qc.int_range(inclusive=false, 0, size * 2 + 1)
+    .flat_map(n => @qc.int_range(inclusive=false, 0, 64).array_with_size(n))
     .run(size, rs2)
   { units, ops, }
 }
