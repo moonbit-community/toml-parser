@@ -9,12 +9,11 @@ on:
 
 jobs:
   misc-check:
-    continue-on-error: ${{ matrix.channel == 'nightly' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        channel: [stable, nightly]
+        channel: [latest, pre-release]
     name: misc-check (${{ matrix.channel }})
     env:
       FORCE_COLOR: 1
@@ -25,7 +24,7 @@ jobs:
 
       - name: install moonbit
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- ${{ matrix.channel == 'nightly' && 'nightly' || '' }}
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "${{ matrix.channel }}"
           echo "$HOME/.moon/bin" >> $GITHUB_PATH
       - name: moon update
         run: moon update
@@ -49,7 +48,6 @@ jobs:
         run: moon test e2e --target native
 
       - name: moon cram (native CLI)
-        if: matrix.channel == 'nightly'
         run: moon -C toml_cli cram test --release tests/cram
 
       # - name: moon test
