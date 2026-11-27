@@ -1829,11 +1829,7 @@ test "consecutive _ in octal number" {
 /// last `\x`, `\u` or `\U` escape instead, a leftover cursor.)
 test "unterminated basic string after an escape" {
   inspect(
-    lexer_expect_to_fail(
-      (
-        #|x = "A
-      ),
-    ),
+    lexer_expect_to_fail("x = \"\\u0041"),
     content=(
       #|Unterminated string at line 1, column 6
     ),
