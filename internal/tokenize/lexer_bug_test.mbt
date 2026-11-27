@@ -55,7 +55,7 @@ test "test invalid hex digit error" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid hex number format at line 1, column 7)"
+      #|"Invalid hex number format at line 1, column 7"
     ),
   )
 }
@@ -76,7 +76,7 @@ test "test octal without digits" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid octal number format at line 1, column 8)"
+      #|"Invalid octal number format at line 1, column 8"
     ),
   )
 }
@@ -97,7 +97,7 @@ test "test binary without digits" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid binary number format at line 1, column 8)"
+      #|"Invalid binary number format at line 1, column 8"
     ),
   )
 }
@@ -118,7 +118,7 @@ test "test hex with invalid delimiter" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid char 'X', expected whitespace, comma, or end of input after 0x... at line 1, column 12)"
+      #|"Invalid char 'X', expected whitespace, comma, or end of input after 0x... at line 1, column 12"
     ),
   )
 }
@@ -139,7 +139,7 @@ test "test hex regex is anchored to current view" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid hex number format at line 1, column 7)"
+      #|"Invalid hex number format at line 1, column 7"
     ),
   )
 }
@@ -190,7 +190,7 @@ test "test octal regex is anchored to current view" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid octal number format at line 1, column 7)"
+      #|"Invalid octal number format at line 1, column 7"
     ),
   )
 }
@@ -211,7 +211,7 @@ test "test binary regex is anchored to current view" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid binary number format at line 1, column 7)"
+      #|"Invalid binary number format at line 1, column 7"
     ),
   )
 }
@@ -317,7 +317,7 @@ test "test octal with invalid digits" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid char '8', expected whitespace, comma, or end of input after 0o... at line 1, column 10)"
+      #|"Invalid char '8', expected whitespace, comma, or end of input after 0o... at line 1, column 10"
     ),
   )
 }
@@ -396,7 +396,7 @@ test "test binary with invalid digits" {
   debug_inspect(
     unwrap_failure_message(maybe_tokens.unwrap_err()),
     content=(
-      #|"Invalid char '2', expected whitespace, comma, or end of input after 0b... at line 1, column 12)"
+      #|"Invalid char '2', expected whitespace, comma, or end of input after 0b... at line 1, column 12"
     ),
   )
 }

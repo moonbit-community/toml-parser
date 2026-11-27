@@ -29,7 +29,7 @@ test "verify lexer_expect_to_fail output" {
       ),
     ),
     content=(
-      #|Unexpected character: '@')
+      #|Unexpected character: '@'
     ),
   )
 }

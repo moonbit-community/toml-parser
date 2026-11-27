@@ -115,37 +115,37 @@ test "'+' signed numbers are never bare keys" {
   inspect(
     parse_expect_to_fail("+5 = 3\n"),
     content=(
-      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 3 } })
+      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 3 } }
     ),
   )
   inspect(
     parse_expect_to_fail("+5.5 = 3\n"),
     content=(
-      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 5 } })
+      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 5 } }
     ),
   )
   inspect(
     parse_expect_to_fail("+5e3 = 3\n"),
     content=(
-      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 5 } })
+      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 5 } }
     ),
   )
   inspect(
     parse_expect_to_fail("+5y = 3\n"),
     content=(
-      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 3 } })
+      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 3 } }
     ),
   )
   inspect(
     parse_expect_to_fail("[+5]\n"),
     content=(
-      #|Expected key at { start: { line: 1, column: 2 }, end: { line: 1, column: 4 } })
+      #|Expected key at { start: { line: 1, column: 2 }, end: { line: 1, column: 4 } }
     ),
   )
   inspect(
     parse_expect_to_fail("+inf = 1\n"),
     content=(
-      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 5 } })
+      #|Expected key at { start: { line: 1, column: 1 }, end: { line: 1, column: 5 } }
     ),
   )
 }
@@ -173,7 +173,7 @@ test "hex octal binary overflow is rejected" {
   inspect(
     parse_expect_to_fail("x = 0xFFFFFFFFFFFFFFFF\n"),
     content=(
-      #|Invalid hex number: value out of Int64 range at line 1, column 5)
+      #|Invalid hex number: value out of Int64 range at line 1, column 5
     ),
   )
   inspect(
@@ -181,13 +181,13 @@ test "hex octal binary overflow is rejected" {
       "x = 0b1111111111111111111111111111111111111111111111111111111111111111\n",
     ),
     content=(
-      #|Invalid binary number: value out of Int64 range at line 1, column 5)
+      #|Invalid binary number: value out of Int64 range at line 1, column 5
     ),
   )
   inspect(
     parse_expect_to_fail("x = 0o2000000000000000000000\n"),
     content=(
-      #|Invalid octal number: value out of Int64 range at line 1, column 5)
+      #|Invalid octal number: value out of Int64 range at line 1, column 5
     ),
   )
   // The boundaries of the Int64 range still parse.
@@ -212,25 +212,25 @@ test "dotted-key tables cannot be reopened by headers" {
   inspect(
     parse_expect_to_fail("fruit.apple = 1\n\n[fruit]\n"),
     content=(
-      #|Duplicate table definition: [fruit] at { start: { line: 3, column: 8 }, end: { line: 4, column: 1 } })
+      #|Duplicate table definition: [fruit] at { start: { line: 3, column: 8 }, end: { line: 4, column: 1 } }
     ),
   )
   inspect(
     parse_expect_to_fail("a.b.c = 1\n[a]\n"),
     content=(
-      #|Duplicate table definition: [a] at { start: { line: 2, column: 4 }, end: { line: 3, column: 1 } })
+      #|Duplicate table definition: [a] at { start: { line: 2, column: 4 }, end: { line: 3, column: 1 } }
     ),
   )
   inspect(
     parse_expect_to_fail("a.b.c = 1\n[a.b]\n"),
     content=(
-      #|Duplicate table definition: [a.b] at { start: { line: 2, column: 6 }, end: { line: 3, column: 1 } })
+      #|Duplicate table definition: [a.b] at { start: { line: 2, column: 6 }, end: { line: 3, column: 1 } }
     ),
   )
   inspect(
     parse_expect_to_fail("[[a]]\nb.c = 1\n[a.b]\n"),
     content=(
-      #|Duplicate table definition: [a.b] at { start: { line: 3, column: 6 }, end: { line: 4, column: 1 } })
+      #|Duplicate table definition: [a.b] at { start: { line: 3, column: 6 }, end: { line: 4, column: 1 } }
     ),
   )
 }
@@ -318,11 +318,11 @@ test "numeric validation still applies in value position" {
     ],
     content=(
       #|[
-      #|  "Failure(Invalid number: underscore not between digits) at { start: { line: 1, column: 5 }, end: { line: 1, column: 9 } })",
-      #|  "Failure(Invalid number: underscore not between digits) at { start: { line: 1, column: 8 }, end: { line: 1, column: 12 } })",
-      #|  "Failure(Invalid number: trailing underscore) at { start: { line: 1, column: 5 }, end: { line: 1, column: 7 } })",
-      #|  "Failure(Invalid number: trailing underscore) at { start: { line: 1, column: 5 }, end: { line: 1, column: 9 } })",
-      #|  "Failure(Invalid integer: 99999999999999999999) at { start: { line: 1, column: 5 }, end: { line: 1, column: 25 } })",
+      #|  "Failure: Invalid number: underscore not between digits at { start: { line: 1, column: 5 }, end: { line: 1, column: 9 } }",
+      #|  "Failure: Invalid number: underscore not between digits at { start: { line: 1, column: 8 }, end: { line: 1, column: 12 } }",
+      #|  "Failure: Invalid number: trailing underscore at { start: { line: 1, column: 5 }, end: { line: 1, column: 7 } }",
+      #|  "Failure: Invalid number: trailing underscore at { start: { line: 1, column: 5 }, end: { line: 1, column: 9 } }",
+      #|  "Failure: Invalid integer: 99999999999999999999 at { start: { line: 1, column: 5 }, end: { line: 1, column: 25 } }",
       #|]
     ),
   )
